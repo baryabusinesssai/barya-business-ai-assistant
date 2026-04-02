@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barya Business AI Assistant - Finance MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <h1>Barya Business AI Assistant</h1>
+        <p>A simple monthly finance tracker with a beginner-friendly AI helper.</p>
+      </header>
+
+      <nav class="tabs" aria-label="Main sections">
+        <button class="tab-button active" data-tab="dashboardTab" type="button">Dashboard</button>
+        <button class="tab-button" data-tab="assistantTab" type="button">AI Assistant</button>
+      </nav>
+
+      <section id="dashboardTab" class="tab-panel active" aria-labelledby="dashboard-title">
+        <section class="card">
+          <h2 id="dashboard-title">Dashboard</h2>
+          <div class="dashboard-grid">
+            <article class="metric">
+              <h3>Total Income</h3>
+              <p id="totalIncome">$0.00</p>
+            </article>
+            <article class="metric">
+              <h3>Total Expenses</h3>
+              <p id="totalExpenses">$0.00</p>
+            </article>
+            <article class="metric">
+              <h3>Net Savings</h3>
+              <p id="netSavings">$0.00</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="forms-grid">
+          <section class="card" aria-labelledby="income-title">
+            <h2 id="income-title">Save Monthly Income</h2>
+            <form id="incomeForm" class="form">
+              <label for="incomeAmount">Income Amount</label>
+              <input
+                id="incomeAmount"
+                name="incomeAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Enter monthly income"
+                required
+              />
+              <button type="submit">Save Income</button>
+            </form>
+          </section>
+
+          <section class="card" aria-labelledby="expense-title">
+            <h2 id="expense-title">Add Expense</h2>
+            <form id="expenseForm" class="form">
+              <label for="expenseAmount">Amount</label>
+              <input
+                id="expenseAmount"
+                name="expenseAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Enter expense amount"
+                required
+              />
+
+              <label for="expenseCategory">Category</label>
+              <input
+                id="expenseCategory"
+                name="expenseCategory"
+                type="text"
+                placeholder="e.g. Rent, Food"
+                required
+              />
+
+              <label for="expenseDate">Date</label>
+              <input id="expenseDate" name="expenseDate" type="date" required />
+
+              <button type="submit">Add Expense</button>
+            </form>
+          </section>
+        </section>
+
+        <section class="card" aria-labelledby="overview-title">
+          <h2 id="overview-title">Monthly Overview</h2>
+          <p id="monthlyOverview" class="overview-text">
+            No financial data yet. Add income and expenses to see your monthly summary.
+          </p>
+        </section>
+      </section>
+
+      <section id="assistantTab" class="tab-panel" aria-labelledby="assistant-title">
+        <section class="card">
+          <h2 id="assistant-title">AI Assistant</h2>
+          <p class="overview-text">Ask simple finance or business questions and get instant guidance.</p>
+          <form id="assistantForm" class="form">
+            <label for="assistantQuestion">Your Question</label>
+            <input
+              id="assistantQuestion"
+              name="assistantQuestion"
+              type="text"
+              placeholder="Example: How can I save money?"
+              required
+            />
+            <button type="submit">Ask AI</button>
+          </form>
+          <div class="assistant-response">
+            <h3>Response</h3>
+            <p id="assistantResponse" class="overview-text">Ask a question to get a helpful answer.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
