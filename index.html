@@ -115,6 +115,82 @@
           </div>
         </section>
       </section>
+        <p>A simple monthly finance tracker for income, expenses, and savings.</p>
+      </header>
+
+      <section class="card" aria-labelledby="dashboard-title">
+        <h2 id="dashboard-title">Dashboard</h2>
+        <div class="dashboard-grid">
+          <article class="metric">
+            <h3>Total Income</h3>
+            <p id="totalIncome">$0.00</p>
+          </article>
+          <article class="metric">
+            <h3>Total Expenses</h3>
+            <p id="totalExpenses">$0.00</p>
+          </article>
+          <article class="metric">
+            <h3>Net Savings</h3>
+            <p id="netSavings">$0.00</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="forms-grid">
+        <section class="card" aria-labelledby="income-title">
+          <h2 id="income-title">Save Monthly Income</h2>
+          <form id="incomeForm" class="form">
+            <label for="incomeAmount">Income Amount</label>
+            <input
+              id="incomeAmount"
+              name="incomeAmount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Enter monthly income"
+              required
+            />
+            <button type="submit">Save Income</button>
+          </form>
+        </section>
+
+        <section class="card" aria-labelledby="expense-title">
+          <h2 id="expense-title">Add Expense</h2>
+          <form id="expenseForm" class="form">
+            <label for="expenseAmount">Amount</label>
+            <input
+              id="expenseAmount"
+              name="expenseAmount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Enter expense amount"
+              required
+            />
+
+            <label for="expenseCategory">Category</label>
+            <input
+              id="expenseCategory"
+              name="expenseCategory"
+              type="text"
+              placeholder="e.g. Rent, Food"
+              required
+            />
+
+            <label for="expenseDate">Date</label>
+            <input id="expenseDate" name="expenseDate" type="date" required />
+
+            <button type="submit">Add Expense</button>
+          </form>
+        </section>
+      </section>
+
+      <section class="card" aria-labelledby="overview-title">
+        <h2 id="overview-title">Monthly Overview</h2>
+        <p id="monthlyOverview" class="overview-text">
+          No financial data yet. Add income and expenses to see your monthly summary.
+        </p>
+      </section>
     </main>
 
     <script src="script.js"></script>

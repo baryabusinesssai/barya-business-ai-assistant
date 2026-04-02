@@ -20,6 +20,12 @@ A beginner-friendly MVP for **Barya Business AI Assistant**: a simple responsive
 - `index.html` – page layout, tabs, forms, and AI assistant section
 - `styles.css` – clean responsive styling
 - `script.js` – app logic, localStorage, dashboard updates, and assistant responses
+- Data persistence using browser `localStorage`
+
+## Files
+- `index.html` – page layout and forms
+- `styles.css` – clean responsive styling
+- `script.js` – app logic, localStorage, and dashboard updates
 
 ## Run locally
 Open `index.html` in any modern browser.
