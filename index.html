@@ -49,17 +49,25 @@
 
         <div class="card">
           <h2>Save Monthly Income</h2>
-          <form id="incomeForm">
-            <input type="number" id="incomeAmount" placeholder="Enter income" required />
+          <p class="helper-text">Enter your expected monthly business income once each month.</p>
+          <form id="incomeForm" class="stack-form">
+            <label for="incomeAmount">Monthly Income (₹)</label>
+            <input type="number" id="incomeAmount" placeholder="e.g., 50000" min="0" step="0.01" required />
             <button type="submit">Save Income</button>
           </form>
         </div>
 
         <div class="card">
           <h2>Add Expense</h2>
-          <form id="expenseForm">
-            <input type="number" id="expenseAmount" placeholder="Amount" required />
-            <input type="text" id="expenseCategory" placeholder="Category" required />
+          <p class="helper-text">Track each expense with amount, category, and date for better monthly insights.</p>
+          <form id="expenseForm" class="stack-form">
+            <label for="expenseAmount">Expense Amount (₹)</label>
+            <input type="number" id="expenseAmount" placeholder="e.g., 2500" min="0" step="0.01" required />
+
+            <label for="expenseCategory">Category</label>
+            <input type="text" id="expenseCategory" placeholder="e.g., Rent, Marketing, Travel" required />
+
+            <label for="expenseDate">Expense Date</label>
             <input type="date" id="expenseDate" required />
             <button type="submit">Add Expense</button>
           </form>
@@ -70,7 +78,31 @@
       <!-- OVERVIEW -->
       <section class="card">
         <h2>Monthly Overview</h2>
-        <p id="monthlyOverview">Add data to see summary</p>
+        <div id="monthlyOverview" class="overview-grid">
+          <div class="overview-item">
+            <h3>Total Monthly Expenses</h3>
+            <p id="monthlyExpensesValue">₹0.00</p>
+          </div>
+          <div class="overview-item">
+            <h3>Top Spending Category</h3>
+            <p id="topCategoryValue">No expenses yet</p>
+          </div>
+          <div class="overview-item">
+            <h3>Savings Status</h3>
+            <p id="savingsStatusValue">Add income and expenses to view status</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Recent Expenses</h2>
+        <ul id="recentExpenses" class="recent-list">
+          <li class="empty-state">No expenses added yet.</li>
+        </ul>
+      </section>
+
+      <section class="trust-note" aria-label="Trust note">
+        🔒 Your data is stored locally in your browser
       </section>
 
     </section>
@@ -81,12 +113,12 @@
       <div class="card">
         <h2>AI Assistant</h2>
 
-        <form id="assistantForm">
+        <form id="assistantForm" class="inline-form">
           <input type="text" id="assistantQuestion" placeholder="Ask something..." required />
           <button type="submit">Ask AI</button>
         </form>
 
-        <p id="assistantResponse">Ask a question to get help</p>
+        <p id="assistantResponse" class="assistant-response">Ask a question to get help</p>
       </div>
 
     </section>
