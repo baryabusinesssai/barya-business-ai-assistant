@@ -15,6 +15,13 @@ const totalExpensesElement = document.getElementById("totalExpenses");
 const netSavingsElement = document.getElementById("netSavings");
 const monthlyOverviewElement = document.getElementById("monthlyOverview");
 
+const tabButtons = document.querySelectorAll(".tab-button");
+const tabPanels = document.querySelectorAll(".tab-panel");
+
+const assistantForm = document.getElementById("assistantForm");
+const assistantQuestionInput = document.getElementById("assistantQuestion");
+const assistantResponseElement = document.getElementById("assistantResponse");
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -97,6 +104,31 @@ function updateDashboard() {
   )}, Expenses ${formatCurrency(totalExpenses)}, Net Savings ${formatCurrency(netSavings)}. ${topCategoryText}`;
 }
 
+function switchTab(targetTabId) {
+  tabButtons.forEach((button) => {
+    const isActive = button.dataset.tab === targetTabId;
+    button.classList.toggle("active", isActive);
+  });
+
+  tabPanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.id === targetTabId);
+  });
+}
+
+function getAssistantResponse(question) {
+  const lowerQuestion = question.toLowerCase();
+
+  if (lowerQuestion.includes("saving money") || lowerQuestion.includes("save money")) {
+    return "Saving tips: track daily spending, set a small monthly savings goal, and reduce one non-essential expense like subscriptions or takeout.";
+  }
+
+  if (lowerQuestion.includes("business ideas") || lowerQuestion.includes("startup ideas")) {
+    return "Simple startup ideas: online reselling, social media management for small businesses, and a home-based food/snack business.";
+  }
+
+  return "I can help with saving money tips or simple business ideas. Try asking one of those topics.";
+}
+
 incomeForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -131,6 +163,23 @@ expenseForm.addEventListener("submit", (event) => {
   saveExpenses(expenses);
   expenseForm.reset();
   updateDashboard();
+});
+
+assistantForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const question = assistantQuestionInput.value.trim();
+  if (!question) {
+    return;
+  }
+
+  assistantResponseElement.textContent = getAssistantResponse(question);
+});
+
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    switchTab(button.dataset.tab);
+  });
 });
 
 updateDashboard();

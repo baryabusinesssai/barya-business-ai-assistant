@@ -29,11 +29,43 @@ body {
 
 .hero {
   text-align: center;
+  margin: 1.25rem 0 1rem;
   margin: 1.25rem 0 1.5rem;
 }
 
 .hero p {
   color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-button {
+  width: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab-button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
 }
 
 .card {
@@ -114,6 +146,16 @@ button:hover {
   color: var(--muted);
 }
 
+.assistant-response {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.assistant-response h3 {
+  margin: 0 0 0.45rem;
+}
+
 .positive {
   color: var(--success);
 }
@@ -126,5 +168,9 @@ button:hover {
   .dashboard-grid,
   .forms-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
   }
 }
