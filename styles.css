@@ -96,8 +96,15 @@ body {
 
 .card h2 {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
   font-size: 1.2rem;
+}
+
+.helper-text {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.92rem;
 }
 
 .dashboard-grid {
@@ -137,14 +144,21 @@ body {
   gap: 1rem;
 }
 
-.form {
+.stack-form {
   display: grid;
   gap: 0.65rem;
 }
 
+.inline-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
 label {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 input,
@@ -169,7 +183,7 @@ input:focus {
 }
 
 button {
-  margin-top: 0.4rem;
+  margin-top: 0.2rem;
   border: none;
   color: #fff;
   background: var(--primary);
@@ -183,20 +197,62 @@ button:hover {
   transform: translateY(-1px);
 }
 
-.overview-text {
+.overview-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.overview-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #fbfdff;
+}
+
+.overview-item h3 {
   margin: 0;
-  line-height: 1.6;
+  font-size: 0.92rem;
   color: var(--muted);
+}
+
+.overview-item p {
+  margin: 0.45rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.recent-list {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.recent-list li {
+  color: var(--text);
+}
+
+.empty-state {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.trust-note {
+  margin: 0.8rem 0 1.2rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: #f8fbff;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .assistant-response {
   margin-top: 1rem;
   padding-top: 0.9rem;
   border-top: 1px solid var(--border);
-}
-
-.assistant-response h3 {
-  margin: 0 0 0.45rem;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
 .positive {
@@ -228,8 +284,8 @@ button:hover {
   .tab-button {
     flex: 1 1 100%;
   }
-}
-  .tabs {
-    flex-wrap: wrap;
+
+  .inline-form {
+    grid-template-columns: 1fr;
   }
 }
