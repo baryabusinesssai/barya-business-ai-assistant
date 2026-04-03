@@ -267,6 +267,36 @@ button:hover {
   white-space: pre-line;
 }
 
+.advisor-response {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.advisor-block + .advisor-block {
+  margin-top: 0.9rem;
+}
+
+.advisor-block h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.advisor-block p,
+.advisor-block ol,
+.advisor-block ul {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.advisor-block ol,
+.advisor-block ul {
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
 .positive {
   color: var(--success);
 }

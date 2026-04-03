@@ -13,6 +13,7 @@ const tabPanels = document.querySelectorAll(".tab-panel");
 const incomeForm = document.getElementById("incomeForm");
 const expenseForm = document.getElementById("expenseForm");
 const assistantForm = document.getElementById("assistantForm");
+const businessAdvisorForm = document.getElementById("businessAdvisorForm");
 const currencySelect = document.getElementById("currencySelect");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
@@ -20,6 +21,7 @@ const expenseAmountInput = document.getElementById("expenseAmount");
 const expenseCategoryInput = document.getElementById("expenseCategory");
 const expenseDateInput = document.getElementById("expenseDate");
 const assistantQuestionInput = document.getElementById("assistantQuestion");
+const businessIdeaInput = document.getElementById("businessIdeaInput");
 
 const totalIncomeElement = document.getElementById("totalIncome");
 const totalExpensesElement = document.getElementById("totalExpenses");
@@ -29,6 +31,7 @@ const topCategoryValue = document.getElementById("topCategoryValue");
 const savingsStatusValue = document.getElementById("savingsStatusValue");
 const recentExpensesElement = document.getElementById("recentExpenses");
 const assistantResponseElement = document.getElementById("assistantResponse");
+const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
 
 const state = {
   income: 0,
@@ -216,6 +219,119 @@ function getAssistantResponse(question) {
   return "🤖 I can help with saving money, business ideas, income growth, and expense control. Ask a specific question to get a practical plan.";
 }
 
+function getBusinessAdvisorTemplate(type) {
+  const templates = {
+    clothing: {
+      summary: "You are planning a clothing business. Start with one clear style or target audience to keep things simple.",
+      steps: [
+        "Pick one niche (for example: kidswear, office wear, or streetwear).",
+        "Source 5-10 starter products from reliable suppliers.",
+        "Test demand by selling to friends, community groups, or social media first.",
+        "Set simple pricing that covers product cost, delivery, and profit.",
+        "Collect feedback from first buyers and improve quickly."
+      ],
+      tips: [
+        "Use clear size charts to reduce returns.",
+        "Start with small inventory to avoid unsold stock.",
+        "Share real photos and customer reviews for trust."
+      ]
+    },
+    food: {
+      summary: "You are planning a food business. Focus on quality, hygiene, and one strong menu concept.",
+      steps: [
+        "Choose a simple menu with 3-5 best items.",
+        "Calculate food cost per item before setting prices.",
+        "Get required local food permits and follow hygiene rules.",
+        "Start with home delivery, pre-orders, or weekend stalls.",
+        "Track popular items and remove slow sellers."
+      ],
+      tips: [
+        "Consistency in taste matters more than a large menu.",
+        "Use clean, practical packaging that keeps food fresh.",
+        "Ask every customer for quick feedback and improve weekly."
+      ]
+    },
+    online: {
+      summary: "You are planning an online business. Begin with one problem to solve and one audience to serve.",
+      steps: [
+        "Define who your ideal customer is and what they struggle with.",
+        "Create a simple offer (product, service, or digital download).",
+        "Set up one sales channel first (social page or simple website).",
+        "Post helpful content regularly to build trust and traffic.",
+        "Measure clicks, inquiries, and sales every week."
+      ],
+      tips: [
+        "Keep your message simple: problem, solution, benefit.",
+        "Start small and improve based on customer behavior.",
+        "Build an email or contact list from day one."
+      ]
+    },
+    service: {
+      summary: "You are planning a service business. Start with one skill-based service that delivers clear results.",
+      steps: [
+        "Choose one core service you can deliver confidently.",
+        "Create a basic package with clear scope and pricing.",
+        "Offer your service to your first 3-5 clients for proof and testimonials.",
+        "Use a simple contract, timeline, and payment terms.",
+        "Ask for referrals after each successful project."
+      ],
+      tips: [
+        "Be very clear about what is included in your service.",
+        "Good communication is as important as technical skill.",
+        "Track time and profit per project to avoid underpricing."
+      ]
+    },
+    general: {
+      summary: "You have a business idea and want a clear beginner plan. Start small, test early, and learn from real customers.",
+      steps: [
+        "Write your idea in one sentence and define your target customer.",
+        "List startup costs and choose a budget you can manage safely.",
+        "Build a basic version of your offer and test it quickly.",
+        "Talk to at least 10 potential customers and refine your idea.",
+        "Track income, expenses, and feedback from day one."
+      ],
+      tips: [
+        "Progress is better than perfection at the start.",
+        "Keep costs low until you see consistent demand.",
+        "Review your plan every month and adjust based on results."
+      ]
+    }
+  };
+
+  return templates[type] || templates.general;
+}
+
+function detectBusinessType(idea) {
+  const text = idea.toLowerCase();
+
+  if (text.includes("clothing")) return "clothing";
+  if (text.includes("food")) return "food";
+  if (text.includes("online business")) return "online";
+  if (text.includes("service business")) return "service";
+
+  return "general";
+}
+
+function renderBusinessAdvisorResponse(advice) {
+  const stepsHtml = advice.steps.map((step) => `<li>${step}</li>`).join("");
+  const tipsHtml = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
+
+  businessAdvisorResponseElement.innerHTML = `
+    <section class="advisor-block">
+      <h3>Basic Idea Summary</h3>
+      <p>${advice.summary}</p>
+    </section>
+    <section class="advisor-block">
+      <h3>Simple Steps to Start</h3>
+      <ol>${stepsHtml}</ol>
+    </section>
+    <section class="advisor-block">
+      <h3>Tips for Beginners</h3>
+      <ul>${tipsHtml}</ul>
+    </section>
+  `;
+}
+
 function initTabs() {
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -283,6 +399,17 @@ assistantForm.addEventListener("submit", (event) => {
   setTimeout(() => {
     assistantResponseElement.textContent = getAssistantResponse(question);
   }, 300);
+});
+
+businessAdvisorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const idea = businessIdeaInput.value.trim();
+  if (!idea) return;
+
+  const businessType = detectBusinessType(idea);
+  const advice = getBusinessAdvisorTemplate(businessType);
+  renderBusinessAdvisorResponse(advice);
 });
 
 loadSelectedCurrency();
