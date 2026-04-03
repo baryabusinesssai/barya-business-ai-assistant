@@ -17,6 +17,24 @@ const DAILY_TIPS = [
   "Focus spending on tools that improve your business productivity."
 ];
 
+const WEEKLY_CHALLENGES = [
+  "Track every expense for the next 7 days.",
+  "Reduce unnecessary spending this week.",
+  "Set a spending limit for one category and stay under it.",
+  "Review your business subscriptions and cancel one unused tool.",
+  "Avoid impulse purchases for the full week.",
+  "Plan your next week's expenses before the weekend."
+];
+
+const MONTHLY_GOALS = [
+  "Save ₹1000 this month.",
+  "Cut shopping expenses by 10%.",
+  "Reduce one business cost and keep that saving for next month.",
+  "Increase your savings rate by 5%.",
+  "Track all cash and online spending for the full month.",
+  "Build or add to your emergency fund this month."
+];
+
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 
@@ -52,6 +70,8 @@ const recurringExpensesListElement = document.getElementById("recurringExpensesL
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
 const dailyTipTextElement = document.getElementById("dailyTipText");
+const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
+const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
 
 const state = {
   income: 0,
@@ -322,6 +342,32 @@ function renderDailyTip() {
   dailyTipTextElement.textContent = DAILY_TIPS[tipIndex];
 }
 
+function getWeekIndex(date = new Date()) {
+  const year = date.getFullYear();
+  const normalizedDate = new Date(year, date.getMonth(), date.getDate());
+  const yearStart = new Date(year, 0, 1);
+  const daysSinceYearStart = Math.floor((normalizedDate - yearStart) / (24 * 60 * 60 * 1000));
+  return Math.floor(daysSinceYearStart / 7);
+}
+
+function getMonthIndex(date = new Date()) {
+  return date.getMonth();
+}
+
+function renderGrowthEngagement() {
+  renderDailyTip();
+
+  if (weeklyChallengeTextElement && WEEKLY_CHALLENGES.length) {
+    const weeklyChallengeIndex = getWeekIndex() % WEEKLY_CHALLENGES.length;
+    weeklyChallengeTextElement.textContent = WEEKLY_CHALLENGES[weeklyChallengeIndex];
+  }
+
+  if (monthlyGoalTextElement && MONTHLY_GOALS.length) {
+    const monthlyGoalIndex = getMonthIndex() % MONTHLY_GOALS.length;
+    monthlyGoalTextElement.textContent = MONTHLY_GOALS[monthlyGoalIndex];
+  }
+}
+
 function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
   if (!insightTopCategoryElement || !insightMonthlyExpenseElement || !insightSavingsStatusElement || !insightSuggestionElement) {
     return;
@@ -393,7 +439,7 @@ function renderDashboard() {
   topCategoryValue.textContent = getTopCategory(monthlyExpenses);
   savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
   renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
-  renderDailyTip();
+  renderGrowthEngagement();
 
   renderRecentExpenses();
   renderRecurringExpenses();
