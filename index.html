@@ -22,19 +22,8 @@
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
       <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
       <button class="tab-button" data-tab="ideaGeneratorTab">Idea Generator</button>
+      <button class="tab-button" data-tab="settingsTab">Settings</button>
     </nav>
-
-    <section class="card currency-card" aria-label="Currency settings">
-      <h2>Currency</h2>
-      <div class="currency-selector">
-        <label for="currencySelect">Display currency</label>
-        <select id="currencySelect">
-          <option value="INR">INR (₹)</option>
-          <option value="USD">USD ($)</option>
-          <option value="EUR">EUR (€)</option>
-        </select>
-      </div>
-    </section>
 
     <!-- DASHBOARD -->
     <section id="dashboardTab" class="tab-panel active">
@@ -260,6 +249,34 @@
         </form>
 
         <p id="generatedIdeaText" class="idea-output">Click “Generate Idea” to see a business idea.</p>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settingsTab" class="tab-panel">
+      <div class="card">
+        <h2>Settings</h2>
+        <p class="helper-text">Choose your preferences once and the app will remember them on this device.</p>
+
+        <form id="settingsForm" class="stack-form">
+          <label for="currencySelect">Display currency</label>
+          <select id="currencySelect">
+            <option value="INR">INR (₹)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+          </select>
+
+          <label for="settingsGoalSelect">Default goal</label>
+          <select id="settingsGoalSelect">
+            <option value="Save Money">Save Money</option>
+            <option value="Start a Business">Start Business</option>
+            <option value="Learn Finance">Learn Finance</option>
+          </select>
+
+          <button type="submit">Save Settings</button>
+        </form>
+
+        <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
       </div>
     </section>
 
