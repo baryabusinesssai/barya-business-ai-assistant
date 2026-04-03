@@ -97,12 +97,7 @@ const IDEA_LIBRARY = {
   ]
 };
 
-const state = {
-  income: 0,
-  expenses: [],
-  recurringExpenses: []
-};
-
+const state = { income: 0, expenses: [], recurringExpenses: [] };
 let selectedCurrency = "INR";
 let selectedGoal = "";
 
@@ -157,16 +152,11 @@ const els = {
   selectedGoalDisplay: document.getElementById("selectedGoalDisplay"),
   goalTipsList: document.getElementById("goalTipsList"),
   goalGuidanceSummary: document.getElementById("goalGuidanceSummary"),
-  changeGoalButton: document.querySelector(".change-goal-button"),
 
   dailyTipText: document.getElementById("dailyTipText"),
   weeklyChallengeText: document.getElementById("weeklyChallengeText"),
   monthlyGoalText: document.getElementById("monthlyGoalText")
 };
-
-const state = { income: 0, expenses: [], recurringExpenses: [] };
-let selectedCurrency = "INR";
-let selectedGoal = "";
 
 function safeParseJSON(raw, fallback) {
   try {
@@ -183,9 +173,6 @@ function todayYMD() {
 }
 
 function parseYMDToDate(ymd) {
-  const [y, m, d] = (ymd || "").split("-").map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d);
   const [year, month, day] = (ymd || "").split("-").map(Number);
   if (!year || !month || !day) return null;
   return new Date(year, month - 1, day);
@@ -199,20 +186,6 @@ function daysBetween(start, end) {
   return Math.floor((toStartOfDay(end) - toStartOfDay(start)) / 86400000);
 }
 
-function addDays(date, n) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
-}
-
-function getMonthDay(year, month, day) {
-  const max = new Date(year, month + 1, 0).getDate();
-  return new Date(year, month, Math.min(day, max));
-}
-
-function formatCurrency(value) {
-  const currency = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
-  return new Intl.NumberFormat(currency.locale, {
-    style: "currency",
-    currency: currency.code,
 function formatCurrency(value) {
   const currencyConfig = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
   return new Intl.NumberFormat(currencyConfig.locale, {
@@ -228,7 +201,6 @@ function saveState() {
 }
 
 function loadState() {
-  const parsed = safeParseJSON(localStorage.getItem(STORAGE_KEY), {});
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
 
@@ -258,11 +230,6 @@ function saveSettings() {
 }
 
 function loadSettings() {
-  const parsed = safeParseJSON(localStorage.getItem(SETTINGS_STORAGE_KEY), {});
-  const rawCurrency = parsed.currency || localStorage.getItem(LEGACY_CURRENCY_STORAGE_KEY);
-  const rawGoal = parsed.goal || localStorage.getItem(LEGACY_GOAL_STORAGE_KEY);
-
-  if (rawCurrency && CURRENCIES[rawCurrency]) selectedCurrency = rawCurrency;
   const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
   const parsed = raw ? safeParseJSON(raw, {}) : {};
 
@@ -277,8 +244,6 @@ function getGoalContent() {
   return GOAL_CONTENT[selectedGoal] || GOAL_CONTENT[DEFAULT_GOAL];
 }
 
-function countRecurringOccurrencesInRange(recurring, rangeStart, rangeEnd) {
-  const startDate = parseYMDToDate(recurring.startDate);
 function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd) {
   const startDate = parseYMDToDate(recurringExpense.startDate);
   if (!startDate) return 0;
@@ -288,17 +253,11 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
   const to = toStartOfDay(rangeEnd);
   if (start > to) return 0;
 
-  if (recurring.frequency === "daily") {
   if (recurringExpense.frequency === "daily") {
     const effectiveStart = start > from ? start : from;
     return daysBetween(effectiveStart, to) + 1;
   }
 
-  if (recurring.frequency === "weekly") {
-    let first = start;
-    if (first < from) {
-      const diff = daysBetween(first, from);
-      first = addDays(first, Math.ceil(diff / 7) * 7);
   if (recurringExpense.frequency === "weekly") {
     let first = start;
     if (first < from) {
@@ -309,14 +268,6 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
     return Math.floor(daysBetween(first, to) / 7) + 1;
   }
 
-  if (recurring.frequency === "monthly") {
-    const day = start.getDate();
-    let y = start.getFullYear();
-    let m = start.getMonth();
-    let occ = getMonthDay(y, m, day);
-    let count = 0;
-
-    while (occ < from) {
   if (recurringExpense.frequency === "monthly") {
     let count = 0;
     let y = start.getFullYear();
@@ -329,18 +280,12 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
     };
 
     let occurrence = makeDate(y, m, day);
-
     while (occurrence < from) {
       m += 1;
       if (m > 11) {
         m = 0;
         y += 1;
       }
-      occ = getMonthDay(y, m, day);
-    }
-
-    while (occ <= to) {
-      if (occ >= start) count += 1;
       occurrence = makeDate(y, m, day);
     }
 
@@ -351,7 +296,6 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
         m = 0;
         y += 1;
       }
-      occ = getMonthDay(y, m, day);
       occurrence = makeDate(y, m, day);
     }
 
@@ -380,29 +324,6 @@ function getCurrentMonthExpenses() {
   });
 
   return [...oneTime, ...recurring];
-}
-
-function getRecurringTotalThroughToday() {
-  const monthEnd = toStartOfDay(now);
-
-  const oneTimeExpenses = state.expenses.filter((expense) => {
-    const d = parseYMDToDate(expense.date) || new Date(expense.date);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-
-  const recurringAsExpenses = [];
-  state.recurringExpenses.forEach((item) => {
-    const occurrenceCount = countRecurringOccurrencesInRange(item, monthStart, monthEnd);
-    for (let i = 0; i < occurrenceCount; i += 1) {
-      recurringAsExpenses.push({
-        amount: Number(item.amount) || 0,
-        category: item.name || "Recurring",
-        date: monthEnd.toISOString().slice(0, 10)
-      });
-    }
-  });
-
-  return [...oneTimeExpenses, ...recurringAsExpenses];
 }
 
 function getRecurringTotalToDate() {
@@ -441,9 +362,9 @@ function updateStatus(text) {
   if (els.settingsStatusText) els.settingsStatusText.textContent = text;
 }
 
-function setSelectedGoal(nextGoal) {
-  if (!GOAL_CONTENT[nextGoal]) return;
-  selectedGoal = nextGoal;
+function setSelectedGoal(goal) {
+  if (!GOAL_CONTENT[goal]) return;
+  selectedGoal = goal;
   saveSettings();
   renderDashboard();
 }
@@ -458,10 +379,6 @@ function renderGoalUI() {
 
   if (els.goalForm) {
     els.goalForm.classList.toggle("hidden", hasGoal);
-  }
-
-  if (els.changeGoalButton) {
-    els.changeGoalButton.classList.toggle("hidden", !hasGoal);
   }
 
   if (els.changeGoalButton) {
@@ -484,67 +401,31 @@ function renderGoalUI() {
 
   if (els.goalTipsList) {
     els.goalTipsList.innerHTML = "";
-    if (!hasGoal) {
-      els.goalTipsList.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
-    } else {
+    if (hasGoal) {
       content.tips.forEach((tip) => {
         const li = document.createElement("li");
         li.textContent = tip;
         els.goalTipsList.appendChild(li);
       });
+    } else {
+      els.goalTipsList.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
     }
   }
 
+  const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
   if (els.dailyTipText) {
-    const dayIdx = Math.floor(toStartOfDay(new Date()).getTime() / 86400000) % content.dailyTips.length;
-    els.dailyTipText.textContent = content.dailyTips[dayIdx];
-  }
-
-  if (els.weeklyChallengeText) {
-    const startYear = new Date(new Date().getFullYear(), 0, 1);
-    const weekIdx = Math.floor(daysBetween(startYear, new Date()) / 7) % content.weeklyChallenges.length;
-    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIdx];
-  }
-
-  if (els.monthlyGoalText) {
-    const monthIdx = new Date().getMonth() % content.monthlyGoals.length;
-    els.monthlyGoalText.textContent = content.monthlyGoals[monthIdx];
-  }
-}
-
-function renderGrowthAndInsights(monthlyExpenses, monthlyExpenseTotal) {
-  const top = getTopCategory(monthlyExpenses);
-  if (els.insightTopCategory) {
-    els.insightTopCategory.textContent =
-      top === "No expenses yet"
-        ? "Your highest spending category is not available yet."
-        : `Your highest spending category is ${top.split(" (")[0]}.`;
-  }
-  if (els.insightMonthlyExpense) {
-    els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  }
-  if (els.insightSavingsStatus) {
-    els.insightSavingsStatus.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
-  }
-  if (els.insightSuggestion) {
-    els.insightSuggestion.textContent =
-      top === "No expenses yet"
-        ? "Add expenses to get a saving suggestion."
-        : `You can save more by reviewing and reducing ${top.split(" (")[0]} expenses.`;
-  const dayIndex = Math.floor(Date.now() / 86400000) % goalContent.dailyTips.length;
-  if (els.dailyTipText) {
-    els.dailyTipText.textContent = goalContent.dailyTips[dayIndex];
+    els.dailyTipText.textContent = content.dailyTips[dayIndex];
   }
 
   if (els.weeklyChallengeText) {
     const now = new Date();
     const startYear = new Date(now.getFullYear(), 0, 1);
-    const weekIndex = Math.floor(daysBetween(startYear, now) / 7) % goalContent.weeklyChallenges.length;
-    els.weeklyChallengeText.textContent = goalContent.weeklyChallenges[weekIndex];
+    const weekIndex = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
+    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
   }
 
   if (els.monthlyGoalText) {
-    els.monthlyGoalText.textContent = goalContent.monthlyGoals[new Date().getMonth() % goalContent.monthlyGoals.length];
+    els.monthlyGoalText.textContent = content.monthlyGoals[new Date().getMonth() % content.monthlyGoals.length];
   }
 }
 
@@ -651,39 +532,6 @@ function getAssistantResponse(question) {
   if (q.includes("income") || q.includes("earn") || q.includes("growth")) {
     return "📈 Improve value, raise pricing carefully, and add one recurring offer for stable monthly income.";
   }
-function updateStatus(text) {
-  if (els.settingsStatusText) {
-    els.settingsStatusText.textContent = text;
-  }
-}
-
-function setDefaultDate() {
-  if (els.expenseDate) {
-    els.expenseDate.value = todayYMD();
-  }
-}
-
-function setSelectedGoal(goal) {
-  if (!GOAL_CONTENT[goal]) return;
-  selectedGoal = goal;
-  saveSettings();
-  renderDashboard();
-}
-
-function getAssistantResponse(question) {
-  const q = question.toLowerCase();
-  if (q.includes("save") || q.includes("budget")) {
-    return "💡 Start by tracking all expenses for 7 days, then set one spending limit and auto-save a fixed amount on income day.";
-  }
-  if (q.includes("expense") || q.includes("cost")) {
-    return "📉 Separate fixed and variable costs, cap one variable category, and review weekly for reductions.";
-  }
-  if (q.includes("business") || q.includes("idea") || q.includes("startup")) {
-    return "🚀 Pick one small idea, test with real customers, and validate before making big investments.";
-  }
-  if (q.includes("income") || q.includes("earn") || q.includes("growth")) {
-    return "📈 Improve value, raise pricing carefully, and add one recurring offer for stable monthly income.";
-  }
   return "🤖 I can help with saving, expenses, business ideas, and growth. Ask a specific question for a practical answer.";
 }
 
@@ -722,29 +570,6 @@ function getBusinessAdvisorTemplate(type) {
       summary: "Start small, validate fast, and adjust based on real customer feedback.",
       steps: ["Define customer and problem.", "Set a safe starter budget.", "Launch a basic version.", "Talk to 10 potential customers."],
       tips: ["Progress over perfection.", "Keep early costs low.", "Review and improve monthly."]
-      summary: "You are planning a clothing business. Start with one target audience and simple inventory.",
-      steps: ["Pick one niche.", "Source small starter stock.", "Test demand with a small launch.", "Track profit per item."],
-      tips: ["Avoid overstocking.", "Use clear size charts.", "Collect customer feedback early."]
-    },
-    food: {
-      summary: "You are planning a food business. Focus on quality, hygiene, and repeat customers.",
-      steps: ["Start with 3-5 menu items.", "Calculate food cost per item.", "Test with pre-orders.", "Track top sellers weekly."],
-      tips: ["Keep taste consistent.", "Use practical packaging.", "Improve based on feedback."]
-    },
-    online: {
-      summary: "You are planning an online business. Start with one audience and one offer.",
-      steps: ["Define customer problem.", "Create one offer.", "Choose one selling channel.", "Measure leads and sales weekly."],
-      tips: ["Keep messaging simple.", "Post regularly.", "Build a customer contact list."]
-    },
-    service: {
-      summary: "You are planning a service business. Package one skill into a clear offer.",
-      steps: ["Define one core service.", "Set scope and pricing.", "Get first clients/testimonials.", "Use clear payment terms."],
-      tips: ["Communicate clearly.", "Track time per project.", "Ask for referrals."]
-    },
-    general: {
-      summary: "You have a business idea and want a beginner plan. Start small and validate quickly.",
-      steps: ["Write a one-line idea.", "Estimate startup cost.", "Test a small version.", "Collect feedback and adjust."],
-      tips: ["Keep risk low.", "Track income/expenses from day one.", "Improve monthly."]
     }
   };
 
@@ -753,9 +578,6 @@ function getBusinessAdvisorTemplate(type) {
 
 function renderBusinessAdvisorResponse(advice) {
   if (!els.businessAdvisorResponse) return;
-  const steps = advice.steps.map((step) => `<li>${step}</li>`).join("");
-  const tips = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
-
   const steps = advice.steps.map((step) => `<li>${step}</li>`).join("");
   const tips = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
 
@@ -776,7 +598,6 @@ function renderBusinessAdvisorResponse(advice) {
 }
 
 function getRandomIdea(category) {
-  const pool = category === "all" ? Object.values(IDEA_LIBRARY).flat() : IDEA_LIBRARY[category] || [];
   const all = Object.values(IDEA_LIBRARY).flat();
   const pool = category === "all" ? all : IDEA_LIBRARY[category] || [];
   if (!pool.length) return "No ideas available right now. Please try another category.";
