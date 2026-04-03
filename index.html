@@ -21,6 +21,7 @@
       <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
       <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
+      <button class="tab-button" data-tab="ideaGeneratorTab">Idea Generator</button>
     </nav>
 
     <section class="card currency-card" aria-label="Currency settings">
@@ -213,6 +214,27 @@
         <div id="businessAdvisorResponse" class="advisor-response" aria-live="polite">
           <p class="empty-state">Share your idea to get a basic summary, simple first steps, and tips.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- IDEA GENERATOR -->
+    <section id="ideaGeneratorTab" class="tab-panel">
+      <div class="card">
+        <h2>Idea Generator</h2>
+        <p class="helper-text">Pick a category (optional) and generate a simple business idea.</p>
+
+        <form id="ideaGeneratorForm" class="stack-form">
+          <label for="ideaCategorySelect">Category</label>
+          <select id="ideaCategorySelect">
+            <option value="all">All Categories</option>
+            <option value="lowInvestment">Low Investment</option>
+            <option value="onlineEarning">Online Earning</option>
+            <option value="smallBusiness">Small Business</option>
+          </select>
+          <button type="submit">Generate Idea</button>
+        </form>
+
+        <p id="generatedIdeaText" class="idea-output">Click “Generate Idea” to see a business idea.</p>
       </div>
     </section>
 
