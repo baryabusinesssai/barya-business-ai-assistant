@@ -86,6 +86,26 @@
           </form>
         </div>
 
+        <div class="card">
+          <h2>Add Recurring Expense</h2>
+          <p class="helper-text">Add expenses that repeat daily, weekly, or monthly.</p>
+          <form id="recurringExpenseForm" class="stack-form">
+            <label for="recurringExpenseName">Name</label>
+            <input type="text" id="recurringExpenseName" placeholder="e.g., Office Rent" required />
+
+            <label for="recurringExpenseAmount">Amount</label>
+            <input type="number" id="recurringExpenseAmount" placeholder="e.g., 5000" min="0" step="0.01" required />
+
+            <label for="recurringExpenseFrequency">Frequency</label>
+            <select id="recurringExpenseFrequency" required>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <button type="submit">Add Recurring Expense</button>
+          </form>
+        </div>
+
       </section>
 
       <!-- OVERVIEW -->
@@ -122,6 +142,13 @@
         <h2>Recent Expenses</h2>
         <ul id="recentExpenses" class="recent-list">
           <li class="empty-state">No expenses added yet.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Recurring Expenses</h2>
+        <ul id="recurringExpensesList" class="recent-list">
+          <li class="empty-state">No recurring expenses added yet.</li>
         </ul>
       </section>
 
