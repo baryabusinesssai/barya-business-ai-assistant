@@ -370,6 +370,16 @@ button:hover {
   gap: 0.35rem;
 }
 
+.idea-output {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .positive {
   color: var(--success);
 }

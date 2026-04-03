@@ -80,6 +80,24 @@ const GOAL_CONTENT = {
   }
 };
 
+const IDEA_LIBRARY = {
+  lowInvestment: [
+    "Start a home-based snack business",
+    "Offer mobile phone photography services for local shops",
+    "Start a local errand and delivery service"
+  ],
+  onlineEarning: [
+    "Sell products on Instagram",
+    "Freelancing in graphic design",
+    "Online tutoring"
+  ],
+  smallBusiness: [
+    "Start a custom gift packaging business",
+    "Open a neighborhood tiffin service",
+    "Begin a home-based tailoring service"
+  ]
+};
+
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 
@@ -89,6 +107,7 @@ const recurringExpenseForm = document.getElementById("recurringExpenseForm");
 const goalForm = document.getElementById("goalForm");
 const assistantForm = document.getElementById("assistantForm");
 const businessAdvisorForm = document.getElementById("businessAdvisorForm");
+const ideaGeneratorForm = document.getElementById("ideaGeneratorForm");
 const currencySelect = document.getElementById("currencySelect");
 const goalSelect = document.getElementById("goalSelect");
 const changeGoalButton = document.getElementById("changeGoalButton");
@@ -102,6 +121,7 @@ const recurringExpenseAmountInput = document.getElementById("recurringExpenseAmo
 const recurringExpenseFrequencyInput = document.getElementById("recurringExpenseFrequency");
 const assistantQuestionInput = document.getElementById("assistantQuestion");
 const businessIdeaInput = document.getElementById("businessIdeaInput");
+const ideaCategorySelect = document.getElementById("ideaCategorySelect");
 
 const totalIncomeElement = document.getElementById("totalIncome");
 const totalExpensesElement = document.getElementById("totalExpenses");
@@ -117,6 +137,7 @@ const recentExpensesElement = document.getElementById("recentExpenses");
 const recurringExpensesListElement = document.getElementById("recurringExpensesList");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
+const generatedIdeaTextElement = document.getElementById("generatedIdeaText");
 const dailyTipTextElement = document.getElementById("dailyTipText");
 const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
 const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
@@ -778,6 +799,17 @@ function initGoalMode() {
       }
     });
   }
+function getRandomIdea(category) {
+  const categoryIdeas = IDEA_LIBRARY[category] || [];
+  const allIdeas = Object.values(IDEA_LIBRARY).flat();
+  const ideaPool = category === "all" ? allIdeas : categoryIdeas;
+
+  if (!ideaPool.length) {
+    return "No ideas available right now. Please try another category.";
+  }
+
+  const randomIndex = Math.floor(Math.random() * ideaPool.length);
+  return ideaPool[randomIndex];
 }
 
 incomeForm.addEventListener("submit", (event) => {
@@ -858,6 +890,19 @@ businessAdvisorForm.addEventListener("submit", (event) => {
   const advice = getBusinessAdvisorTemplate(businessType);
   renderBusinessAdvisorResponse(advice);
 });
+
+if (ideaGeneratorForm) {
+  ideaGeneratorForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const selectedCategory = ideaCategorySelect ? ideaCategorySelect.value : "all";
+    const idea = getRandomIdea(selectedCategory);
+
+    if (generatedIdeaTextElement) {
+      generatedIdeaTextElement.textContent = idea;
+    }
+  });
+}
 
 loadSelectedCurrency();
 loadSelectedGoal();
