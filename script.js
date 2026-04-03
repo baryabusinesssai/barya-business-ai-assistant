@@ -1,5 +1,9 @@
 const STORAGE_KEY = "barya-finance-data-v1";
 const SETTINGS_STORAGE_KEY = "barya-settings-v1";
+const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
+const GOAL_STORAGE_KEY = "barya-beginner-goal-v1";
+const GOAL_STORAGE_KEY = "barya-selected-goal-v1";
+const SETTINGS_STORAGE_KEY = "barya-user-settings-v1";
 
 const CURRENCIES = {
   INR: { locale: "en-IN", code: "INR", symbol: "₹" },
@@ -113,6 +117,9 @@ const goalSelect = document.getElementById("goalSelect");
 const settingsGoalSelect = document.getElementById("settingsGoalSelect");
 const changeGoalButton = document.getElementById("changeGoalButton");
 const resetDataButton = document.getElementById("resetDataButton");
+const settingsGoalSelect = document.getElementById("settingsGoalSelect");
+const resetDataButton = document.getElementById("resetDataButton");
+const settingsStatusText = document.getElementById("settingsStatusText");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
@@ -143,6 +150,11 @@ const generatedIdeaTextElement = document.getElementById("generatedIdeaText");
 const dailyTipTextElement = document.getElementById("dailyTipText");
 const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
 const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
+const goalSelectionElement = document.getElementById("goalSelection");
+const goalSummaryElement = document.getElementById("goalSummary");
+const selectedGoalTextElement = document.getElementById("selectedGoalText");
+const changeGoalButton = document.getElementById("changeGoalButton");
+const goalOptionButtons = document.querySelectorAll(".goal-option-button");
 const selectedGoalDisplayElement = document.getElementById("selectedGoalDisplay");
 const goalGuidanceSummaryElement = document.getElementById("goalGuidanceSummary");
 const goalTipsListElement = document.getElementById("goalTipsList");
@@ -154,6 +166,7 @@ const state = {
 };
 
 let selectedCurrency = "INR";
+let selectedGoal = "Save Money";
 let selectedGoal = "";
 
 function formatCurrency(value) {
@@ -348,6 +361,69 @@ function syncSettingsInputs() {
 
   if (settingsGoalSelect) {
     settingsGoalSelect.value = selectedGoal || "Save Money";
+function saveSelectedCurrency() {
+  saveSettings();
+  localStorage.setItem(CURRENCY_STORAGE_KEY, selectedCurrency);
+}
+
+function loadSelectedCurrency() {
+  const settings = loadSettings();
+  if (settings.currency && CURRENCIES[settings.currency]) {
+    selectedCurrency = settings.currency;
+    return;
+  }
+
+  const legacyCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+  if (legacyCurrency && CURRENCIES[legacyCurrency]) {
+    selectedCurrency = legacyCurrency;
+  }
+}
+
+function saveSelectedGoal() {
+  saveSettings();
+  if (!selectedGoal) {
+    localStorage.removeItem(GOAL_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(GOAL_STORAGE_KEY, selectedGoal);
+}
+
+function loadSelectedGoal() {
+  const settings = loadSettings();
+  if (settings.goal && GOAL_CONTENT[settings.goal]) {
+    selectedGoal = settings.goal;
+    return;
+  }
+
+  const legacyGoal = localStorage.getItem(GOAL_STORAGE_KEY);
+  if (legacyGoal && GOAL_CONTENT[legacyGoal]) {
+    selectedGoal = legacyGoal;
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem(
+    SETTINGS_STORAGE_KEY,
+    JSON.stringify({
+      currency: selectedCurrency,
+      goal: selectedGoal
+    })
+  );
+}
+
+function loadSettings() {
+  const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+  if (!raw) return {};
+
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      currency: parsed.currency,
+      goal: parsed.goal
+    };
+  } catch {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    return {};
   }
 }
 
@@ -429,8 +505,18 @@ function getSavingsLevel(income, monthlyExpenseTotal) {
 }
 
 function getSavingSuggestion(topCategory) {
+  const goalContent = getCurrentGoalContent();
+
   if (!topCategory) {
-    return "Add a few expenses this month to get a personalized saving suggestion.";
+    return goalContent.suggestionFallback;
+  }
+
+  if (selectedGoal === "Start a Business") {
+    return `Reduce ${topCategory.name} costs and move that money to business growth tasks.`;
+  }
+
+  if (selectedGoal === "Learn Finance") {
+    return `Use ${topCategory.name} spending as a learning point to improve your budget.`;
   }
 
   return `You can save more by reducing ${topCategory.name} expenses.`;
@@ -464,6 +550,8 @@ function getMonthIndex(date = new Date()) {
 }
 
 function renderGrowthEngagement() {
+  const goalContent = getCurrentGoalContent();
+  renderDailyTip();
   const goalContent = getGoalContent();
   renderDailyTip(goalContent);
 
@@ -490,6 +578,10 @@ function renderGoalSection() {
 
   if (goalSelect) {
     goalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
+  }
+
+  if (settingsGoalSelect) {
+    settingsGoalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
   }
 
   if (goalForm) {
@@ -524,12 +616,13 @@ function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
 
   const topCategory = getHighestSpendingCategory(monthlyExpenses);
   const savingsLevel = getSavingsLevel(state.income, monthlyExpenseTotal);
+  const goalContent = getCurrentGoalContent();
 
   insightTopCategoryElement.textContent = topCategory
     ? `Your highest spending category is ${topCategory.name}.`
     : "Your highest spending category is not available yet.";
   insightMonthlyExpenseElement.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  insightSavingsStatusElement.textContent = `Your savings are ${savingsLevel} this month.`;
+  insightSavingsStatusElement.textContent = `${goalContent.insightPrefix}: Your savings are ${savingsLevel} this month.`;
   insightSuggestionElement.textContent = getSavingSuggestion(topCategory);
 }
 
@@ -823,8 +916,48 @@ function initSettings() {
       renderDashboard();
     });
   }
+    selectedCurrency = nextCurrency;
+    saveSelectedCurrency();
+    renderDashboard();
+    if (settingsStatusText) {
+      settingsStatusText.textContent = "Settings saved.";
+    }
+  });
 }
 
+function applySelectedGoal(goalValue) {
+  if (!GOAL_CONTENT[goalValue]) return;
+  selectedGoal = goalValue;
+  saveSelectedGoal();
+  if (goalForm) {
+    goalForm.classList.add("hidden");
+  }
+  renderDashboard();
+}
+
+function initGoalSelector() {
+  if (!goalOptionButtons.length) return;
+
+  goalOptionButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextGoal = button.dataset.goal;
+      if (!GOAL_CONTENT[nextGoal]) return;
+
+      selectedGoal = nextGoal;
+      saveSelectedGoal();
+      updateGoalUiState();
+      renderDashboard();
+    });
+  });
+
+  if (changeGoalButton) {
+    changeGoalButton.addEventListener("click", () => {
+      localStorage.removeItem(GOAL_STORAGE_KEY);
+      updateGoalUiState();
+    });
+  }
+
+  updateGoalUiState();
 function initGoalMode() {
   if (goalForm) {
     goalForm.addEventListener("submit", (event) => {
@@ -837,6 +970,7 @@ function initGoalMode() {
       syncSettingsInputs();
       goalForm.classList.add("hidden");
       renderDashboard();
+      applySelectedGoal(goalValue);
     });
   }
 
@@ -848,6 +982,51 @@ function initGoalMode() {
       if (goalSelect) {
         goalSelect.value = selectedGoal || "Save Money";
         goalSelect.focus();
+      }
+    });
+  }
+}
+
+function initSettings() {
+  if (settingsGoalSelect) {
+    settingsGoalSelect.value = selectedGoal || "Save Money";
+    settingsGoalSelect.addEventListener("change", (event) => {
+      applySelectedGoal(event.target.value);
+      if (settingsStatusText) {
+        settingsStatusText.textContent = "Settings saved.";
+      }
+    });
+  }
+
+  if (resetDataButton) {
+    resetDataButton.addEventListener("click", () => {
+      state.income = 0;
+      state.expenses = [];
+      state.recurringExpenses = [];
+      selectedGoal = "";
+      selectedCurrency = "INR";
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CURRENCY_STORAGE_KEY);
+      localStorage.removeItem(GOAL_STORAGE_KEY);
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+
+      if (currencySelect) {
+        currencySelect.value = selectedCurrency;
+      }
+
+      if (settingsGoalSelect) {
+        settingsGoalSelect.value = "Save Money";
+      }
+
+      if (goalForm) {
+        goalForm.classList.remove("hidden");
+      }
+
+      renderDashboard();
+
+      if (settingsStatusText) {
+        settingsStatusText.textContent = "All local data has been reset.";
       }
     });
   }
@@ -965,4 +1144,8 @@ initTabs();
 initSettings();
 initGoalMode();
 syncSettingsInputs();
+initCurrencySelector();
+initGoalSelector();
+initGoalMode();
+initSettings();
 renderDashboard();

@@ -45,6 +45,20 @@
         </form>
       </section>
 
+      <section class="card beginner-mode-card" aria-live="polite">
+        <h2>Beginner Mode</h2>
+        <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
+        <div id="goalSelection" class="goal-selection">
+          <button type="button" class="goal-option-button" data-goal="Save Money">Save Money</button>
+          <button type="button" class="goal-option-button" data-goal="Start a Business">Start a Business</button>
+          <button type="button" class="goal-option-button" data-goal="Learn Finance">Learn Finance</button>
+        </div>
+        <div id="goalSummary" class="goal-summary" hidden>
+          <p class="goal-summary-line">Selected Goal: <strong id="selectedGoalText">Save Money</strong></p>
+          <button type="button" id="changeGoalButton" class="secondary-button">Change Goal</button>
+        </div>
+      </section>
+
       <!-- METRICS -->
       <section class="card">
         <h2>Dashboard</h2>
@@ -277,6 +291,33 @@
         </form>
 
         <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
+    <section id="settingsTab" class="tab-panel">
+      <div class="card">
+        <h2>Settings</h2>
+        <p class="helper-text">Update your preferences once, and the full website will use them automatically.</p>
+
+        <div class="settings-grid">
+          <div class="currency-selector">
+            <label for="currencySelect">Display Currency</label>
+            <select id="currencySelect">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+
+          <div class="currency-selector">
+            <label for="settingsGoalSelect">Goal</label>
+            <select id="settingsGoalSelect">
+              <option value="Save Money">Save Money</option>
+              <option value="Start a Business">Start Business</option>
+              <option value="Learn Finance">Learn Finance</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
+        <p id="settingsStatusText" class="helper-text settings-status" aria-live="polite"></p>
       </div>
     </section>
 
