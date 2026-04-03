@@ -1,6 +1,7 @@
 const STORAGE_KEY = "barya-finance-data-v1";
 const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
 const GOAL_STORAGE_KEY = "barya-beginner-goal-v1";
+const GOAL_STORAGE_KEY = "barya-selected-goal-v1";
 
 const CURRENCIES = {
   INR: { locale: "en-IN", code: "INR", symbol: "₹" },
@@ -10,62 +11,92 @@ const CURRENCIES = {
 
 const GOAL_CONTENT = {
   "Save Money": {
+    summary: "Focus on spending less, tracking expenses, and building savings step by step.",
+    tips: [
+      "Track every expense daily, even small purchases.",
+      "Set a simple spending limit for one category each week.",
+      "Move a fixed amount to savings as soon as income arrives."
+    ],
     dailyTips: [
-      "Track every small purchase today and check where money leaks.",
-      "Use a simple spending limit for food, transport, and extras.",
-      "Move a small fixed amount to savings as soon as income arrives."
+      "Track one expense immediately after spending.",
+      "Skip one non-essential purchase today.",
+      "Check your wallet and note where money went."
     ],
     weeklyChallenges: [
-      "Do one no-spend day this week.",
-      "Review your top expense and reduce it by 10% for 7 days.",
-      "Compare planned budget vs actual spending once this week."
+      "Stay under your spending limit in one category this week.",
+      "Review last week expenses and cut one unnecessary cost.",
+      "Save the amount of one skipped purchase."
     ],
     monthlyGoals: [
-      "Save at least 10% of your monthly income.",
-      "Cut one non-essential expense and keep that amount as savings.",
-      "Build an emergency fund step-by-step this month."
-    ],
-    insightPrefix: "Saving Focus",
-    suggestionFallback: "Pick one category and reduce spending there this week."
+      "Save a fixed amount this month and keep it untouched.",
+      "Reduce total monthly expenses by at least 5%.",
+      "Build your emergency savings by one extra contribution."
+    ]
   },
   "Start a Business": {
+    summary: "Focus on validating ideas, understanding customers, and taking small low-risk business steps.",
+    tips: [
+      "Write your idea in one sentence and who it helps.",
+      "Talk to at least 3 potential customers this week.",
+      "Start with a low-cost version before spending heavily."
+    ],
     dailyTips: [
-      "Spend 20 minutes on one business task: sales, product, or customer feedback.",
-      "Write one problem your target customer faces and one solution idea.",
-      "Track business cash in and cash out every day."
+      "Write one problem your business can solve.",
+      "Spend 20 minutes researching your target customer.",
+      "Note one competitor and what they do well."
     ],
     weeklyChallenges: [
-      "Talk to at least 3 potential customers this week.",
-      "Test one small business idea with a simple offer.",
-      "Post or share your offer in one channel and track responses."
+      "Share your idea with 3 people and collect feedback.",
+      "Create a simple one-page offer for your service or product.",
+      "Plan startup costs and remove one non-essential expense."
     ],
     monthlyGoals: [
-      "Validate one business idea with real customer feedback.",
-      "Make your first small sale or pilot project this month.",
-      "Create a simple income and expense plan for your business."
-    ],
-    insightPrefix: "Business Focus",
-    suggestionFallback: "Focus this week on actions that can bring your first customer."
+      "Get your first paying customer this month.",
+      "Test one marketing channel and track results.",
+      "Create a small starter budget and follow it."
+    ]
   },
   "Learn Finance": {
+    summary: "Focus on understanding basic money concepts, budgeting, and using clear financial habits.",
+    tips: [
+      "Learn one finance term each day (budget, savings rate, cash flow).",
+      "Review income and expenses once a week to see patterns.",
+      "Use simple rules like needs, wants, and savings."
+    ],
     dailyTips: [
-      "Learn one finance term today: budget, savings rate, or cash flow.",
-      "Review one expense and ask: need or want?",
-      "Write one simple money lesson you learned today."
+      "Read one short article or watch one short video about a finance basic.",
+      "Classify one expense as need or want.",
+      "Check today's total spending before the day ends."
     ],
     weeklyChallenges: [
-      "Read or watch one beginner finance lesson this week.",
-      "Practice making a weekly budget and compare with actual spending.",
-      "Calculate your savings rate at the end of the week."
+      "Create a simple weekly budget and compare actual spending.",
+      "Calculate your savings rate for this week.",
+      "List three areas where you can reduce spending."
     ],
     monthlyGoals: [
-      "Understand your full monthly cash flow: income minus expenses.",
-      "Build a beginner budget and follow it for 30 days.",
-      "Create a basic plan for savings, spending, and emergency fund."
-    ],
-    insightPrefix: "Learning Focus",
-    suggestionFallback: "Keep learning one finance concept each week and apply it to your spending."
+      "Finish one beginner finance learning plan this month.",
+      "Track all spending categories for the full month.",
+      "Set one realistic savings target and review progress."
+    ]
   }
+};
+
+const IDEA_LIBRARY = {
+  lowInvestment: [
+    "Start a home-based snack business",
+    "Offer mobile phone photography services for local shops",
+    "Start a local errand and delivery service"
+  ],
+  onlineEarning: [
+    "Sell products on Instagram",
+    "Freelancing in graphic design",
+    "Online tutoring"
+  ],
+  smallBusiness: [
+    "Start a custom gift packaging business",
+    "Open a neighborhood tiffin service",
+    "Begin a home-based tailoring service"
+  ]
 };
 
 const tabButtons = document.querySelectorAll(".tab-button");
@@ -74,9 +105,13 @@ const tabPanels = document.querySelectorAll(".tab-panel");
 const incomeForm = document.getElementById("incomeForm");
 const expenseForm = document.getElementById("expenseForm");
 const recurringExpenseForm = document.getElementById("recurringExpenseForm");
+const goalForm = document.getElementById("goalForm");
 const assistantForm = document.getElementById("assistantForm");
 const businessAdvisorForm = document.getElementById("businessAdvisorForm");
+const ideaGeneratorForm = document.getElementById("ideaGeneratorForm");
 const currencySelect = document.getElementById("currencySelect");
+const goalSelect = document.getElementById("goalSelect");
+const changeGoalButton = document.getElementById("changeGoalButton");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
@@ -87,6 +122,7 @@ const recurringExpenseAmountInput = document.getElementById("recurringExpenseAmo
 const recurringExpenseFrequencyInput = document.getElementById("recurringExpenseFrequency");
 const assistantQuestionInput = document.getElementById("assistantQuestion");
 const businessIdeaInput = document.getElementById("businessIdeaInput");
+const ideaCategorySelect = document.getElementById("ideaCategorySelect");
 
 const totalIncomeElement = document.getElementById("totalIncome");
 const totalExpensesElement = document.getElementById("totalExpenses");
@@ -102,6 +138,7 @@ const recentExpensesElement = document.getElementById("recentExpenses");
 const recurringExpensesListElement = document.getElementById("recurringExpensesList");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
+const generatedIdeaTextElement = document.getElementById("generatedIdeaText");
 const dailyTipTextElement = document.getElementById("dailyTipText");
 const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
 const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
@@ -110,6 +147,9 @@ const goalSummaryElement = document.getElementById("goalSummary");
 const selectedGoalTextElement = document.getElementById("selectedGoalText");
 const changeGoalButton = document.getElementById("changeGoalButton");
 const goalOptionButtons = document.querySelectorAll(".goal-option-button");
+const selectedGoalDisplayElement = document.getElementById("selectedGoalDisplay");
+const goalGuidanceSummaryElement = document.getElementById("goalGuidanceSummary");
+const goalTipsListElement = document.getElementById("goalTipsList");
 
 const state = {
   income: 0,
@@ -119,6 +159,7 @@ const state = {
 
 let selectedCurrency = "INR";
 let selectedGoal = "Save Money";
+let selectedGoal = "";
 
 function formatCurrency(value) {
   const currencyConfig = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
@@ -286,6 +327,7 @@ function loadSelectedCurrency() {
 }
 
 function saveSelectedGoal() {
+  if (!selectedGoal) return;
   localStorage.setItem(GOAL_STORAGE_KEY, selectedGoal);
 }
 
@@ -296,21 +338,8 @@ function loadSelectedGoal() {
   }
 }
 
-function getCurrentGoalContent() {
+function getGoalContent() {
   return GOAL_CONTENT[selectedGoal] || GOAL_CONTENT["Save Money"];
-}
-
-function updateGoalUiState() {
-  if (!goalSelectionElement || !goalSummaryElement || !selectedGoalTextElement) return;
-
-  const hasSavedGoal = Boolean(localStorage.getItem(GOAL_STORAGE_KEY));
-  goalSelectionElement.hidden = hasSavedGoal;
-  goalSummaryElement.hidden = !hasSavedGoal;
-  selectedGoalTextElement.textContent = selectedGoal;
-
-  goalOptionButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.goal === selectedGoal);
-  });
 }
 
 function getMonthlyExpenses() {
@@ -410,16 +439,13 @@ function getDailyTipIndex(date = new Date()) {
   const day = date.getDate();
   const normalizedDate = new Date(year, month, day);
   const daysSinceEpoch = Math.floor(normalizedDate.getTime() / (24 * 60 * 60 * 1000));
-  const goalContent = getCurrentGoalContent();
-  const totalTips = goalContent.dailyTips.length || 1;
-  return daysSinceEpoch % totalTips;
+  return daysSinceEpoch;
 }
 
-function renderDailyTip() {
-  const goalContent = getCurrentGoalContent();
+function renderDailyTip(goalContent) {
   if (!dailyTipTextElement || !goalContent.dailyTips.length) return;
-  const tipIndex = getDailyTipIndex();
-  dailyTipTextElement.textContent = goalContent.dailyTips[tipIndex % goalContent.dailyTips.length];
+  const tipIndex = getDailyTipIndex() % goalContent.dailyTips.length;
+  dailyTipTextElement.textContent = goalContent.dailyTips[tipIndex];
 }
 
 function getWeekIndex(date = new Date()) {
@@ -437,6 +463,8 @@ function getMonthIndex(date = new Date()) {
 function renderGrowthEngagement() {
   const goalContent = getCurrentGoalContent();
   renderDailyTip();
+  const goalContent = getGoalContent();
+  renderDailyTip(goalContent);
 
   if (weeklyChallengeTextElement && goalContent.weeklyChallenges.length) {
     const weeklyChallengeIndex = getWeekIndex() % goalContent.weeklyChallenges.length;
@@ -446,6 +474,45 @@ function renderGrowthEngagement() {
   if (monthlyGoalTextElement && goalContent.monthlyGoals.length) {
     const monthlyGoalIndex = getMonthIndex() % goalContent.monthlyGoals.length;
     monthlyGoalTextElement.textContent = goalContent.monthlyGoals[monthlyGoalIndex];
+  }
+}
+
+function renderGoalSection() {
+  const goalContent = getGoalContent();
+  const hasSelectedGoal = Boolean(selectedGoal);
+
+  if (selectedGoalDisplayElement) {
+    selectedGoalDisplayElement.textContent = hasSelectedGoal
+      ? `Selected Goal: ${selectedGoal}`
+      : "Selected Goal: Not selected yet";
+  }
+
+  if (goalSelect) {
+    goalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
+  }
+
+  if (goalForm) {
+    goalForm.classList.toggle("hidden", hasSelectedGoal);
+  }
+
+  if (goalGuidanceSummaryElement) {
+    goalGuidanceSummaryElement.textContent = hasSelectedGoal
+      ? goalContent.summary
+      : "Select a goal in Beginner Mode to see focused guidance.";
+  }
+
+  if (goalTipsListElement) {
+    goalTipsListElement.innerHTML = "";
+    if (!hasSelectedGoal) {
+      goalTipsListElement.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
+      return;
+    }
+
+    goalContent.tips.forEach((tip) => {
+      const item = document.createElement("li");
+      item.textContent = tip;
+      goalTipsListElement.appendChild(item);
+    });
   }
 }
 
@@ -521,6 +588,7 @@ function renderDashboard() {
   topCategoryValue.textContent = getTopCategory(monthlyExpenses);
   savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
   renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
+  renderGoalSection();
   renderGrowthEngagement();
 
   renderRecentExpenses();
@@ -749,6 +817,42 @@ function initGoalSelector() {
   }
 
   updateGoalUiState();
+function initGoalMode() {
+  if (goalForm) {
+    goalForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const goalValue = goalSelect.value;
+      if (!GOAL_CONTENT[goalValue]) return;
+
+      selectedGoal = goalValue;
+      saveSelectedGoal();
+      goalForm.classList.add("hidden");
+      renderDashboard();
+    });
+  }
+
+  if (changeGoalButton) {
+    changeGoalButton.addEventListener("click", () => {
+      if (goalForm) {
+        goalForm.classList.remove("hidden");
+      }
+      if (goalSelect) {
+        goalSelect.value = selectedGoal;
+        goalSelect.focus();
+      }
+    });
+  }
+function getRandomIdea(category) {
+  const categoryIdeas = IDEA_LIBRARY[category] || [];
+  const allIdeas = Object.values(IDEA_LIBRARY).flat();
+  const ideaPool = category === "all" ? allIdeas : categoryIdeas;
+
+  if (!ideaPool.length) {
+    return "No ideas available right now. Please try another category.";
+  }
+
+  const randomIndex = Math.floor(Math.random() * ideaPool.length);
+  return ideaPool[randomIndex];
 }
 
 incomeForm.addEventListener("submit", (event) => {
@@ -830,6 +934,19 @@ businessAdvisorForm.addEventListener("submit", (event) => {
   renderBusinessAdvisorResponse(advice);
 });
 
+if (ideaGeneratorForm) {
+  ideaGeneratorForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const selectedCategory = ideaCategorySelect ? ideaCategorySelect.value : "all";
+    const idea = getRandomIdea(selectedCategory);
+
+    if (generatedIdeaTextElement) {
+      generatedIdeaTextElement.textContent = idea;
+    }
+  });
+}
+
 loadSelectedCurrency();
 loadSelectedGoal();
 loadState();
@@ -837,4 +954,5 @@ setDefaultDate();
 initTabs();
 initCurrencySelector();
 initGoalSelector();
+initGoalMode();
 renderDashboard();

@@ -21,6 +21,7 @@
       <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
       <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
+      <button class="tab-button" data-tab="ideaGeneratorTab">Idea Generator</button>
     </nav>
 
     <section class="card currency-card" aria-label="Currency settings">
@@ -37,6 +38,23 @@
 
     <!-- DASHBOARD -->
     <section id="dashboardTab" class="tab-panel active">
+      <section class="card beginner-mode-card">
+        <h2>Beginner Mode</h2>
+        <p class="helper-text">Choose one goal to get simple guidance that matches what you want to improve first.</p>
+        <p id="selectedGoalDisplay" class="selected-goal-text">Selected Goal: Not selected yet</p>
+
+        <button type="button" id="changeGoalButton" class="secondary-action-button">Change Goal</button>
+
+        <form id="goalForm" class="stack-form">
+          <label for="goalSelect">Pick Your Goal</label>
+          <select id="goalSelect" required>
+            <option value="Save Money">Save Money</option>
+            <option value="Start a Business">Start a Business</option>
+            <option value="Learn Finance">Learn Finance</option>
+          </select>
+          <button type="submit">Save Goal</button>
+        </form>
+      </section>
 
       <section class="card beginner-mode-card" aria-live="polite">
         <h2>Beginner Mode</h2>
@@ -171,6 +189,14 @@
         </div>
       </section>
 
+      <section class="card goal-guidance-card" aria-live="polite">
+        <h2>Goal-Based Guidance</h2>
+        <p id="goalGuidanceSummary" class="helper-text">Select a goal in Beginner Mode to see focused guidance.</p>
+        <ul id="goalTipsList" class="recent-list">
+          <li class="empty-state">No goal selected yet.</li>
+        </ul>
+      </section>
+
       <section class="card">
         <h2>Recent Expenses</h2>
         <ul id="recentExpenses" class="recent-list">
@@ -227,6 +253,27 @@
         <div id="businessAdvisorResponse" class="advisor-response" aria-live="polite">
           <p class="empty-state">Share your idea to get a basic summary, simple first steps, and tips.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- IDEA GENERATOR -->
+    <section id="ideaGeneratorTab" class="tab-panel">
+      <div class="card">
+        <h2>Idea Generator</h2>
+        <p class="helper-text">Pick a category (optional) and generate a simple business idea.</p>
+
+        <form id="ideaGeneratorForm" class="stack-form">
+          <label for="ideaCategorySelect">Category</label>
+          <select id="ideaCategorySelect">
+            <option value="all">All Categories</option>
+            <option value="lowInvestment">Low Investment</option>
+            <option value="onlineEarning">Online Earning</option>
+            <option value="smallBusiness">Small Business</option>
+          </select>
+          <button type="submit">Generate Idea</button>
+        </form>
+
+        <p id="generatedIdeaText" class="idea-output">Click “Generate Idea” to see a business idea.</p>
       </div>
     </section>
 
