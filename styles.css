@@ -298,6 +298,15 @@ button:hover {
   transform: translateY(-1px);
 }
 
+.danger-button {
+  margin-top: 0.8rem;
+  background: var(--danger);
+}
+
+.danger-button:hover {
+  background: #981b12;
+}
+
 .overview-grid {
   display: grid;
   gap: 0.75rem;
