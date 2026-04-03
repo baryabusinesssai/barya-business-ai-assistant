@@ -7,6 +7,16 @@ const CURRENCIES = {
   EUR: { locale: "de-DE", code: "EUR", symbol: "€" }
 };
 
+const DAILY_TIPS = [
+  "Track your daily expenses to improve savings.",
+  "Avoid unnecessary spending on small items.",
+  "Start saving a small amount regularly.",
+  "Review your business cash flow at the end of each day.",
+  "Set a simple weekly budget and follow it consistently.",
+  "Keep emergency savings ready for unexpected business costs.",
+  "Focus spending on tools that improve your business productivity."
+];
+
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 
@@ -41,6 +51,7 @@ const recentExpensesElement = document.getElementById("recentExpenses");
 const recurringExpensesListElement = document.getElementById("recurringExpensesList");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
+const dailyTipTextElement = document.getElementById("dailyTipText");
 
 const state = {
   income: 0,
@@ -296,6 +307,21 @@ function getSavingSuggestion(topCategory) {
   return `You can save more by reducing ${topCategory.name} expenses.`;
 }
 
+function getDailyTipIndex(date = new Date()) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  const normalizedDate = new Date(year, month, day);
+  const daysSinceEpoch = Math.floor(normalizedDate.getTime() / (24 * 60 * 60 * 1000));
+  return daysSinceEpoch % DAILY_TIPS.length;
+}
+
+function renderDailyTip() {
+  if (!dailyTipTextElement || !DAILY_TIPS.length) return;
+  const tipIndex = getDailyTipIndex();
+  dailyTipTextElement.textContent = DAILY_TIPS[tipIndex];
+}
+
 function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
   if (!insightTopCategoryElement || !insightMonthlyExpenseElement || !insightSavingsStatusElement || !insightSuggestionElement) {
     return;
@@ -367,6 +393,7 @@ function renderDashboard() {
   topCategoryValue.textContent = getTopCategory(monthlyExpenses);
   savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
   renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
+  renderDailyTip();
 
   renderRecentExpenses();
   renderRecurringExpenses();
