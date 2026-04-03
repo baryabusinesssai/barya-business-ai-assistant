@@ -97,12 +97,7 @@ const IDEA_LIBRARY = {
   ]
 };
 
-const state = {
-  income: 0,
-  expenses: [],
-  recurringExpenses: []
-};
-
+const state = { income: 0, expenses: [], recurringExpenses: [] };
 let selectedCurrency = "INR";
 let selectedGoal = "";
 
@@ -285,6 +280,13 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
     let occurrence = getMonthDay(y, m, day);
     let count = 0;
 
+
+    const makeDate = (year, month, dayOfMonth) => {
+      const maxDay = new Date(year, month + 1, 0).getDate();
+      return new Date(year, month, Math.min(dayOfMonth, maxDay));
+    };
+
+    let occurrence = makeDate(y, m, day);
     while (occurrence < from) {
       m += 1;
       if (m > 11) {
@@ -292,6 +294,7 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
         y += 1;
       }
       occurrence = getMonthDay(y, m, day);
+      occurrence = makeDate(y, m, day);
     }
 
     while (occurrence <= to) {
@@ -302,6 +305,7 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
         y += 1;
       }
       occurrence = getMonthDay(y, m, day);
+      occurrence = makeDate(y, m, day);
     }
 
     return count;
@@ -412,20 +416,22 @@ function renderGoalUI() {
 
   if (els.goalTipsList) {
     els.goalTipsList.innerHTML = "";
-    if (!hasGoal) {
-      els.goalTipsList.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
-    } else {
+    if (hasGoal) {
       content.tips.forEach((tip) => {
         const li = document.createElement("li");
         li.textContent = tip;
         els.goalTipsList.appendChild(li);
       });
+    } else {
+      els.goalTipsList.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
     }
   }
 
+  const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
   if (els.dailyTipText) {
     const dayIdx = Math.floor(toStartOfDay(new Date()).getTime() / 86400000) % content.dailyTips.length;
     els.dailyTipText.textContent = content.dailyTips[dayIdx];
+    els.dailyTipText.textContent = content.dailyTips[dayIndex];
   }
 
   if (els.weeklyChallengeText) {
@@ -438,6 +444,12 @@ function renderGoalUI() {
   if (els.monthlyGoalText) {
     const monthIdx = new Date().getMonth() % content.monthlyGoals.length;
     els.monthlyGoalText.textContent = content.monthlyGoals[monthIdx];
+    const weekIndex = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
+    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
+  }
+
+  if (els.monthlyGoalText) {
+    els.monthlyGoalText.textContent = content.monthlyGoals[new Date().getMonth() % content.monthlyGoals.length];
   }
 }
 
@@ -590,9 +602,6 @@ function getBusinessAdvisorTemplate(type) {
 
 function renderBusinessAdvisorResponse(advice) {
   if (!els.businessAdvisorResponse) return;
-
-  const steps = advice.steps.map((step) => `<li>${step}</li>`).join("");
-  const tips = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
 
   els.businessAdvisorResponse.innerHTML = `
     <section class="advisor-block">
