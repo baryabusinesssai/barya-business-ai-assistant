@@ -160,6 +160,52 @@ body {
   margin-top: -0.2rem;
 }
 
+.goal-selection {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.goal-option-button {
+  margin-top: 0;
+}
+
+.goal-option-button.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(28, 103, 216, 0.22);
+}
+
+.goal-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  margin-top: 0.8rem;
+  background: #fbfdff;
+}
+
+.goal-summary-line {
+  margin: 0;
+  font-weight: 600;
+}
+
+.secondary-button {
+  width: auto;
+  margin-top: 0;
+  padding: 0.55rem 0.9rem;
+  background: #ffffff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.secondary-button:hover {
+  background: #eef4ff;
+}
+
 .currency-selector {
   display: grid;
   gap: 0.65rem;
@@ -368,6 +414,10 @@ button:hover {
   }
 
   .growth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-selection {
     grid-template-columns: 1fr;
   }
 
