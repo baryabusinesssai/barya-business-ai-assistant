@@ -56,6 +56,20 @@
         </form>
       </section>
 
+      <section class="card beginner-mode-card" aria-live="polite">
+        <h2>Beginner Mode</h2>
+        <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
+        <div id="goalSelection" class="goal-selection">
+          <button type="button" class="goal-option-button" data-goal="Save Money">Save Money</button>
+          <button type="button" class="goal-option-button" data-goal="Start a Business">Start a Business</button>
+          <button type="button" class="goal-option-button" data-goal="Learn Finance">Learn Finance</button>
+        </div>
+        <div id="goalSummary" class="goal-summary" hidden>
+          <p class="goal-summary-line">Selected Goal: <strong id="selectedGoalText">Save Money</strong></p>
+          <button type="button" id="changeGoalButton" class="secondary-button">Change Goal</button>
+        </div>
+      </section>
+
       <!-- METRICS -->
       <section class="card">
         <h2>Dashboard</h2>
