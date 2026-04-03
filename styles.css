@@ -156,12 +156,23 @@ body {
   align-items: center;
 }
 
+.currency-card {
+  margin-top: -0.2rem;
+}
+
+.currency-selector {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 260px;
+}
+
 label {
   font-weight: 600;
   font-size: 0.92rem;
 }
 
 input,
+select,
 button {
   width: 100%;
   padding: 0.75rem 0.8rem;
@@ -176,7 +187,8 @@ input {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(28, 103, 216, 0.12);
