@@ -28,6 +28,8 @@
         <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
         <p id="selectedGoalDisplay" class="selected-goal-text">Selected Goal: Not selected yet</p>
 
+        <button type="button" id="changeGoalButton" class="secondary-action-button hidden">Change Goal</button>
+
         <form id="goalForm" class="stack-form">
           <label for="goalSelect">Pick Your Goal</label>
           <select id="goalSelect" required>
@@ -186,10 +188,15 @@
       <div class="card feature-card">
         <h2>AI Assistant</h2>
         <p class="helper-text">Ask short finance or business questions and get practical beginner-friendly guidance.</p>
+      <div class="card section-card">
+        <h2>AI Assistant</h2>
+        <p class="helper-text section-intro">Ask quick finance or business questions and get a simple response.</p>
+
         <form id="assistantForm" class="inline-form">
           <input type="text" id="assistantQuestion" placeholder="Ask something..." required />
           <button type="submit">Ask AI</button>
         </form>
+
         <p id="assistantResponse" class="assistant-response">Ask a question to get help.</p>
       </div>
     </section>
@@ -198,6 +205,10 @@
       <div class="card feature-card">
         <h2>Business Advisor</h2>
         <p class="helper-text">Describe your business idea in simple words to get a beginner-friendly plan.</p>
+      <div class="card section-card">
+        <h2>Business Advisor</h2>
+        <p class="helper-text section-intro">Describe your business idea in simple words to get a beginner-friendly plan.</p>
+
         <form id="businessAdvisorForm" class="stack-form">
           <label for="businessIdeaInput">Your Business Idea</label>
           <input type="text" id="businessIdeaInput" placeholder="e.g., I want to start an online clothing store" required />
@@ -214,6 +225,10 @@
       <div class="card feature-card">
         <h2>Idea Generator</h2>
         <p class="helper-text">Pick a category (optional) and generate a simple business idea.</p>
+      <div class="card section-card">
+        <h2>Idea Generator</h2>
+        <p class="helper-text section-intro">Pick a category (optional) and generate a simple business idea.</p>
+
         <form id="ideaGeneratorForm" class="stack-form">
           <label for="ideaCategorySelect">Category</label>
           <select id="ideaCategorySelect">
@@ -230,24 +245,30 @@
     </section>
 
     <section id="settingsTab" class="tab-panel">
-      <div class="card">
+      <div class="card section-card">
         <h2>Settings</h2>
-        <p class="helper-text">Choose your preferences once and the app will remember them on this device.</p>
+        <p class="helper-text section-intro">Choose your preferences once and the app will remember them on this device.</p>
 
         <form id="settingsForm" class="stack-form">
-          <label for="currencySelect">Display currency</label>
-          <select id="currencySelect">
-            <option value="INR">INR (₹)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-          </select>
+          <div class="settings-grid">
+            <div class="currency-selector">
+              <label for="currencySelect">Display Currency</label>
+              <select id="currencySelect">
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
 
-          <label for="settingsGoalSelect">Default goal</label>
-          <select id="settingsGoalSelect">
-            <option value="Save Money">Save Money</option>
-            <option value="Start a Business">Start Business</option>
-            <option value="Learn Finance">Learn Finance</option>
-          </select>
+            <div class="currency-selector">
+              <label for="settingsGoalSelect">Default Goal</label>
+              <select id="settingsGoalSelect">
+                <option value="Save Money">Save Money</option>
+                <option value="Start a Business">Start Business</option>
+                <option value="Learn Finance">Learn Finance</option>
+              </select>
+            </div>
+          </div>
 
           <button type="submit">Save Settings</button>
         </form>

@@ -94,6 +94,10 @@ body {
   box-shadow: var(--shadow);
 }
 
+.section-card {
+  padding: 1.25rem;
+}
+
 .card h2 {
   margin: 0 0 0.65rem;
   font-size: 1.2rem;
@@ -104,6 +108,10 @@ body {
   color: var(--muted);
   line-height: 1.45;
   font-size: 0.92rem;
+}
+
+.section-intro {
+  margin-bottom: 1.1rem;
 }
 
 .dashboard-grid {
@@ -149,6 +157,10 @@ body {
   align-items: center;
 }
 
+.beginner-mode-card .helper-text {
+  margin-bottom: 0.75rem;
+}
+
 .selected-goal-text {
   margin: 0 0 0.75rem;
   font-weight: 700;
@@ -165,10 +177,34 @@ body {
 
 .secondary-button:hover {
   background: #eef4ff;
+.secondary-action-button {
+  width: auto;
+  max-width: 180px;
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  margin: 0 0 0.75rem;
+}
+
+.secondary-action-button:hover {
+  background: #f0f6ff;
+  color: var(--primary);
 }
 
 .hidden {
   display: none;
+}
+
+.currency-selector {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .settings-status {
@@ -257,6 +293,21 @@ button:hover {
   font-weight: 700;
 }
 
+.insights-grid {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.insight-line {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .growth-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -285,6 +336,8 @@ button:hover {
 .recent-list {
   margin: 0;
   padding-left: 1rem;
+  display: grid;
+  gap: 0.55rem;
 }
 
 .empty-state {
@@ -307,6 +360,9 @@ button:hover {
   margin-top: 1rem;
   padding-top: 0.9rem;
   border-top: 1px solid var(--border);
+}
+
+.assistant-response {
   line-height: 1.6;
   white-space: pre-line;
 }
@@ -365,6 +421,7 @@ button:hover {
   .forms-grid,
   .growth-grid,
   .inline-form {
+  .settings-grid {
     grid-template-columns: 1fr;
   }
 
