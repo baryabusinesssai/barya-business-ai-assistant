@@ -373,6 +373,22 @@ function getCurrentMonthExpenses() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const today = toStartOfDay(now);
 
+  const oneTimeExpenses = state.expenses.filter((expense) => {
+    const date = parseYMDToDate(expense.date) || new Date(expense.date);
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  });
+
+  const recurringAsExpenses = [];
+  state.recurringExpenses.forEach((item) => {
+    const occurrenceCount = countRecurringOccurrencesInRange(item, monthStart, today);
+    for (let i = 0; i < occurrenceCount; i += 1) {
+      recurringAsExpenses.push({
+        amount: Number(item.amount) || 0,
+        category: item.name || "Recurring",
+        date: todayYMD()
+      });
+    }
+  });
   const oneTime = state.expenses.filter((expense) => {
     const d = parseYMDToDate(expense.date) || new Date(expense.date);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
@@ -398,6 +414,7 @@ function getRecurringTotalToDate() {
 
 function getTopCategory(expenses) {
   if (!expenses.length) return "No expenses yet";
+
   const totals = {};
 
   expenses.forEach((expense) => {
@@ -413,6 +430,8 @@ function getTopCategory(expenses) {
 
 function getSavingsStatus(income, expenseTotal) {
   if (income <= 0) return "Add monthly income to calculate savings status";
+
+  const diff = income - monthlyExpenseTotal;
   const diff = income - expenseTotal;
   if (diff > 0) return `✅ On track: You are saving ${formatCurrency(diff)} this month.`;
   if (diff === 0) return "⚖️ Break-even: Income and expenses are equal this month.";
@@ -489,6 +508,7 @@ function renderGoalUI() {
     els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
   const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
   if (els.dailyTipText) {
+    const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
     const dayIdx = Math.floor(toStartOfDay(new Date()).getTime() / 86400000) % content.dailyTips.length;
     els.dailyTipText.textContent = content.dailyTips[dayIdx];
     els.dailyTipText.textContent = content.dailyTips[dayIndex];
@@ -497,6 +517,46 @@ function renderGoalUI() {
   if (els.weeklyChallengeText) {
     const now = new Date();
     const startYear = new Date(now.getFullYear(), 0, 1);
+    const weekIndex = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
+    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
+  }
+
+  if (els.monthlyGoalText) {
+    els.monthlyGoalText.textContent = content.monthlyGoals[new Date().getMonth() % content.monthlyGoals.length];
+  }
+}
+
+function renderInsights(monthlyExpenses, monthlyExpenseTotal) {
+  const topCategoryText = getTopCategory(monthlyExpenses);
+
+  if (els.insightTopCategory) {
+    els.insightTopCategory.textContent = monthlyExpenses.length
+      ? `Your highest spending category is ${topCategoryText.split(" (")[0]}.`
+      : "Your highest spending category is not available yet.";
+  }
+
+  if (els.insightMonthlyExpense) {
+    els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
+  }
+
+  if (els.insightSavingsStatus) {
+    els.insightSavingsStatus.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
+  }
+
+  if (els.insightSuggestion) {
+    els.insightSuggestion.textContent = monthlyExpenses.length
+      ? `You can save more by reviewing and reducing ${topCategoryText.split(" (")[0]} expenses.`
+      : "Add expenses to get a saving suggestion.";
+  }
+}
+
+function renderRecentExpenses() {
+  if (!els.recentExpenses) return;
+  els.recentExpenses.innerHTML = "";
+
+  if (!state.expenses.length) {
+    els.recentExpenses.innerHTML = '<li class="empty-state">No expenses added yet.</li>';
+    return;
     const weekIdx = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
     els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIdx];
   }
@@ -527,6 +587,20 @@ function renderDashboard() {
   const monthlyExpenses = getCurrentMonthExpenses();
   const monthlyExpenseTotal = monthlyExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
 
+function renderDashboard() {
+  const oneTimeExpenseTotal = state.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const recurringExpenseTotal = getRecurringTotalToDate();
+  const totalExpense = oneTimeExpenseTotal + recurringExpenseTotal;
+  const net = state.income - totalExpense;
+
+  if (els.totalIncome) els.totalIncome.textContent = formatCurrency(state.income);
+  if (els.totalExpenses) els.totalExpenses.textContent = formatCurrency(totalExpense);
+
+  if (els.netSavings) {
+    els.netSavings.textContent = formatCurrency(net);
+    els.netSavings.classList.remove("positive", "negative");
+    if (net > 0) els.netSavings.classList.add("positive");
+    if (net < 0) els.netSavings.classList.add("negative");
   if (els.monthlyExpensesValue) els.monthlyExpensesValue.textContent = formatCurrency(monthlyExpenseTotal);
   if (els.topCategoryValue) els.topCategoryValue.textContent = getTopCategory(monthlyExpenses);
   if (els.savingsStatusValue) els.savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
@@ -648,6 +722,9 @@ function getBusinessAdvisorTemplate(type) {
 
 function renderBusinessAdvisorResponse(advice) {
   if (!els.businessAdvisorResponse) return;
+
+  const steps = advice.steps.map((step) => `<li>${step}</li>`).join("");
+  const tips = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
 
   els.businessAdvisorResponse.innerHTML = `
     <section class="advisor-block">
