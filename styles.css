@@ -233,6 +233,25 @@ button:hover {
   font-weight: 700;
 }
 
+.smart-insights-card .helper-text {
+  margin-bottom: 0.75rem;
+}
+
+.insights-grid {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.insight-line {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .recent-list {
   margin: 0;
   padding-left: 1rem;
