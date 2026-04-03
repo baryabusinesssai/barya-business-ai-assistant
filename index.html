@@ -9,14 +9,11 @@
 
 <body>
   <main class="container">
-
-    <!-- HEADER -->
     <header class="hero">
       <h1>Barya Business AI Assistant</h1>
       <p>Your smart finance and business assistant</p>
     </header>
 
-    <!-- NAVIGATION -->
     <nav class="tabs">
       <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
@@ -25,12 +22,17 @@
       <button class="tab-button" data-tab="settingsTab">Settings</button>
     </nav>
 
-    <!-- DASHBOARD -->
     <section id="dashboardTab" class="tab-panel active">
-      <section class="card beginner-mode-card">
+      <section class="card beginner-mode-card" aria-live="polite">
         <h2>Beginner Mode</h2>
         <p class="helper-text">Choose one goal to get simple guidance that matches what you want to improve first.</p>
         <p id="selectedGoalDisplay" class="selected-goal-text">Selected Goal: Not selected yet</p>
+
+        <div id="goalSelection" class="goal-selection">
+          <button type="button" class="goal-option-button" data-goal="Save Money">Save Money</button>
+          <button type="button" class="goal-option-button" data-goal="Start a Business">Start a Business</button>
+          <button type="button" class="goal-option-button" data-goal="Learn Finance">Learn Finance</button>
+        </div>
 
         <button type="button" id="changeGoalButton" class="secondary-action-button">Change Goal</button>
 
@@ -45,21 +47,6 @@
         </form>
       </section>
 
-      <section class="card beginner-mode-card" aria-live="polite">
-        <h2>Beginner Mode</h2>
-        <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
-        <div id="goalSelection" class="goal-selection">
-          <button type="button" class="goal-option-button" data-goal="Save Money">Save Money</button>
-          <button type="button" class="goal-option-button" data-goal="Start a Business">Start a Business</button>
-          <button type="button" class="goal-option-button" data-goal="Learn Finance">Learn Finance</button>
-        </div>
-        <div id="goalSummary" class="goal-summary" hidden>
-          <p class="goal-summary-line">Selected Goal: <strong id="selectedGoalText">Save Money</strong></p>
-          <button type="button" id="changeGoalButton" class="secondary-button">Change Goal</button>
-        </div>
-      </section>
-
-      <!-- METRICS -->
       <section class="card">
         <h2>Dashboard</h2>
         <div class="dashboard-grid">
@@ -78,9 +65,7 @@
         </div>
       </section>
 
-      <!-- FORMS -->
       <section class="forms-grid">
-
         <div class="card">
           <h2>Save Monthly Income</h2>
           <p class="helper-text">Enter your expected monthly business income once each month.</p>
@@ -126,10 +111,8 @@
             <button type="submit">Add Recurring Expense</button>
           </form>
         </div>
-
       </section>
 
-      <!-- OVERVIEW -->
       <section class="card">
         <h2>Monthly Overview</h2>
         <div id="monthlyOverview" class="overview-grid">
@@ -203,28 +186,22 @@
       <section class="trust-note" aria-label="Trust note">
         🔒 Your data is stored locally in your browser
       </section>
-
     </section>
 
-    <!-- AI ASSISTANT -->
     <section id="assistantTab" class="tab-panel">
-
-      <div class="card">
+      <div class="card feature-card">
         <h2>AI Assistant</h2>
-
+        <p class="helper-text">Ask a question about saving, expenses, or business growth.</p>
         <form id="assistantForm" class="inline-form">
           <input type="text" id="assistantQuestion" placeholder="Ask something..." required />
           <button type="submit">Ask AI</button>
         </form>
-
-        <p id="assistantResponse" class="assistant-response">Ask a question to get help</p>
+        <p id="assistantResponse" class="assistant-response">Ask a question to get help.</p>
       </div>
-
     </section>
 
-    <!-- BUSINESS ADVISOR -->
     <section id="businessAdvisorTab" class="tab-panel">
-      <div class="card">
+      <div class="card feature-card">
         <h2>Business Advisor</h2>
         <p class="helper-text">Describe your business idea in simple words to get a beginner-friendly plan.</p>
 
@@ -245,9 +222,8 @@
       </div>
     </section>
 
-    <!-- IDEA GENERATOR -->
     <section id="ideaGeneratorTab" class="tab-panel">
-      <div class="card">
+      <div class="card feature-card">
         <h2>Idea Generator</h2>
         <p class="helper-text">Pick a category (optional) and generate a simple business idea.</p>
 
@@ -266,7 +242,6 @@
       </div>
     </section>
 
-    <!-- SETTINGS -->
     <section id="settingsTab" class="tab-panel">
       <div class="card">
         <h2>Settings</h2>
@@ -291,36 +266,9 @@
         </form>
 
         <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
-    <section id="settingsTab" class="tab-panel">
-      <div class="card">
-        <h2>Settings</h2>
-        <p class="helper-text">Update your preferences once, and the full website will use them automatically.</p>
-
-        <div class="settings-grid">
-          <div class="currency-selector">
-            <label for="currencySelect">Display Currency</label>
-            <select id="currencySelect">
-              <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-            </select>
-          </div>
-
-          <div class="currency-selector">
-            <label for="settingsGoalSelect">Goal</label>
-            <select id="settingsGoalSelect">
-              <option value="Save Money">Save Money</option>
-              <option value="Start a Business">Start Business</option>
-              <option value="Learn Finance">Learn Finance</option>
-            </select>
-          </div>
-        </div>
-
-        <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
         <p id="settingsStatusText" class="helper-text settings-status" aria-live="polite"></p>
       </div>
     </section>
-
   </main>
 
   <script src="script.js"></script>
