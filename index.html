@@ -22,19 +22,8 @@
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
       <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
       <button class="tab-button" data-tab="ideaGeneratorTab">Idea Generator</button>
+      <button class="tab-button" data-tab="settingsTab">Settings</button>
     </nav>
-
-    <section class="card currency-card" aria-label="Currency settings">
-      <h2>Currency</h2>
-      <div class="currency-selector">
-        <label for="currencySelect">Display currency</label>
-        <select id="currencySelect">
-          <option value="INR">INR (₹)</option>
-          <option value="USD">USD ($)</option>
-          <option value="EUR">EUR (€)</option>
-        </select>
-      </div>
-    </section>
 
     <!-- DASHBOARD -->
     <section id="dashboardTab" class="tab-panel active">
@@ -260,6 +249,36 @@
         </form>
 
         <p id="generatedIdeaText" class="idea-output">Click “Generate Idea” to see a business idea.</p>
+      </div>
+    </section>
+
+    <section id="settingsTab" class="tab-panel">
+      <div class="card">
+        <h2>Settings</h2>
+        <p class="helper-text">Update your preferences once, and the full website will use them automatically.</p>
+
+        <div class="settings-grid">
+          <div class="currency-selector">
+            <label for="currencySelect">Display Currency</label>
+            <select id="currencySelect">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+
+          <div class="currency-selector">
+            <label for="settingsGoalSelect">Goal</label>
+            <select id="settingsGoalSelect">
+              <option value="Save Money">Save Money</option>
+              <option value="Start a Business">Start Business</option>
+              <option value="Learn Finance">Learn Finance</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
+        <p id="settingsStatusText" class="helper-text settings-status" aria-live="polite"></p>
       </div>
     </section>
 

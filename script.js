@@ -1,6 +1,7 @@
 const STORAGE_KEY = "barya-finance-data-v1";
 const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
 const GOAL_STORAGE_KEY = "barya-selected-goal-v1";
+const SETTINGS_STORAGE_KEY = "barya-user-settings-v1";
 
 const CURRENCIES = {
   INR: { locale: "en-IN", code: "INR", symbol: "₹" },
@@ -111,6 +112,9 @@ const ideaGeneratorForm = document.getElementById("ideaGeneratorForm");
 const currencySelect = document.getElementById("currencySelect");
 const goalSelect = document.getElementById("goalSelect");
 const changeGoalButton = document.getElementById("changeGoalButton");
+const settingsGoalSelect = document.getElementById("settingsGoalSelect");
+const resetDataButton = document.getElementById("resetDataButton");
+const settingsStatusText = document.getElementById("settingsStatusText");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
@@ -309,25 +313,68 @@ function getRecurringTotalThroughDate(endDate) {
 }
 
 function saveSelectedCurrency() {
+  saveSettings();
   localStorage.setItem(CURRENCY_STORAGE_KEY, selectedCurrency);
 }
 
 function loadSelectedCurrency() {
-  const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
-  if (storedCurrency && CURRENCIES[storedCurrency]) {
-    selectedCurrency = storedCurrency;
+  const settings = loadSettings();
+  if (settings.currency && CURRENCIES[settings.currency]) {
+    selectedCurrency = settings.currency;
+    return;
+  }
+
+  const legacyCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+  if (legacyCurrency && CURRENCIES[legacyCurrency]) {
+    selectedCurrency = legacyCurrency;
   }
 }
 
 function saveSelectedGoal() {
-  if (!selectedGoal) return;
+  saveSettings();
+  if (!selectedGoal) {
+    localStorage.removeItem(GOAL_STORAGE_KEY);
+    return;
+  }
   localStorage.setItem(GOAL_STORAGE_KEY, selectedGoal);
 }
 
 function loadSelectedGoal() {
-  const storedGoal = localStorage.getItem(GOAL_STORAGE_KEY);
-  if (storedGoal && GOAL_CONTENT[storedGoal]) {
-    selectedGoal = storedGoal;
+  const settings = loadSettings();
+  if (settings.goal && GOAL_CONTENT[settings.goal]) {
+    selectedGoal = settings.goal;
+    return;
+  }
+
+  const legacyGoal = localStorage.getItem(GOAL_STORAGE_KEY);
+  if (legacyGoal && GOAL_CONTENT[legacyGoal]) {
+    selectedGoal = legacyGoal;
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem(
+    SETTINGS_STORAGE_KEY,
+    JSON.stringify({
+      currency: selectedCurrency,
+      goal: selectedGoal
+    })
+  );
+}
+
+function loadSettings() {
+  const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+  if (!raw) return {};
+
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      currency: parsed.currency,
+      goal: parsed.goal
+    };
+  } catch {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    return {};
   }
 }
 
@@ -470,6 +517,10 @@ function renderGoalSection() {
 
   if (goalSelect) {
     goalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
+  }
+
+  if (settingsGoalSelect) {
+    settingsGoalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
   }
 
   if (goalForm) {
@@ -771,7 +822,20 @@ function initCurrencySelector() {
     selectedCurrency = nextCurrency;
     saveSelectedCurrency();
     renderDashboard();
+    if (settingsStatusText) {
+      settingsStatusText.textContent = "Settings saved.";
+    }
   });
+}
+
+function applySelectedGoal(goalValue) {
+  if (!GOAL_CONTENT[goalValue]) return;
+  selectedGoal = goalValue;
+  saveSelectedGoal();
+  if (goalForm) {
+    goalForm.classList.add("hidden");
+  }
+  renderDashboard();
 }
 
 function initGoalMode() {
@@ -779,12 +843,7 @@ function initGoalMode() {
     goalForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const goalValue = goalSelect.value;
-      if (!GOAL_CONTENT[goalValue]) return;
-
-      selectedGoal = goalValue;
-      saveSelectedGoal();
-      goalForm.classList.add("hidden");
-      renderDashboard();
+      applySelectedGoal(goalValue);
     });
   }
 
@@ -794,11 +853,58 @@ function initGoalMode() {
         goalForm.classList.remove("hidden");
       }
       if (goalSelect) {
-        goalSelect.value = selectedGoal;
+        goalSelect.value = selectedGoal || "Save Money";
         goalSelect.focus();
       }
     });
   }
+}
+
+function initSettings() {
+  if (settingsGoalSelect) {
+    settingsGoalSelect.value = selectedGoal || "Save Money";
+    settingsGoalSelect.addEventListener("change", (event) => {
+      applySelectedGoal(event.target.value);
+      if (settingsStatusText) {
+        settingsStatusText.textContent = "Settings saved.";
+      }
+    });
+  }
+
+  if (resetDataButton) {
+    resetDataButton.addEventListener("click", () => {
+      state.income = 0;
+      state.expenses = [];
+      state.recurringExpenses = [];
+      selectedGoal = "";
+      selectedCurrency = "INR";
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CURRENCY_STORAGE_KEY);
+      localStorage.removeItem(GOAL_STORAGE_KEY);
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+
+      if (currencySelect) {
+        currencySelect.value = selectedCurrency;
+      }
+
+      if (settingsGoalSelect) {
+        settingsGoalSelect.value = "Save Money";
+      }
+
+      if (goalForm) {
+        goalForm.classList.remove("hidden");
+      }
+
+      renderDashboard();
+
+      if (settingsStatusText) {
+        settingsStatusText.textContent = "All local data has been reset.";
+      }
+    });
+  }
+}
+
 function getRandomIdea(category) {
   const categoryIdeas = IDEA_LIBRARY[category] || [];
   const allIdeas = Object.values(IDEA_LIBRARY).flat();
@@ -911,4 +1017,5 @@ setDefaultDate();
 initTabs();
 initCurrencySelector();
 initGoalMode();
+initSettings();
 renderDashboard();
