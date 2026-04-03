@@ -12,6 +12,7 @@ const tabPanels = document.querySelectorAll(".tab-panel");
 
 const incomeForm = document.getElementById("incomeForm");
 const expenseForm = document.getElementById("expenseForm");
+const recurringExpenseForm = document.getElementById("recurringExpenseForm");
 const assistantForm = document.getElementById("assistantForm");
 const businessAdvisorForm = document.getElementById("businessAdvisorForm");
 const currencySelect = document.getElementById("currencySelect");
@@ -20,6 +21,9 @@ const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
 const expenseCategoryInput = document.getElementById("expenseCategory");
 const expenseDateInput = document.getElementById("expenseDate");
+const recurringExpenseNameInput = document.getElementById("recurringExpenseName");
+const recurringExpenseAmountInput = document.getElementById("recurringExpenseAmount");
+const recurringExpenseFrequencyInput = document.getElementById("recurringExpenseFrequency");
 const assistantQuestionInput = document.getElementById("assistantQuestion");
 const businessIdeaInput = document.getElementById("businessIdeaInput");
 
@@ -34,12 +38,14 @@ const insightMonthlyExpenseElement = document.getElementById("insightMonthlyExpe
 const insightSavingsStatusElement = document.getElementById("insightSavingsStatus");
 const insightSuggestionElement = document.getElementById("insightSuggestion");
 const recentExpensesElement = document.getElementById("recentExpenses");
+const recurringExpensesListElement = document.getElementById("recurringExpensesList");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
 
 const state = {
   income: 0,
-  expenses: []
+  expenses: [],
+  recurringExpenses: []
 };
 
 let selectedCurrency = "INR";
@@ -67,9 +73,135 @@ function loadState() {
     const parsed = JSON.parse(raw);
     state.income = Number(parsed.income) || 0;
     state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
+    state.recurringExpenses = Array.isArray(parsed.recurringExpenses) ? parsed.recurringExpenses : [];
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
+}
+
+function parseLocalDate(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function toStartOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function daysBetween(startDate, endDate) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  return Math.floor((toStartOfDay(endDate) - toStartOfDay(startDate)) / oneDay);
+}
+
+function addDays(date, days) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+function daysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function getMonthlyOccurrenceDate(year, monthIndex, dayOfMonth) {
+  const safeDay = Math.min(dayOfMonth, daysInMonth(year, monthIndex));
+  return new Date(year, monthIndex, safeDay);
+}
+
+function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd) {
+  const startDate = parseLocalDate(recurringExpense.startDate);
+  const normalizedStartDate = toStartOfDay(startDate);
+  const normalizedRangeStart = toStartOfDay(rangeStart);
+  const normalizedRangeEnd = toStartOfDay(rangeEnd);
+
+  if (normalizedStartDate > normalizedRangeEnd) {
+    return 0;
+  }
+
+  if (recurringExpense.frequency === "daily") {
+    const effectiveStart = normalizedStartDate > normalizedRangeStart ? normalizedStartDate : normalizedRangeStart;
+    return daysBetween(effectiveStart, normalizedRangeEnd) + 1;
+  }
+
+  if (recurringExpense.frequency === "weekly") {
+    let firstOccurrence = normalizedStartDate;
+
+    if (firstOccurrence < normalizedRangeStart) {
+      const diff = daysBetween(firstOccurrence, normalizedRangeStart);
+      const weeksToSkip = Math.ceil(diff / 7);
+      firstOccurrence = addDays(firstOccurrence, weeksToSkip * 7);
+    }
+
+    if (firstOccurrence > normalizedRangeEnd) {
+      return 0;
+    }
+
+    return Math.floor(daysBetween(firstOccurrence, normalizedRangeEnd) / 7) + 1;
+  }
+
+  if (recurringExpense.frequency === "monthly") {
+    const dayOfMonth = normalizedStartDate.getDate();
+    let year = normalizedStartDate.getFullYear();
+    let month = normalizedStartDate.getMonth();
+    let occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
+    let total = 0;
+
+    while (occurrence < normalizedRangeStart) {
+      month += 1;
+      if (month > 11) {
+        month = 0;
+        year += 1;
+      }
+      occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
+    }
+
+    while (occurrence <= normalizedRangeEnd) {
+      if (occurrence >= normalizedStartDate) {
+        total += 1;
+      }
+      month += 1;
+      if (month > 11) {
+        month = 0;
+        year += 1;
+      }
+      occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
+    }
+
+    return total;
+  }
+
+  return 0;
+}
+
+function getCurrentMonthRangeEnd() {
+  return toStartOfDay(new Date());
+}
+
+function buildRecurringOccurrencesForRange(rangeStart, rangeEnd) {
+  const occurrences = [];
+
+  state.recurringExpenses.forEach((recurringExpense) => {
+    const count = countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd);
+    for (let index = 0; index < count; index += 1) {
+      occurrences.push({
+        amount: Number(recurringExpense.amount),
+        category: recurringExpense.name,
+        date: rangeEnd.toISOString(),
+        isRecurring: true
+      });
+    }
+  });
+
+  return occurrences;
+}
+
+function getRecurringTotalThroughDate(endDate) {
+  return state.recurringExpenses.reduce((sum, recurringExpense) => {
+    const occurrences = countRecurringOccurrencesInRange(
+      recurringExpense,
+      parseLocalDate(recurringExpense.startDate),
+      endDate
+    );
+    return sum + occurrences * Number(recurringExpense.amount);
+  }, 0);
 }
 
 function saveSelectedCurrency() {
@@ -87,11 +219,16 @@ function getMonthlyExpenses() {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = getCurrentMonthRangeEnd();
 
-  return state.expenses.filter((expense) => {
+  const oneTimeExpenses = state.expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
     return expenseDate.getFullYear() === year && expenseDate.getMonth() === month;
   });
+
+  const recurringOccurrences = buildRecurringOccurrencesForRange(monthStart, monthEnd);
+  return [...oneTimeExpenses, ...recurringOccurrences];
 }
 
 function getTopCategory(expenses) {
@@ -195,8 +332,25 @@ function renderRecentExpenses() {
   });
 }
 
+function renderRecurringExpenses() {
+  recurringExpensesListElement.innerHTML = "";
+
+  if (!state.recurringExpenses.length) {
+    recurringExpensesListElement.innerHTML = '<li class="empty-state">No recurring expenses added yet.</li>';
+    return;
+  }
+
+  state.recurringExpenses.forEach((recurringExpense) => {
+    const item = document.createElement("li");
+    item.textContent = `${recurringExpense.name} • ${formatCurrency(Number(recurringExpense.amount))} • ${recurringExpense.frequency}`;
+    recurringExpensesListElement.appendChild(item);
+  });
+}
+
 function renderDashboard() {
-  const totalExpenses = state.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  const oneTimeTotalExpenses = state.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  const recurringTotalExpenses = getRecurringTotalThroughDate(getCurrentMonthRangeEnd());
+  const totalExpenses = oneTimeTotalExpenses + recurringTotalExpenses;
   const netSavings = state.income - totalExpenses;
 
   totalIncomeElement.textContent = formatCurrency(state.income);
@@ -215,6 +369,7 @@ function renderDashboard() {
   renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
 
   renderRecentExpenses();
+  renderRecurringExpenses();
 }
 
 function setDefaultDate() {
@@ -442,6 +597,33 @@ expenseForm.addEventListener("submit", (event) => {
   renderDashboard();
   expenseForm.reset();
   setDefaultDate();
+});
+
+recurringExpenseForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const name = recurringExpenseNameInput.value.trim();
+  const amount = Number(recurringExpenseAmountInput.value);
+  const frequency = recurringExpenseFrequencyInput.value;
+
+  if (Number.isNaN(amount) || amount < 0 || !name || !["daily", "weekly", "monthly"].includes(frequency)) return;
+
+  const today = new Date();
+  const offset = today.getTimezoneOffset();
+  const localDate = new Date(today.getTime() - offset * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
+  state.recurringExpenses.push({
+    name,
+    amount,
+    frequency,
+    startDate: localDate
+  });
+
+  saveState();
+  renderDashboard();
+  recurringExpenseForm.reset();
 });
 
 assistantForm.addEventListener("submit", (event) => {
