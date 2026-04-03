@@ -1,0 +1,11 @@
+{
+  "finance": {
+    "income": 0,
+    "expenses": [],
+    "recurringExpenses": []
+  },
+  "settings": {
+    "currency": "INR",
+    "goal": ""
+  }
+}
