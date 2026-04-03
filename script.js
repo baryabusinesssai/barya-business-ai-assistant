@@ -186,6 +186,11 @@ function daysBetween(start, end) {
   return Math.floor((toStartOfDay(end) - toStartOfDay(start)) / 86400000);
 }
 
+function getMonthDay(year, month, day) {
+  const max = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(day, max));
+}
+
 function formatCurrency(value) {
   const currencyConfig = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
   return new Intl.NumberFormat(currencyConfig.locale, {
@@ -269,10 +274,12 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
   }
 
   if (recurringExpense.frequency === "monthly") {
-    let count = 0;
     let y = start.getFullYear();
     let m = start.getMonth();
     const day = start.getDate();
+    let occurrence = getMonthDay(y, m, day);
+    let count = 0;
+
 
     const makeDate = (year, month, dayOfMonth) => {
       const maxDay = new Date(year, month + 1, 0).getDate();
@@ -286,6 +293,7 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
         m = 0;
         y += 1;
       }
+      occurrence = getMonthDay(y, m, day);
       occurrence = makeDate(y, m, day);
     }
 
@@ -296,6 +304,7 @@ function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd
         m = 0;
         y += 1;
       }
+      occurrence = getMonthDay(y, m, day);
       occurrence = makeDate(y, m, day);
     }
 
@@ -310,8 +319,8 @@ function getCurrentMonthExpenses() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const today = toStartOfDay(now);
 
-  const oneTime = state.expenses.filter((e) => {
-    const d = parseYMDToDate(e.date) || new Date(e.date);
+  const oneTime = state.expenses.filter((expense) => {
+    const d = parseYMDToDate(expense.date) || new Date(expense.date);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
@@ -338,10 +347,12 @@ function getRecurringTotalToDate() {
 function getTopCategory(expenses) {
   if (!expenses.length) return "No expenses yet";
   const totals = {};
+
   expenses.forEach((expense) => {
     const key = (expense.category || "Other").trim() || "Other";
     totals[key] = (totals[key] || 0) + (Number(expense.amount) || 0);
   });
+
   const [name, amount] = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
   return `${name} (${formatCurrency(amount)})`;
 }
@@ -355,11 +366,15 @@ function getSavingsStatus(income, monthlyExpenseTotal) {
 }
 
 function setDefaultDate() {
-  if (els.expenseDate) els.expenseDate.value = todayYMD();
+  if (els.expenseDate) {
+    els.expenseDate.value = todayYMD();
+  }
 }
 
 function updateStatus(text) {
-  if (els.settingsStatusText) els.settingsStatusText.textContent = text;
+  if (els.settingsStatusText) {
+    els.settingsStatusText.textContent = text;
+  }
 }
 
 function setSelectedGoal(goal) {
@@ -414,12 +429,21 @@ function renderGoalUI() {
 
   const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
   if (els.dailyTipText) {
+    const dayIdx = Math.floor(toStartOfDay(new Date()).getTime() / 86400000) % content.dailyTips.length;
+    els.dailyTipText.textContent = content.dailyTips[dayIdx];
     els.dailyTipText.textContent = content.dailyTips[dayIndex];
   }
 
   if (els.weeklyChallengeText) {
     const now = new Date();
     const startYear = new Date(now.getFullYear(), 0, 1);
+    const weekIdx = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
+    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIdx];
+  }
+
+  if (els.monthlyGoalText) {
+    const monthIdx = new Date().getMonth() % content.monthlyGoals.length;
+    els.monthlyGoalText.textContent = content.monthlyGoals[monthIdx];
     const weekIndex = Math.floor(daysBetween(startYear, now) / 7) % content.weeklyChallenges.length;
     els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
   }
@@ -578,8 +602,6 @@ function getBusinessAdvisorTemplate(type) {
 
 function renderBusinessAdvisorResponse(advice) {
   if (!els.businessAdvisorResponse) return;
-  const steps = advice.steps.map((step) => `<li>${step}</li>`).join("");
-  const tips = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
 
   els.businessAdvisorResponse.innerHTML = `
     <section class="advisor-block">
@@ -626,6 +648,7 @@ function initForms() {
       event.preventDefault();
       const amount = Number(els.incomeAmount?.value);
       if (Number.isNaN(amount) || amount < 0) return;
+
       state.income = amount;
       saveState();
       renderDashboard();
