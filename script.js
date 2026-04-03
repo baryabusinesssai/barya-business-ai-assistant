@@ -29,6 +29,10 @@ const netSavingsElement = document.getElementById("netSavings");
 const monthlyExpensesValue = document.getElementById("monthlyExpensesValue");
 const topCategoryValue = document.getElementById("topCategoryValue");
 const savingsStatusValue = document.getElementById("savingsStatusValue");
+const insightTopCategoryElement = document.getElementById("insightTopCategory");
+const insightMonthlyExpenseElement = document.getElementById("insightMonthlyExpense");
+const insightSavingsStatusElement = document.getElementById("insightSavingsStatus");
+const insightSuggestionElement = document.getElementById("insightSuggestion");
 const recentExpensesElement = document.getElementById("recentExpenses");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
@@ -120,6 +124,57 @@ function getSavingsStatus(income, monthlyExpenseTotal) {
   return `⚠️ Overspending: You are over budget by ${formatCurrency(Math.abs(savings))}.`;
 }
 
+function getHighestSpendingCategory(expenses) {
+  if (!expenses.length) {
+    return null;
+  }
+
+  const categoryTotals = {};
+  expenses.forEach((expense) => {
+    const category = expense.category.trim() || "Other";
+    categoryTotals[category] = (categoryTotals[category] || 0) + Number(expense.amount);
+  });
+
+  const [topCategory, topAmount] = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+  return { name: topCategory, amount: topAmount };
+}
+
+function getSavingsLevel(income, monthlyExpenseTotal) {
+  if (income <= 0) {
+    return "average";
+  }
+
+  const savingsRate = ((income - monthlyExpenseTotal) / income) * 100;
+
+  if (savingsRate >= 20) return "good";
+  if (savingsRate >= 10) return "average";
+  return "low";
+}
+
+function getSavingSuggestion(topCategory) {
+  if (!topCategory) {
+    return "Add a few expenses this month to get a personalized saving suggestion.";
+  }
+
+  return `You can save more by reducing ${topCategory.name} expenses.`;
+}
+
+function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
+  if (!insightTopCategoryElement || !insightMonthlyExpenseElement || !insightSavingsStatusElement || !insightSuggestionElement) {
+    return;
+  }
+
+  const topCategory = getHighestSpendingCategory(monthlyExpenses);
+  const savingsLevel = getSavingsLevel(state.income, monthlyExpenseTotal);
+
+  insightTopCategoryElement.textContent = topCategory
+    ? `Your highest spending category is ${topCategory.name}.`
+    : "Your highest spending category is not available yet.";
+  insightMonthlyExpenseElement.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
+  insightSavingsStatusElement.textContent = `Your savings are ${savingsLevel} this month.`;
+  insightSuggestionElement.textContent = getSavingSuggestion(topCategory);
+}
+
 function renderRecentExpenses() {
   recentExpensesElement.innerHTML = "";
 
@@ -157,6 +212,7 @@ function renderDashboard() {
   monthlyExpensesValue.textContent = formatCurrency(monthlyExpenseTotal);
   topCategoryValue.textContent = getTopCategory(monthlyExpenses);
   savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
+  renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
 
   renderRecentExpenses();
 }
