@@ -1,14 +1,12 @@
 const STORAGE_KEY = "barya-finance-data-v1";
 const SETTINGS_STORAGE_KEY = "barya-settings-v1";
-const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
-const GOAL_STORAGE_KEY = "barya-beginner-goal-v1";
-const GOAL_STORAGE_KEY = "barya-selected-goal-v1";
-const SETTINGS_STORAGE_KEY = "barya-user-settings-v1";
+const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1"; // legacy
+const GOAL_STORAGE_KEY = "barya-selected-goal-v1"; // legacy
 
 const CURRENCIES = {
-  INR: { locale: "en-IN", code: "INR", symbol: "₹" },
-  USD: { locale: "en-US", code: "USD", symbol: "$" },
-  EUR: { locale: "de-DE", code: "EUR", symbol: "€" }
+  INR: { locale: "en-IN", code: "INR" },
+  USD: { locale: "en-US", code: "USD" },
+  EUR: { locale: "de-DE", code: "EUR" }
 };
 
 const GOAL_CONTENT = {
@@ -16,7 +14,7 @@ const GOAL_CONTENT = {
     summary: "Focus on spending less, tracking expenses, and building savings step by step.",
     tips: [
       "Track every expense daily, even small purchases.",
-      "Set a simple spending limit for one category each week.",
+      "Set a spending limit for one category each week.",
       "Move a fixed amount to savings as soon as income arrives."
     ],
     dailyTips: [
@@ -32,7 +30,7 @@ const GOAL_CONTENT = {
     monthlyGoals: [
       "Save a fixed amount this month and keep it untouched.",
       "Reduce total monthly expenses by at least 5%.",
-      "Build your emergency savings by one extra contribution."
+      "Build your emergency savings with one extra contribution."
     ]
   },
   "Start a Business": {
@@ -49,7 +47,7 @@ const GOAL_CONTENT = {
     ],
     weeklyChallenges: [
       "Share your idea with 3 people and collect feedback.",
-      "Create a simple one-page offer for your service or product.",
+      "Create a one-page offer for your service or product.",
       "Plan startup costs and remove one non-essential expense."
     ],
     monthlyGoals: [
@@ -59,19 +57,19 @@ const GOAL_CONTENT = {
     ]
   },
   "Learn Finance": {
-    summary: "Focus on understanding basic money concepts, budgeting, and using clear financial habits.",
+    summary: "Focus on understanding basic money concepts, budgeting, and practical financial habits.",
     tips: [
-      "Learn one finance term each day (budget, savings rate, cash flow).",
+      "Learn one finance term each day.",
       "Review income and expenses once a week to see patterns.",
       "Use simple rules like needs, wants, and savings."
     ],
     dailyTips: [
-      "Read one short article or watch one short video about a finance basic.",
+      "Read one short lesson about a finance basic.",
       "Classify one expense as need or want.",
       "Check today's total spending before the day ends."
     ],
     weeklyChallenges: [
-      "Create a simple weekly budget and compare actual spending.",
+      "Create a weekly budget and compare actual spending.",
       "Calculate your savings rate for this week.",
       "List three areas where you can reduce spending."
     ],
@@ -101,6 +99,15 @@ const IDEA_LIBRARY = {
   ]
 };
 
+const state = {
+  income: 0,
+  expenses: [],
+  recurringExpenses: []
+};
+
+let selectedCurrency = "INR";
+let selectedGoal = "";
+
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 
@@ -112,14 +119,6 @@ const assistantForm = document.getElementById("assistantForm");
 const businessAdvisorForm = document.getElementById("businessAdvisorForm");
 const ideaGeneratorForm = document.getElementById("ideaGeneratorForm");
 const settingsForm = document.getElementById("settingsForm");
-const currencySelect = document.getElementById("currencySelect");
-const goalSelect = document.getElementById("goalSelect");
-const settingsGoalSelect = document.getElementById("settingsGoalSelect");
-const changeGoalButton = document.getElementById("changeGoalButton");
-const resetDataButton = document.getElementById("resetDataButton");
-const settingsGoalSelect = document.getElementById("settingsGoalSelect");
-const resetDataButton = document.getElementById("resetDataButton");
-const settingsStatusText = document.getElementById("settingsStatusText");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
@@ -128,9 +127,15 @@ const expenseDateInput = document.getElementById("expenseDate");
 const recurringExpenseNameInput = document.getElementById("recurringExpenseName");
 const recurringExpenseAmountInput = document.getElementById("recurringExpenseAmount");
 const recurringExpenseFrequencyInput = document.getElementById("recurringExpenseFrequency");
+const goalSelect = document.getElementById("goalSelect");
 const assistantQuestionInput = document.getElementById("assistantQuestion");
 const businessIdeaInput = document.getElementById("businessIdeaInput");
 const ideaCategorySelect = document.getElementById("ideaCategorySelect");
+
+const currencySelectElements = document.querySelectorAll("#currencySelect");
+const settingsGoalSelectElements = document.querySelectorAll("#settingsGoalSelect");
+const changeGoalButtons = document.querySelectorAll("#changeGoalButton");
+const resetDataButtons = document.querySelectorAll("#resetDataButton");
 
 const totalIncomeElement = document.getElementById("totalIncome");
 const totalExpensesElement = document.getElementById("totalExpenses");
@@ -138,43 +143,32 @@ const netSavingsElement = document.getElementById("netSavings");
 const monthlyExpensesValue = document.getElementById("monthlyExpensesValue");
 const topCategoryValue = document.getElementById("topCategoryValue");
 const savingsStatusValue = document.getElementById("savingsStatusValue");
-const insightTopCategoryElement = document.getElementById("insightTopCategory");
-const insightMonthlyExpenseElement = document.getElementById("insightMonthlyExpense");
-const insightSavingsStatusElement = document.getElementById("insightSavingsStatus");
-const insightSuggestionElement = document.getElementById("insightSuggestion");
 const recentExpensesElement = document.getElementById("recentExpenses");
 const recurringExpensesListElement = document.getElementById("recurringExpensesList");
 const assistantResponseElement = document.getElementById("assistantResponse");
 const businessAdvisorResponseElement = document.getElementById("businessAdvisorResponse");
 const generatedIdeaTextElement = document.getElementById("generatedIdeaText");
+const insightTopCategoryElement = document.getElementById("insightTopCategory");
+const insightMonthlyExpenseElement = document.getElementById("insightMonthlyExpense");
+const insightSavingsStatusElement = document.getElementById("insightSavingsStatus");
+const insightSuggestionElement = document.getElementById("insightSuggestion");
 const dailyTipTextElement = document.getElementById("dailyTipText");
 const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
 const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
-const goalSelectionElement = document.getElementById("goalSelection");
-const goalSummaryElement = document.getElementById("goalSummary");
-const selectedGoalTextElement = document.getElementById("selectedGoalText");
-const changeGoalButton = document.getElementById("changeGoalButton");
-const goalOptionButtons = document.querySelectorAll(".goal-option-button");
 const selectedGoalDisplayElement = document.getElementById("selectedGoalDisplay");
 const goalGuidanceSummaryElement = document.getElementById("goalGuidanceSummary");
 const goalTipsListElement = document.getElementById("goalTipsList");
-
-const state = {
-  income: 0,
-  expenses: [],
-  recurringExpenses: []
-};
-
-let selectedCurrency = "INR";
-let selectedGoal = "Save Money";
-let selectedGoal = "";
+const goalSelectionElement = document.getElementById("goalSelection");
+const goalSummaryElement = document.getElementById("goalSummary");
+const selectedGoalTextElement = document.getElementById("selectedGoalText");
+const goalOptionButtons = document.querySelectorAll(".goal-option-button");
+const settingsStatusText = document.getElementById("settingsStatusText");
 
 function formatCurrency(value) {
-  const currencyConfig = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
-
-  return new Intl.NumberFormat(currencyConfig.locale, {
+  const currency = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
+  return new Intl.NumberFormat(currency.locale, {
     style: "currency",
-    currency: currencyConfig.code,
+    currency: currency.code,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(Number(value) || 0);
@@ -198,209 +192,6 @@ function loadState() {
   }
 }
 
-function parseLocalDate(dateString) {
-  const [year, month, day] = dateString.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function toStartOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function daysBetween(startDate, endDate) {
-  const oneDay = 24 * 60 * 60 * 1000;
-  return Math.floor((toStartOfDay(endDate) - toStartOfDay(startDate)) / oneDay);
-}
-
-function addDays(date, days) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
-}
-
-function daysInMonth(year, monthIndex) {
-  return new Date(year, monthIndex + 1, 0).getDate();
-}
-
-function getMonthlyOccurrenceDate(year, monthIndex, dayOfMonth) {
-  const safeDay = Math.min(dayOfMonth, daysInMonth(year, monthIndex));
-  return new Date(year, monthIndex, safeDay);
-}
-
-function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd) {
-  const startDate = parseLocalDate(recurringExpense.startDate);
-  const normalizedStartDate = toStartOfDay(startDate);
-  const normalizedRangeStart = toStartOfDay(rangeStart);
-  const normalizedRangeEnd = toStartOfDay(rangeEnd);
-
-  if (normalizedStartDate > normalizedRangeEnd) {
-    return 0;
-  }
-
-  if (recurringExpense.frequency === "daily") {
-    const effectiveStart = normalizedStartDate > normalizedRangeStart ? normalizedStartDate : normalizedRangeStart;
-    return daysBetween(effectiveStart, normalizedRangeEnd) + 1;
-  }
-
-  if (recurringExpense.frequency === "weekly") {
-    let firstOccurrence = normalizedStartDate;
-
-    if (firstOccurrence < normalizedRangeStart) {
-      const diff = daysBetween(firstOccurrence, normalizedRangeStart);
-      const weeksToSkip = Math.ceil(diff / 7);
-      firstOccurrence = addDays(firstOccurrence, weeksToSkip * 7);
-    }
-
-    if (firstOccurrence > normalizedRangeEnd) {
-      return 0;
-    }
-
-    return Math.floor(daysBetween(firstOccurrence, normalizedRangeEnd) / 7) + 1;
-  }
-
-  if (recurringExpense.frequency === "monthly") {
-    const dayOfMonth = normalizedStartDate.getDate();
-    let year = normalizedStartDate.getFullYear();
-    let month = normalizedStartDate.getMonth();
-    let occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
-    let total = 0;
-
-    while (occurrence < normalizedRangeStart) {
-      month += 1;
-      if (month > 11) {
-        month = 0;
-        year += 1;
-      }
-      occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
-    }
-
-    while (occurrence <= normalizedRangeEnd) {
-      if (occurrence >= normalizedStartDate) {
-        total += 1;
-      }
-      month += 1;
-      if (month > 11) {
-        month = 0;
-        year += 1;
-      }
-      occurrence = getMonthlyOccurrenceDate(year, month, dayOfMonth);
-    }
-
-    return total;
-  }
-
-  return 0;
-}
-
-function getCurrentMonthRangeEnd() {
-  return toStartOfDay(new Date());
-}
-
-function buildRecurringOccurrencesForRange(rangeStart, rangeEnd) {
-  const occurrences = [];
-
-  state.recurringExpenses.forEach((recurringExpense) => {
-    const count = countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd);
-    for (let index = 0; index < count; index += 1) {
-      occurrences.push({
-        amount: Number(recurringExpense.amount),
-        category: recurringExpense.name,
-        date: rangeEnd.toISOString(),
-        isRecurring: true
-      });
-    }
-  });
-
-  return occurrences;
-}
-
-function getRecurringTotalThroughDate(endDate) {
-  return state.recurringExpenses.reduce((sum, recurringExpense) => {
-    const occurrences = countRecurringOccurrencesInRange(
-      recurringExpense,
-      parseLocalDate(recurringExpense.startDate),
-      endDate
-    );
-    return sum + occurrences * Number(recurringExpense.amount);
-  }, 0);
-}
-
-function saveSettings() {
-  const settingsPayload = {
-    currency: selectedCurrency,
-    goal: selectedGoal
-  };
-
-  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settingsPayload));
-}
-
-function loadSettings() {
-  const rawSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-
-  if (rawSettings) {
-    try {
-      const parsedSettings = JSON.parse(rawSettings);
-
-      if (parsedSettings.currency && CURRENCIES[parsedSettings.currency]) {
-        selectedCurrency = parsedSettings.currency;
-      }
-
-      if (parsedSettings.goal && GOAL_CONTENT[parsedSettings.goal]) {
-        selectedGoal = parsedSettings.goal;
-      }
-
-      return;
-    } catch {
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    }
-  }
-}
-
-function syncSettingsInputs() {
-  if (currencySelect) {
-    currencySelect.value = selectedCurrency;
-  }
-
-  if (settingsGoalSelect) {
-    settingsGoalSelect.value = selectedGoal || "Save Money";
-function saveSelectedCurrency() {
-  saveSettings();
-  localStorage.setItem(CURRENCY_STORAGE_KEY, selectedCurrency);
-}
-
-function loadSelectedCurrency() {
-  const settings = loadSettings();
-  if (settings.currency && CURRENCIES[settings.currency]) {
-    selectedCurrency = settings.currency;
-    return;
-  }
-
-  const legacyCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
-  if (legacyCurrency && CURRENCIES[legacyCurrency]) {
-    selectedCurrency = legacyCurrency;
-  }
-}
-
-function saveSelectedGoal() {
-  saveSettings();
-  if (!selectedGoal) {
-    localStorage.removeItem(GOAL_STORAGE_KEY);
-    return;
-  }
-  localStorage.setItem(GOAL_STORAGE_KEY, selectedGoal);
-}
-
-function loadSelectedGoal() {
-  const settings = loadSettings();
-  if (settings.goal && GOAL_CONTENT[settings.goal]) {
-    selectedGoal = settings.goal;
-    return;
-  }
-
-  const legacyGoal = localStorage.getItem(GOAL_STORAGE_KEY);
-  if (legacyGoal && GOAL_CONTENT[legacyGoal]) {
-    selectedGoal = legacyGoal;
-  }
-}
-
 function saveSettings() {
   localStorage.setItem(
     SETTINGS_STORAGE_KEY,
@@ -409,224 +200,224 @@ function saveSettings() {
       goal: selectedGoal
     })
   );
+
+  // backward compatibility keys
+  localStorage.setItem(CURRENCY_STORAGE_KEY, selectedCurrency);
+  if (selectedGoal) {
+    localStorage.setItem(GOAL_STORAGE_KEY, selectedGoal);
+  } else {
+    localStorage.removeItem(GOAL_STORAGE_KEY);
+  }
 }
 
 function loadSettings() {
   const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-  if (!raw) return {};
-
-  try {
-    const parsed = JSON.parse(raw);
-    return {
-      currency: parsed.currency,
-      goal: parsed.goal
-    };
-  } catch {
-    localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    return {};
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (CURRENCIES[parsed.currency]) selectedCurrency = parsed.currency;
+      if (GOAL_CONTENT[parsed.goal]) selectedGoal = parsed.goal;
+      return;
+    } catch {
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    }
   }
+
+  const legacyCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+  const legacyGoal = localStorage.getItem(GOAL_STORAGE_KEY);
+  if (CURRENCIES[legacyCurrency]) selectedCurrency = legacyCurrency;
+  if (GOAL_CONTENT[legacyGoal]) selectedGoal = legacyGoal;
 }
 
-function getGoalContent() {
+function getCurrentGoalContent() {
   return GOAL_CONTENT[selectedGoal] || GOAL_CONTENT["Save Money"];
 }
 
-function getMonthlyExpenses() {
+function setDefaultDate() {
+  if (!expenseDateInput) return;
+  const today = new Date();
+  const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  expenseDateInput.value = iso;
+}
+
+function toStartOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function parseDateValue(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function daysBetween(start, end) {
+  return Math.floor((toStartOfDay(end) - toStartOfDay(start)) / 86400000);
+}
+
+function countRecurringOccurrencesInRange(recurring, rangeStart, rangeEnd) {
+  const start = toStartOfDay(parseDateValue(recurring.startDate));
+  const from = toStartOfDay(rangeStart);
+  const to = toStartOfDay(rangeEnd);
+
+  if (start > to) return 0;
+
+  if (recurring.frequency === "daily") {
+    const effectiveStart = start > from ? start : from;
+    return daysBetween(effectiveStart, to) + 1;
+  }
+
+  if (recurring.frequency === "weekly") {
+    let first = start;
+    if (first < from) {
+      const diff = daysBetween(first, from);
+      first = new Date(first.getFullYear(), first.getMonth(), first.getDate() + Math.ceil(diff / 7) * 7);
+    }
+    if (first > to) return 0;
+    return Math.floor(daysBetween(first, to) / 7) + 1;
+  }
+
+  if (recurring.frequency === "monthly") {
+    let count = 0;
+    let y = start.getFullYear();
+    let m = start.getMonth();
+    const day = start.getDate();
+
+    const makeDate = (year, month, dayOfMonth) => {
+      const maxDay = new Date(year, month + 1, 0).getDate();
+      return new Date(year, month, Math.min(dayOfMonth, maxDay));
+    };
+
+    let occurrence = makeDate(y, m, day);
+    while (occurrence < from) {
+      m += 1;
+      if (m > 11) {
+        m = 0;
+        y += 1;
+      }
+      occurrence = makeDate(y, m, day);
+    }
+
+    while (occurrence <= to) {
+      if (occurrence >= start) count += 1;
+      m += 1;
+      if (m > 11) {
+        m = 0;
+        y += 1;
+      }
+      occurrence = makeDate(y, m, day);
+    }
+
+    return count;
+  }
+
+  return 0;
+}
+
+function getCurrentMonthExpensesWithRecurring() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = getCurrentMonthRangeEnd();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = toStartOfDay(now);
 
   const oneTimeExpenses = state.expenses.filter((expense) => {
-    const expenseDate = new Date(expense.date);
-    return expenseDate.getFullYear() === year && expenseDate.getMonth() === month;
+    const d = new Date(expense.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
-  const recurringOccurrences = buildRecurringOccurrencesForRange(monthStart, monthEnd);
-  return [...oneTimeExpenses, ...recurringOccurrences];
+  const recurringAsExpenses = [];
+  state.recurringExpenses.forEach((item) => {
+    const occurrenceCount = countRecurringOccurrencesInRange(item, monthStart, monthEnd);
+    for (let i = 0; i < occurrenceCount; i += 1) {
+      recurringAsExpenses.push({
+        amount: Number(item.amount) || 0,
+        category: item.name || "Recurring",
+        date: monthEnd.toISOString().slice(0, 10)
+      });
+    }
+  });
+
+  return [...oneTimeExpenses, ...recurringAsExpenses];
 }
 
 function getTopCategory(expenses) {
   if (!expenses.length) return "No expenses yet";
-
-  const categories = {};
+  const totals = {};
   expenses.forEach((expense) => {
-    const key = expense.category.trim() || "Other";
-    categories[key] = (categories[key] || 0) + Number(expense.amount);
+    const key = (expense.category || "Other").trim() || "Other";
+    totals[key] = (totals[key] || 0) + (Number(expense.amount) || 0);
   });
-
-  const [category, amount] = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
-  return `${category} (${formatCurrency(amount)})`;
+  const [name, amount] = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
+  return `${name} (${formatCurrency(amount)})`;
 }
 
-function getSavingsStatus(income, monthlyExpenseTotal) {
-  if (income <= 0) {
-    return "Add monthly income to calculate savings status";
-  }
-
-  const savings = income - monthlyExpenseTotal;
-  if (savings > 0) {
-    return `✅ On track: You are saving ${formatCurrency(savings)} this month.`;
-  }
-
-  if (savings === 0) {
-    return "⚖️ Break-even: Income and expenses are currently equal.";
-  }
-
-  return `⚠️ Overspending: You are over budget by ${formatCurrency(Math.abs(savings))}.`;
+function getSavingsStatus(monthlyExpenseTotal) {
+  if (state.income <= 0) return "Add monthly income to calculate savings status";
+  const diff = state.income - monthlyExpenseTotal;
+  if (diff > 0) return `✅ On track: You are saving ${formatCurrency(diff)} this month.`;
+  if (diff === 0) return "⚖️ Break-even: Income and expenses are equal this month.";
+  return `⚠️ Overspending: You are over budget by ${formatCurrency(Math.abs(diff))}.`;
 }
 
-function getHighestSpendingCategory(expenses) {
-  if (!expenses.length) {
-    return null;
-  }
-
-  const categoryTotals = {};
-  expenses.forEach((expense) => {
-    const category = expense.category.trim() || "Other";
-    categoryTotals[category] = (categoryTotals[category] || 0) + Number(expense.amount);
-  });
-
-  const [topCategory, topAmount] = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
-  return { name: topCategory, amount: topAmount };
-}
-
-function getSavingsLevel(income, monthlyExpenseTotal) {
-  if (income <= 0) {
-    return "average";
-  }
-
-  const savingsRate = ((income - monthlyExpenseTotal) / income) * 100;
-
-  if (savingsRate >= 20) return "good";
-  if (savingsRate >= 10) return "average";
-  return "low";
-}
-
-function getSavingSuggestion(topCategory) {
+function renderGoalUi() {
+  const hasGoal = Boolean(selectedGoal);
   const goalContent = getCurrentGoalContent();
-
-  if (!topCategory) {
-    return goalContent.suggestionFallback;
-  }
-
-  if (selectedGoal === "Start a Business") {
-    return `Reduce ${topCategory.name} costs and move that money to business growth tasks.`;
-  }
-
-  if (selectedGoal === "Learn Finance") {
-    return `Use ${topCategory.name} spending as a learning point to improve your budget.`;
-  }
-
-  return `You can save more by reducing ${topCategory.name} expenses.`;
-}
-
-function getDailyTipIndex(date = new Date()) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
-  const normalizedDate = new Date(year, month, day);
-  const daysSinceEpoch = Math.floor(normalizedDate.getTime() / (24 * 60 * 60 * 1000));
-  return daysSinceEpoch;
-}
-
-function renderDailyTip(goalContent) {
-  if (!dailyTipTextElement || !goalContent.dailyTips.length) return;
-  const tipIndex = getDailyTipIndex() % goalContent.dailyTips.length;
-  dailyTipTextElement.textContent = goalContent.dailyTips[tipIndex];
-}
-
-function getWeekIndex(date = new Date()) {
-  const year = date.getFullYear();
-  const normalizedDate = new Date(year, date.getMonth(), date.getDate());
-  const yearStart = new Date(year, 0, 1);
-  const daysSinceYearStart = Math.floor((normalizedDate - yearStart) / (24 * 60 * 60 * 1000));
-  return Math.floor(daysSinceYearStart / 7);
-}
-
-function getMonthIndex(date = new Date()) {
-  return date.getMonth();
-}
-
-function renderGrowthEngagement() {
-  const goalContent = getCurrentGoalContent();
-  renderDailyTip();
-  const goalContent = getGoalContent();
-  renderDailyTip(goalContent);
-
-  if (weeklyChallengeTextElement && goalContent.weeklyChallenges.length) {
-    const weeklyChallengeIndex = getWeekIndex() % goalContent.weeklyChallenges.length;
-    weeklyChallengeTextElement.textContent = goalContent.weeklyChallenges[weeklyChallengeIndex];
-  }
-
-  if (monthlyGoalTextElement && goalContent.monthlyGoals.length) {
-    const monthlyGoalIndex = getMonthIndex() % goalContent.monthlyGoals.length;
-    monthlyGoalTextElement.textContent = goalContent.monthlyGoals[monthlyGoalIndex];
-  }
-}
-
-function renderGoalSection() {
-  const goalContent = getGoalContent();
-  const hasSelectedGoal = Boolean(selectedGoal);
 
   if (selectedGoalDisplayElement) {
-    selectedGoalDisplayElement.textContent = hasSelectedGoal
+    selectedGoalDisplayElement.textContent = hasGoal
       ? `Selected Goal: ${selectedGoal}`
       : "Selected Goal: Not selected yet";
   }
 
-  if (goalSelect) {
-    goalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
-  }
+  if (goalSelect) goalSelect.value = hasGoal ? selectedGoal : "Save Money";
+  settingsGoalSelectElements.forEach((el) => {
+    el.value = hasGoal ? selectedGoal : "Save Money";
+  });
 
-  if (settingsGoalSelect) {
-    settingsGoalSelect.value = hasSelectedGoal ? selectedGoal : "Save Money";
+  if (goalSelectionElement && goalSummaryElement && selectedGoalTextElement) {
+    goalSelectionElement.hidden = hasGoal;
+    goalSummaryElement.hidden = !hasGoal;
+    selectedGoalTextElement.textContent = hasGoal ? selectedGoal : "Save Money";
   }
 
   if (goalForm) {
-    goalForm.classList.toggle("hidden", hasSelectedGoal);
+    goalForm.classList.toggle("hidden", hasGoal);
   }
 
   if (goalGuidanceSummaryElement) {
-    goalGuidanceSummaryElement.textContent = hasSelectedGoal
+    goalGuidanceSummaryElement.textContent = hasGoal
       ? goalContent.summary
       : "Select a goal in Beginner Mode to see focused guidance.";
   }
 
   if (goalTipsListElement) {
     goalTipsListElement.innerHTML = "";
-    if (!hasSelectedGoal) {
+    if (!hasGoal) {
       goalTipsListElement.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
-      return;
+    } else {
+      goalContent.tips.forEach((tip) => {
+        const li = document.createElement("li");
+        li.textContent = tip;
+        goalTipsListElement.appendChild(li);
+      });
     }
-
-    goalContent.tips.forEach((tip) => {
-      const item = document.createElement("li");
-      item.textContent = tip;
-      goalTipsListElement.appendChild(item);
-    });
-  }
-}
-
-function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
-  if (!insightTopCategoryElement || !insightMonthlyExpenseElement || !insightSavingsStatusElement || !insightSuggestionElement) {
-    return;
   }
 
-  const topCategory = getHighestSpendingCategory(monthlyExpenses);
-  const savingsLevel = getSavingsLevel(state.income, monthlyExpenseTotal);
-  const goalContent = getCurrentGoalContent();
+  if (dailyTipTextElement) {
+    const i = Math.floor(Date.now() / 86400000) % goalContent.dailyTips.length;
+    dailyTipTextElement.textContent = goalContent.dailyTips[i];
+  }
 
-  insightTopCategoryElement.textContent = topCategory
-    ? `Your highest spending category is ${topCategory.name}.`
-    : "Your highest spending category is not available yet.";
-  insightMonthlyExpenseElement.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  insightSavingsStatusElement.textContent = `${goalContent.insightPrefix}: Your savings are ${savingsLevel} this month.`;
-  insightSuggestionElement.textContent = getSavingSuggestion(topCategory);
+  if (weeklyChallengeTextElement) {
+    const now = new Date();
+    const weekIndex = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (86400000 * 7));
+    weeklyChallengeTextElement.textContent = goalContent.weeklyChallenges[weekIndex % goalContent.weeklyChallenges.length];
+  }
+
+  if (monthlyGoalTextElement) {
+    monthlyGoalTextElement.textContent = goalContent.monthlyGoals[new Date().getMonth() % goalContent.monthlyGoals.length];
+  }
 }
 
 function renderRecentExpenses() {
+  if (!recentExpensesElement) return;
   recentExpensesElement.innerHTML = "";
 
   if (!state.expenses.length) {
@@ -634,19 +425,18 @@ function renderRecentExpenses() {
     return;
   }
 
-  const latestFive = [...state.expenses]
+  [...state.expenses]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
-
-  latestFive.forEach((expense) => {
-    const item = document.createElement("li");
-    const formattedDate = new Date(expense.date).toLocaleDateString();
-    item.textContent = `${formattedDate} • ${expense.category} • ${formatCurrency(Number(expense.amount))}`;
-    recentExpensesElement.appendChild(item);
-  });
+    .slice(0, 5)
+    .forEach((expense) => {
+      const li = document.createElement("li");
+      li.textContent = `${new Date(expense.date).toLocaleDateString()} • ${expense.category} • ${formatCurrency(expense.amount)}`;
+      recentExpensesElement.appendChild(li);
+    });
 }
 
 function renderRecurringExpenses() {
+  if (!recurringExpensesListElement) return;
   recurringExpensesListElement.innerHTML = "";
 
   if (!state.recurringExpenses.length) {
@@ -654,195 +444,126 @@ function renderRecurringExpenses() {
     return;
   }
 
-  state.recurringExpenses.forEach((recurringExpense) => {
-    const item = document.createElement("li");
-    item.textContent = `${recurringExpense.name} • ${formatCurrency(Number(recurringExpense.amount))} • ${recurringExpense.frequency}`;
-    recurringExpensesListElement.appendChild(item);
+  state.recurringExpenses.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = `${item.name} • ${formatCurrency(item.amount)} • ${item.frequency}`;
+    recurringExpensesListElement.appendChild(li);
   });
 }
 
 function renderDashboard() {
-  const oneTimeTotalExpenses = state.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-  const recurringTotalExpenses = getRecurringTotalThroughDate(getCurrentMonthRangeEnd());
-  const totalExpenses = oneTimeTotalExpenses + recurringTotalExpenses;
-  const netSavings = state.income - totalExpenses;
+  const monthlyExpenses = getCurrentMonthExpensesWithRecurring();
+  const monthlyExpenseTotal = monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
-  totalIncomeElement.textContent = formatCurrency(state.income);
-  totalExpensesElement.textContent = formatCurrency(totalExpenses);
-  netSavingsElement.textContent = formatCurrency(netSavings);
+  const historicalExpenseTotal = state.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const recurringTotalToDate = state.recurringExpenses.reduce((sum, recurring) => {
+    const count = countRecurringOccurrencesInRange(recurring, parseDateValue(recurring.startDate), new Date());
+    return sum + count * (Number(recurring.amount) || 0);
+  }, 0);
 
-  netSavingsElement.classList.remove("positive", "negative");
-  if (netSavings > 0) netSavingsElement.classList.add("positive");
-  if (netSavings < 0) netSavingsElement.classList.add("negative");
+  const totalExpenseAllTime = historicalExpenseTotal + recurringTotalToDate;
+  const netSavings = state.income - totalExpenseAllTime;
 
-  const monthlyExpenses = getMonthlyExpenses();
-  const monthlyExpenseTotal = monthlyExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-  monthlyExpensesValue.textContent = formatCurrency(monthlyExpenseTotal);
-  topCategoryValue.textContent = getTopCategory(monthlyExpenses);
-  savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
-  renderSmartInsights(monthlyExpenses, monthlyExpenseTotal);
-  renderGoalSection();
-  renderGrowthEngagement();
+  if (totalIncomeElement) totalIncomeElement.textContent = formatCurrency(state.income);
+  if (totalExpensesElement) totalExpensesElement.textContent = formatCurrency(totalExpenseAllTime);
+  if (netSavingsElement) {
+    netSavingsElement.textContent = formatCurrency(netSavings);
+    netSavingsElement.classList.remove("positive", "negative");
+    if (netSavings > 0) netSavingsElement.classList.add("positive");
+    if (netSavings < 0) netSavingsElement.classList.add("negative");
+  }
+
+  if (monthlyExpensesValue) monthlyExpensesValue.textContent = formatCurrency(monthlyExpenseTotal);
+  if (topCategoryValue) topCategoryValue.textContent = getTopCategory(monthlyExpenses);
+  if (savingsStatusValue) savingsStatusValue.textContent = getSavingsStatus(monthlyExpenseTotal);
+
+  const topCategoryText = getTopCategory(monthlyExpenses);
+  if (insightTopCategoryElement) {
+    insightTopCategoryElement.textContent = monthlyExpenses.length
+      ? `Your highest spending category is ${topCategoryText.split(" (")[0]}.`
+      : "Your highest spending category is not available yet.";
+  }
+  if (insightMonthlyExpenseElement) {
+    insightMonthlyExpenseElement.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
+  }
+  if (insightSavingsStatusElement) {
+    const savingsRate = state.income > 0 ? ((state.income - monthlyExpenseTotal) / state.income) * 100 : 0;
+    const level = savingsRate >= 20 ? "good" : savingsRate >= 10 ? "average" : "low";
+    insightSavingsStatusElement.textContent = `Your savings are ${level} this month.`;
+  }
+  if (insightSuggestionElement) {
+    insightSuggestionElement.textContent = monthlyExpenses.length
+      ? `Try reducing ${topCategoryText.split(" (")[0]} costs by 5-10% this month.`
+      : "Add expenses to get a saving suggestion.";
+  }
 
   renderRecentExpenses();
   renderRecurringExpenses();
-}
-
-function setDefaultDate() {
-  const today = new Date();
-  const offset = today.getTimezoneOffset();
-  const localDate = new Date(today.getTime() - offset * 60 * 1000)
-    .toISOString()
-    .split("T")[0];
-  expenseDateInput.value = localDate;
+  renderGoalUi();
 }
 
 function getAssistantResponse(question) {
   const q = question.toLowerCase();
 
-  if (q.includes("save") || q.includes("saving") || q.includes("budget")) {
-    return [
-      "💡 Smart Saving Plan:",
-      "1) Follow the 50-30-20 method (needs, wants, savings).",
-      "2) Set an automatic transfer to savings on income day.",
-      "3) Review your top expense category weekly.",
-      "4) Reduce one non-essential cost every month."
-    ].join("\n");
+  if (q.includes("save") || q.includes("budget")) {
+    return "💡 Start with 50/30/20, automate savings on income day, and reduce one non-essential category this week.";
   }
-
+  if (q.includes("expense") || q.includes("cost")) {
+    return "📉 Split expenses into fixed and variable, set category limits, and review top category every Sunday.";
+  }
+  if (q.includes("income") || q.includes("earn") || q.includes("grow")) {
+    return "📈 Increase value first, then test a small price increase, and add one upsell or recurring offer.";
+  }
   if (q.includes("business") || q.includes("startup") || q.includes("idea")) {
-    return [
-      "🚀 Beginner-Friendly Business Ideas:",
-      "1) Niche online reselling (local products).",
-      "2) Social media service for local stores.",
-      "3) Digital products (templates, guides, mini-courses).",
-      "4) Low-cost service business based on your current skill.",
-      "Tip: Start with one idea and validate with 5 paying customers first."
-    ].join("\n");
+    return "🚀 Pick one simple idea, validate with real customers quickly, and keep costs low until demand is proven.";
   }
 
-  if (q.includes("income") || q.includes("earn") || q.includes("growth")) {
-    return [
-      "📈 Income Growth Tips:",
-      "1) Increase prices gradually after improving value.",
-      "2) Add one upsell or premium option.",
-      "3) Build recurring revenue (subscription/retainer).",
-      "4) Spend 30 minutes daily on lead generation.",
-      "Small consistent growth beats one-time big jumps."
-    ].join("\n");
-  }
+  return "🤖 Ask about savings, expenses, income growth, or business ideas for practical guidance.";
+}
 
-  if (q.includes("expense") || q.includes("spending") || q.includes("cost")) {
-    return [
-      "📉 Expense Control Strategy:",
-      "1) Separate fixed and variable costs.",
-      "2) Set category spending limits each month.",
-      "3) Negotiate recurring vendor bills every quarter.",
-      "4) Approve non-essential purchases only after 24 hours.",
-      "Track changes in this dashboard to measure improvement."
-    ].join("\n");
-  }
-
-  return "🤖 I can help with saving money, business ideas, income growth, and expense control. Ask a specific question to get a practical plan.";
+function detectBusinessType(text) {
+  const value = text.toLowerCase();
+  if (value.includes("cloth") || value.includes("fashion")) return "clothing";
+  if (value.includes("food") || value.includes("restaurant")) return "food";
+  if (value.includes("online") || value.includes("digital")) return "online";
+  if (value.includes("service") || value.includes("agency")) return "service";
+  return "general";
 }
 
 function getBusinessAdvisorTemplate(type) {
   const templates = {
     clothing: {
-      summary: "You are planning a clothing business. Start with one clear style or target audience to keep things simple.",
-      steps: [
-        "Pick one niche (for example: kidswear, office wear, or streetwear).",
-        "Source 5-10 starter products from reliable suppliers.",
-        "Test demand by selling to friends, community groups, or social media first.",
-        "Set simple pricing that covers product cost, delivery, and profit.",
-        "Collect feedback from first buyers and improve quickly."
-      ],
-      tips: [
-        "Use clear size charts to reduce returns.",
-        "Start with small inventory to avoid unsold stock.",
-        "Share real photos and customer reviews for trust."
-      ]
+      summary: "Great choice. Start with one clear clothing niche and test demand before buying large stock.",
+      steps: ["Pick one audience.", "Source 5-10 products.", "Test sales using social media.", "Collect feedback and improve."],
+      tips: ["Use clear size charts.", "Start with low inventory.", "Post real product photos."]
     },
     food: {
-      summary: "You are planning a food business. Focus on quality, hygiene, and one strong menu concept.",
-      steps: [
-        "Choose a simple menu with 3-5 best items.",
-        "Calculate food cost per item before setting prices.",
-        "Get required local food permits and follow hygiene rules.",
-        "Start with home delivery, pre-orders, or weekend stalls.",
-        "Track popular items and remove slow sellers."
-      ],
-      tips: [
-        "Consistency in taste matters more than a large menu.",
-        "Use clean, practical packaging that keeps food fresh.",
-        "Ask every customer for quick feedback and improve weekly."
-      ]
+      summary: "Start with a small menu and strong hygiene. Keep quality consistent.",
+      steps: ["Choose 3-5 best items.", "Calculate cost per item.", "Start pre-orders or local delivery.", "Track popular dishes."],
+      tips: ["Consistency wins.", "Use clean packaging.", "Collect customer feedback weekly."]
     },
     online: {
-      summary: "You are planning an online business. Begin with one problem to solve and one audience to serve.",
-      steps: [
-        "Define who your ideal customer is and what they struggle with.",
-        "Create a simple offer (product, service, or digital download).",
-        "Set up one sales channel first (social page or simple website).",
-        "Post helpful content regularly to build trust and traffic.",
-        "Measure clicks, inquiries, and sales every week."
-      ],
-      tips: [
-        "Keep your message simple: problem, solution, benefit.",
-        "Start small and improve based on customer behavior.",
-        "Build an email or contact list from day one."
-      ]
+      summary: "Focus on one customer problem and one sales channel first.",
+      steps: ["Define target customer.", "Create one clear offer.", "Set up one channel.", "Measure inquiries and sales weekly."],
+      tips: ["Keep messaging simple.", "Improve based on data.", "Build a contact list early."]
     },
     service: {
-      summary: "You are planning a service business. Start with one skill-based service that delivers clear results.",
-      steps: [
-        "Choose one core service you can deliver confidently.",
-        "Create a basic package with clear scope and pricing.",
-        "Offer your service to your first 3-5 clients for proof and testimonials.",
-        "Use a simple contract, timeline, and payment terms.",
-        "Ask for referrals after each successful project."
-      ],
-      tips: [
-        "Be very clear about what is included in your service.",
-        "Good communication is as important as technical skill.",
-        "Track time and profit per project to avoid underpricing."
-      ]
+      summary: "Start with one service you can deliver well and produce fast results.",
+      steps: ["Define your core service.", "Create a starter package.", "Get first clients and testimonials.", "Ask for referrals."],
+      tips: ["Set clear scope.", "Communicate consistently.", "Track time and profit."]
     },
     general: {
-      summary: "You have a business idea and want a clear beginner plan. Start small, test early, and learn from real customers.",
-      steps: [
-        "Write your idea in one sentence and define your target customer.",
-        "List startup costs and choose a budget you can manage safely.",
-        "Build a basic version of your offer and test it quickly.",
-        "Talk to at least 10 potential customers and refine your idea.",
-        "Track income, expenses, and feedback from day one."
-      ],
-      tips: [
-        "Progress is better than perfection at the start.",
-        "Keep costs low until you see consistent demand.",
-        "Review your plan every month and adjust based on results."
-      ]
+      summary: "Start small, validate fast, and adjust based on real customer feedback.",
+      steps: ["Define customer and problem.", "Set a safe starter budget.", "Launch a basic version.", "Talk to 10 potential customers."],
+      tips: ["Progress over perfection.", "Keep early costs low.", "Review and improve monthly."]
     }
   };
 
   return templates[type] || templates.general;
 }
 
-function detectBusinessType(idea) {
-  const text = idea.toLowerCase();
-
-  if (text.includes("clothing")) return "clothing";
-  if (text.includes("food")) return "food";
-  if (text.includes("online business")) return "online";
-  if (text.includes("service business")) return "service";
-
-  return "general";
-}
-
 function renderBusinessAdvisorResponse(advice) {
-  const stepsHtml = advice.steps.map((step) => `<li>${step}</li>`).join("");
-  const tipsHtml = advice.tips.map((tip) => `<li>${tip}</li>`).join("");
-
+  if (!businessAdvisorResponseElement) return;
   businessAdvisorResponseElement.innerHTML = `
     <section class="advisor-block">
       <h3>Basic Idea Summary</h3>
@@ -850,54 +571,190 @@ function renderBusinessAdvisorResponse(advice) {
     </section>
     <section class="advisor-block">
       <h3>Simple Steps to Start</h3>
-      <ol>${stepsHtml}</ol>
+      <ol>${advice.steps.map((step) => `<li>${step}</li>`).join("")}</ol>
     </section>
     <section class="advisor-block">
       <h3>Tips for Beginners</h3>
-      <ul>${tipsHtml}</ul>
+      <ul>${advice.tips.map((tip) => `<li>${tip}</li>`).join("")}</ul>
     </section>
   `;
+}
+
+function getRandomIdea(category) {
+  const all = Object.values(IDEA_LIBRARY).flat();
+  const pool = category === "all" ? all : IDEA_LIBRARY[category] || [];
+  if (!pool.length) return "No ideas available right now. Try another category.";
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function initTabs() {
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const target = button.dataset.tab;
-
-      tabButtons.forEach((tab) => tab.classList.remove("active"));
-      tabPanels.forEach((panel) => panel.classList.remove("active"));
-
+      tabButtons.forEach((b) => b.classList.remove("active"));
+      tabPanels.forEach((p) => p.classList.remove("active"));
       button.classList.add("active");
-      document.getElementById(target).classList.add("active");
+      const panel = document.getElementById(target);
+      if (panel) panel.classList.add("active");
     });
   });
 }
 
-function initSettings() {
-  syncSettingsInputs();
+function selectGoal(nextGoal) {
+  if (!GOAL_CONTENT[nextGoal]) return;
+  selectedGoal = nextGoal;
+  saveSettings();
+  renderDashboard();
+}
+
+function initForms() {
+  if (incomeForm) {
+    incomeForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amount = Number(incomeAmountInput?.value);
+      if (Number.isNaN(amount) || amount < 0) return;
+      state.income = amount;
+      saveState();
+      renderDashboard();
+      incomeForm.reset();
+    });
+  }
+
+  if (expenseForm) {
+    expenseForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amount = Number(expenseAmountInput?.value);
+      const category = (expenseCategoryInput?.value || "").trim();
+      const date = expenseDateInput?.value;
+      if (Number.isNaN(amount) || amount < 0 || !category || !date) return;
+
+      state.expenses.push({ amount, category, date });
+      saveState();
+      renderDashboard();
+      expenseForm.reset();
+      setDefaultDate();
+    });
+  }
+
+  if (recurringExpenseForm) {
+    recurringExpenseForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = (recurringExpenseNameInput?.value || "").trim();
+      const amount = Number(recurringExpenseAmountInput?.value);
+      const frequency = recurringExpenseFrequencyInput?.value;
+
+      if (!name || Number.isNaN(amount) || amount < 0 || !["daily", "weekly", "monthly"].includes(frequency)) {
+        return;
+      }
+
+      const today = new Date();
+      const date = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      state.recurringExpenses.push({ name, amount, frequency, startDate: date });
+      saveState();
+      renderDashboard();
+      recurringExpenseForm.reset();
+    });
+  }
+
+  if (goalForm) {
+    goalForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      selectGoal(goalSelect?.value || "Save Money");
+    });
+  }
+
+  if (assistantForm) {
+    assistantForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const q = (assistantQuestionInput?.value || "").trim();
+      if (!q || !assistantResponseElement) return;
+      assistantResponseElement.textContent = "Thinking... 🤖";
+      setTimeout(() => {
+        assistantResponseElement.textContent = getAssistantResponse(q);
+      }, 200);
+    });
+  }
+
+  if (businessAdvisorForm) {
+    businessAdvisorForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const idea = (businessIdeaInput?.value || "").trim();
+      if (!idea) return;
+      renderBusinessAdvisorResponse(getBusinessAdvisorTemplate(detectBusinessType(idea)));
+    });
+  }
+
+  if (ideaGeneratorForm) {
+    ideaGeneratorForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const category = ideaCategorySelect?.value || "all";
+      if (generatedIdeaTextElement) {
+        generatedIdeaTextElement.textContent = getRandomIdea(category);
+      }
+    });
+  }
 
   if (settingsForm) {
     settingsForm.addEventListener("submit", (event) => {
       event.preventDefault();
+      const currency = currencySelectElements[0]?.value || selectedCurrency;
+      const goal = settingsGoalSelectElements[0]?.value || selectedGoal;
+      if (CURRENCIES[currency]) selectedCurrency = currency;
+      if (GOAL_CONTENT[goal]) selectedGoal = goal;
+      saveSettings();
+      syncSettingsInputs();
+      renderDashboard();
+      if (settingsStatusText) settingsStatusText.textContent = "Settings saved.";
+    });
+  }
+}
 
-      const nextCurrency = currencySelect ? currencySelect.value : selectedCurrency;
-      const nextGoal = settingsGoalSelect ? settingsGoalSelect.value : selectedGoal;
+function syncSettingsInputs() {
+  currencySelectElements.forEach((el) => {
+    el.value = selectedCurrency;
+  });
+  settingsGoalSelectElements.forEach((el) => {
+    el.value = selectedGoal || "Save Money";
+  });
+}
 
-      if (CURRENCIES[nextCurrency]) {
-        selectedCurrency = nextCurrency;
-      }
+function initStandaloneSelectors() {
+  currencySelectElements.forEach((el) => {
+    el.addEventListener("change", (event) => {
+      const nextCurrency = event.target.value;
+      if (!CURRENCIES[nextCurrency]) return;
+      selectedCurrency = nextCurrency;
+      saveSettings();
+      syncSettingsInputs();
+      renderDashboard();
+      if (settingsStatusText) settingsStatusText.textContent = "Settings saved.";
+    });
+  });
 
-      if (GOAL_CONTENT[nextGoal]) {
-        selectedGoal = nextGoal;
-      }
+  settingsGoalSelectElements.forEach((el) => {
+    el.addEventListener("change", (event) => {
+      selectGoal(event.target.value);
+      syncSettingsInputs();
+      if (settingsStatusText) settingsStatusText.textContent = "Settings saved.";
+    });
+  });
 
+  goalOptionButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectGoal(btn.dataset.goal);
+    });
+  });
+
+  changeGoalButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedGoal = "";
       saveSettings();
       renderDashboard();
     });
-  }
+  });
 
-  if (resetDataButton) {
-    resetDataButton.addEventListener("click", () => {
+  resetDataButtons.forEach((button) => {
+    button.addEventListener("click", () => {
       state.income = 0;
       state.expenses = [];
       state.recurringExpenses = [];
@@ -906,246 +763,30 @@ function initSettings() {
 
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      localStorage.removeItem(CURRENCY_STORAGE_KEY);
+      localStorage.removeItem(GOAL_STORAGE_KEY);
 
       if (incomeForm) incomeForm.reset();
       if (expenseForm) expenseForm.reset();
       if (recurringExpenseForm) recurringExpenseForm.reset();
+
       setDefaultDate();
-
       syncSettingsInputs();
       renderDashboard();
+      if (settingsStatusText) settingsStatusText.textContent = "All local data has been reset.";
     });
-  }
-    selectedCurrency = nextCurrency;
-    saveSelectedCurrency();
-    renderDashboard();
-    if (settingsStatusText) {
-      settingsStatusText.textContent = "Settings saved.";
-    }
   });
 }
 
-function applySelectedGoal(goalValue) {
-  if (!GOAL_CONTENT[goalValue]) return;
-  selectedGoal = goalValue;
-  saveSelectedGoal();
-  if (goalForm) {
-    goalForm.classList.add("hidden");
-  }
-  renderDashboard();
-}
-
-function initGoalSelector() {
-  if (!goalOptionButtons.length) return;
-
-  goalOptionButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextGoal = button.dataset.goal;
-      if (!GOAL_CONTENT[nextGoal]) return;
-
-      selectedGoal = nextGoal;
-      saveSelectedGoal();
-      updateGoalUiState();
-      renderDashboard();
-    });
-  });
-
-  if (changeGoalButton) {
-    changeGoalButton.addEventListener("click", () => {
-      localStorage.removeItem(GOAL_STORAGE_KEY);
-      updateGoalUiState();
-    });
-  }
-
-  updateGoalUiState();
-function initGoalMode() {
-  if (goalForm) {
-    goalForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const goalValue = goalSelect.value;
-      if (!GOAL_CONTENT[goalValue]) return;
-
-      selectedGoal = goalValue;
-      saveSettings();
-      syncSettingsInputs();
-      goalForm.classList.add("hidden");
-      renderDashboard();
-      applySelectedGoal(goalValue);
-    });
-  }
-
-  if (changeGoalButton) {
-    changeGoalButton.addEventListener("click", () => {
-      if (goalForm) {
-        goalForm.classList.remove("hidden");
-      }
-      if (goalSelect) {
-        goalSelect.value = selectedGoal || "Save Money";
-        goalSelect.focus();
-      }
-    });
-  }
-}
-
-function initSettings() {
-  if (settingsGoalSelect) {
-    settingsGoalSelect.value = selectedGoal || "Save Money";
-    settingsGoalSelect.addEventListener("change", (event) => {
-      applySelectedGoal(event.target.value);
-      if (settingsStatusText) {
-        settingsStatusText.textContent = "Settings saved.";
-      }
-    });
-  }
-
-  if (resetDataButton) {
-    resetDataButton.addEventListener("click", () => {
-      state.income = 0;
-      state.expenses = [];
-      state.recurringExpenses = [];
-      selectedGoal = "";
-      selectedCurrency = "INR";
-
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(CURRENCY_STORAGE_KEY);
-      localStorage.removeItem(GOAL_STORAGE_KEY);
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
-
-      if (currencySelect) {
-        currencySelect.value = selectedCurrency;
-      }
-
-      if (settingsGoalSelect) {
-        settingsGoalSelect.value = "Save Money";
-      }
-
-      if (goalForm) {
-        goalForm.classList.remove("hidden");
-      }
-
-      renderDashboard();
-
-      if (settingsStatusText) {
-        settingsStatusText.textContent = "All local data has been reset.";
-      }
-    });
-  }
-}
-
-function getRandomIdea(category) {
-  const categoryIdeas = IDEA_LIBRARY[category] || [];
-  const allIdeas = Object.values(IDEA_LIBRARY).flat();
-  const ideaPool = category === "all" ? allIdeas : categoryIdeas;
-
-  if (!ideaPool.length) {
-    return "No ideas available right now. Please try another category.";
-  }
-
-  const randomIndex = Math.floor(Math.random() * ideaPool.length);
-  return ideaPool[randomIndex];
-}
-
-incomeForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const amount = Number(incomeAmountInput.value);
-  if (Number.isNaN(amount) || amount < 0) return;
-
-  state.income = amount;
-  saveState();
-  renderDashboard();
-  incomeForm.reset();
-});
-
-expenseForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const amount = Number(expenseAmountInput.value);
-  const category = expenseCategoryInput.value.trim();
-  const date = expenseDateInput.value;
-
-  if (Number.isNaN(amount) || amount < 0 || !category || !date) return;
-
-  state.expenses.push({ amount, category, date });
-  saveState();
-  renderDashboard();
-  expenseForm.reset();
+function init() {
+  loadSettings();
+  loadState();
   setDefaultDate();
-});
-
-recurringExpenseForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const name = recurringExpenseNameInput.value.trim();
-  const amount = Number(recurringExpenseAmountInput.value);
-  const frequency = recurringExpenseFrequencyInput.value;
-
-  if (Number.isNaN(amount) || amount < 0 || !name || !["daily", "weekly", "monthly"].includes(frequency)) return;
-
-  const today = new Date();
-  const offset = today.getTimezoneOffset();
-  const localDate = new Date(today.getTime() - offset * 60 * 1000)
-    .toISOString()
-    .split("T")[0];
-
-  state.recurringExpenses.push({
-    name,
-    amount,
-    frequency,
-    startDate: localDate
-  });
-
-  saveState();
+  initTabs();
+  initForms();
+  initStandaloneSelectors();
+  syncSettingsInputs();
   renderDashboard();
-  recurringExpenseForm.reset();
-});
-
-assistantForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const question = assistantQuestionInput.value.trim();
-  if (!question) return;
-
-  assistantResponseElement.textContent = "Thinking... 🤖";
-
-  setTimeout(() => {
-    assistantResponseElement.textContent = getAssistantResponse(question);
-  }, 300);
-});
-
-businessAdvisorForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const idea = businessIdeaInput.value.trim();
-  if (!idea) return;
-
-  const businessType = detectBusinessType(idea);
-  const advice = getBusinessAdvisorTemplate(businessType);
-  renderBusinessAdvisorResponse(advice);
-});
-
-if (ideaGeneratorForm) {
-  ideaGeneratorForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const selectedCategory = ideaCategorySelect ? ideaCategorySelect.value : "all";
-    const idea = getRandomIdea(selectedCategory);
-
-    if (generatedIdeaTextElement) {
-      generatedIdeaTextElement.textContent = idea;
-    }
-  });
 }
 
-loadSettings();
-loadState();
-setDefaultDate();
-initTabs();
-initSettings();
-initGoalMode();
-syncSettingsInputs();
-initCurrencySelector();
-initGoalSelector();
-initGoalMode();
-initSettings();
-renderDashboard();
+init();
