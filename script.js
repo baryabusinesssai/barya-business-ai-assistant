@@ -1,4 +1,11 @@
 const STORAGE_KEY = "barya-finance-data-v1";
+const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
+
+const CURRENCIES = {
+  INR: { locale: "en-IN", code: "INR", symbol: "₹" },
+  USD: { locale: "en-US", code: "USD", symbol: "$" },
+  EUR: { locale: "de-DE", code: "EUR", symbol: "€" }
+};
 
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
@@ -6,6 +13,7 @@ const tabPanels = document.querySelectorAll(".tab-panel");
 const incomeForm = document.getElementById("incomeForm");
 const expenseForm = document.getElementById("expenseForm");
 const assistantForm = document.getElementById("assistantForm");
+const currencySelect = document.getElementById("currencySelect");
 
 const incomeAmountInput = document.getElementById("incomeAmount");
 const expenseAmountInput = document.getElementById("expenseAmount");
@@ -27,8 +35,17 @@ const state = {
   expenses: []
 };
 
+let selectedCurrency = "INR";
+
 function formatCurrency(value) {
-  return `₹${value.toFixed(2)}`;
+  const currencyConfig = CURRENCIES[selectedCurrency] || CURRENCIES.INR;
+
+  return new Intl.NumberFormat(currencyConfig.locale, {
+    style: "currency",
+    currency: currencyConfig.code,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(value) || 0);
 }
 
 function saveState() {
@@ -45,6 +62,17 @@ function loadState() {
     state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
   } catch {
     localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+function saveSelectedCurrency() {
+  localStorage.setItem(CURRENCY_STORAGE_KEY, selectedCurrency);
+}
+
+function loadSelectedCurrency() {
+  const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+  if (storedCurrency && CURRENCIES[storedCurrency]) {
+    selectedCurrency = storedCurrency;
   }
 }
 
@@ -202,6 +230,20 @@ function initTabs() {
   });
 }
 
+function initCurrencySelector() {
+  if (!currencySelect) return;
+  currencySelect.value = selectedCurrency;
+
+  currencySelect.addEventListener("change", (event) => {
+    const nextCurrency = event.target.value;
+    if (!CURRENCIES[nextCurrency]) return;
+
+    selectedCurrency = nextCurrency;
+    saveSelectedCurrency();
+    renderDashboard();
+  });
+}
+
 incomeForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -243,7 +285,9 @@ assistantForm.addEventListener("submit", (event) => {
   }, 300);
 });
 
+loadSelectedCurrency();
 loadState();
 setDefaultDate();
 initTabs();
+initCurrencySelector();
 renderDashboard();
