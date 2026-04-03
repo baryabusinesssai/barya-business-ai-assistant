@@ -20,6 +20,7 @@
     <nav class="tabs">
       <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
+      <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
     </nav>
 
     <section class="card currency-card" aria-label="Currency settings">
@@ -133,6 +134,29 @@
         <p id="assistantResponse" class="assistant-response">Ask a question to get help</p>
       </div>
 
+    </section>
+
+    <!-- BUSINESS ADVISOR -->
+    <section id="businessAdvisorTab" class="tab-panel">
+      <div class="card">
+        <h2>Business Advisor</h2>
+        <p class="helper-text">Describe your business idea in simple words to get a beginner-friendly plan.</p>
+
+        <form id="businessAdvisorForm" class="stack-form">
+          <label for="businessIdeaInput">Your Business Idea</label>
+          <input
+            type="text"
+            id="businessIdeaInput"
+            placeholder="e.g., I want to start an online clothing store"
+            required
+          />
+          <button type="submit">Get Advice</button>
+        </form>
+
+        <div id="businessAdvisorResponse" class="advisor-response" aria-live="polite">
+          <p class="empty-state">Share your idea to get a basic summary, simple first steps, and tips.</p>
+        </div>
+      </div>
     </section>
 
   </main>
