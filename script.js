@@ -1,5 +1,6 @@
 const STORAGE_KEY = "barya-finance-data-v1";
 const CURRENCY_STORAGE_KEY = "barya-selected-currency-v1";
+const GOAL_STORAGE_KEY = "barya-beginner-goal-v1";
 const GOAL_STORAGE_KEY = "barya-selected-goal-v1";
 const SETTINGS_STORAGE_KEY = "barya-user-settings-v1";
 
@@ -145,6 +146,11 @@ const generatedIdeaTextElement = document.getElementById("generatedIdeaText");
 const dailyTipTextElement = document.getElementById("dailyTipText");
 const weeklyChallengeTextElement = document.getElementById("weeklyChallengeText");
 const monthlyGoalTextElement = document.getElementById("monthlyGoalText");
+const goalSelectionElement = document.getElementById("goalSelection");
+const goalSummaryElement = document.getElementById("goalSummary");
+const selectedGoalTextElement = document.getElementById("selectedGoalText");
+const changeGoalButton = document.getElementById("changeGoalButton");
+const goalOptionButtons = document.querySelectorAll(".goal-option-button");
 const selectedGoalDisplayElement = document.getElementById("selectedGoalDisplay");
 const goalGuidanceSummaryElement = document.getElementById("goalGuidanceSummary");
 const goalTipsListElement = document.getElementById("goalTipsList");
@@ -156,6 +162,7 @@ const state = {
 };
 
 let selectedCurrency = "INR";
+let selectedGoal = "Save Money";
 let selectedGoal = "";
 
 function formatCurrency(value) {
@@ -456,8 +463,18 @@ function getSavingsLevel(income, monthlyExpenseTotal) {
 }
 
 function getSavingSuggestion(topCategory) {
+  const goalContent = getCurrentGoalContent();
+
   if (!topCategory) {
-    return "Add a few expenses this month to get a personalized saving suggestion.";
+    return goalContent.suggestionFallback;
+  }
+
+  if (selectedGoal === "Start a Business") {
+    return `Reduce ${topCategory.name} costs and move that money to business growth tasks.`;
+  }
+
+  if (selectedGoal === "Learn Finance") {
+    return `Use ${topCategory.name} spending as a learning point to improve your budget.`;
   }
 
   return `You can save more by reducing ${topCategory.name} expenses.`;
@@ -491,6 +508,8 @@ function getMonthIndex(date = new Date()) {
 }
 
 function renderGrowthEngagement() {
+  const goalContent = getCurrentGoalContent();
+  renderDailyTip();
   const goalContent = getGoalContent();
   renderDailyTip(goalContent);
 
@@ -555,12 +574,13 @@ function renderSmartInsights(monthlyExpenses, monthlyExpenseTotal) {
 
   const topCategory = getHighestSpendingCategory(monthlyExpenses);
   const savingsLevel = getSavingsLevel(state.income, monthlyExpenseTotal);
+  const goalContent = getCurrentGoalContent();
 
   insightTopCategoryElement.textContent = topCategory
     ? `Your highest spending category is ${topCategory.name}.`
     : "Your highest spending category is not available yet.";
   insightMonthlyExpenseElement.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  insightSavingsStatusElement.textContent = `Your savings are ${savingsLevel} this month.`;
+  insightSavingsStatusElement.textContent = `${goalContent.insightPrefix}: Your savings are ${savingsLevel} this month.`;
   insightSuggestionElement.textContent = getSavingSuggestion(topCategory);
 }
 
@@ -838,6 +858,29 @@ function applySelectedGoal(goalValue) {
   renderDashboard();
 }
 
+function initGoalSelector() {
+  if (!goalOptionButtons.length) return;
+
+  goalOptionButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextGoal = button.dataset.goal;
+      if (!GOAL_CONTENT[nextGoal]) return;
+
+      selectedGoal = nextGoal;
+      saveSelectedGoal();
+      updateGoalUiState();
+      renderDashboard();
+    });
+  });
+
+  if (changeGoalButton) {
+    changeGoalButton.addEventListener("click", () => {
+      localStorage.removeItem(GOAL_STORAGE_KEY);
+      updateGoalUiState();
+    });
+  }
+
+  updateGoalUiState();
 function initGoalMode() {
   if (goalForm) {
     goalForm.addEventListener("submit", (event) => {
@@ -1016,6 +1059,7 @@ loadState();
 setDefaultDate();
 initTabs();
 initCurrencySelector();
+initGoalSelector();
 initGoalMode();
 initSettings();
 renderDashboard();
