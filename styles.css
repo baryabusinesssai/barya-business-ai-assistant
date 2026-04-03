@@ -94,6 +94,10 @@ body {
   box-shadow: var(--shadow);
 }
 
+.feature-card {
+  padding: 1.25rem;
+}
+
 .card h2 {
   margin-top: 0;
   margin-bottom: 0.65rem;
@@ -156,56 +160,10 @@ body {
   align-items: center;
 }
 
-.currency-card {
-  margin-top: -0.2rem;
-}
-
 .goal-selection {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
-}
-
-.goal-option-button {
-  margin-top: 0;
-}
-
-.goal-option-button.active {
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(28, 103, 216, 0.22);
-}
-
-.goal-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem;
-  margin-top: 0.8rem;
-  background: #fbfdff;
-}
-
-.goal-summary-line {
-  margin: 0;
-  font-weight: 600;
-}
-
-.secondary-button {
-  width: auto;
-  margin-top: 0;
-  padding: 0.55rem 0.9rem;
-  background: #ffffff;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-}
-
-.secondary-button:hover {
-  background: #eef4ff;
-.beginner-mode-card .helper-text {
-  margin-bottom: 0.75rem;
 }
 
 .selected-goal-text {
@@ -217,7 +175,7 @@ body {
   background: #fff;
   color: var(--primary);
   border: 1px solid var(--primary);
-  margin: 0 0 0.75rem;
+  margin: 0.75rem 0;
 }
 
 .secondary-action-button:hover {
@@ -227,27 +185,6 @@ body {
 
 .hidden {
   display: none;
-}
-
-.currency-selector {
-  display: grid;
-  gap: 0.65rem;
-  max-width: 260px;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.danger-button {
-  background: var(--danger);
-}
-
-.danger-button:hover {
-  background: #911b13;
 }
 
 .settings-status {
@@ -270,10 +207,10 @@ button {
   font-size: 0.95rem;
 }
 
-input {
+input,
+select {
   background: #fff;
   color: var(--text);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input:focus,
@@ -331,10 +268,6 @@ button:hover {
   font-weight: 700;
 }
 
-.smart-insights-card .helper-text {
-  margin-bottom: 0.75rem;
-}
-
 .insights-grid {
   display: grid;
   gap: 0.6rem;
@@ -348,10 +281,6 @@ button:hover {
   background: #fbfdff;
   font-weight: 600;
   line-height: 1.4;
-}
-
-.growth-section-card .helper-text {
-  margin-bottom: 0.75rem;
 }
 
 .growth-grid {
@@ -386,10 +315,6 @@ button:hover {
   gap: 0.55rem;
 }
 
-.recent-list li {
-  color: var(--text);
-}
-
 .empty-state {
   color: var(--muted);
   font-style: italic;
@@ -405,22 +330,19 @@ button:hover {
   font-weight: 600;
 }
 
-.assistant-response {
+.assistant-response,
+.advisor-response {
   margin-top: 1rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--border);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
   line-height: 1.6;
   white-space: pre-line;
 }
 
-.advisor-response {
-  margin-top: 1rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--border);
-}
-
 .advisor-block + .advisor-block {
-  margin-top: 0.9rem;
+  margin-top: 0.95rem;
 }
 
 .advisor-block h3 {
@@ -445,7 +367,7 @@ button:hover {
 
 .idea-output {
   margin-top: 1rem;
-  padding: 0.85rem;
+  padding: 0.95rem;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: #fbfdff;
@@ -471,21 +393,10 @@ button:hover {
   }
 
   .dashboard-grid,
-  .forms-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .growth-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .settings-grid {
+  .forms-grid,
+  .growth-grid,
   .goal-selection {
     grid-template-columns: 1fr;
-  }
-
-  .tabs {
-    flex-wrap: wrap;
   }
 
   .tab-button {
