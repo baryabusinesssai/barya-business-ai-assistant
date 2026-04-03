@@ -25,7 +25,7 @@
     <section id="dashboardTab" class="tab-panel active">
       <section class="card beginner-mode-card" aria-live="polite">
         <h2>Beginner Mode</h2>
-        <p class="helper-text">Choose one goal to get simple guidance that matches what you want to improve first.</p>
+        <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
         <p id="selectedGoalDisplay" class="selected-goal-text">Selected Goal: Not selected yet</p>
 
         <button type="button" id="changeGoalButton" class="secondary-action-button hidden">Change Goal</button>
@@ -39,6 +39,8 @@
           </select>
           <button type="submit">Save Goal</button>
         </form>
+
+        <button type="button" class="secondary-button change-goal-button hidden">Change Goal</button>
       </section>
 
       <section class="card">
@@ -183,6 +185,9 @@
     </section>
 
     <section id="assistantTab" class="tab-panel">
+      <div class="card feature-card">
+        <h2>AI Assistant</h2>
+        <p class="helper-text">Ask short finance or business questions and get practical beginner-friendly guidance.</p>
       <div class="card section-card">
         <h2>AI Assistant</h2>
         <p class="helper-text section-intro">Ask quick finance or business questions and get a simple response.</p>
@@ -197,18 +202,16 @@
     </section>
 
     <section id="businessAdvisorTab" class="tab-panel">
+      <div class="card feature-card">
+        <h2>Business Advisor</h2>
+        <p class="helper-text">Describe your business idea in simple words to get a beginner-friendly plan.</p>
       <div class="card section-card">
         <h2>Business Advisor</h2>
         <p class="helper-text section-intro">Describe your business idea in simple words to get a beginner-friendly plan.</p>
 
         <form id="businessAdvisorForm" class="stack-form">
           <label for="businessIdeaInput">Your Business Idea</label>
-          <input
-            type="text"
-            id="businessIdeaInput"
-            placeholder="e.g., I want to start an online clothing store"
-            required
-          />
+          <input type="text" id="businessIdeaInput" placeholder="e.g., I want to start an online clothing store" required />
           <button type="submit">Get Advice</button>
         </form>
 
@@ -219,6 +222,9 @@
     </section>
 
     <section id="ideaGeneratorTab" class="tab-panel">
+      <div class="card feature-card">
+        <h2>Idea Generator</h2>
+        <p class="helper-text">Pick a category (optional) and generate a simple business idea.</p>
       <div class="card section-card">
         <h2>Idea Generator</h2>
         <p class="helper-text section-intro">Pick a category (optional) and generate a simple business idea.</p>
