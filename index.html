@@ -1,307 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Barya Business AI Assistant</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barya | AI Business Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <main class="container">
-    <header class="hero">
-      <div class="hero-topline">
-        <span class="live-badge">● Live MVP</span>
-      </div>
-      <h1>Barya Business AI Assistant Dashboard</h1>
-      <p>Track finances, get smart guidance, and build your business with confidence.</p>
-    </header>
-
-
-
+    <div class="glow-bg"></div>
     
-
-    <nav class="tabs" aria-label="Primary navigation">
-      <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
-      <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
-      <button class="tab-button" data-tab="businessAdvisorTab">Business Advisor</button>
-      <button class="tab-button" data-tab="ideaGeneratorTab">Idea Generator</button>
-      <button class="tab-button" data-tab="settingsTab">Settings</button>
+    <nav class="navbar">
+        <div class="logo">BARYA<span>.</span>AI</div>
+        <ul class="nav-links">
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#advisor">AI Advisor</a></li>
+            <li><a href="#ideas">Idea Gen</a></li>
+        </ul>
+        <button class="btn-primary">Launch App</button>
     </nav>
 
-    <section id="dashboardTab" class="tab-panel active">
-    
-
-      <section class="card beginner-mode-card" aria-live="polite">
-        <div class="card-header">
-          <h2>Beginner Mode</h2>
-          <span class="mini-pill">Guided</span>
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge">Next-Gen Financial Intelligence</span>
+            <h1>Master Your Money with <span class="text-gradient">Barya AI</span></h1>
+            <div class="typing-container">
+                <span id="typing-text"></span><span class="cursor">|</span>
+            </div>
+            <p>The foundation of your business ecosystem. Track, learn, and grow with the power of AI guidance.</p>
+            <div class="hero-btns">
+                <button class="btn-primary">Get Started Free</button>
+                <button class="btn-secondary">Watch Demo</button>
+            </div>
         </div>
-        <p class="helper-text">Choose one goal so we can show simple guidance for your next steps.</p>
-        <p id="selectedGoalDisplay" class="selected-goal-text">Selected Goal: Not selected yet</p>
+    </header>
 
-        <button type="button" id="changeGoalButton" class="secondary-button hidden">Change Goal</button>
-
-        <form id="goalForm" class="stack-form">
-          <label for="goalSelect">Pick Your Goal</label>
-          <select id="goalSelect" required>
-            <option value="Save Money">Save Money</option>
-            <option value="Start a Business">Start a Business</option>
-            <option value="Learn Finance">Learn Finance</option>
-          </select>
-          <small class="field-note">Tip: You can always update this goal later in Settings.</small>
-          <button type="submit">Save Goal</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <h2>Financial Dashboard</h2>
-          <span class="mini-pill mini-pill-blue">This Month</span>
-        </div>
-        <div class="dashboard-grid">
-          <div class="metric metric-income">
-            <h3>Total Income</h3>
-            <p id="totalIncome">₹0.00</p>
-          </div>
-          <div class="metric metric-expense">
-            <h3>Total Expenses</h3>
-            <p id="totalExpenses">₹0.00</p>
-          </div>
-          <div class="metric metric-savings">
-            <h3>Net Savings</h3>
-            <p id="netSavings">₹0.00</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="forms-grid">
-        <div class="card">
-          <h2>Save Monthly Income</h2>
-          <p class="helper-text">Enter your expected monthly business income once each month.</p>
-          <form id="incomeForm" class="stack-form">
-            <label for="incomeAmount">Monthly Income</label>
-            <input type="number" id="incomeAmount" placeholder="e.g., 50000" min="0" step="0.01" required />
-            <small class="field-note">Use your expected income for the current month.</small>
-            <button type="submit">Save Income</button>
-          </form>
-        </div>
-
-        <div class="card">
-          <h2>Add Expense</h2>
-          <p class="helper-text">Track each expense with amount, category, and date for better monthly insights.</p>
-          <form id="expenseForm" class="stack-form">
-            <label for="expenseAmount">Expense Amount</label>
-            <input type="number" id="expenseAmount" placeholder="e.g., 2500" min="0" step="0.01" required />
-
-            <label for="expenseCategory">Category</label>
-            <input type="text" id="expenseCategory" placeholder="e.g., Rent, Marketing, Travel" required />
-
-            <label for="expenseDate">Expense Date</label>
-            <input type="date" id="expenseDate" required />
-            <small class="field-note">Add each payment as soon as possible for accurate reporting.</small>
-            <button type="submit">Add Expense</button>
-          </form>
-        </div>
-
-        <div class="card">
-          <h2>Add Recurring Expense</h2>
-          <p class="helper-text">Add expenses that repeat daily, weekly, or monthly.</p>
-          <form id="recurringExpenseForm" class="stack-form">
-            <label for="recurringExpenseName">Name</label>
-            <input type="text" id="recurringExpenseName" placeholder="e.g., Office Rent" required />
-
-            <label for="recurringExpenseAmount">Amount</label>
-            <input type="number" id="recurringExpenseAmount" placeholder="e.g., 5000" min="0" step="0.01" required />
-
-            <label for="recurringExpenseFrequency">Frequency</label>
-            <select id="recurringExpenseFrequency" required>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-            <small class="field-note">Recurring entries are auto-counted in monthly summaries.</small>
-            <button type="submit">Add Recurring Expense</button>
-          </form>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Monthly Overview</h2>
-        <div id="monthlyOverview" class="overview-grid">
-          <div class="overview-item">
-            <h3>Total Monthly Expenses</h3>
-            <p id="monthlyExpensesValue">₹0.00</p>
-          </div>
-          <div class="overview-item">
-            <h3>Top Spending Category</h3>
-            <p id="topCategoryValue">No expenses yet</p>
-          </div>
-          <div class="overview-item">
-            <h3>Savings Status</h3>
-            <p id="savingsStatusValue">Add income and expenses to view status</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="card smart-insights-card">
-        <div class="card-header">
-          <h2>Smart Insights</h2>
-          <span class="mini-pill">AI Highlights</span>
-        </div>
-        <p class="helper-text">Simple insights based on your current month's income and expenses.</p>
-        <div class="insights-grid">
-          <article class="insight-line" id="insightTopCategory">Your highest spending category is not available yet.</article>
-          <article class="insight-line" id="insightMonthlyExpense">Your total monthly expenses are ₹0.00.</article>
-          <article class="insight-line" id="insightSavingsStatus">Your savings status is average this month.</article>
-          <article class="insight-line" id="insightSuggestion">Add expenses to get a saving suggestion.</article>
-        </div>
-      </section>
-
-      <section class="card growth-section-card" aria-live="polite">
-        <h2>Growth &amp; Engagement</h2>
-        <p class="helper-text">Beginner-friendly daily, weekly, and monthly actions to improve your financial habits.</p>
-        <div class="growth-grid">
-          <article class="growth-item">
-            <h3>Daily Tip</h3>
-            <p id="dailyTipText" class="growth-text">Track your daily expenses to improve savings.</p>
-          </article>
-          <article class="growth-item">
-            <h3>Weekly Challenge</h3>
-            <p id="weeklyChallengeText" class="growth-text">Track every expense for the next 7 days.</p>
-          </article>
-          <article class="growth-item">
-            <h3>Monthly Goal</h3>
-            <p id="monthlyGoalText" class="growth-text">Save ₹1000 this month.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="card goal-guidance-card" aria-live="polite">
-        <h2>Goal-Based Guidance</h2>
-        <p id="goalGuidanceSummary" class="helper-text">Select a goal in Beginner Mode to see focused guidance.</p>
-        <ul id="goalTipsList" class="recent-list">
-          <li class="empty-state">No goal selected yet.</li>
-        </ul>
-      </section>
-
-      <section class="card">
-        <h2>Recent Expenses</h2>
-        <ul id="recentExpenses" class="recent-list">
-          <li class="empty-state">No expenses added yet.</li>
-        </ul>
-      </section>
-
-      <section class="card">
-        <h2>Recurring Expenses</h2>
-        <ul id="recurringExpensesList" class="recent-list">
-          <li class="empty-state">No recurring expenses added yet.</li>
-        </ul>
-      </section>
-
-      
-    </section>
-
-    <section id="assistantTab" class="tab-panel">
-      <div class="card section-card">
-        <div class="card-header">
-          <h2>AI Assistant</h2>
-          <span class="mini-pill">Quick Help</span>
-        </div>
-        <p class="helper-text section-intro">Ask quick finance or business questions and get a simple response.</p>
-
-        <form id="assistantForm" class="inline-form">
-          <input type="text" id="assistantQuestion" placeholder="Ask something..." required />
-          <button type="submit">Ask AI</button>
-        </form>
-
-        <p id="assistantResponse" class="assistant-response">Ask a question to get help.</p>
-      </div>
-    </section>
-
-    <section id="businessAdvisorTab" class="tab-panel">
-      <div class="card section-card">
-        <div class="card-header">
-          <h2>Business Advisor</h2>
-          <span class="mini-pill">Action Plan</span>
-        </div>
-        <p class="helper-text section-intro">Describe your business idea in simple words to get a beginner-friendly plan.</p>
-
-        <form id="businessAdvisorForm" class="stack-form">
-          <label for="businessIdeaInput">Your Business Idea</label>
-          <input type="text" id="businessIdeaInput" placeholder="e.g., I want to start an online clothing store" required />
-          <small class="field-note">The clearer your idea, the better the advice.</small>
-          <button type="submit">Get Advice</button>
-        </form>
-
-        <div id="businessAdvisorResponse" class="advisor-response" aria-live="polite">
-          <p class="empty-state">Share your idea to get a basic summary, simple first steps, and tips.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="ideaGeneratorTab" class="tab-panel">
-      <div class="card section-card">
-        <div class="card-header">
-          <h2>Idea Generator</h2>
-          <span class="mini-pill">Inspiration</span>
-        </div>
-        <p class="helper-text section-intro">Pick a category (optional) and generate a simple business idea.</p>
-
-        <form id="ideaGeneratorForm" class="stack-form">
-          <label for="ideaCategorySelect">Category</label>
-          <select id="ideaCategorySelect">
-            <option value="all">All Categories</option>
-            <option value="lowInvestment">Low Investment</option>
-            <option value="onlineEarning">Online Earning</option>
-            <option value="smallBusiness">Small Business</option>
-          </select>
-          <small class="field-note">Try multiple categories for more creative ideas.</small>
-          <button type="submit">Generate Idea</button>
-        </form>
-
-        <p id="generatedIdeaText" class="idea-output">Click “Generate Idea” to see a business idea.</p>
-      </div>
-    </section>
-
-    <section id="settingsTab" class="tab-panel">
-      <div class="card section-card">
-        <div class="card-header">
-          <h2>Settings</h2>
-          <span class="mini-pill">Personalize</span>
-        </div>
-        <p class="helper-text section-intro">Choose your preferences once and the app will remember them on this device.</p>
-
-        <form id="settingsForm" class="stack-form">
-          <div class="settings-grid">
-            <div class="currency-selector">
-              <label for="currencySelect">Display Currency</label>
-              <select id="currencySelect">
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-              </select>
+    <section class="container" id="dashboard">
+        <div class="grid-layout">
+            <div class="glass-card main-stats">
+                <div class="card-header">
+                    <h3>Financial Command Center</h3>
+                    <span class="live-indicator">● LIVE</span>
+                </div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <label>Monthly Income</label>
+                        <div class="value">₹50,000</div>
+                    </div>
+                    <div class="stat">
+                        <label>Expenses</label>
+                        <div class="value text-red">₹12,400</div>
+                    </div>
+                    <div class="stat">
+                        <label>Net Savings</label>
+                        <div class="value text-green">₹37,600</div>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    <div class="bar" style="height: 40%"></div>
+                    <div class="bar" style="height: 70%"></div>
+                    <div class="bar" style="height: 55%"></div>
+                    <div class="bar" style="height: 90%"></div>
+                </div>
             </div>
 
-            <div class="currency-selector">
-              <label for="settingsGoalSelect">Default Goal</label>
-              <select id="settingsGoalSelect">
-                <option value="Save Money">Save Money</option>
-                <option value="Start a Business">Start Business</option>
-                <option value="Learn Finance">Learn Finance</option>
-              </select>
+            <div class="glass-card ai-sidebar">
+                <h3>AI Insights</h3>
+                <div class="ai-msg">
+                    <p>"You can save <strong>₹1,500</strong> this month by reducing 'Dining Out' expenses."</p>
+                </div>
+                <div class="ai-msg">
+                    <p>"Your business idea 'Online Bakery' has high potential in your area."</p>
+                </div>
+                <button class="btn-glass">Ask Assistant</button>
             </div>
-          </div>
-
-          <button type="submit">Save Settings</button>
-        </form>
-
-        <button type="button" id="resetDataButton" class="danger-button">Reset Data</button>
-        <p id="settingsStatusText" class="helper-text settings-status" aria-live="polite"></p>
-      </div>
+        </div>
     </section>
-  </main>
 
-  <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barya Business AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <div id="beginner-modal" class="modal">
+        <div class="glass-card modal-content">
+            <h2>Welcome to Barya<span>.</span></h2>
+            <p>What is your primary goal today?</p>
+            <div class="goal-options">
+                <button onclick="setGoal('Save Money')">💰 Save Money</button>
+                <button onclick="setGoal('Start a Business')">🚀 Start Business</button>
+                <button onclick="setGoal('Learn Finance')">📚 Learn Finance</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">BARYA<span>.</span>AI</div>
+        <div class="nav-right">
+            <span id="user-goal-badge" class="badge">Goal: Not Set</span>
+            <button class="btn-primary" onclick="showTab('settings')">Settings</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <aside class="sidebar">
+            <button class="side-link active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="side-link" onclick="showTab('ai-assistant')">🤖 AI Assistant</button>
+            <button class="side-link" onclick="showTab('business-plan')">💼 Business Plan</button>
+            <button class="side-link" onclick="showTab('ideas')">💡 Idea Gen</button>
+        </aside>
+
+        <section class="content">
+            
+            <div id="dashboard" class="tab-content active">
+                <div class="grid-layout">
+                    <div class="glass-card main-stats">
+                        <h3>Financial Overview</h3>
+                        <div class="stats-row">
+                            <div class="stat">
+                                <label>Total Income</label>
+                                <div id="display-income" class="value">₹0</div>
+                            </div>
+                            <div class="stat">
+                                <label>Total Expenses</label>
+                                <div id="display-expense" class="value text-red">₹0</div>
+                            </div>
+                            <div class="stat">
+                                <label>Net Savings</label>
+                                <div id="display-savings" class="value text-green">₹0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="budget-inputs">
+                            <input type="number" id="input-amount" placeholder="Amount (₹)">
+                            <select id="input-type">
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                            <button class="btn-primary" onclick="addTransaction()">Add Entry</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Smart Insights</h3>
+                        <div id="insights-list">
+                            <div class="ai-msg">Add data to see analysis...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai-assistant" class="tab-content">
+                <div class="glass-card">
+                    <h3>Barya AI Assistant</h3>
+                    <div id="chat-box" class="chat-display">
+                        <div class="ai-msg">Hello! I am your Barya AI. How can I help you grow today?</div>
+                    </div>
+                    <div class="inline-form">
+                        <input type="text" id="chat-input" placeholder="Ask anything about finance or business...">
+                        <button class="btn-primary" onclick="askAI()">Ask</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="business-plan" class="tab-content">
+                <div class="glass-card">
+                    <h3>Startup & Planning</h3>
+                    <div class="plan-grid">
+                        <div class="plan-item" onclick="getPlan('Step-by-Step Guide')">📝 Startup Guide</div>
+                        <div class="plan-item" onclick="getPlan('Business Plan Template')">📋 Plan Template</div>
+                        <div class="plan-item" onclick="getPlan('Learning Resources')">🎓 Learn Finance</div>
+                    </div>
+                    <div id="plan-result" class="ai-msg mt-20">Select a tool to begin.</div>
+                </div>
+            </div>
+
+            <div id="ideas" class="tab-content">
+                <div class="glass-card text-center">
+                    <h3>AI Idea Generator</h3>
+                    <p>Get low-investment & online business ideas.</p>
+                    <button class="btn-glass" onclick="generateIdea()">Generate New Idea</button>
+                    <div id="idea-display" class="idea-box"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
