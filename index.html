@@ -17,6 +17,24 @@
       <p>Track finances, get smart guidance, and build your business with confidence.</p>
     </header>
 
+
+
+    <section class="card section-card" aria-live="polite">
+      <div class="card-header">
+        <h2>Account</h2>
+        <span class="mini-pill">Firebase Auth</span>
+      </div>
+      <p id="authUserState" class="helper-text">Not logged in</p>
+      <form id="authForm" class="inline-form" onsubmit="return false;">
+        <input type="email" id="authEmail" placeholder="Email" autocomplete="email" required />
+        <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password" required />
+        <button type="button" id="authSignupButton">Sign Up</button>
+        <button type="button" id="authLoginButton">Log In</button>
+        <button type="button" id="authLogoutButton">Log Out</button>
+      </form>
+      <p id="authMessage" class="helper-text">Please log in to save your data</p>
+    </section>
+
     <nav class="tabs" aria-label="Primary navigation">
       <button class="tab-button active" data-tab="dashboardTab">Dashboard</button>
       <button class="tab-button" data-tab="assistantTab">AI Assistant</button>
@@ -214,6 +232,7 @@
 
       <section class="trust-note" aria-label="Trust note">
         🔒 Your data is saved securely in your Firebase account when logged in
+        🔒 Your data is stored securely in Firebase (cloud) when logged in
       </section>
     </section>
 
