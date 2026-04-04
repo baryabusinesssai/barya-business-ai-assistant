@@ -1,5 +1,12 @@
-const STORAGE_KEY = "barya-finance-data-v1";
-const SETTINGS_STORAGE_KEY = "barya-user-settings-v1";
+import { login, logout, signup, watchAuthState } from "./auth.js";
+import {
+  clearUserData,
+  loadUserData,
+  saveExpenses,
+  saveIncome,
+  saveRecurring,
+  saveSettings
+} from "./firestore.js";
 
 const CURRENCIES = {
   INR: { locale: "en-IN", code: "INR" },
@@ -12,817 +19,268 @@ const DEFAULT_GOAL = "Save Money";
 const GOAL_CONTENT = {
   "Save Money": {
     summary: "Focus on spending less, tracking expenses, and building savings step by step.",
-    tips: [
-      "Track every expense daily, even small purchases.",
-      "Set a spending limit for one category each week.",
-      "Move a fixed amount to savings as soon as income arrives."
-    ],
-    dailyTips: [
-      "Track one expense immediately after spending.",
-      "Skip one non-essential purchase today.",
-      "Check your wallet and note where money went."
-    ],
-    weeklyChallenges: [
-      "Stay under your spending limit in one category this week.",
-      "Review last week expenses and cut one unnecessary cost.",
-      "Save the amount of one skipped purchase."
-    ],
-    monthlyGoals: [
-      "Save a fixed amount this month and keep it untouched.",
-      "Reduce total monthly expenses by at least 5%.",
-      "Build your emergency savings with one extra contribution."
-    ]
+    tips: ["Track every expense daily, even small purchases.", "Set a spending limit for one category each week.", "Move a fixed amount to savings as soon as income arrives."],
+    dailyTips: ["Track one expense immediately after spending.", "Skip one non-essential purchase today.", "Check your wallet and note where money went."],
+    weeklyChallenges: ["Stay under your spending limit in one category this week.", "Review last week expenses and cut one unnecessary cost.", "Save the amount of one skipped purchase."],
+    monthlyGoals: ["Save a fixed amount this month and keep it untouched.", "Reduce total monthly expenses by at least 5%.", "Build your emergency savings with one extra contribution."]
   },
   "Start a Business": {
     summary: "Focus on validating ideas, understanding customers, and taking small low-risk business steps.",
-    tips: [
-      "Write your idea in one sentence and who it helps.",
-      "Talk to at least 3 potential customers this week.",
-      "Start with a low-cost version before spending heavily."
-    ],
-    dailyTips: [
-      "Write one problem your business can solve.",
-      "Spend 20 minutes researching your target customer.",
-      "Note one competitor and what they do well."
-    ],
-    weeklyChallenges: [
-      "Share your idea with 3 people and collect feedback.",
-      "Create a one-page offer for your service or product.",
-      "Plan startup costs and remove one non-essential expense."
-    ],
-    monthlyGoals: [
-      "Get your first paying customer this month.",
-      "Test one marketing channel and track results.",
-      "Create a small starter budget and follow it."
-    ]
+    tips: ["Write your idea in one sentence and who it helps.", "Talk to at least 3 potential customers this week.", "Start with a low-cost version before spending heavily."],
+    dailyTips: ["Write one problem your business can solve.", "Spend 20 minutes researching your target customer.", "Note one competitor and what they do well."],
+    weeklyChallenges: ["Share your idea with 3 people and collect feedback.", "Create a one-page offer for your service or product.", "Plan startup costs and remove one non-essential expense."],
+    monthlyGoals: ["Get your first paying customer this month.", "Test one marketing channel and track results.", "Create a small starter budget and follow it."]
   },
   "Learn Finance": {
     summary: "Focus on understanding basic money concepts, budgeting, and practical financial habits.",
-    tips: [
-      "Learn one finance term each day.",
-      "Review income and expenses once a week to see patterns.",
-      "Use simple rules like needs, wants, and savings."
-    ],
-    dailyTips: [
-      "Read one short lesson about a finance basic.",
-      "Classify one expense as need or want.",
-      "Check today's total spending before the day ends."
-    ],
-    weeklyChallenges: [
-      "Create a weekly budget and compare actual spending.",
-      "Calculate your savings rate for this week.",
-      "List three areas where you can reduce spending."
-    ],
-    monthlyGoals: [
-      "Finish one beginner finance learning plan this month.",
-      "Track all spending categories for the full month.",
-      "Set one realistic savings target and review progress."
-    ]
+    tips: ["Learn one finance term each day.", "Review income and expenses once a week to see patterns.", "Use simple rules like needs, wants, and savings."],
+    dailyTips: ["Read one short lesson about a finance basic.", "Classify one expense as need or want.", "Check today's total spending before the day ends."],
+    weeklyChallenges: ["Create a weekly budget and compare actual spending.", "Calculate your savings rate for this week.", "List three areas where you can reduce spending."],
+    monthlyGoals: ["Finish one beginner finance learning plan this month.", "Track all spending categories for the full month.", "Set one realistic savings target and review progress."]
   }
 };
 
 const IDEA_LIBRARY = {
-  lowInvestment: [
-    "Start a home-based snack business",
-    "Offer mobile phone photography services for local shops",
-    "Start a local errand and delivery service"
-  ],
+  lowInvestment: ["Start a home-based snack business", "Offer mobile phone photography services for local shops", "Start a local errand and delivery service"],
   onlineEarning: ["Sell products on Instagram", "Freelancing in graphic design", "Online tutoring"],
-  smallBusiness: [
-    "Start a custom gift packaging business",
-    "Open a neighborhood tiffin service",
-    "Begin a home-based tailoring service"
-  ]
+  smallBusiness: ["Start a custom gift packaging business", "Open a neighborhood tiffin service", "Begin a home-based tailoring service"]
 };
 
 const state = { income: 0, expenses: [], recurringExpenses: [] };
 const settings = { currency: "INR", goal: "" };
-let useBackend = false;
+let currentUser = null;
 
-const els = {
-  tabButtons: document.querySelectorAll(".tab-button"),
-  tabPanels: document.querySelectorAll(".tab-panel"),
+const els = Object.fromEntries([...document.querySelectorAll("[id]")].map((el) => [el.id, el]));
+els.tabButtons = document.querySelectorAll(".tab-button");
+els.tabPanels = document.querySelectorAll(".tab-panel");
 
-  incomeForm: document.getElementById("incomeForm"),
-  expenseForm: document.getElementById("expenseForm"),
-  recurringExpenseForm: document.getElementById("recurringExpenseForm"),
-  goalForm: document.getElementById("goalForm"),
-  assistantForm: document.getElementById("assistantForm"),
-  businessAdvisorForm: document.getElementById("businessAdvisorForm"),
-  ideaGeneratorForm: document.getElementById("ideaGeneratorForm"),
-  settingsForm: document.getElementById("settingsForm"),
+const saveFormIds = ["incomeForm", "expenseForm", "recurringExpenseForm", "goalForm", "settingsForm", "resetDataButton"];
 
-  incomeAmount: document.getElementById("incomeAmount"),
-  expenseAmount: document.getElementById("expenseAmount"),
-  expenseCategory: document.getElementById("expenseCategory"),
-  expenseDate: document.getElementById("expenseDate"),
-  recurringExpenseName: document.getElementById("recurringExpenseName"),
-  recurringExpenseAmount: document.getElementById("recurringExpenseAmount"),
-  recurringExpenseFrequency: document.getElementById("recurringExpenseFrequency"),
-  goalSelect: document.getElementById("goalSelect"),
-  currencySelect: document.getElementById("currencySelect"),
-  settingsGoalSelect: document.getElementById("settingsGoalSelect"),
-  changeGoalButton: document.getElementById("changeGoalButton"),
-  resetDataButton: document.getElementById("resetDataButton"),
-  settingsStatusText: document.getElementById("settingsStatusText"),
-
-  assistantQuestion: document.getElementById("assistantQuestion"),
-  assistantResponse: document.getElementById("assistantResponse"),
-  businessIdeaInput: document.getElementById("businessIdeaInput"),
-  businessAdvisorResponse: document.getElementById("businessAdvisorResponse"),
-  ideaCategorySelect: document.getElementById("ideaCategorySelect"),
-  generatedIdeaText: document.getElementById("generatedIdeaText"),
-
-  totalIncome: document.getElementById("totalIncome"),
-  totalExpenses: document.getElementById("totalExpenses"),
-  netSavings: document.getElementById("netSavings"),
-  monthlyExpensesValue: document.getElementById("monthlyExpensesValue"),
-  topCategoryValue: document.getElementById("topCategoryValue"),
-  savingsStatusValue: document.getElementById("savingsStatusValue"),
-
-  insightTopCategory: document.getElementById("insightTopCategory"),
-  insightMonthlyExpense: document.getElementById("insightMonthlyExpense"),
-  insightSavingsStatus: document.getElementById("insightSavingsStatus"),
-  insightSuggestion: document.getElementById("insightSuggestion"),
-
-  recentExpenses: document.getElementById("recentExpenses"),
-  recurringExpensesList: document.getElementById("recurringExpensesList"),
-
-  selectedGoalDisplay: document.getElementById("selectedGoalDisplay"),
-  goalTipsList: document.getElementById("goalTipsList"),
-  goalGuidanceSummary: document.getElementById("goalGuidanceSummary"),
-
-  dailyTipText: document.getElementById("dailyTipText"),
-  weeklyChallengeText: document.getElementById("weeklyChallengeText"),
-  monthlyGoalText: document.getElementById("monthlyGoalText")
+const todayYMD = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const parseYMD = (ymd) => {
+  const [y, m, d] = (ymd || "").split("-").map(Number);
+  return y && m && d ? new Date(y, m - 1, d) : null;
 };
+const fmt = (v) => new Intl.NumberFormat((CURRENCIES[settings.currency] || CURRENCIES.INR).locale, { style: "currency", currency: (CURRENCIES[settings.currency] || CURRENCIES.INR).code }).format(Number(v) || 0);
+const updateStatus = (t) => { if (els.settingsStatusText) els.settingsStatusText.textContent = t; if (els.authMessage) els.authMessage.textContent = t; };
 
-const api = {
-  async isAvailable() {
-    try {
-      const response = await fetch("/api/health");
-      return response.ok;
-    } catch {
-      return false;
-    }
-  },
-  async loadState() {
-    const response = await fetch("/api/state");
-    if (!response.ok) throw new Error("Could not load state from backend");
-    return response.json();
-  },
-  async saveState(payload) {
-    const response = await fetch("/api/state", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+function setSaveEnabled(enabled) {
+  saveFormIds.forEach((id) => {
+    const el = els[id];
+    if (!el) return;
+    if (el.tagName === "BUTTON") el.disabled = !enabled;
+    el.querySelectorAll?.("button[type='submit'], input, select").forEach((node) => {
+      if (node.id === "authEmail" || node.id === "authPassword") return;
+      node.disabled = !enabled;
     });
-    if (!response.ok) throw new Error("Could not save state to backend");
-  },
-  async loadSettings() {
-    const response = await fetch("/api/settings");
-    if (!response.ok) throw new Error("Could not load settings from backend");
-    return response.json();
-  },
-  async saveSettings(payload) {
-    const response = await fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error("Could not save settings to backend");
+  });
+  if (!enabled) updateStatus("Please log in to save your data");
+}
+
+async function persistAll() {
+  if (!currentUser) {
+    setSaveEnabled(false);
+    return false;
   }
-};
-
-function safeParseJSON(raw, fallback) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
+  await Promise.all([
+    saveIncome(currentUser.uid, state.income),
+    saveExpenses(currentUser.uid, state.expenses),
+    saveRecurring(currentUser.uid, state.recurringExpenses),
+    saveSettings(currentUser.uid, settings)
+  ]);
+  return true;
 }
 
-function todayYMD() {
-  const now = new Date();
-  const offsetMs = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
-}
-
-function parseYMDToDate(ymd) {
-  const [year, month, day] = (ymd || "").split("-").map(Number);
-  if (!year || !month || !day) return null;
-  return new Date(year, month - 1, day);
-}
-
-function formatCurrency(value) {
-  const currencyConfig = CURRENCIES[settings.currency] || CURRENCIES.INR;
-  return new Intl.NumberFormat(currencyConfig.locale, {
-    style: "currency",
-    currency: currencyConfig.code,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(Number(value) || 0);
-}
-
-function updateStatus(text) {
-  if (els.settingsStatusText) {
-    els.settingsStatusText.textContent = text;
-  }
-}
-
-function saveStateLocal() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadStateLocal() {
-  const parsed = safeParseJSON(localStorage.getItem(STORAGE_KEY), {});
-  state.income = Number(parsed.income) || 0;
-  state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
-  state.recurringExpenses = Array.isArray(parsed.recurringExpenses) ? parsed.recurringExpenses : [];
-}
-
-function saveSettingsLocal() {
-  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-}
-
-function loadSettingsLocal() {
-  const parsed = safeParseJSON(localStorage.getItem(SETTINGS_STORAGE_KEY), {});
-  if (parsed.currency && CURRENCIES[parsed.currency]) settings.currency = parsed.currency;
-  if (parsed.goal && GOAL_CONTENT[parsed.goal]) settings.goal = parsed.goal;
-}
-
-async function persistState() {
-  if (useBackend) {
-    await api.saveState(state);
-    return;
-  }
-  await api.saveState(state);
-}
-
-async function persistSettings() {
-  if (!useBackend) {
-    saveSettingsLocal();
-    return;
-  }
-  await api.saveSettings(settings);
-}
-
-function countRecurringMonthlyToDate(expense) {
-  const startDate = parseYMDToDate(expense.startDate);
-  if (!startDate) return 0;
-
-  const now = new Date();
-  if (startDate > now) return 0;
-
-  if (expense.frequency === "daily") {
-    return Math.floor((now - startDate) / 86400000) + 1;
-  }
-
-  if (expense.frequency === "weekly") {
-    return Math.floor((now - startDate) / (7 * 86400000)) + 1;
-  }
-
-  if (expense.frequency === "monthly") {
-    return (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth()) + 1;
-  }
-
-  return 0;
-  saveStateLocal();
-}
-
-async function persistSettings() {
-  if (useBackend) {
-    await api.saveSettings(settings);
-    return;
-  }
-  saveSettingsLocal();
-}
-
-function toStartOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function daysBetween(start, end) {
-  return Math.floor((toStartOfDay(end) - toStartOfDay(start)) / 86400000);
-}
-
-function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd) {
-  const start = parseYMDToDate(recurringExpense.startDate) || rangeStart;
-  const from = toStartOfDay(rangeStart);
-  const to = toStartOfDay(rangeEnd);
-  let current = toStartOfDay(start);
+function countRecurringInMonth(expense, now) {
+  const startDate = parseYMD(expense.startDate);
+  if (!startDate || startDate > now) return 0;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  let cursor = new Date(startDate);
   let count = 0;
-
-  while (current <= to) {
-    if (current >= from) count += 1;
-    if (recurringExpense.frequency === "daily") {
-      current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
-    } else if (recurringExpense.frequency === "weekly") {
-      current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 7);
-    } else {
-      current = new Date(current.getFullYear(), current.getMonth() + 1, start.getDate());
-    }
+  while (cursor <= now) {
+    if (cursor >= monthStart) count += 1;
+    cursor = expense.frequency === "daily" ? new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1)
+      : expense.frequency === "weekly" ? new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 7)
+      : new Date(cursor.getFullYear(), cursor.getMonth() + 1, startDate.getDate());
   }
-
   return count;
 }
 
-function getCurrentMonthExpenses() {
+function monthlyExpenses() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const today = toStartOfDay(now);
-
-  const oneTime = state.expenses.filter((expense) => {
-    const d = parseYMDToDate(expense.date) || new Date(expense.date);
+  const oneTime = state.expenses.filter((e) => {
+    const d = parseYMD(e.date) || new Date(e.date);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
-
-  const recurring = state.recurringExpenses.map((expense) => ({
-    amount: Number(expense.amount) || 0,
-    category: expense.name || "Recurring",
-    date: todayYMD()
-  }));
-  const recurring = [];
-  state.recurringExpenses.forEach((expense) => {
-    const occurrences = countRecurringOccurrencesInRange(expense, monthStart, today);
-    for (let i = 0; i < occurrences; i += 1) {
-      recurring.push({ amount: Number(expense.amount) || 0, category: expense.name || "Recurring", date: todayYMD() });
-    }
-  });
-
+  const recurring = state.recurringExpenses.flatMap((e) => Array.from({ length: countRecurringInMonth(e, now) }, () => ({ amount: e.amount, category: e.name, date: todayYMD() })));
   return [...oneTime, ...recurring];
-}
-
-function getRecurringTotalToDate() {
-  return state.recurringExpenses.reduce((sum, expense) => {
-    return sum + countRecurringMonthlyToDate(expense) * (Number(expense.amount) || 0);
-  }, 0);
-}
-
-function getTopCategory(expenses) {
-  if (!expenses.length) return "No expenses yet";
-  const totals = {};
-  expenses.forEach((expense) => {
-    const key = (expense.category || "Other").trim() || "Other";
-    totals[key] = (totals[key] || 0) + (Number(expense.amount) || 0);
-  });
-
-  const [name, amount] = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
-  return `${name} (${formatCurrency(amount)})`;
-}
-
-function getSavingsStatus(income, expenseTotal) {
-  if (income <= 0) return "Add monthly income to calculate savings status";
-
-  const diff = income - expenseTotal;
-  if (diff > 0) return `✅ On track: You are saving ${formatCurrency(diff)} this month.`;
-  if (diff === 0) return "⚖️ Break-even: Income and expenses are equal this month.";
-  return `⚠️ Overspending: You are over budget by ${formatCurrency(Math.abs(diff))}.`;
 }
 
 function renderGoalUI() {
   const hasGoal = Boolean(settings.goal);
   const content = GOAL_CONTENT[settings.goal || DEFAULT_GOAL];
-
-  if (els.selectedGoalDisplay) {
-    els.selectedGoalDisplay.textContent = hasGoal ? `Selected Goal: ${settings.goal}` : "Selected Goal: Not selected yet";
-  }
+  if (els.selectedGoalDisplay) els.selectedGoalDisplay.textContent = hasGoal ? `Selected Goal: ${settings.goal}` : "Selected Goal: Not selected yet";
   if (els.goalForm) els.goalForm.classList.toggle("hidden", hasGoal);
   if (els.changeGoalButton) els.changeGoalButton.classList.toggle("hidden", !hasGoal);
-  if (els.goalSelect) els.goalSelect.value = hasGoal ? settings.goal : DEFAULT_GOAL;
-  if (els.settingsGoalSelect) els.settingsGoalSelect.value = hasGoal ? settings.goal : DEFAULT_GOAL;
-  if (els.goalSelect) els.goalSelect.value = settings.goal || DEFAULT_GOAL;
-  if (els.settingsGoalSelect) els.settingsGoalSelect.value = settings.goal || DEFAULT_GOAL;
-
-  if (els.goalGuidanceSummary) {
-    els.goalGuidanceSummary.textContent = hasGoal ? content.summary : "Select a goal in Beginner Mode to see focused guidance.";
-  }
-
+  if (els.goalGuidanceSummary) els.goalGuidanceSummary.textContent = hasGoal ? content.summary : "Select a goal in Beginner Mode to see focused guidance.";
   if (els.goalTipsList) {
-    els.goalTipsList.innerHTML = "";
-    if (hasGoal) {
-      content.tips.forEach((tip) => {
-        const li = document.createElement("li");
-        li.textContent = tip;
-        els.goalTipsList.appendChild(li);
-      });
-    } else {
-      els.goalTipsList.innerHTML = '<li class="empty-state">No goal selected yet.</li>';
-    }
+    els.goalTipsList.innerHTML = hasGoal ? content.tips.map((tip) => `<li>${tip}</li>`).join("") : '<li class="empty-state">No goal selected yet.</li>';
   }
-
-  const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
-  if (els.dailyTipText) els.dailyTipText.textContent = content.dailyTips[dayIndex];
-
   const now = new Date();
-  if (els.dailyTipText) {
-    const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
-    els.dailyTipText.textContent = content.dailyTips[dayIndex];
-  }
-  if (els.weeklyChallengeText) {
-    const startYear = new Date(now.getFullYear(), 0, 1);
-    const weekIndex = Math.floor((now - startYear) / (7 * 86400000)) % content.weeklyChallenges.length;
-    els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
-  }
-  if (els.monthlyGoalText) {
-    els.monthlyGoalText.textContent = content.monthlyGoals[now.getMonth() % content.monthlyGoals.length];
-  }
-}
-
-function renderRecentExpenses() {
-  if (!els.recentExpenses) return;
-  els.recentExpenses.innerHTML = "";
-  if (!state.expenses.length) {
-    els.recentExpenses.innerHTML = '<li class="empty-state">No expenses added yet.</li>';
-    return;
-  }
-
-  [...state.expenses]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5)
-    .forEach((expense) => {
-      const li = document.createElement("li");
-      li.textContent = `${new Date(expense.date).toLocaleDateString()} • ${expense.category} • ${formatCurrency(expense.amount)}`;
-      els.recentExpenses.appendChild(li);
-    });
-}
-
-function renderRecurringExpenses() {
-  if (!els.recurringExpensesList) return;
-
-  els.recurringExpensesList.innerHTML = "";
-  if (!state.recurringExpenses.length) {
-    els.recurringExpensesList.innerHTML = '<li class="empty-state">No recurring expenses added yet.</li>';
-    return;
-  }
-
-  state.recurringExpenses.forEach((expense) => {
-    const li = document.createElement("li");
-    li.textContent = `${expense.name} • ${formatCurrency(expense.amount)} • ${expense.frequency}`;
-    els.recurringExpensesList.appendChild(li);
-  });
+  if (els.dailyTipText) els.dailyTipText.textContent = content.dailyTips[Math.floor(Date.now() / 86400000) % content.dailyTips.length];
+  if (els.weeklyChallengeText) els.weeklyChallengeText.textContent = content.weeklyChallenges[Math.floor(((now - new Date(now.getFullYear(), 0, 1)) / 86400000) / 7) % content.weeklyChallenges.length];
+  if (els.monthlyGoalText) els.monthlyGoalText.textContent = content.monthlyGoals[now.getMonth() % content.monthlyGoals.length];
 }
 
 function renderDashboard() {
-      const d = parseYMDToDate(expense.date) || new Date(expense.date);
-      const li = document.createElement("li");
-      li.textContent = `${d.toLocaleDateString()} • ${expense.category} • ${formatCurrency(expense.amount)}`;
-      els.recentExpenses.appendChild(li);
-    });
-}
+  const oneTimeTotal = state.expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const recurringTotal = state.recurringExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const total = oneTimeTotal + recurringTotal;
+  const net = state.income - total;
+  if (els.totalIncome) els.totalIncome.textContent = fmt(state.income);
+  if (els.totalExpenses) els.totalExpenses.textContent = fmt(total);
+  if (els.netSavings) els.netSavings.textContent = fmt(net);
 
-function renderRecurringExpenses() {
-  if (!els.recurringExpensesList) return;
-  els.recurringExpensesList.innerHTML = "";
-  if (!state.recurringExpenses.length) {
-    els.recurringExpensesList.innerHTML = '<li class="empty-state">No recurring expenses added yet.</li>';
-    return;
-  }
+  const month = monthlyExpenses();
+  const monthTotal = month.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const byCat = {};
+  month.forEach((e) => { const k = e.category || "Other"; byCat[k] = (byCat[k] || 0) + (Number(e.amount) || 0); });
+  const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+  const topText = top ? `${top[0]} (${fmt(top[1])})` : "No expenses yet";
+  if (els.monthlyExpensesValue) els.monthlyExpensesValue.textContent = fmt(monthTotal);
+  if (els.topCategoryValue) els.topCategoryValue.textContent = topText;
+  if (els.savingsStatusValue) els.savingsStatusValue.textContent = state.income <= 0 ? "Add monthly income to calculate savings status" : net >= 0 ? `✅ On track: You are saving ${fmt(Math.max(state.income - monthTotal, 0))} this month.` : `⚠️ Overspending: You are over budget by ${fmt(Math.abs(state.income - monthTotal))}.`;
 
-  state.recurringExpenses.forEach((expense) => {
-    const li = document.createElement("li");
-    li.textContent = `${expense.name} • ${formatCurrency(expense.amount)} • ${expense.frequency}`;
-    els.recurringExpensesList.appendChild(li);
-  });
-}
+  if (els.recentExpenses) els.recentExpenses.innerHTML = state.expenses.length ? [...state.expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).map((e) => `<li>${new Date(e.date).toLocaleDateString()} • ${e.category} • ${fmt(e.amount)}</li>`).join("") : '<li class="empty-state">No expenses added yet.</li>';
+  if (els.recurringExpensesList) els.recurringExpensesList.innerHTML = state.recurringExpenses.length ? state.recurringExpenses.map((e) => `<li>${e.name} • ${fmt(e.amount)} • ${e.frequency}</li>`).join("") : '<li class="empty-state">No recurring expenses added yet.</li>';
 
-function renderDashboard() {
-  const monthlyExpenses = getCurrentMonthExpenses();
-  const monthlyExpenseTotal = monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  const oneTimeExpenseTotal = state.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  const recurringTotal = state.recurringExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  const totalExpense = oneTimeExpenseTotal + recurringTotal;
-  const net = state.income - totalExpense;
-
-  if (els.totalIncome) els.totalIncome.textContent = formatCurrency(state.income);
-  if (els.totalExpenses) els.totalExpenses.textContent = formatCurrency(totalExpense);
-  if (els.netSavings) els.netSavings.textContent = formatCurrency(net);
-
-  const monthlyExpenses = getCurrentMonthExpenses();
-  const monthlyExpenseTotal = monthlyExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
-
-  if (els.monthlyExpensesValue) els.monthlyExpensesValue.textContent = formatCurrency(monthlyExpenseTotal);
-  if (els.topCategoryValue) els.topCategoryValue.textContent = getTopCategory(monthlyExpenses);
-  if (els.savingsStatusValue) els.savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
-
-  renderInsights(monthlyExpenses, monthlyExpenseTotal);
-  const topCategoryText = getTopCategory(monthlyExpenses);
-  if (els.insightTopCategory) {
-    els.insightTopCategory.textContent = monthlyExpenses.length
-      ? `Your highest spending category is ${topCategoryText.split(" (")[0]}.`
-      : "Your highest spending category is not available yet.";
-  }
-  if (els.insightMonthlyExpense) {
-    els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  }
-  if (els.insightSavingsStatus) {
-    els.insightSavingsStatus.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
-  }
-  if (els.insightSuggestion) {
-    els.insightSuggestion.textContent = monthlyExpenses.length
-      ? `You can save more by reviewing and reducing ${topCategoryText.split(" (")[0]} expenses.`
-      : "Add expenses to get a saving suggestion.";
-  }
-
-  renderRecentExpenses();
-  renderRecurringExpenses();
+  if (els.insightTopCategory) els.insightTopCategory.textContent = top ? `Your highest spending category is ${top[0]}.` : "Your highest spending category is not available yet.";
+  if (els.insightMonthlyExpense) els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${fmt(monthTotal)}.`;
+  if (els.insightSavingsStatus) els.insightSavingsStatus.textContent = els.savingsStatusValue?.textContent || "";
+  if (els.insightSuggestion) els.insightSuggestion.textContent = top ? `You can save more by reviewing and reducing ${top[0]} expenses.` : "Add expenses to get a saving suggestion.";
   renderGoalUI();
 }
 
-function getAssistantResponse(question) {
-  const q = question.toLowerCase();
-  if (q.includes("save") || q.includes("budget")) return "💡 Track expenses daily and set one fixed monthly savings amount.";
-  if (q.includes("expense") || q.includes("cost")) return "📉 Review top categories weekly and reduce one non-essential cost.";
-  if (q.includes("business") || q.includes("idea") || q.includes("startup")) return "🚀 Start with one small offer and validate with real customers.";
-  if (q.includes("income") || q.includes("earn") || q.includes("growth")) return "📈 Improve value, raise pricing carefully, and add one recurring offer.";
-  return "🤖 Ask about saving, expenses, income growth, or business ideas.";
-  if (q.includes("save") || q.includes("budget")) {
-    return "💡 Start by tracking all expenses for 7 days, then set one spending limit and auto-save a fixed amount on income day.";
-  }
-  if (q.includes("expense") || q.includes("cost")) {
-    return "📉 Separate fixed and variable costs, cap one variable category, and review weekly for reductions.";
-  }
-  if (q.includes("business") || q.includes("idea") || q.includes("startup")) {
-    return "🚀 Pick one small idea, test with real customers, and validate before making big investments.";
-  }
-  if (q.includes("income") || q.includes("earn") || q.includes("growth")) {
-    return "📈 Improve value, raise pricing carefully, and add one recurring offer for stable monthly income.";
-  }
-  return "🤖 I can help with saving, expenses, business ideas, and growth. Ask a specific question for a practical answer.";
-}
-
-function detectBusinessType(text) {
-  const q = text.toLowerCase();
-  if (q.includes("cloth")) return "clothing";
-  if (q.includes("food") || q.includes("restaurant") || q.includes("snack")) return "food";
-  if (q.includes("online") || q.includes("instagram") || q.includes("ecommerce")) return "online";
-  if (q.includes("service") || q.includes("agency") || q.includes("consult")) return "service";
-  return "general";
-}
-
-function getBusinessAdvisorTemplate(type) {
-  const templates = {
-    clothing: {
-      summary: "Great choice. Start with one clear clothing niche and test demand before buying large stock.",
-      steps: ["Pick one audience.", "Source 5-10 products.", "Test sales using social media.", "Collect feedback and improve."],
-      tips: ["Use clear size charts.", "Start with low inventory.", "Post real product photos."]
-    },
-    food: {
-      summary: "Start with a small menu and strong hygiene. Keep quality consistent.",
-      steps: ["Choose 3-5 best items.", "Calculate cost per item.", "Start pre-orders or local delivery.", "Track popular dishes."],
-      tips: ["Consistency wins.", "Use clean packaging.", "Collect customer feedback weekly."]
-    },
-    online: {
-      summary: "Focus on one customer problem and one sales channel first.",
-      steps: ["Define target customer.", "Create one clear offer.", "Set up one channel.", "Measure inquiries and sales weekly."],
-      tips: ["Keep messaging simple.", "Improve based on data.", "Build a contact list early."]
-    },
-    service: {
-      summary: "Start with one service you can deliver well and produce fast results.",
-      steps: ["Define your core service.", "Create a starter package.", "Get first clients and testimonials.", "Ask for referrals."],
-      tips: ["Set clear scope.", "Communicate consistently.", "Track time and profit."]
-    },
-    general: {
-      summary: "Start small, validate fast, and adjust based on real customer feedback.",
-      steps: ["Define customer and problem.", "Set a safe starter budget.", "Launch a basic version.", "Talk to 10 potential customers."],
-      tips: ["Progress over perfection.", "Keep early costs low.", "Review and improve monthly."]
-    }
-  };
-
-  return templates[type] || templates.general;
-}
-
-function escapeHTML(text) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function renderBusinessAdvisorResponse(ideaText) {
-  if (!els.businessAdvisorResponse) return;
-
-  const template = getBusinessAdvisorTemplate(detectBusinessType(ideaText));
-  const steps = template.steps.map((step) => `<li>${escapeHTML(step)}</li>`).join("");
-  const tips = template.tips.map((tip) => `<li>${escapeHTML(tip)}</li>`).join("");
-function renderBusinessAdvisorResponse(ideaText) {
-  if (!els.businessAdvisorResponse) return;
-  const template = getBusinessAdvisorTemplate(detectBusinessType(ideaText));
-  const steps = template.steps.map((step) => `<li>${step}</li>`).join("");
-  const tips = template.tips.map((tip) => `<li>${tip}</li>`).join("");
-
-  els.businessAdvisorResponse.innerHTML = `
-    <section class="advisor-block">
-      <h3>Basic Idea Summary</h3>
-      <p>${escapeHTML(template.summary)}</p>
-      <p><strong>Your input:</strong> ${escapeHTML(ideaText)}</p>
-      <p>${template.summary}</p>
-    </section>
-    <section class="advisor-block">
-      <h3>Simple Steps to Start</h3>
-      <ol>${steps}</ol>
-    </section>
-    <section class="advisor-block">
-      <h3>Helpful Tips</h3>
-      <ul>${tips}</ul>
-    </section>
-  `;
-}
-
-function getRandomIdea(category) {
-  const all = Object.values(IDEA_LIBRARY).flat();
-  const pool = category === "all" ? all : IDEA_LIBRARY[category] || [];
-  if (!pool.length) return "No ideas available right now. Please try another category.";
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 function initTabs() {
-  els.tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const target = button.dataset.tab;
-      els.tabButtons.forEach((btn) => btn.classList.remove("active"));
-      els.tabPanels.forEach((panel) => panel.classList.remove("active"));
-      button.classList.add("active");
-      const panel = document.getElementById(target);
-      if (panel) panel.classList.add("active");
-    });
-  });
+  els.tabButtons.forEach((button) => button.addEventListener("click", () => {
+    const target = button.dataset.tab;
+    els.tabButtons.forEach((b) => b.classList.remove("active"));
+    els.tabPanels.forEach((p) => p.classList.remove("active"));
+    button.classList.add("active");
+    document.getElementById(target)?.classList.add("active");
+  }));
 }
 
 function initForms() {
-  if (els.expenseDate) {
-    els.expenseDate.value = todayYMD();
-  }
   if (els.expenseDate) els.expenseDate.value = todayYMD();
 
-  els.incomeForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const amount = Number(els.incomeAmount?.value);
-    if (Number.isNaN(amount) || amount < 0) return;
-
-    state.income = amount;
-    await persistState();
-    renderDashboard();
+  els.authSignupButton?.addEventListener("click", async () => {
+    try {
+      await signup(els.authEmail.value.trim(), els.authPassword.value);
+      updateStatus("Account created and logged in.");
+    } catch (error) {
+      updateStatus(`Signup failed: ${error.message}`);
+    }
   });
 
-  els.expenseForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const amount = Number(els.expenseAmount?.value);
-    const category = els.expenseCategory?.value.trim();
-    const date = els.expenseDate?.value;
-    if (Number.isNaN(amount) || amount < 0 || !category || !date) return;
-
-    state.expenses.push({ amount, category, date });
-    await persistState();
-    renderDashboard();
-    els.expenseForm.reset();
-    if (els.expenseDate) els.expenseDate.value = todayYMD();
+  els.authLoginButton?.addEventListener("click", async () => {
+    try {
+      await login(els.authEmail.value.trim(), els.authPassword.value);
+      updateStatus("Logged in successfully.");
+    } catch (error) {
+      updateStatus(`Login failed: ${error.message}`);
+    }
   });
 
-  els.recurringExpenseForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const name = els.recurringExpenseName.value.trim();
-    const amount = Number(els.recurringExpenseAmount.value);
-    const frequency = els.recurringExpenseFrequency.value;
-
-    const name = els.recurringExpenseName?.value.trim();
-    const amount = Number(els.recurringExpenseAmount?.value);
-    const frequency = els.recurringExpenseFrequency?.value;
-    if (!name || Number.isNaN(amount) || amount < 0 || !["daily", "weekly", "monthly"].includes(frequency)) return;
-
-    state.recurringExpenses.push({ name, amount, frequency, startDate: todayYMD() });
-    await persistState();
-    renderDashboard();
-    els.recurringExpenseForm.reset();
+  els.authLogoutButton?.addEventListener("click", async () => {
+    await logout();
+    updateStatus("Logged out.");
   });
 
-  els.goalForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const goal = els.goalSelect.value || DEFAULT_GOAL;
-    if (!GOAL_CONTENT[goal]) return;
-
-    settings.goal = goal;
-    settings.goal = els.goalSelect?.value || DEFAULT_GOAL;
-    await persistSettings();
-    renderDashboard();
-    updateStatus("Goal saved.");
+  els.incomeForm?.addEventListener("submit", async (e) => { e.preventDefault(); state.income = Number(els.incomeAmount.value) || 0; if (await persistAll()) renderDashboard(); });
+  els.expenseForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    state.expenses.push({ amount: Number(els.expenseAmount.value), category: els.expenseCategory.value.trim(), date: els.expenseDate.value });
+    if (await persistAll()) { renderDashboard(); els.expenseForm.reset(); els.expenseDate.value = todayYMD(); }
+  });
+  els.recurringExpenseForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    state.recurringExpenses.push({ name: els.recurringExpenseName.value.trim(), amount: Number(els.recurringExpenseAmount.value), frequency: els.recurringExpenseFrequency.value, startDate: todayYMD() });
+    if (await persistAll()) { renderDashboard(); els.recurringExpenseForm.reset(); }
   });
 
-  els.changeGoalButton?.addEventListener("click", async () => {
-    settings.goal = "";
-    await persistSettings();
-    renderDashboard();
-    updateStatus("Goal selection is open. Choose a new goal.");
-  });
-
-  els.settingsForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const currency = els.currencySelect.value;
-    const goal = els.settingsGoalSelect.value;
-    const currency = els.currencySelect?.value;
-    const goal = els.settingsGoalSelect?.value;
-
-    if (currency && CURRENCIES[currency]) settings.currency = currency;
-    if (goal && GOAL_CONTENT[goal]) settings.goal = goal;
-
-    await persistSettings();
-    renderDashboard();
-    updateStatus("Settings saved.");
+  els.goalForm?.addEventListener("submit", async (e) => { e.preventDefault(); settings.goal = els.goalSelect.value || DEFAULT_GOAL; if (await persistAll()) renderDashboard(); });
+  els.changeGoalButton?.addEventListener("click", async () => { settings.goal = ""; if (await persistAll()) renderDashboard(); });
+  els.settingsForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    settings.currency = CURRENCIES[els.currencySelect.value] ? els.currencySelect.value : "INR";
+    settings.goal = GOAL_CONTENT[els.settingsGoalSelect.value] ? els.settingsGoalSelect.value : "";
+    if (await persistAll()) { renderDashboard(); updateStatus("Settings saved."); }
   });
 
   els.resetDataButton?.addEventListener("click", async () => {
-    state.income = 0;
-    state.expenses = [];
-    state.recurringExpenses = [];
-    settings.currency = "INR";
-    settings.goal = "";
-
-    if (useBackend) {
-      await persistState();
-      await persistSettings();
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    }
-
-    els.incomeForm?.reset();
-    els.expenseForm?.reset();
-    els.recurringExpenseForm?.reset();
-    if (els.expenseDate) {
-      els.expenseDate.value = todayYMD();
-    }
-    if (els.expenseDate) els.expenseDate.value = todayYMD();
-    if (els.currencySelect) els.currencySelect.value = settings.currency;
-    if (els.settingsGoalSelect) els.settingsGoalSelect.value = DEFAULT_GOAL;
-    if (els.goalSelect) els.goalSelect.value = DEFAULT_GOAL;
-
+    if (!currentUser) return;
+    state.income = 0; state.expenses = []; state.recurringExpenses = []; settings.currency = "INR"; settings.goal = "";
+    await clearUserData(currentUser.uid);
     renderDashboard();
     updateStatus("Data reset complete.");
   });
 
-  els.assistantForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const question = els.assistantQuestion?.value.trim();
-    if (!question) return;
-
-    els.assistantResponse.textContent = getAssistantResponse(question);
-    if (els.assistantResponse) els.assistantResponse.textContent = getAssistantResponse(question);
+  els.assistantForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = els.assistantQuestion.value.toLowerCase();
+    els.assistantResponse.textContent = q.includes("save") ? "💡 Track expenses daily and set one fixed monthly savings amount." : q.includes("expense") ? "📉 Review top categories weekly and reduce one non-essential cost." : q.includes("business") ? "🚀 Start with one small offer and validate with real customers." : q.includes("income") ? "📈 Improve value, raise pricing carefully, and add one recurring offer." : "🤖 Ask about saving, expenses, income growth, or business ideas.";
   });
 
-  els.businessAdvisorForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const text = els.businessIdeaInput?.value.trim();
+  els.businessAdvisorForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = els.businessIdeaInput.value.trim();
     if (!text) return;
-
-    renderBusinessAdvisorResponse(text);
+    els.businessAdvisorResponse.innerHTML = `<section class="advisor-block"><h3>Basic Idea Summary</h3><p>Your input: ${text}</p></section>`;
   });
 
-  els.ideaGeneratorForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
+  els.ideaGeneratorForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
     const category = els.ideaCategorySelect.value || "all";
-    els.generatedIdeaText.textContent = getRandomIdea(category);
-    const category = els.ideaCategorySelect?.value || "all";
-    if (els.generatedIdeaText) els.generatedIdeaText.textContent = getRandomIdea(category);
+    const pool = category === "all" ? Object.values(IDEA_LIBRARY).flat() : (IDEA_LIBRARY[category] || []);
+    els.generatedIdeaText.textContent = pool[Math.floor(Math.random() * pool.length)] || "No ideas available right now.";
   });
 }
 
-async function initData() {
-  useBackend = await api.isAvailable();
+function initAuthListener() {
+  watchAuthState(async (user) => {
+    currentUser = user;
+    if (!user) {
+      state.income = 0; state.expenses = []; state.recurringExpenses = []; settings.currency = "INR"; settings.goal = "";
+      if (els.authUserState) els.authUserState.textContent = "Not logged in";
+      setSaveEnabled(false);
+      renderDashboard();
+      return;
+    }
 
-  if (!useBackend) {
-    loadSettingsLocal();
-    loadStateLocal();
-    return;
-  }
+    if (els.authUserState) els.authUserState.textContent = `Logged in as ${user.email}`;
+    setSaveEnabled(true);
 
-  try {
-    const remoteState = await api.loadState();
-    state.income = Number(remoteState.income) || 0;
-    state.expenses = Array.isArray(remoteState.expenses) ? remoteState.expenses : [];
-    state.recurringExpenses = Array.isArray(remoteState.recurringExpenses) ? remoteState.recurringExpenses : [];
+    const remote = await loadUserData(user.uid);
+    state.income = Number(remote.income) || 0;
+    state.expenses = Array.isArray(remote.expenses) ? remote.expenses : [];
+    state.recurringExpenses = Array.isArray(remote.recurringExpenses) ? remote.recurringExpenses : [];
+    settings.currency = CURRENCIES[remote.settings?.currency] ? remote.settings.currency : "INR";
+    settings.goal = GOAL_CONTENT[remote.settings?.goal] ? remote.settings.goal : "";
 
-    const remoteSettings = await api.loadSettings();
-    if (remoteSettings.currency && CURRENCIES[remoteSettings.currency]) settings.currency = remoteSettings.currency;
-    if (remoteSettings.goal && GOAL_CONTENT[remoteSettings.goal]) settings.goal = remoteSettings.goal;
-  } catch {
-    useBackend = false;
-    loadSettingsLocal();
-    loadStateLocal();
-  }
+    if (els.currencySelect) els.currencySelect.value = settings.currency;
+    if (els.settingsGoalSelect) els.settingsGoalSelect.value = settings.goal || DEFAULT_GOAL;
+    if (els.goalSelect) els.goalSelect.value = settings.goal || DEFAULT_GOAL;
+
+    updateStatus("Data loaded from cloud storage.");
+    renderDashboard();
+  });
 }
 
-async function init() {
-  await initData();
+function init() {
   initTabs();
   initForms();
-
-  if (els.currencySelect) els.currencySelect.value = settings.currency;
-  if (els.settingsGoalSelect) els.settingsGoalSelect.value = settings.goal || DEFAULT_GOAL;
-  if (els.goalSelect) els.goalSelect.value = settings.goal || DEFAULT_GOAL;
-
+  initAuthListener();
   renderDashboard();
 }
 
