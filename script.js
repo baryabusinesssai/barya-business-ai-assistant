@@ -1,10 +1,14 @@
 // Finance Data Logic
 const STORAGE_KEYS = {
     finance: 'barya_finance',
-    goal: 'barya_goal'
+    goal: 'barya_goal',
+    recurring: 'barya_recurring_expenses'
+    userData: 'barya_user_data',
+    appState: 'barya_state'
 };
 
 let financeData = loadFinanceData();
+let recurringExpenses = loadRecurringExpenses();
 let userGoal = localStorage.getItem(STORAGE_KEYS.goal) || '';
 
 const elements = {};
@@ -25,6 +29,7 @@ window.addEventListener('DOMContentLoaded', () => {
     cacheElements();
     bindEvents();
     updateDashboard();
+    updateRecurringList();
     updateGoalUI();
     typeAnimation();
 });
@@ -45,6 +50,10 @@ function cacheElements() {
     elements.chatBox = document.getElementById('chat-box');
     elements.ideaDisplay = document.getElementById('idea-display');
     elements.planOutput = document.getElementById('plan-output');
+    elements.recurringName = document.getElementById('recurring-name');
+    elements.recurringAmount = document.getElementById('recurring-amount');
+    elements.recurringFrequency = document.getElementById('recurring-frequency');
+    elements.recurringList = document.getElementById('recurring-list');
 }
 
 function bindEvents() {
@@ -62,6 +71,13 @@ function bindEvents() {
         }
     });
 
+    elements.recurringAmount.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addRecurringExpense();
+        }
+    });
+
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && typingTimer) {
             clearTimeout(typingTimer);
@@ -72,24 +88,143 @@ function bindEvents() {
     });
 }
 
-function loadFinanceData() {
+function createDefaultFinanceData() {
+    return {
+        income: 0,
+        expense: 0,
+        manualExpenses: [],
+        recurringExpenses: []
+    };
+}
+
+function normalizeExpenseItem(item, fallbackName) {
+    const amount = Number(item?.amount ?? item?.monthlyAmount ?? item?.value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+        return null;
+    }
+
+    const name = String(item?.name ?? item?.title ?? item?.category ?? fallbackName ?? 'Expense').trim() || 'Expense';
+    return {
+        name,
+        amount: Math.round(amount),
+        frequency: item?.frequency === 'weekly' ? 'weekly' : 'monthly'
+    };
+}
+
+function parseStoredDataByKey(storageKey) {
     try {
-        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.finance));
-        if (!parsed || typeof parsed !== 'object') {
-            return { income: 0, expense: 0 };
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function readStoredUserData() {
+    const possibleSources = [
+        parseStoredDataByKey(STORAGE_KEYS.userData),
+        parseStoredDataByKey(STORAGE_KEYS.appState)
+    ].filter(Boolean);
+
+    const userExpenseData = { recurringExpenses: [], manualExpenses: [] };
+
+    possibleSources.forEach((source) => {
+        const recurringList = source?.recurringExpenses || source?.finance?.recurringExpenses || [];
+        const manualList = source?.expenses || source?.finance?.expenses || [];
+
+        recurringList.forEach((item) => {
+            const normalized = normalizeExpenseItem(item, 'Recurring expense');
+            if (normalized) {
+                userExpenseData.recurringExpenses.push(normalized);
+            }
+        });
+
+        manualList.forEach((item) => {
+            const normalized = normalizeExpenseItem(item, 'Manual expense');
+            if (normalized) {
+                userExpenseData.manualExpenses.push(normalized);
+            }
+        });
+    });
+
+    return userExpenseData;
+}
+
+function loadFinanceData() {
+    const defaults = createDefaultFinanceData();
+    const parsed = parseStoredDataByKey(STORAGE_KEYS.finance);
+    const storedUserData = readStoredUserData();
+
+    if (!parsed || typeof parsed !== 'object') {
+        const migrated = {
+            ...defaults,
+            manualExpenses: storedUserData.manualExpenses,
+            recurringExpenses: storedUserData.recurringExpenses
+        };
+        migrated.expense = migrated.manualExpenses.reduce((sum, item) => sum + item.amount, 0)
+            + migrated.recurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+        return migrated;
+    }
+
+    const manualExpenses = Array.isArray(parsed.manualExpenses)
+        ? parsed.manualExpenses.map((item) => normalizeExpenseItem(item, 'Manual expense')).filter(Boolean)
+        : [];
+
+    const recurringExpenses = Array.isArray(parsed.recurringExpenses)
+        ? parsed.recurringExpenses.map((item) => normalizeExpenseItem(item, 'Recurring expense')).filter(Boolean)
+        : [];
+
+    const allManualExpenses = [...manualExpenses, ...storedUserData.manualExpenses];
+    const allRecurringExpenses = [...recurringExpenses, ...storedUserData.recurringExpenses];
+
+    const normalizedIncome = Number.isFinite(Number(parsed.income)) ? Math.max(0, Number(parsed.income)) : 0;
+    const computedExpense = allManualExpenses.reduce((sum, item) => sum + item.amount, 0)
+        + allRecurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+
+    const fallbackExpense = Number.isFinite(Number(parsed.expense)) ? Math.max(0, Number(parsed.expense)) : 0;
+
+    return {
+        income: normalizedIncome,
+        expense: computedExpense || fallbackExpense,
+        manualExpenses: allManualExpenses,
+        recurringExpenses: allRecurringExpenses
+    };
+}
+
+function loadRecurringExpenses() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.recurring));
+
+        if (!Array.isArray(parsed)) {
+            return [];
         }
 
-        return {
-            income: Number.isFinite(Number(parsed.income)) ? Math.max(0, Number(parsed.income)) : 0,
-            expense: Number.isFinite(Number(parsed.expense)) ? Math.max(0, Number(parsed.expense)) : 0
-        };
+        return parsed
+            .filter((item) => item && typeof item === 'object')
+            .map((item) => {
+                const safeFrequency = ['daily', 'weekly', 'monthly'].includes(item.frequency)
+                    ? item.frequency
+                    : 'monthly';
+
+                return {
+                    id: String(item.id || crypto.randomUUID()),
+                    name: String(item.name || 'Untitled').trim().slice(0, 60),
+                    amount: Number.isFinite(Number(item.amount)) ? Math.max(0, Number(item.amount)) : 0,
+                    frequency: safeFrequency
+                };
+            })
+            .filter((item) => item.name && item.amount > 0);
     } catch (error) {
-        return { income: 0, expense: 0 };
+        return [];
     }
 }
 
 function saveFinanceData() {
     localStorage.setItem(STORAGE_KEYS.finance, JSON.stringify(financeData));
+}
+
+function saveRecurringExpenses() {
+    localStorage.setItem(STORAGE_KEYS.recurring, JSON.stringify(recurringExpenses));
 }
 
 function updateGoalUI() {
@@ -164,6 +299,145 @@ function formatCurrency(value) {
     }).format(value);
 }
 
+function getRecurringMultiplier(frequency) {
+    const now = new Date();
+    const currentDayOfMonth = now.getDate();
+
+    if (frequency === 'daily') {
+        return currentDayOfMonth;
+    }
+
+    if (frequency === 'weekly') {
+        return Math.ceil(currentDayOfMonth / 7);
+    }
+
+    return 1;
+}
+
+function getRecurringTotalForCurrentMonth() {
+    return recurringExpenses.reduce((total, item) => {
+        return total + (item.amount * getRecurringMultiplier(item.frequency));
+    }, 0);
+}
+
+function getRecurringExplanation(item) {
+    if (item.frequency === 'daily') {
+        return `Counts ${getRecurringMultiplier('daily')} time(s) this month`;
+    }
+
+    if (item.frequency === 'weekly') {
+        return `Counts ${getRecurringMultiplier('weekly')} week(s) this month`;
+    }
+
+    return 'Counts once each month';
+}
+
+function updateRecurringList() {
+    if (!elements.recurringList) {
+        return;
+    }
+
+    if (!recurringExpenses.length) {
+        elements.recurringList.innerHTML = '<li class="recurring-empty">No recurring expenses yet.</li>';
+        return;
+    }
+
+    elements.recurringList.innerHTML = recurringExpenses.map((item) => {
+        const frequencyLabel = item.frequency.charAt(0).toUpperCase() + item.frequency.slice(1);
+
+        return `
+            <li class="recurring-item">
+                <div>
+                    <div class="recurring-title">${item.name} • ₹${formatCurrency(item.amount)}</div>
+                    <div class="recurring-meta">${frequencyLabel} · ${getRecurringExplanation(item)}</div>
+                </div>
+                <button type="button" class="recurring-remove" onclick="removeRecurringExpense('${item.id}')">Remove</button>
+            </li>
+        `;
+    }).join('');
+}
+
+function addRecurringExpense() {
+    const name = elements.recurringName.value.trim();
+    const amount = Number.parseFloat(elements.recurringAmount.value);
+    const frequency = elements.recurringFrequency.value;
+
+    if (!name) {
+        alert('Please enter a recurring expense name.');
+        elements.recurringName.focus();
+        return;
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert('Please enter a valid recurring amount greater than 0.');
+        elements.recurringAmount.focus();
+        return;
+    }
+
+    recurringExpenses.push({
+        id: crypto.randomUUID(),
+        name,
+        amount,
+        frequency
+    });
+
+    saveRecurringExpenses();
+    updateRecurringList();
+    updateDashboard();
+
+    elements.recurringName.value = '';
+    elements.recurringAmount.value = '';
+    elements.recurringFrequency.value = 'daily';
+    elements.recurringName.focus();
+}
+
+function removeRecurringExpense(id) {
+    recurringExpenses = recurringExpenses.filter((item) => item.id !== id);
+    saveRecurringExpenses();
+    updateRecurringList();
+    updateDashboard();
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function createSuggestionLines() {
+    const combinedExpenses = [...financeData.recurringExpenses, ...financeData.manualExpenses];
+    if (combinedExpenses.length === 0) {
+        return [];
+    }
+
+    const totalsByCategory = combinedExpenses.reduce((accumulator, entry) => {
+        const key = entry.name.trim().toLowerCase();
+        if (!accumulator[key]) {
+            accumulator[key] = { name: entry.name, monthlyAmount: 0 };
+        }
+
+        const monthlyAmount = entry.frequency === 'weekly' ? entry.amount * 4 : entry.amount;
+        accumulator[key].monthlyAmount += monthlyAmount;
+        return accumulator;
+    }, {});
+
+    const biggestExpense = Object.values(totalsByCategory)
+        .sort((a, b) => b.monthlyAmount - a.monthlyAmount)[0];
+
+    if (!biggestExpense) {
+        return [];
+    }
+
+    const roundedMonthlyAmount = Math.round(biggestExpense.monthlyAmount);
+    const twentyPercentSaving = Math.round(roundedMonthlyAmount * 0.2);
+
+    return [
+        `You spend ₹${formatCurrency(roundedMonthlyAmount)} monthly on ${escapeHtml(biggestExpense.name)}.`,
+        `Reducing this by 20% could save ₹${formatCurrency(twentyPercentSaving)}.`
+    ];
+}
+
 // Budget Tracker
 function addTransaction() {
     const amount = Number.parseFloat(elements.amountInput.value);
@@ -178,8 +452,16 @@ function addTransaction() {
     if (type === 'income') {
         financeData.income += amount;
     } else {
-        financeData.expense += amount;
+        financeData.manualExpenses.push({
+            name: 'Manual expense',
+            amount: Math.round(amount),
+            frequency: 'monthly'
+        });
     }
+
+    const totalManualExpense = financeData.manualExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalRecurringExpense = financeData.recurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+    financeData.expense = totalManualExpense + totalRecurringExpense;
 
     saveFinanceData();
     updateDashboard();
@@ -188,15 +470,28 @@ function addTransaction() {
 }
 
 function updateDashboard() {
-    elements.income.innerText = `₹${formatCurrency(financeData.income)}`;
-    elements.expense.innerText = `₹${formatCurrency(financeData.expense)}`;
+    const recurringExpenseTotal = getRecurringTotalForCurrentMonth();
+    const expenseWithRecurring = financeData.expense + recurringExpenseTotal;
 
-    const savings = financeData.income - financeData.expense;
+    elements.income.innerText = `₹${formatCurrency(financeData.income)}`;
+    elements.expense.innerText = `₹${formatCurrency(expenseWithRecurring)}`;
+
+    const savings = financeData.income - expenseWithRecurring;
     elements.savings.innerText = `₹${formatCurrency(savings)}`;
 
-    if (financeData.income === 0 && financeData.expense === 0) {
-        elements.insights.textContent = 'Add your first income or expense entry to receive tailored insights.';
-        renderFlowGuidance();
+    if (financeData.income === 0 && financeData.expense === 0 && recurringExpenses.length === 0) {
+        elements.insights.textContent = 'Add your first income, expense, or recurring expense entry to receive tailored insights.';
+        return;
+    }
+
+    const suggestionLines = createSuggestionLines();
+
+    if (suggestionLines.length > 0) {
+        const healthMessage = financeData.expense > financeData.income * 0.8
+            ? '⚠️ Expenses are high compared to income. Review this suggestion first:'
+            : '✅ Smart suggestion based on your recurring + manual expenses:';
+
+        elements.insights.innerHTML = `${healthMessage}<br>${suggestionLines.join('<br>')}`;
         return;
     }
 
