@@ -1,8 +1,10 @@
+// Firebase app bootstrap (modular SDK for browser ES modules)
 // Firebase app initialization (modular SDK for browser/CDN usage).
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+// Provided Firebase configuration for this project.
 // Project configuration provided by the user.
 const firebaseConfig = {
   apiKey: "AIzaSyD4zr_F0TGBLFbEYhujI9W7dgxDFKbs_94",
@@ -14,6 +16,11 @@ const firebaseConfig = {
   measurementId: "G-B5P24XTHF3"
 };
 
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+export { app, auth, db };
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);

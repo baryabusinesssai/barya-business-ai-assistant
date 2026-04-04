@@ -1,8 +1,18 @@
+// Authentication helpers (Email/Password + persisted session)
 // Firebase Authentication helpers (Email/Password + session persistence by default).
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { auth } from "./firebase-config.js";
+
+// Keep users logged in across browser refreshes/reopens.
+await setPersistence(auth, browserLocalPersistence);
+
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { auth } from "./firebase-config.js";
