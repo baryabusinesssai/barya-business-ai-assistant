@@ -26,6 +26,25 @@
     </nav>
 
     <section id="dashboardTab" class="tab-panel active">
+    <section class="card" aria-live="polite">
+      <div class="card-header">
+        <h2>Account</h2>
+        <span class="mini-pill">Firebase Auth</span>
+      </div>
+      <p class="helper-text">Sign up or log in with email/password to load and save your cloud data.</p>
+      <div class="inline-form">
+        <input type="email" id="authEmail" placeholder="Email" autocomplete="email" />
+        <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password" />
+      </div>
+      <div class="inline-form" style="margin-top: 0.75rem;">
+        <button type="button" id="signupButton">Signup</button>
+        <button type="button" id="loginButton">Login</button>
+        <button type="button" id="logoutButton">Logout</button>
+      </div>
+      <p id="authStatus" class="helper-text">Not logged in.</p>
+      <p id="saveNotice" class="helper-text">Please log in to save your data</p>
+    </section>
+
       <section class="card beginner-mode-card" aria-live="polite">
         <div class="card-header">
           <h2>Beginner Mode</h2>
@@ -194,7 +213,7 @@
       </section>
 
       <section class="trust-note" aria-label="Trust note">
-        🔒 Your data is stored locally in your browser
+        🔒 Your data is saved securely in your Firebase account when logged in
       </section>
     </section>
 
@@ -298,6 +317,6 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
