@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barya Business AI Assistant</title>
+    <meta name="description" content="Barya AI helps you track budget, improve financial habits, and plan business growth with simple guidance.">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="glow-bg"></div>
 
-    <div id="beginner-modal" class="modal">
+    <div id="beginner-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
         <div class="glass-card modal-content">
-            <h2>Welcome to Barya<span>.</span></h2>
+            <h2 id="welcome-title">Welcome to Barya<span>.</span></h2>
             <p>Aapka main goal kya hai?</p>
             <div class="goal-options">
-                <button onclick="setGoal('Save Money')">💰 Save Money</button>
-                <button onclick="setGoal('Start a Business')">🚀 Start Business</button>
-                <button onclick="setGoal('Learn Finance')">📚 Learn Finance</button>
+                <button type="button" onclick="setGoal('Save Money')">💰 Save Money</button>
+                <button type="button" onclick="setGoal('Start a Business')">🚀 Start Business</button>
+                <button type="button" onclick="setGoal('Learn Finance')">📚 Learn Finance</button>
             </div>
         </div>
     </div>
@@ -26,7 +27,7 @@
         <div class="logo">BARYA<span>.</span>AI</div>
         <div class="nav-right">
             <span id="user-goal-badge" class="badge">Goal: Not Set</span>
-            <button class="btn-primary mobile-hide" onclick="scrollToApp()">Launch App</button>
+            <button type="button" class="btn-primary mobile-hide" onclick="scrollToApp()">Launch App</button>
         </div>
     </nav>
 
@@ -39,17 +40,17 @@
             </div>
             <p>The foundation of your business ecosystem. Track, learn, and grow with the power of AI guidance.</p>
             <div class="hero-btns">
-                <button class="btn-primary" onclick="scrollToApp()">Get Started Free</button>
+                <button type="button" class="btn-primary" onclick="scrollToApp()">Get Started Free</button>
             </div>
         </div>
     </header>
 
     <main class="app-container" id="main-app">
         <aside class="sidebar">
-            <button class="side-link active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
-            <button class="side-link" onclick="showTab('ai-assistant', this)">🤖 AI Assistant</button>
-            <button class="side-link" onclick="showTab('business-plan', this)">💼 Business Plan</button>
-            <button class="side-link" onclick="showTab('ideas', this)">💡 Idea Gen</button>
+            <button type="button" class="side-link active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+            <button type="button" class="side-link" onclick="showTab('ai-assistant', this)">🤖 AI Assistant</button>
+            <button type="button" class="side-link" onclick="showTab('business-plan', this)">💼 Business Plan</button>
+            <button type="button" class="side-link" onclick="showTab('ideas', this)">💡 Idea Gen</button>
         </aside>
 
         <section class="content-area">
@@ -63,12 +64,12 @@
                             <div class="stat"><label>Savings</label><div id="display-savings" class="value text-green">₹0</div></div>
                         </div>
                         <div class="input-group">
-                            <input type="number" id="input-amount" placeholder="Amount">
+                            <input type="number" id="input-amount" placeholder="Amount" inputmode="decimal" min="0" step="0.01">
                             <select id="input-type">
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
                             </select>
-                            <button class="btn-primary" onclick="addTransaction()">Add Entry</button>
+                            <button type="button" class="btn-primary" onclick="addTransaction()">Add Entry</button>
                         </div>
                     </div>
                     <div class="glass-card">
@@ -85,8 +86,8 @@
                         <div class="ai-msg">Hello! I'm Barya AI. How can I help you grow today?</div>
                     </div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" placeholder="Ask about finance or business...">
-                        <button class="btn-primary" onclick="askAI()">Ask</button>
+                        <input type="text" id="chat-input" placeholder="Ask about finance or business..." maxlength="240">
+                        <button type="button" class="btn-primary" onclick="askAI()">Ask</button>
                     </div>
                 </div>
             </div>
@@ -95,8 +96,8 @@
                 <div class="glass-card">
                     <h3>Business Planning Tools</h3>
                     <div class="tool-grid">
-                        <button class="btn-glass" onclick="getPlan('Startup Guide')">📝 Startup Guide</button>
-                        <button class="btn-glass" onclick="getPlan('Business Plan')">📋 Plan Template</button>
+                        <button type="button" class="btn-glass" onclick="getPlan('Startup Guide')">📝 Startup Guide</button>
+                        <button type="button" class="btn-glass" onclick="getPlan('Business Plan')">📋 Plan Template</button>
                     </div>
                     <div id="plan-output" class="ai-msg mt-20">Select a tool to begin...</div>
                 </div>
@@ -106,13 +107,13 @@
                 <div class="glass-card text-center">
                     <h3>Business Idea Generator</h3>
                     <p>Low-investment and online earning ideas.</p>
-                    <button class="btn-primary mt-20" onclick="generateIdea()">Generate Idea</button>
+                    <button type="button" class="btn-primary mt-20" onclick="generateIdea()">Generate Idea</button>
                     <div id="idea-display" class="idea-box"></div>
                 </div>
             </div>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
