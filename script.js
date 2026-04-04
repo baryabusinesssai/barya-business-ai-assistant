@@ -2,7 +2,7 @@
 const STORAGE_KEYS = {
     finance: 'barya_finance',
     goal: 'barya_goal',
-    recurring: 'barya_recurring_expenses'
+    recurring: 'barya_recurring_expenses',
     userData: 'barya_user_data',
     appState: 'barya_state'
 };
@@ -35,7 +35,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function cacheElements() {
-    elements.modal = document.getElementById('beginner-modal');
     elements.goalBadge = document.getElementById('user-goal-badge');
     elements.typingText = document.getElementById('typing-text');
     elements.mainApp = document.getElementById('main-app');
@@ -228,14 +227,7 @@ function saveRecurringExpenses() {
 }
 
 function updateGoalUI() {
-    if (!userGoal) {
-        elements.modal.style.display = 'flex';
-        elements.goalBadge.innerText = 'Goal: Not Set';
-        return;
-    }
-
-    elements.modal.style.display = 'none';
-    elements.goalBadge.innerText = `Goal: ${userGoal}`;
+    elements.goalBadge.innerText = userGoal ? `Goal: ${userGoal}` : 'Goal: Not Set';
 }
 
 // Set User Goal
@@ -396,6 +388,8 @@ function removeRecurringExpense(id) {
     saveRecurringExpenses();
     updateRecurringList();
     updateDashboard();
+}
+
 function escapeHtml(value) {
     return String(value)
         .replaceAll('&', '&amp;')
@@ -561,7 +555,6 @@ function renderFlowGuidance() {
     }
 
     const steps = [
-        { label: 'Goal selected', done: Boolean(userGoal) },
         { label: 'Income added', done: financeData.income > 0 },
         { label: 'Expense added', done: financeData.expense > 0 },
         { label: 'Insights reviewed', done: financeData.income > 0 || financeData.expense > 0 },
