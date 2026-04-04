@@ -178,3 +178,109 @@ function getPlan(type) {
         result.innerHTML = `Loading your personalized ${type}... (This would be a downloadable PDF in the full version).`;
     }
 }
+let financeData = JSON.parse(localStorage.getItem('barya_finance')) || { income: 0, expense: 0 };
+let userGoal = localStorage.getItem('barya_goal') || "";
+
+// Initialize App
+window.onload = () => {
+    updateDashboard();
+    if (!userGoal) {
+        document.getElementById('beginner-modal').style.display = 'flex';
+    } else {
+        document.getElementById('beginner-modal').style.display = 'none';
+        document.getElementById('user-goal-badge').innerText = "Goal: " + userGoal;
+    }
+};
+
+// Feature 7: Beginner Mode
+function setGoal(goal) {
+    userGoal = goal;
+    localStorage.setItem('barya_goal', goal);
+    document.getElementById('beginner-modal').style.display = 'none';
+    document.getElementById('user-goal-badge').innerText = "Goal: " + goal;
+    alert("Barya AI configured for: " + goal);
+}
+
+// Navigation
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.side-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+// Feature 1 & 8: Budget Tracker
+function addTransaction() {
+    const amt = parseFloat(document.getElementById('input-amount').value);
+    const type = document.getElementById('input-type').value;
+
+    if (isNaN(amt) || amt <= 0) return;
+
+    if (type === 'income') financeData.income += amt;
+    else financeData.expense += amt;
+
+    localStorage.setItem('barya_finance', JSON.stringify(financeData));
+    updateDashboard();
+    generateInsights();
+    document.getElementById('input-amount').value = "";
+}
+
+function updateDashboard() {
+    document.getElementById('display-income').innerText = "₹" + financeData.income;
+    document.getElementById('display-expense').innerText = "₹" + financeData.expense;
+    document.getElementById('display-savings').innerText = "₹" + (financeData.income - financeData.expense);
+}
+
+// Feature 4: Smart Insights
+function generateInsights() {
+    const container = document.getElementById('insights-container');
+    const savings = financeData.income - financeData.expense;
+    let msg = "";
+
+    if (financeData.expense > financeData.income * 0.8) {
+        msg = "⚠️ High Alert: Aapne 80% income kharch kar di hai!";
+    } else if (savings > 0) {
+        msg = "✅ Insight: Aap ₹" + (savings * 0.2).toFixed(0) + " aur save kar sakte hain agar lifestyle expenses kam karein.";
+    }
+    container.innerHTML = msg || "Data add karein insights ke liye...";
+}
+
+// Feature 2: AI Assistant
+function askAI() {
+    const input = document.getElementById('chat-input').value;
+    if (!input) return;
+
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML += `<div class="user-msg">You: ${input}</div>`;
+
+    let reply = "Mujhe samajh nahi aaya, par finance improve karne ke liye hamesha savings pe dhyan dein.";
+    if (input.toLowerCase().includes("save")) reply = "Saving ke liye 50-30-20 rule best hai.";
+    if (input.toLowerCase().includes("business")) reply = "Business start karne ke liye Market Research pehle karein.";
+
+    setTimeout(() => {
+        chatBox.innerHTML += `<div class="ai-msg">Barya: ${reply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }, 500);
+
+    document.getElementById('chat-input').value = "";
+}
+
+// Feature 6: Idea Generator
+const ideas = [
+    "Freelance Content Writing for tech startups.",
+    "Online Coaching for regional languages.",
+    "Dropshipping store for eco-friendly products.",
+    "Local Tiffin Service for students.",
+    "Social Media Manager for small shops."
+];
+
+function generateIdea() {
+    const rand = Math.floor(Math.random() * ideas.length);
+    document.getElementById('idea-display').innerText = "💡 " + ideas[rand];
+}
+
+// Feature 3: Business Planning
+function getPlan(tool) {
+    const output = document.getElementById('plan-output');
+    output.innerHTML = "<strong>AI Advisor:</strong> " + tool + " load ho raha hai... Pehla step hai apne competitors ko analyze karna.";
+}
