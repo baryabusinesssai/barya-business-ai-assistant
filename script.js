@@ -1,7 +1,9 @@
 // Finance Data Logic
 const STORAGE_KEYS = {
     finance: 'barya_finance',
-    goal: 'barya_goal'
+    goal: 'barya_goal',
+    userData: 'barya_user_data',
+    appState: 'barya_state'
 };
 
 let financeData = loadFinanceData();
@@ -70,20 +72,107 @@ function bindEvents() {
     });
 }
 
-function loadFinanceData() {
-    try {
-        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.finance));
-        if (!parsed || typeof parsed !== 'object') {
-            return { income: 0, expense: 0 };
-        }
+function createDefaultFinanceData() {
+    return {
+        income: 0,
+        expense: 0,
+        manualExpenses: [],
+        recurringExpenses: []
+    };
+}
 
-        return {
-            income: Number.isFinite(Number(parsed.income)) ? Math.max(0, Number(parsed.income)) : 0,
-            expense: Number.isFinite(Number(parsed.expense)) ? Math.max(0, Number(parsed.expense)) : 0
-        };
-    } catch (error) {
-        return { income: 0, expense: 0 };
+function normalizeExpenseItem(item, fallbackName) {
+    const amount = Number(item?.amount ?? item?.monthlyAmount ?? item?.value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+        return null;
     }
+
+    const name = String(item?.name ?? item?.title ?? item?.category ?? fallbackName ?? 'Expense').trim() || 'Expense';
+    return {
+        name,
+        amount: Math.round(amount),
+        frequency: item?.frequency === 'weekly' ? 'weekly' : 'monthly'
+    };
+}
+
+function parseStoredDataByKey(storageKey) {
+    try {
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function readStoredUserData() {
+    const possibleSources = [
+        parseStoredDataByKey(STORAGE_KEYS.userData),
+        parseStoredDataByKey(STORAGE_KEYS.appState)
+    ].filter(Boolean);
+
+    const userExpenseData = { recurringExpenses: [], manualExpenses: [] };
+
+    possibleSources.forEach((source) => {
+        const recurringList = source?.recurringExpenses || source?.finance?.recurringExpenses || [];
+        const manualList = source?.expenses || source?.finance?.expenses || [];
+
+        recurringList.forEach((item) => {
+            const normalized = normalizeExpenseItem(item, 'Recurring expense');
+            if (normalized) {
+                userExpenseData.recurringExpenses.push(normalized);
+            }
+        });
+
+        manualList.forEach((item) => {
+            const normalized = normalizeExpenseItem(item, 'Manual expense');
+            if (normalized) {
+                userExpenseData.manualExpenses.push(normalized);
+            }
+        });
+    });
+
+    return userExpenseData;
+}
+
+function loadFinanceData() {
+    const defaults = createDefaultFinanceData();
+    const parsed = parseStoredDataByKey(STORAGE_KEYS.finance);
+    const storedUserData = readStoredUserData();
+
+    if (!parsed || typeof parsed !== 'object') {
+        const migrated = {
+            ...defaults,
+            manualExpenses: storedUserData.manualExpenses,
+            recurringExpenses: storedUserData.recurringExpenses
+        };
+        migrated.expense = migrated.manualExpenses.reduce((sum, item) => sum + item.amount, 0)
+            + migrated.recurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+        return migrated;
+    }
+
+    const manualExpenses = Array.isArray(parsed.manualExpenses)
+        ? parsed.manualExpenses.map((item) => normalizeExpenseItem(item, 'Manual expense')).filter(Boolean)
+        : [];
+
+    const recurringExpenses = Array.isArray(parsed.recurringExpenses)
+        ? parsed.recurringExpenses.map((item) => normalizeExpenseItem(item, 'Recurring expense')).filter(Boolean)
+        : [];
+
+    const allManualExpenses = [...manualExpenses, ...storedUserData.manualExpenses];
+    const allRecurringExpenses = [...recurringExpenses, ...storedUserData.recurringExpenses];
+
+    const normalizedIncome = Number.isFinite(Number(parsed.income)) ? Math.max(0, Number(parsed.income)) : 0;
+    const computedExpense = allManualExpenses.reduce((sum, item) => sum + item.amount, 0)
+        + allRecurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+
+    const fallbackExpense = Number.isFinite(Number(parsed.expense)) ? Math.max(0, Number(parsed.expense)) : 0;
+
+    return {
+        income: normalizedIncome,
+        expense: computedExpense || fallbackExpense,
+        manualExpenses: allManualExpenses,
+        recurringExpenses: allRecurringExpenses
+    };
 }
 
 function saveFinanceData() {
@@ -152,6 +241,48 @@ function formatCurrency(value) {
     }).format(value);
 }
 
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function createSuggestionLines() {
+    const combinedExpenses = [...financeData.recurringExpenses, ...financeData.manualExpenses];
+    if (combinedExpenses.length === 0) {
+        return [];
+    }
+
+    const totalsByCategory = combinedExpenses.reduce((accumulator, entry) => {
+        const key = entry.name.trim().toLowerCase();
+        if (!accumulator[key]) {
+            accumulator[key] = { name: entry.name, monthlyAmount: 0 };
+        }
+
+        const monthlyAmount = entry.frequency === 'weekly' ? entry.amount * 4 : entry.amount;
+        accumulator[key].monthlyAmount += monthlyAmount;
+        return accumulator;
+    }, {});
+
+    const biggestExpense = Object.values(totalsByCategory)
+        .sort((a, b) => b.monthlyAmount - a.monthlyAmount)[0];
+
+    if (!biggestExpense) {
+        return [];
+    }
+
+    const roundedMonthlyAmount = Math.round(biggestExpense.monthlyAmount);
+    const twentyPercentSaving = Math.round(roundedMonthlyAmount * 0.2);
+
+    return [
+        `You spend ₹${formatCurrency(roundedMonthlyAmount)} monthly on ${escapeHtml(biggestExpense.name)}.`,
+        `Reducing this by 20% could save ₹${formatCurrency(twentyPercentSaving)}.`
+    ];
+}
+
 // Budget Tracker
 function addTransaction() {
     const amount = Number.parseFloat(elements.amountInput.value);
@@ -166,8 +297,16 @@ function addTransaction() {
     if (type === 'income') {
         financeData.income += amount;
     } else {
-        financeData.expense += amount;
+        financeData.manualExpenses.push({
+            name: 'Manual expense',
+            amount: Math.round(amount),
+            frequency: 'monthly'
+        });
     }
+
+    const totalManualExpense = financeData.manualExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalRecurringExpense = financeData.recurringExpenses.reduce((sum, item) => sum + item.amount, 0);
+    financeData.expense = totalManualExpense + totalRecurringExpense;
 
     saveFinanceData();
     updateDashboard();
@@ -184,6 +323,17 @@ function updateDashboard() {
 
     if (financeData.income === 0 && financeData.expense === 0) {
         elements.insights.textContent = 'Add your first income or expense entry to receive tailored insights.';
+        return;
+    }
+
+    const suggestionLines = createSuggestionLines();
+
+    if (suggestionLines.length > 0) {
+        const healthMessage = financeData.expense > financeData.income * 0.8
+            ? '⚠️ Expenses are high compared to income. Review this suggestion first:'
+            : '✅ Smart suggestion based on your recurring + manual expenses:';
+
+        elements.insights.innerHTML = `${healthMessage}<br>${suggestionLines.join('<br>')}`;
         return;
     }
 
