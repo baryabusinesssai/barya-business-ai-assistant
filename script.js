@@ -732,9 +732,6 @@ function init() {
   initForms();
   renderDashboard();
 
-  if (els.saveNotice) {
-    els.saveNotice.textContent = "Data is stored locally in your browser.";
-  }
 }
 
 init();
