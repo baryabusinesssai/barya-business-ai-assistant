@@ -252,8 +252,8 @@ function loadSettingsLocal() {
 }
 
 async function persistState() {
-  if (!useBackend) {
-    saveStateLocal();
+  if (useBackend) {
+    await api.saveState(state);
     return;
   }
   await api.saveState(state);
@@ -287,10 +287,50 @@ function countRecurringMonthlyToDate(expense) {
   }
 
   return 0;
+  saveStateLocal();
+}
+
+async function persistSettings() {
+  if (useBackend) {
+    await api.saveSettings(settings);
+    return;
+  }
+  saveSettingsLocal();
+}
+
+function toStartOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function daysBetween(start, end) {
+  return Math.floor((toStartOfDay(end) - toStartOfDay(start)) / 86400000);
+}
+
+function countRecurringOccurrencesInRange(recurringExpense, rangeStart, rangeEnd) {
+  const start = parseYMDToDate(recurringExpense.startDate) || rangeStart;
+  const from = toStartOfDay(rangeStart);
+  const to = toStartOfDay(rangeEnd);
+  let current = toStartOfDay(start);
+  let count = 0;
+
+  while (current <= to) {
+    if (current >= from) count += 1;
+    if (recurringExpense.frequency === "daily") {
+      current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
+    } else if (recurringExpense.frequency === "weekly") {
+      current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 7);
+    } else {
+      current = new Date(current.getFullYear(), current.getMonth() + 1, start.getDate());
+    }
+  }
+
+  return count;
 }
 
 function getCurrentMonthExpenses() {
   const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const today = toStartOfDay(now);
 
   const oneTime = state.expenses.filter((expense) => {
     const d = parseYMDToDate(expense.date) || new Date(expense.date);
@@ -302,6 +342,13 @@ function getCurrentMonthExpenses() {
     category: expense.name || "Recurring",
     date: todayYMD()
   }));
+  const recurring = [];
+  state.recurringExpenses.forEach((expense) => {
+    const occurrences = countRecurringOccurrencesInRange(expense, monthStart, today);
+    for (let i = 0; i < occurrences; i += 1) {
+      recurring.push({ amount: Number(expense.amount) || 0, category: expense.name || "Recurring", date: todayYMD() });
+    }
+  });
 
   return [...oneTime, ...recurring];
 }
@@ -314,7 +361,6 @@ function getRecurringTotalToDate() {
 
 function getTopCategory(expenses) {
   if (!expenses.length) return "No expenses yet";
-
   const totals = {};
   expenses.forEach((expense) => {
     const key = (expense.category || "Other").trim() || "Other";
@@ -341,16 +387,15 @@ function renderGoalUI() {
   if (els.selectedGoalDisplay) {
     els.selectedGoalDisplay.textContent = hasGoal ? `Selected Goal: ${settings.goal}` : "Selected Goal: Not selected yet";
   }
-
   if (els.goalForm) els.goalForm.classList.toggle("hidden", hasGoal);
   if (els.changeGoalButton) els.changeGoalButton.classList.toggle("hidden", !hasGoal);
   if (els.goalSelect) els.goalSelect.value = hasGoal ? settings.goal : DEFAULT_GOAL;
   if (els.settingsGoalSelect) els.settingsGoalSelect.value = hasGoal ? settings.goal : DEFAULT_GOAL;
+  if (els.goalSelect) els.goalSelect.value = settings.goal || DEFAULT_GOAL;
+  if (els.settingsGoalSelect) els.settingsGoalSelect.value = settings.goal || DEFAULT_GOAL;
 
   if (els.goalGuidanceSummary) {
-    els.goalGuidanceSummary.textContent = hasGoal
-      ? content.summary
-      : "Select a goal in Beginner Mode to see focused guidance.";
+    els.goalGuidanceSummary.textContent = hasGoal ? content.summary : "Select a goal in Beginner Mode to see focused guidance.";
   }
 
   if (els.goalTipsList) {
@@ -369,46 +414,24 @@ function renderGoalUI() {
   const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
   if (els.dailyTipText) els.dailyTipText.textContent = content.dailyTips[dayIndex];
 
+  const now = new Date();
+  if (els.dailyTipText) {
+    const dayIndex = Math.floor(Date.now() / 86400000) % content.dailyTips.length;
+    els.dailyTipText.textContent = content.dailyTips[dayIndex];
+  }
   if (els.weeklyChallengeText) {
-    const now = new Date();
     const startYear = new Date(now.getFullYear(), 0, 1);
     const weekIndex = Math.floor((now - startYear) / (7 * 86400000)) % content.weeklyChallenges.length;
     els.weeklyChallengeText.textContent = content.weeklyChallenges[weekIndex];
   }
-
   if (els.monthlyGoalText) {
-    els.monthlyGoalText.textContent = content.monthlyGoals[new Date().getMonth() % content.monthlyGoals.length];
-  }
-}
-
-function renderInsights(monthlyExpenses, monthlyExpenseTotal) {
-  const topCategoryText = getTopCategory(monthlyExpenses);
-
-  if (els.insightTopCategory) {
-    els.insightTopCategory.textContent = monthlyExpenses.length
-      ? `Your highest spending category is ${topCategoryText.split(" (")[0]}.`
-      : "Your highest spending category is not available yet.";
-  }
-
-  if (els.insightMonthlyExpense) {
-    els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
-  }
-
-  if (els.insightSavingsStatus) {
-    els.insightSavingsStatus.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
-  }
-
-  if (els.insightSuggestion) {
-    els.insightSuggestion.textContent = monthlyExpenses.length
-      ? `You can save more by reviewing and reducing ${topCategoryText.split(" (")[0]} expenses.`
-      : "Add expenses to get a saving suggestion.";
+    els.monthlyGoalText.textContent = content.monthlyGoals[now.getMonth() % content.monthlyGoals.length];
   }
 }
 
 function renderRecentExpenses() {
   if (!els.recentExpenses) return;
   els.recentExpenses.innerHTML = "";
-
   if (!state.expenses.length) {
     els.recentExpenses.innerHTML = '<li class="empty-state">No expenses added yet.</li>';
     return;
@@ -441,9 +464,34 @@ function renderRecurringExpenses() {
 }
 
 function renderDashboard() {
+      const d = parseYMDToDate(expense.date) || new Date(expense.date);
+      const li = document.createElement("li");
+      li.textContent = `${d.toLocaleDateString()} • ${expense.category} • ${formatCurrency(expense.amount)}`;
+      els.recentExpenses.appendChild(li);
+    });
+}
+
+function renderRecurringExpenses() {
+  if (!els.recurringExpensesList) return;
+  els.recurringExpensesList.innerHTML = "";
+  if (!state.recurringExpenses.length) {
+    els.recurringExpensesList.innerHTML = '<li class="empty-state">No recurring expenses added yet.</li>';
+    return;
+  }
+
+  state.recurringExpenses.forEach((expense) => {
+    const li = document.createElement("li");
+    li.textContent = `${expense.name} • ${formatCurrency(expense.amount)} • ${expense.frequency}`;
+    els.recurringExpensesList.appendChild(li);
+  });
+}
+
+function renderDashboard() {
+  const monthlyExpenses = getCurrentMonthExpenses();
+  const monthlyExpenseTotal = monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   const oneTimeExpenseTotal = state.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  const recurringExpenseTotal = getRecurringTotalToDate();
-  const totalExpense = oneTimeExpenseTotal + recurringExpenseTotal;
+  const recurringTotal = state.recurringExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const totalExpense = oneTimeExpenseTotal + recurringTotal;
   const net = state.income - totalExpense;
 
   if (els.totalIncome) els.totalIncome.textContent = formatCurrency(state.income);
@@ -458,6 +506,24 @@ function renderDashboard() {
   if (els.savingsStatusValue) els.savingsStatusValue.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
 
   renderInsights(monthlyExpenses, monthlyExpenseTotal);
+  const topCategoryText = getTopCategory(monthlyExpenses);
+  if (els.insightTopCategory) {
+    els.insightTopCategory.textContent = monthlyExpenses.length
+      ? `Your highest spending category is ${topCategoryText.split(" (")[0]}.`
+      : "Your highest spending category is not available yet.";
+  }
+  if (els.insightMonthlyExpense) {
+    els.insightMonthlyExpense.textContent = `Your total monthly expenses are ${formatCurrency(monthlyExpenseTotal)}.`;
+  }
+  if (els.insightSavingsStatus) {
+    els.insightSavingsStatus.textContent = getSavingsStatus(state.income, monthlyExpenseTotal);
+  }
+  if (els.insightSuggestion) {
+    els.insightSuggestion.textContent = monthlyExpenses.length
+      ? `You can save more by reviewing and reducing ${topCategoryText.split(" (")[0]} expenses.`
+      : "Add expenses to get a saving suggestion.";
+  }
+
   renderRecentExpenses();
   renderRecurringExpenses();
   renderGoalUI();
@@ -470,6 +536,19 @@ function getAssistantResponse(question) {
   if (q.includes("business") || q.includes("idea") || q.includes("startup")) return "🚀 Start with one small offer and validate with real customers.";
   if (q.includes("income") || q.includes("earn") || q.includes("growth")) return "📈 Improve value, raise pricing carefully, and add one recurring offer.";
   return "🤖 Ask about saving, expenses, income growth, or business ideas.";
+  if (q.includes("save") || q.includes("budget")) {
+    return "💡 Start by tracking all expenses for 7 days, then set one spending limit and auto-save a fixed amount on income day.";
+  }
+  if (q.includes("expense") || q.includes("cost")) {
+    return "📉 Separate fixed and variable costs, cap one variable category, and review weekly for reductions.";
+  }
+  if (q.includes("business") || q.includes("idea") || q.includes("startup")) {
+    return "🚀 Pick one small idea, test with real customers, and validate before making big investments.";
+  }
+  if (q.includes("income") || q.includes("earn") || q.includes("growth")) {
+    return "📈 Improve value, raise pricing carefully, and add one recurring offer for stable monthly income.";
+  }
+  return "🤖 I can help with saving, expenses, business ideas, and growth. Ask a specific question for a practical answer.";
 }
 
 function detectBusinessType(text) {
@@ -528,12 +607,18 @@ function renderBusinessAdvisorResponse(ideaText) {
   const template = getBusinessAdvisorTemplate(detectBusinessType(ideaText));
   const steps = template.steps.map((step) => `<li>${escapeHTML(step)}</li>`).join("");
   const tips = template.tips.map((tip) => `<li>${escapeHTML(tip)}</li>`).join("");
+function renderBusinessAdvisorResponse(ideaText) {
+  if (!els.businessAdvisorResponse) return;
+  const template = getBusinessAdvisorTemplate(detectBusinessType(ideaText));
+  const steps = template.steps.map((step) => `<li>${step}</li>`).join("");
+  const tips = template.tips.map((tip) => `<li>${tip}</li>`).join("");
 
   els.businessAdvisorResponse.innerHTML = `
     <section class="advisor-block">
       <h3>Basic Idea Summary</h3>
       <p>${escapeHTML(template.summary)}</p>
       <p><strong>Your input:</strong> ${escapeHTML(ideaText)}</p>
+      <p>${template.summary}</p>
     </section>
     <section class="advisor-block">
       <h3>Simple Steps to Start</h3>
@@ -570,10 +655,11 @@ function initForms() {
   if (els.expenseDate) {
     els.expenseDate.value = todayYMD();
   }
+  if (els.expenseDate) els.expenseDate.value = todayYMD();
 
   els.incomeForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const amount = Number(els.incomeAmount.value);
+    const amount = Number(els.incomeAmount?.value);
     if (Number.isNaN(amount) || amount < 0) return;
 
     state.income = amount;
@@ -583,16 +669,16 @@ function initForms() {
 
   els.expenseForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const amount = Number(els.expenseAmount.value);
-    const category = els.expenseCategory.value.trim();
-    const date = els.expenseDate.value;
+    const amount = Number(els.expenseAmount?.value);
+    const category = els.expenseCategory?.value.trim();
+    const date = els.expenseDate?.value;
     if (Number.isNaN(amount) || amount < 0 || !category || !date) return;
 
     state.expenses.push({ amount, category, date });
     await persistState();
     renderDashboard();
     els.expenseForm.reset();
-    els.expenseDate.value = todayYMD();
+    if (els.expenseDate) els.expenseDate.value = todayYMD();
   });
 
   els.recurringExpenseForm?.addEventListener("submit", async (event) => {
@@ -601,6 +687,9 @@ function initForms() {
     const amount = Number(els.recurringExpenseAmount.value);
     const frequency = els.recurringExpenseFrequency.value;
 
+    const name = els.recurringExpenseName?.value.trim();
+    const amount = Number(els.recurringExpenseAmount?.value);
+    const frequency = els.recurringExpenseFrequency?.value;
     if (!name || Number.isNaN(amount) || amount < 0 || !["daily", "weekly", "monthly"].includes(frequency)) return;
 
     state.recurringExpenses.push({ name, amount, frequency, startDate: todayYMD() });
@@ -615,6 +704,7 @@ function initForms() {
     if (!GOAL_CONTENT[goal]) return;
 
     settings.goal = goal;
+    settings.goal = els.goalSelect?.value || DEFAULT_GOAL;
     await persistSettings();
     renderDashboard();
     updateStatus("Goal saved.");
@@ -632,9 +722,11 @@ function initForms() {
 
     const currency = els.currencySelect.value;
     const goal = els.settingsGoalSelect.value;
+    const currency = els.currencySelect?.value;
+    const goal = els.settingsGoalSelect?.value;
 
-    if (CURRENCIES[currency]) settings.currency = currency;
-    if (GOAL_CONTENT[goal]) settings.goal = goal;
+    if (currency && CURRENCIES[currency]) settings.currency = currency;
+    if (goal && GOAL_CONTENT[goal]) settings.goal = goal;
 
     await persistSettings();
     renderDashboard();
@@ -648,12 +740,12 @@ function initForms() {
     settings.currency = "INR";
     settings.goal = "";
 
-    if (!useBackend) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    } else {
+    if (useBackend) {
       await persistState();
       await persistSettings();
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
     }
 
     els.incomeForm?.reset();
@@ -662,6 +754,10 @@ function initForms() {
     if (els.expenseDate) {
       els.expenseDate.value = todayYMD();
     }
+    if (els.expenseDate) els.expenseDate.value = todayYMD();
+    if (els.currencySelect) els.currencySelect.value = settings.currency;
+    if (els.settingsGoalSelect) els.settingsGoalSelect.value = DEFAULT_GOAL;
+    if (els.goalSelect) els.goalSelect.value = DEFAULT_GOAL;
 
     renderDashboard();
     updateStatus("Data reset complete.");
@@ -669,15 +765,16 @@ function initForms() {
 
   els.assistantForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    const question = els.assistantQuestion.value.trim();
+    const question = els.assistantQuestion?.value.trim();
     if (!question) return;
 
     els.assistantResponse.textContent = getAssistantResponse(question);
+    if (els.assistantResponse) els.assistantResponse.textContent = getAssistantResponse(question);
   });
 
   els.businessAdvisorForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    const text = els.businessIdeaInput.value.trim();
+    const text = els.businessIdeaInput?.value.trim();
     if (!text) return;
 
     renderBusinessAdvisorResponse(text);
@@ -687,6 +784,8 @@ function initForms() {
     event.preventDefault();
     const category = els.ideaCategorySelect.value || "all";
     els.generatedIdeaText.textContent = getRandomIdea(category);
+    const category = els.ideaCategorySelect?.value || "all";
+    if (els.generatedIdeaText) els.generatedIdeaText.textContent = getRandomIdea(category);
   });
 }
 
