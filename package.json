@@ -1,14 +1,1 @@
-{
-  "name": "barya-business-ai-assistant",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Beginner-friendly MVP finance assistant with basic backend persistence.",
-  "main": "backend/server.js",
-  "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js"
-  },
-  "dependencies": {
-    "express": "^4.21.2"
-  }
-}
+
