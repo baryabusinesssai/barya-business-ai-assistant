@@ -1,109 +1,261 @@
 // Finance Data Logic
-let financeData = JSON.parse(localStorage.getItem('barya_finance')) || { income: 0, expense: 0 };
-let userGoal = localStorage.getItem('barya_goal') || "";
-
-window.onload = () => {
-    updateDashboard();
-    typeAnimation();
-    if (!userGoal) {
-        document.getElementById('beginner-modal').style.display = 'flex';
-    } else {
-        document.getElementById('beginner-modal').style.display = 'none';
-        document.getElementById('user-goal-badge').innerText = "Goal: " + userGoal;
-    }
+const STORAGE_KEYS = {
+    finance: 'barya_finance',
+    goal: 'barya_goal'
 };
+
+let financeData = loadFinanceData();
+let userGoal = localStorage.getItem(STORAGE_KEYS.goal) || '';
+
+const elements = {};
+const phrases = [
+    'How do I save ₹5000?',
+    'Start a business today.',
+    'Get AI business advice.',
+    'Track your expenses.'
+];
+
+let phraseIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
+let typingTimer = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+    cacheElements();
+    bindEvents();
+    updateDashboard();
+    updateGoalUI();
+    typeAnimation();
+});
+
+function cacheElements() {
+    elements.modal = document.getElementById('beginner-modal');
+    elements.goalBadge = document.getElementById('user-goal-badge');
+    elements.typingText = document.getElementById('typing-text');
+    elements.mainApp = document.getElementById('main-app');
+    elements.amountInput = document.getElementById('input-amount');
+    elements.typeSelect = document.getElementById('input-type');
+    elements.income = document.getElementById('display-income');
+    elements.expense = document.getElementById('display-expense');
+    elements.savings = document.getElementById('display-savings');
+    elements.insights = document.getElementById('insights-container');
+    elements.chatInput = document.getElementById('chat-input');
+    elements.chatBox = document.getElementById('chat-box');
+    elements.ideaDisplay = document.getElementById('idea-display');
+    elements.planOutput = document.getElementById('plan-output');
+}
+
+function bindEvents() {
+    elements.chatInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            askAI();
+        }
+    });
+
+    elements.amountInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addTransaction();
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && typingTimer) {
+            clearTimeout(typingTimer);
+            typingTimer = null;
+        } else if (!document.hidden && !typingTimer) {
+            typeAnimation();
+        }
+    });
+}
+
+function loadFinanceData() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.finance));
+        if (!parsed || typeof parsed !== 'object') {
+            return { income: 0, expense: 0 };
+        }
+
+        return {
+            income: Number.isFinite(Number(parsed.income)) ? Math.max(0, Number(parsed.income)) : 0,
+            expense: Number.isFinite(Number(parsed.expense)) ? Math.max(0, Number(parsed.expense)) : 0
+        };
+    } catch (error) {
+        return { income: 0, expense: 0 };
+    }
+}
+
+function saveFinanceData() {
+    localStorage.setItem(STORAGE_KEYS.finance, JSON.stringify(financeData));
+}
+
+function updateGoalUI() {
+    if (!userGoal) {
+        elements.modal.style.display = 'flex';
+        elements.goalBadge.innerText = 'Goal: Not Set';
+        return;
+    }
+
+    elements.modal.style.display = 'none';
+    elements.goalBadge.innerText = `Goal: ${userGoal}`;
+}
 
 // Set User Goal
 function setGoal(goal) {
     userGoal = goal;
-    localStorage.setItem('barya_goal', goal);
-    document.getElementById('beginner-modal').style.display = 'none';
-    document.getElementById('user-goal-badge').innerText = "Goal: " + goal;
+    localStorage.setItem(STORAGE_KEYS.goal, goal);
+    updateGoalUI();
 }
 
 // Typing Animation for Hero
-const phrases = ["How do I save ₹5000?", "Start a business today.", "Get AI business advice.", "Track your expenses."];
-let i = 0, j = 0, currentPhrase = "", isDeleting = false;
-
 function typeAnimation() {
-    currentPhrase = phrases[i];
+    const currentPhrase = phrases[phraseIndex];
+
     if (isDeleting) {
-        document.getElementById('typing-text').innerText = currentPhrase.substring(0, j - 1);
-        j--;
+        charIndex -= 1;
     } else {
-        document.getElementById('typing-text').innerText = currentPhrase.substring(0, j + 1);
-        j++;
+        charIndex += 1;
     }
 
-    if (!isDeleting && j === currentPhrase.length) {
-        setTimeout(() => isDeleting = true, 2000);
-    } else if (isDeleting && j === 0) {
-        isDeleting = false;
-        i = (i + 1) % phrases.length;
+    elements.typingText.textContent = currentPhrase.slice(0, Math.max(0, charIndex));
+
+    if (!isDeleting && charIndex >= currentPhrase.length) {
+        isDeleting = true;
+        typingTimer = setTimeout(typeAnimation, 1600);
+        return;
     }
-    setTimeout(typeAnimation, isDeleting ? 50 : 100);
+
+    if (isDeleting && charIndex <= 0) {
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+    }
+
+    typingTimer = setTimeout(typeAnimation, isDeleting ? 55 : 100);
 }
 
 // Tab System
 function showTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.side-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+    document.querySelectorAll('.side-link').forEach((link) => link.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     btn.classList.add('active');
 }
 
 function scrollToApp() {
-    document.getElementById('main-app').scrollIntoView({ behavior: 'smooth' });
+    elements.mainApp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-IN', {
+        maximumFractionDigits: 0
+    }).format(value);
 }
 
 // Budget Tracker
 function addTransaction() {
-    const amt = parseFloat(document.getElementById('input-amount').value);
-    const type = document.getElementById('input-type').value;
-    if (isNaN(amt) || amt <= 0) return alert("Valid amount dalein!");
+    const amount = Number.parseFloat(elements.amountInput.value);
+    const type = elements.typeSelect.value;
 
-    if (type === 'income') financeData.income += amt;
-    else financeData.expense += amt;
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert('Please enter a valid amount greater than 0.');
+        elements.amountInput.focus();
+        return;
+    }
 
-    localStorage.setItem('barya_finance', JSON.stringify(financeData));
+    if (type === 'income') {
+        financeData.income += amount;
+    } else {
+        financeData.expense += amount;
+    }
+
+    saveFinanceData();
     updateDashboard();
-    document.getElementById('input-amount').value = "";
+    elements.amountInput.value = '';
+    elements.amountInput.focus();
 }
 
 function updateDashboard() {
-    document.getElementById('display-income').innerText = "₹" + financeData.income;
-    document.getElementById('display-expense').innerText = "₹" + financeData.expense;
+    elements.income.innerText = `₹${formatCurrency(financeData.income)}`;
+    elements.expense.innerText = `₹${formatCurrency(financeData.expense)}`;
+
     const savings = financeData.income - financeData.expense;
-    document.getElementById('display-savings').innerText = "₹" + savings;
-    
-    const insight = document.getElementById('insights-container');
-    if (financeData.expense > financeData.income * 0.8) insight.innerHTML = "⚠️ Expenses are very high! Cut spending.";
-    else if (savings > 0) insight.innerHTML = "✅ You can invest ₹" + (savings * 0.3).toFixed(0) + " this month.";
+    elements.savings.innerText = `₹${formatCurrency(savings)}`;
+
+    if (financeData.income === 0 && financeData.expense === 0) {
+        elements.insights.textContent = 'Add your first income or expense entry to receive tailored insights.';
+        return;
+    }
+
+    if (financeData.expense > financeData.income * 0.8) {
+        elements.insights.textContent = '⚠️ Expenses are high compared to income. Review non-essential spending this week.';
+        return;
+    }
+
+    if (savings > 0) {
+        const suggestedInvestment = Math.round(savings * 0.3);
+        elements.insights.textContent = `✅ Good progress. You could consider investing ₹${formatCurrency(suggestedInvestment)} this month.`;
+        return;
+    }
+
+    elements.insights.textContent = 'You are currently spending more than you earn. Start with small cuts and add one extra income source.';
+}
+
+function appendMessage(content, type = 'ai') {
+    const message = document.createElement('div');
+
+    if (type === 'user') {
+        message.className = 'user-msg';
+        message.textContent = content;
+    } else {
+        message.className = 'ai-msg';
+        message.textContent = content;
+    }
+
+    elements.chatBox.appendChild(message);
+    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
 }
 
 // AI Chat Simple Logic
 function askAI() {
-    const q = document.getElementById('chat-input').value;
-    const box = document.getElementById('chat-box');
-    if(!q) return;
+    const question = elements.chatInput.value.trim();
+    if (!question) {
+        return;
+    }
 
-    box.innerHTML += `<div style="text-align:right; margin-bottom:10px;">${q}</div>`;
-    let res = "That's interesting! Based on your " + userGoal + " goal, I suggest focusing on small daily wins.";
-    if(q.toLowerCase().includes("save")) res = "Try the 50/30/20 rule to manage your " + financeData.income + " income.";
-    
-    setTimeout(() => {
-        box.innerHTML += `<div class="ai-msg">Barya: ${res}</div>`;
-        box.scrollTop = box.scrollHeight;
-    }, 600);
-    document.getElementById('chat-input').value = "";
+    appendMessage(question, 'user');
+
+    const normalizedQuestion = question.toLowerCase();
+    const activeGoal = userGoal || 'financial growth';
+
+    let response = `That's a great question. Based on your ${activeGoal} goal, focus on one measurable improvement this week.`;
+    if (normalizedQuestion.includes('save')) {
+        response = `Try the 50/30/20 rule and automate a small transfer right after you receive income (current income tracked: ₹${formatCurrency(financeData.income)}).`;
+    } else if (normalizedQuestion.includes('expense') || normalizedQuestion.includes('spend')) {
+        response = 'Track your top 3 weekly expense categories and reduce the highest one by 10% first.';
+    }
+
+    window.setTimeout(() => {
+        appendMessage(`Barya: ${response}`);
+    }, 450);
+
+    elements.chatInput.value = '';
 }
 
 // Idea Gen
 function generateIdea() {
-    const ideas = ["Social Media Agency", "E-commerce for local crafts", "AI Content Writing Service", "Online Personal Finance Tutor"];
-    document.getElementById('idea-display').innerText = "💡 " + ideas[Math.floor(Math.random() * ideas.length)];
+    const ideas = [
+        'Social Media Agency',
+        'E-commerce for local crafts',
+        'AI Content Writing Service',
+        'Online Personal Finance Tutor'
+    ];
+
+    const idea = ideas[Math.floor(Math.random() * ideas.length)];
+    elements.ideaDisplay.textContent = `💡 ${idea}`;
 }
 
-function getPlan(p) {
-    document.getElementById('plan-output').innerHTML = "<strong>Barya Advisor:</strong> Loading " + p + " for your goal to " + userGoal + "... Step 1 is Market Research.";
+function getPlan(planType) {
+    const goalText = userGoal || 'grow financially';
+    elements.planOutput.textContent = `Barya Advisor: Loading ${planType} for your goal to ${goalText}. Step 1 is market research.`;
 }
