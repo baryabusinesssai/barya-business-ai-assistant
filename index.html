@@ -15,6 +15,7 @@
         <div class="glass-card modal-content">
             <h2 id="welcome-title">Welcome to Barya<span>.</span></h2>
             <p>Aapka main goal kya hai?</p>
+            <p class="helper-text">Choose one option to personalize your guidance. You can change this later from your browser storage reset.</p>
             <div class="goal-options">
                 <button type="button" onclick="setGoal('Save Money')">💰 Save Money</button>
                 <button type="button" onclick="setGoal('Start a Business')">🚀 Start Business</button>
@@ -47,10 +48,10 @@
 
     <main class="app-container" id="main-app">
         <aside class="sidebar">
-            <button type="button" class="side-link active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
-            <button type="button" class="side-link" onclick="showTab('ai-assistant', this)">🤖 AI Assistant</button>
-            <button type="button" class="side-link" onclick="showTab('business-plan', this)">💼 Business Plan</button>
-            <button type="button" class="side-link" onclick="showTab('ideas', this)">💡 Idea Gen</button>
+            <button type="button" class="side-link active" data-tab="dashboard" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+            <button type="button" class="side-link" data-tab="ai-assistant" onclick="showTab('ai-assistant', this)">🤖 AI Assistant</button>
+            <button type="button" class="side-link" data-tab="business-plan" onclick="showTab('business-plan', this)">💼 Business Plan</button>
+            <button type="button" class="side-link" data-tab="ideas" onclick="showTab('ideas', this)">💡 Idea Gen</button>
         </aside>
 
         <section class="content-area">
@@ -58,23 +59,30 @@
                 <div class="grid-layout">
                     <div class="glass-card">
                         <h3>Budget Tracker</h3>
+                        <div class="guide-box" id="flow-guide" aria-live="polite">
+                            <p><strong>Recommended flow:</strong> 1) Set goal ✅ → 2) Add income → 3) Add expense → 4) Read insights → 5) Ask AI what to do next.</p>
+                        </div>
                         <div class="stats-row">
                             <div class="stat"><label>Income</label><div id="display-income" class="value">₹0</div></div>
                             <div class="stat"><label>Expenses</label><div id="display-expense" class="value text-red">₹0</div></div>
                             <div class="stat"><label>Savings</label><div id="display-savings" class="value text-green">₹0</div></div>
                         </div>
                         <div class="input-group">
-                            <input type="number" id="input-amount" placeholder="Amount" inputmode="decimal" min="0" step="0.01">
+                            <label for="input-amount" class="sr-only">Amount in rupees</label>
+                            <input type="number" id="input-amount" placeholder="Amount (₹)" inputmode="decimal" min="0" step="0.01">
+                            <label for="input-type" class="sr-only">Entry type</label>
                             <select id="input-type">
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
                             </select>
                             <button type="button" class="btn-primary" onclick="addTransaction()">Add Entry</button>
                         </div>
+                        <p class="helper-text">Tip: Add one income entry first, then your top expense to unlock clearer insights.</p>
                     </div>
                     <div class="glass-card">
                         <h3>Smart Insights</h3>
-                        <div id="insights-container" class="ai-msg">Add data to see AI analysis...</div>
+                        <div id="insights-container" class="ai-msg" aria-live="polite">Add data to see AI analysis...</div>
+                        <button type="button" class="btn-glass mt-20" onclick="showTab('ai-assistant')">Continue to AI Assistant</button>
                     </div>
                 </div>
             </div>
@@ -89,6 +97,7 @@
                         <input type="text" id="chat-input" placeholder="Ask about finance or business..." maxlength="240">
                         <button type="button" class="btn-primary" onclick="askAI()">Ask</button>
                     </div>
+                    <p class="helper-text">New here? Ask: “Based on my goal, what should I do this week?”</p>
                 </div>
             </div>
 

@@ -19,6 +19,7 @@ let phraseIndex = 0;
 let charIndex = 0;
 let isDeleting = false;
 let typingTimer = null;
+let hasAskedAI = false;
 
 window.addEventListener('DOMContentLoaded', () => {
     cacheElements();
@@ -39,6 +40,7 @@ function cacheElements() {
     elements.expense = document.getElementById('display-expense');
     elements.savings = document.getElementById('display-savings');
     elements.insights = document.getElementById('insights-container');
+    elements.flowGuide = document.getElementById('flow-guide');
     elements.chatInput = document.getElementById('chat-input');
     elements.chatBox = document.getElementById('chat-box');
     elements.ideaDisplay = document.getElementById('idea-display');
@@ -106,6 +108,8 @@ function setGoal(goal) {
     userGoal = goal;
     localStorage.setItem(STORAGE_KEYS.goal, goal);
     updateGoalUI();
+    renderFlowGuidance();
+    updateDashboard();
 }
 
 // Typing Animation for Hero
@@ -138,8 +142,16 @@ function typeAnimation() {
 function showTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
     document.querySelectorAll('.side-link').forEach((link) => link.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
+    const targetTab = document.getElementById(tabId);
+    if (!targetTab) {
+        return;
+    }
+
+    targetTab.classList.add('active');
+    const targetButton = btn || document.querySelector(`.side-link[data-tab="${tabId}"]`);
+    if (targetButton) {
+        targetButton.classList.add('active');
+    }
 }
 
 function scrollToApp() {
@@ -184,21 +196,25 @@ function updateDashboard() {
 
     if (financeData.income === 0 && financeData.expense === 0) {
         elements.insights.textContent = 'Add your first income or expense entry to receive tailored insights.';
+        renderFlowGuidance();
         return;
     }
 
     if (financeData.expense > financeData.income * 0.8) {
         elements.insights.textContent = '⚠️ Expenses are high compared to income. Review non-essential spending this week.';
+        renderFlowGuidance();
         return;
     }
 
     if (savings > 0) {
         const suggestedInvestment = Math.round(savings * 0.3);
         elements.insights.textContent = `✅ Good progress. You could consider investing ₹${formatCurrency(suggestedInvestment)} this month.`;
+        renderFlowGuidance();
         return;
     }
 
     elements.insights.textContent = 'You are currently spending more than you earn. Start with small cuts and add one extra income source.';
+    renderFlowGuidance();
 }
 
 function appendMessage(content, type = 'ai') {
@@ -224,6 +240,7 @@ function askAI() {
     }
 
     appendMessage(question, 'user');
+    hasAskedAI = true;
 
     const normalizedQuestion = question.toLowerCase();
     const activeGoal = userGoal || 'financial growth';
@@ -237,9 +254,34 @@ function askAI() {
 
     window.setTimeout(() => {
         appendMessage(`Barya: ${response}`);
+        renderFlowGuidance();
     }, 450);
 
     elements.chatInput.value = '';
+}
+
+function renderFlowGuidance() {
+    if (!elements.flowGuide) {
+        return;
+    }
+
+    const steps = [
+        { label: 'Goal selected', done: Boolean(userGoal) },
+        { label: 'Income added', done: financeData.income > 0 },
+        { label: 'Expense added', done: financeData.expense > 0 },
+        { label: 'Insights reviewed', done: financeData.income > 0 || financeData.expense > 0 },
+        { label: 'AI question asked', done: hasAskedAI }
+    ];
+
+    const currentStep = steps.find((step) => !step.done);
+    const summary = steps
+        .map((step, index) => `${index + 1}. ${step.done ? '✅' : '⬜'} ${step.label}`)
+        .join('  •  ');
+    const nextHint = currentStep
+        ? `Next best step: ${currentStep.label}.`
+        : 'Great job — you completed the full beginner flow.';
+
+    elements.flowGuide.innerHTML = `<p><strong>Progress checklist:</strong> ${summary}</p><p class="helper-text">${nextHint}</p>`;
 }
 
 // Idea Gen

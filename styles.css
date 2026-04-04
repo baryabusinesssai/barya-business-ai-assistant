@@ -22,6 +22,18 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .goal-options { display: grid; gap: 10px; margin-top: 16px; }
 .goal-options button { border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); color: var(--text); border-radius: 10px; padding: 12px; cursor: pointer; }
 .goal-options button:hover { border-color: var(--primary); }
+.helper-text { margin-top: 10px; font-size: 0.88rem; color: #b6c3d7; line-height: 1.5; }
+.guide-box { border: 1px solid rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); border-radius: 12px; padding: 12px; margin: 14px 0 8px; }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
 
 /* Navigation */
 .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 8%; position: sticky; top: 0; background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(10px); z-index: 100; }
@@ -133,7 +145,7 @@ input::placeholder { color: #94a3b8; }
     .side-link {
         width: 100%;
         text-align: center;
-        padding: 12px;
+        padding: 14px 12px;
     }
 
     .glass-card {
@@ -167,6 +179,7 @@ input::placeholder { color: #94a3b8; }
     .hero-btns .btn-primary,
     .tool-grid .btn-glass {
         width: 100%;
+        min-height: 44px;
     }
 
     h3 { font-size: 1.1rem; }
