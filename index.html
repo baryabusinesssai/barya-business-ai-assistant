@@ -3,208 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barya | AI Business Assistant</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="glow-bg"></div>
-    
-    <nav class="navbar">
-        <div class="logo">BARYA<span>.</span>AI</div>
-        <ul class="nav-links">
-            <li><a href="#dashboard">Dashboard</a></li>
-            <li><a href="#advisor">AI Advisor</a></li>
-            <li><a href="#ideas">Idea Gen</a></li>
-        </ul>
-        <button class="btn-primary">Launch App</button>
-    </nav>
-
-    <header class="hero">
-        <div class="hero-content">
-            <span class="badge">Next-Gen Financial Intelligence</span>
-            <h1>Master Your Money with <span class="text-gradient">Barya AI</span></h1>
-            <div class="typing-container">
-                <span id="typing-text"></span><span class="cursor">|</span>
-            </div>
-            <p>The foundation of your business ecosystem. Track, learn, and grow with the power of AI guidance.</p>
-            <div class="hero-btns">
-                <button class="btn-primary">Get Started Free</button>
-                <button class="btn-secondary">Watch Demo</button>
-            </div>
-        </div>
-    </header>
-
-    <section class="container" id="dashboard">
-        <div class="grid-layout">
-            <div class="glass-card main-stats">
-                <div class="card-header">
-                    <h3>Financial Command Center</h3>
-                    <span class="live-indicator">● LIVE</span>
-                </div>
-                <div class="stats-row">
-                    <div class="stat">
-                        <label>Monthly Income</label>
-                        <div class="value">₹50,000</div>
-                    </div>
-                    <div class="stat">
-                        <label>Expenses</label>
-                        <div class="value text-red">₹12,400</div>
-                    </div>
-                    <div class="stat">
-                        <label>Net Savings</label>
-                        <div class="value text-green">₹37,600</div>
-                    </div>
-                </div>
-                <div class="chart-placeholder">
-                    <div class="bar" style="height: 40%"></div>
-                    <div class="bar" style="height: 70%"></div>
-                    <div class="bar" style="height: 55%"></div>
-                    <div class="bar" style="height: 90%"></div>
-                </div>
-            </div>
-
-            <div class="glass-card ai-sidebar">
-                <h3>AI Insights</h3>
-                <div class="ai-msg">
-                    <p>"You can save <strong>₹1,500</strong> this month by reducing 'Dining Out' expenses."</p>
-                </div>
-                <div class="ai-msg">
-                    <p>"Your business idea 'Online Bakery' has high potential in your area."</p>
-                </div>
-                <button class="btn-glass">Ask Assistant</button>
-            </div>
-        </div>
-    </section>
-
-    <script src="script.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barya Business AI</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="glow-bg"></div>
-
-    <div id="beginner-modal" class="modal">
-        <div class="glass-card modal-content">
-            <h2>Welcome to Barya<span>.</span></h2>
-            <p>What is your primary goal today?</p>
-            <div class="goal-options">
-                <button onclick="setGoal('Save Money')">💰 Save Money</button>
-                <button onclick="setGoal('Start a Business')">🚀 Start Business</button>
-                <button onclick="setGoal('Learn Finance')">📚 Learn Finance</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="navbar">
-        <div class="logo">BARYA<span>.</span>AI</div>
-        <div class="nav-right">
-            <span id="user-goal-badge" class="badge">Goal: Not Set</span>
-            <button class="btn-primary" onclick="showTab('settings')">Settings</button>
-        </div>
-    </nav>
-
-    <main class="container">
-        <aside class="sidebar">
-            <button class="side-link active" onclick="showTab('dashboard')">📊 Dashboard</button>
-            <button class="side-link" onclick="showTab('ai-assistant')">🤖 AI Assistant</button>
-            <button class="side-link" onclick="showTab('business-plan')">💼 Business Plan</button>
-            <button class="side-link" onclick="showTab('ideas')">💡 Idea Gen</button>
-        </aside>
-
-        <section class="content">
-            
-            <div id="dashboard" class="tab-content active">
-                <div class="grid-layout">
-                    <div class="glass-card main-stats">
-                        <h3>Financial Overview</h3>
-                        <div class="stats-row">
-                            <div class="stat">
-                                <label>Total Income</label>
-                                <div id="display-income" class="value">₹0</div>
-                            </div>
-                            <div class="stat">
-                                <label>Total Expenses</label>
-                                <div id="display-expense" class="value text-red">₹0</div>
-                            </div>
-                            <div class="stat">
-                                <label>Net Savings</label>
-                                <div id="display-savings" class="value text-green">₹0</div>
-                            </div>
-                        </div>
-                        
-                        <div class="budget-inputs">
-                            <input type="number" id="input-amount" placeholder="Amount (₹)">
-                            <select id="input-type">
-                                <option value="income">Income</option>
-                                <option value="expense">Expense</option>
-                            </select>
-                            <button class="btn-primary" onclick="addTransaction()">Add Entry</button>
-                        </div>
-                    </div>
-
-                    <div class="glass-card">
-                        <h3>Smart Insights</h3>
-                        <div id="insights-list">
-                            <div class="ai-msg">Add data to see analysis...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="ai-assistant" class="tab-content">
-                <div class="glass-card">
-                    <h3>Barya AI Assistant</h3>
-                    <div id="chat-box" class="chat-display">
-                        <div class="ai-msg">Hello! I am your Barya AI. How can I help you grow today?</div>
-                    </div>
-                    <div class="inline-form">
-                        <input type="text" id="chat-input" placeholder="Ask anything about finance or business...">
-                        <button class="btn-primary" onclick="askAI()">Ask</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="business-plan" class="tab-content">
-                <div class="glass-card">
-                    <h3>Startup & Planning</h3>
-                    <div class="plan-grid">
-                        <div class="plan-item" onclick="getPlan('Step-by-Step Guide')">📝 Startup Guide</div>
-                        <div class="plan-item" onclick="getPlan('Business Plan Template')">📋 Plan Template</div>
-                        <div class="plan-item" onclick="getPlan('Learning Resources')">🎓 Learn Finance</div>
-                    </div>
-                    <div id="plan-result" class="ai-msg mt-20">Select a tool to begin.</div>
-                </div>
-            </div>
-
-            <div id="ideas" class="tab-content">
-                <div class="glass-card text-center">
-                    <h3>AI Idea Generator</h3>
-                    <p>Get low-investment & online business ideas.</p>
-                    <button class="btn-glass" onclick="generateIdea()">Generate New Idea</button>
-                    <div id="idea-display" class="idea-box"></div>
-                </div>
-            </div>
-
-        </section>
-    </main>
-
-    <script src="script.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barya Business AI Assistant</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -228,20 +26,33 @@
         <div class="logo">BARYA<span>.</span>AI</div>
         <div class="nav-right">
             <span id="user-goal-badge" class="badge">Goal: Not Set</span>
+            <button class="btn-primary mobile-hide" onclick="scrollToApp()">Launch App</button>
         </div>
     </nav>
 
-    <main class="app-container">
+    <header class="hero" id="hero-section">
+        <div class="hero-content">
+            <span class="badge">Next-Gen Financial Intelligence</span>
+            <h1>Master Your Money with <span class="text-gradient">Barya AI</span></h1>
+            <div class="typing-container">
+                <span id="typing-text"></span><span class="cursor">|</span>
+            </div>
+            <p>The foundation of your business ecosystem. Track, learn, and grow with the power of AI guidance.</p>
+            <div class="hero-btns">
+                <button class="btn-primary" onclick="scrollToApp()">Get Started Free</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-container" id="main-app">
         <aside class="sidebar">
-            <button class="side-link active" onclick="showTab('dashboard')">📊 Dashboard</button>
-            <button class="side-link" onclick="showTab('ai-assistant')">🤖 AI Assistant</button>
-            <button class="side-link" onclick="showTab('business-plan')">💼 Business Plan</button>
-            <button class="side-link" onclick="showTab('ideas')">💡 Idea Gen</button>
-            <button class="side-link" onclick="showTab('settings')">⚙️ Settings</button>
+            <button class="side-link active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+            <button class="side-link" onclick="showTab('ai-assistant', this)">🤖 AI Assistant</button>
+            <button class="side-link" onclick="showTab('business-plan', this)">💼 Business Plan</button>
+            <button class="side-link" onclick="showTab('ideas', this)">💡 Idea Gen</button>
         </aside>
 
         <section class="content-area">
-            
             <div id="dashboard" class="tab-content active">
                 <div class="grid-layout">
                     <div class="glass-card">
@@ -257,13 +68,12 @@
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
                             </select>
-                            <button class="btn-primary" onclick="addTransaction()">Add</button>
+                            <button class="btn-primary" onclick="addTransaction()">Add Entry</button>
                         </div>
                     </div>
-
                     <div class="glass-card">
                         <h3>Smart Insights</h3>
-                        <div id="insights-container" class="ai-msg">Data add karein analysis ke liye...</div>
+                        <div id="insights-container" class="ai-msg">Add data to see AI analysis...</div>
                     </div>
                 </div>
             </div>
@@ -272,11 +82,11 @@
                 <div class="glass-card chat-card">
                     <h3>Barya AI Assistant</h3>
                     <div id="chat-box" class="chat-display">
-                        <div class="ai-msg">Hello! Main Barya AI hoon. Aapka din kaisa hai?</div>
+                        <div class="ai-msg">Hello! I'm Barya AI. How can I help you grow today?</div>
                     </div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" placeholder="Finance ya Business ke baare mein puchein...">
-                        <button class="btn-primary" onclick="askAI()">Ask AI</button>
+                        <input type="text" id="chat-input" placeholder="Ask about finance or business...">
+                        <button class="btn-primary" onclick="askAI()">Ask</button>
                     </div>
                 </div>
             </div>
@@ -288,19 +98,18 @@
                         <button class="btn-glass" onclick="getPlan('Startup Guide')">📝 Startup Guide</button>
                         <button class="btn-glass" onclick="getPlan('Business Plan')">📋 Plan Template</button>
                     </div>
-                    <div id="plan-output" class="ai-msg mt-20">Koi tool select karein...</div>
+                    <div id="plan-output" class="ai-msg mt-20">Select a tool to begin...</div>
                 </div>
             </div>
 
             <div id="ideas" class="tab-content">
                 <div class="glass-card text-center">
                     <h3>Business Idea Generator</h3>
-                    <p>Low-investment aur online earning ideas.</p>
+                    <p>Low-investment and online earning ideas.</p>
                     <button class="btn-primary mt-20" onclick="generateIdea()">Generate Idea</button>
                     <div id="idea-display" class="idea-box"></div>
                 </div>
             </div>
-
         </section>
     </main>
 
