@@ -28,14 +28,11 @@
       </div>
 
       <nav class="nav" aria-label="Primary">
-        <button type="button" class="nav-link active" data-tab="dashboard">📊 Overview</button>
-        <button type="button" class="nav-link" data-tab="transactions">💳 Transactions</button>
-        <button type="button" class="nav-link" data-tab="budget">🎯 Budget</button>
+        <button type="button" class="nav-link active" data-tab="dashboard">📊 Dashboard</button>
         <button type="button" class="nav-link" data-tab="ai-assistant">🤖 AI Assistant</button>
-        <button type="button" class="nav-link" data-tab="savings-ideas">💎 Savings Ideas</button>
-        <button type="button" class="nav-link" data-tab="business-plan">💼 Business Advisor</button>
-        <button type="button" class="nav-link" data-tab="ideas">💡 Idea Generator</button>
-        <button type="button" class="nav-link" data-tab="settings">⚙️ Settings</button>
+        <button type="button" class="nav-link" data-tab="business-advisor">💼 Business Advisor</button>
+        <button type="button" class="nav-link" data-tab="idea-generator">💡 Idea Generator</button>
+        <button type="button" class="nav-link" data-tab="planning-tools">🧭 Business Planning Tools</button>
       </nav>
 
       <section class="goal-box">
@@ -59,33 +56,39 @@
         </div>
       </header>
 
-      <section class="stats" aria-label="Summary metrics">
-        <article class="stat glass">
-          <p class="subtle">Total Balance</p>
-          <h2 id="balance-value">₹0</h2>
-          <p class="stat-caption">Net from income and expenses.</p>
-        </article>
-        <article class="stat glass">
-          <p class="subtle">Income</p>
-          <h2 id="income-value">₹0</h2>
-          <p class="stat-caption">All tracked incoming funds.</p>
-        </article>
-        <article class="stat glass">
-          <p class="subtle">Expenses</p>
-          <h2 id="expense-value">₹0</h2>
-          <p class="stat-caption">Manual + recurring expenses.</p>
-        </article>
-        <article class="stat glass">
-          <p class="subtle">Savings Goal</p>
-          <h2 id="goal-status">Not set</h2>
-          <p class="stat-caption">Used in AI recommendations.</p>
-        </article>
+      <section class="screen-head glass" aria-live="polite">
+        <p class="subtle">Current Screen</p>
+        <h2 id="screen-title">Dashboard</h2>
+        <p id="screen-description" class="subtle">Track finances, monitor budgets, and update workspace preferences in one clear view.</p>
       </section>
 
-      <section id="dashboard" class="tab active">
+      <section id="dashboard" class="tab active" data-tab-name="Dashboard" data-tab-description="Track finances, monitor budgets, and update workspace preferences in one clear view.">
+        <section class="stats" aria-label="Summary metrics">
+          <article class="stat glass">
+            <p class="subtle">Total Balance</p>
+            <h2 id="balance-value">₹0</h2>
+            <p class="stat-caption">Net from income and expenses.</p>
+          </article>
+          <article class="stat glass">
+            <p class="subtle">Income</p>
+            <h2 id="income-value">₹0</h2>
+            <p class="stat-caption">All tracked incoming funds.</p>
+          </article>
+          <article class="stat glass">
+            <p class="subtle">Expenses</p>
+            <h2 id="expense-value">₹0</h2>
+            <p class="stat-caption">Manual + recurring expenses.</p>
+          </article>
+          <article class="stat glass">
+            <p class="subtle">Savings Goal</p>
+            <h2 id="goal-status">Not set</h2>
+            <p class="stat-caption">Used in AI recommendations.</p>
+          </article>
+        </section>
+
         <div class="grid two-col">
           <article class="glass card">
-            <h3>Add Transaction</h3>
+            <h3>Transaction Center</h3>
             <p class="subtle mb-16">Track money in or out quickly.</p>
             <form id="transaction-form" class="form-grid">
               <label class="field">
@@ -108,11 +111,11 @@
           </article>
 
           <article class="glass card">
-            <h3>Quick Actions</h3>
+            <h3>Quick Navigation</h3>
             <div class="quick-actions">
-              <button class="btn btn-secondary" type="button" data-jump="ai-assistant">Ask AI for weekly plan</button>
-              <button class="btn btn-secondary" type="button" data-jump="budget">Check budget health</button>
-              <button class="btn btn-secondary" type="button" data-jump="business-plan">Open advisor tools</button>
+              <button class="btn btn-secondary" type="button" data-jump="ai-assistant">Go to AI Assistant</button>
+              <button class="btn btn-secondary" type="button" data-jump="business-advisor">Open Business Advisor</button>
+              <button class="btn btn-secondary" type="button" data-jump="planning-tools">Open Planning Tools</button>
             </div>
 
             <h4>Monthly Snapshot</h4>
@@ -125,24 +128,13 @@
           </article>
 
           <article class="glass card">
-            <h3>AI Recommendations</h3>
-            <div id="insight-box" class="message">Add transactions to receive personalized insights.</div>
+            <h3>All Transactions</h3>
+            <p class="subtle mb-16">Review every entry and remove incorrect records.</p>
+            <ul id="all-transactions" class="list"></ul>
           </article>
-        </div>
-      </section>
 
-      <section id="transactions" class="tab">
-        <article class="glass card">
-          <h3>All Transactions</h3>
-          <p class="subtle mb-16">Review every entry and remove incorrect records.</p>
-          <ul id="all-transactions" class="list"></ul>
-        </article>
-      </section>
-
-      <section id="budget" class="tab">
-        <div class="grid two-col">
           <article class="glass card">
-            <h3>Recurring Expenses</h3>
+            <h3>Recurring Expenses + Budget Health</h3>
             <form id="recurring-form" class="form-grid">
               <label class="field">
                 <span>Name</span>
@@ -163,16 +155,32 @@
               <button class="btn btn-primary" type="submit">Add Recurring</button>
             </form>
             <ul id="recurring-list" class="list mt-16"></ul>
+            <div id="budget-health" class="message mt-16">Start by adding at least one income and one expense entry.</div>
           </article>
 
           <article class="glass card">
-            <h3>Budget Health</h3>
-            <div id="budget-health" class="message">Start by adding at least one income and one expense entry.</div>
+            <h3>Settings</h3>
+            <form id="settings-form" class="form-grid">
+              <label class="field">
+                <span>Primary Goal</span>
+                <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
+              </label>
+              <label class="field">
+                <span>Monthly Savings Target (₹)</span>
+                <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
+              </label>
+              <label class="field toggle">
+                <input id="tips-toggle" type="checkbox">
+                <span>Enable proactive AI tips</span>
+              </label>
+              <button class="btn btn-primary" type="submit">Save Settings</button>
+            </form>
+            <div id="settings-feedback" class="message mt-16">Save your settings to personalize recommendations.</div>
           </article>
         </div>
       </section>
 
-      <section id="ai-assistant" class="tab">
+      <section id="ai-assistant" class="tab" data-tab-name="AI Assistant" data-tab-description="Get focused guidance without scrolling through unrelated tools.">
         <article class="glass card">
           <h3>Barya AI Assistant</h3>
           <div id="chat-box" class="chat"></div>
@@ -183,12 +191,18 @@
         </article>
       </section>
 
-      <section id="savings-ideas" class="tab">
-        <article class="glass card">
-          <h3>Savings Ideas</h3>
-          <div id="savings-box" class="message">Your latest AI recommendations will appear here.</div>
-        </article>
-      </section>
+      <section id="business-advisor" class="tab" data-tab-name="Business Advisor" data-tab-description="View strategic recommendations in a dedicated advisor workspace.">
+        <div class="grid two-col">
+          <article class="glass card">
+            <h3>Advisor Actions</h3>
+            <p class="subtle mb-16">Select an advisor tool. The result opens in the Planning Tools screen.</p>
+            <div class="quick-actions mb-16">
+              <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
+              <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
+              <button type="button" class="btn btn-secondary" data-plan="cashflow">Cashflow Improvement</button>
+            </div>
+            <div id="plan-preview" class="message">Choose a tool to generate and open its dedicated planning section.</div>
+          </article>
 
       <section id="business-plan" class="tab">
         <article class="glass card">
@@ -205,9 +219,14 @@
           </div>
           <div id="plan-box" class="message">Choose a tool to generate an advisor response.</div>
         </article>
+          <article class="glass card">
+            <h3>Savings Ideas</h3>
+            <div id="savings-box" class="message">Your latest AI recommendations will appear here.</div>
+          </article>
+        </div>
       </section>
 
-      <section id="ideas" class="tab">
+      <section id="idea-generator" class="tab" data-tab-name="Idea Generator" data-tab-description="Generate practical business concepts in a distraction-free screen.">
         <article class="glass card">
           <h3>Idea Generator</h3>
           <p class="subtle mb-16">Generate practical business concepts aligned with your current profile.</p>
@@ -216,25 +235,20 @@
         </article>
       </section>
 
-      <section id="settings" class="tab">
+      <section id="planning-tools" class="tab" data-tab-name="Business Planning Tools" data-tab-description="Each planning option opens in its own dedicated panel for better context and focus.">
         <article class="glass card">
-          <h3>Settings</h3>
-          <form id="settings-form" class="form-grid">
-            <label class="field">
-              <span>Primary Goal</span>
-              <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
-            </label>
-            <label class="field">
-              <span>Monthly Savings Target (₹)</span>
-              <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
-            </label>
-            <label class="field toggle">
-              <input id="tips-toggle" type="checkbox">
-              <span>Enable proactive AI tips</span>
-            </label>
-            <button class="btn btn-primary" type="submit">Save Settings</button>
-          </form>
-          <div id="settings-feedback" class="message mt-16">Save your settings to personalize recommendations.</div>
+          <h3>Business Planning Tools</h3>
+          <p class="subtle mb-16">Choose a planning tool to load a dedicated output panel.</p>
+          <div class="quick-actions mb-16 plan-options">
+            <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
+            <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
+            <button type="button" class="btn btn-secondary" data-plan="cashflow">Cashflow Improvement</button>
+          </div>
+          <section class="plan-result" aria-live="polite">
+            <p class="subtle">Current Tool</p>
+            <h4 id="plan-title">No tool selected</h4>
+            <div id="plan-box" class="message">Choose Startup Guide, Plan Template, or Cashflow Improvement to open that section here.</div>
+          </section>
         </article>
       </section>
     </section>

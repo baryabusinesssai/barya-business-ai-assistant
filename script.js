@@ -163,6 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   renderBusinessToolsOverview();
   appendChat('Barya', 'Hello! I am your AI business assistant. Ask any question and I will reply with a clear summary, practical advice, and action tips.');
+  syncScreenHeader('dashboard');
+  appendChat('Barya', 'Hello! I am your AI business assistant. Ask for savings, finance, or growth guidance.');
 });
 
 function loadState() {
@@ -173,10 +175,11 @@ function loadState() {
       monthlyTarget: Number(parsed.monthlyTarget || 0),
       proactiveTips: parsed.proactiveTips !== undefined ? Boolean(parsed.proactiveTips) : true,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
-      recurring: Array.isArray(parsed.recurring) ? parsed.recurring : []
+      recurring: Array.isArray(parsed.recurring) ? parsed.recurring : [],
+      selectedPlan: parsed.selectedPlan || ''
     };
   } catch {
-    return { goal: '', monthlyTarget: 0, proactiveTips: true, transactions: [], recurring: [] };
+    return { goal: '', monthlyTarget: 0, proactiveTips: true, transactions: [], recurring: [], selectedPlan: '' };
   }
 }
 
@@ -194,6 +197,9 @@ function cacheRefs() {
   refs.goalBadge = document.getElementById('goal-badge');
   refs.goalStatus = document.getElementById('goal-status');
 
+  refs.screenTitle = document.getElementById('screen-title');
+  refs.screenDescription = document.getElementById('screen-description');
+
   refs.balanceValue = document.getElementById('balance-value');
   refs.incomeValue = document.getElementById('income-value');
   refs.expenseValue = document.getElementById('expense-value');
@@ -206,7 +212,7 @@ function cacheRefs() {
   refs.chartList = document.getElementById('chart-list');
   refs.recentList = document.getElementById('recent-list');
   refs.allTransactions = document.getElementById('all-transactions');
-  refs.insightBox = document.getElementById('insight-box');
+  refs.insightBox = document.getElementById('plan-preview');
   refs.savingsBox = document.getElementById('savings-box');
   refs.budgetHealth = document.getElementById('budget-health');
 
@@ -220,6 +226,7 @@ function cacheRefs() {
   refs.chatInput = document.getElementById('chat-input');
   refs.chatBox = document.getElementById('chat-box');
 
+  refs.planTitle = document.getElementById('plan-title');
   refs.planBox = document.getElementById('plan-box');
   refs.businessIdeaInput = document.getElementById('business-idea-input');
   refs.businessIdeaButton = document.getElementById('business-idea-button');
@@ -280,7 +287,16 @@ function bindEvents() {
 function showTab(tabId) {
   refs.tabs.forEach((tab) => tab.classList.toggle('active', tab.id === tabId));
   refs.navLinks.forEach((link) => link.classList.toggle('active', link.dataset.tab === tabId));
+  syncScreenHeader(tabId);
   refs.sidebar.classList.remove('open');
+}
+
+function syncScreenHeader(tabId) {
+  const activeTab = refs.tabs.find((tab) => tab.id === tabId);
+  if (!activeTab) return;
+
+  refs.screenTitle.textContent = activeTab.dataset.tabName || 'Workspace';
+  refs.screenDescription.textContent = activeTab.dataset.tabDescription || 'Focused workspace view.';
 }
 
 function onAddTransaction(event) {
@@ -469,6 +485,20 @@ function generatePlan(type) {
       <li>Lead conversion tracker = customers won ÷ qualified leads.</li>
     </ul>
   `;
+    refs.planTitle.textContent = 'No tool selected';
+    refs.planBox.textContent = 'Pick a business planning tool to continue.';
+    refs.insightBox.textContent = 'Choose a tool to generate and open its dedicated planning section.';
+    return;
+  }
+
+  state.selectedPlan = type;
+  saveState();
+
+  refs.planTitle.textContent = selected.title;
+  refs.planBox.textContent = selected.body;
+  refs.insightBox.textContent = `${selected.title} prepared. Opened in the dedicated Business Planning Tools screen.`;
+
+  showTab('planning-tools');
 }
 
 function adviseBusinessIdea() {
@@ -600,6 +630,24 @@ function renderAll() {
   renderTransactions();
   renderRecurring();
   renderInsights();
+  restorePlanSelection();
+}
+
+function restorePlanSelection() {
+  if (!state.selectedPlan) return;
+  const currentTitle = refs.planTitle.textContent;
+  if (currentTitle && currentTitle !== 'No tool selected') return;
+
+  const selectionMap = {
+    startup: 'Startup Guide',
+    business: 'Plan Template',
+    cashflow: 'Cashflow Improvement'
+  };
+
+  if (selectionMap[state.selectedPlan]) {
+    generatePlan(state.selectedPlan);
+    showTab('dashboard');
+  }
 }
 
 function renderHeader() {
@@ -685,7 +733,6 @@ function renderInsights() {
   }
 
   const html = `<ul>${tips.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
-  refs.insightBox.innerHTML = html;
   refs.savingsBox.innerHTML = html;
 
   refs.budgetHealth.textContent = totals.expense > totals.income
