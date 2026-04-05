@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   renderHeader();
   renderAll();
+  syncScreenHeader('dashboard');
   appendChat('Barya', 'Hello! I am your AI business assistant. Ask for savings, finance, or growth guidance.');
 });
 
@@ -19,10 +20,11 @@ function loadState() {
       monthlyTarget: Number(parsed.monthlyTarget || 0),
       proactiveTips: Boolean(parsed.proactiveTips),
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
-      recurring: Array.isArray(parsed.recurring) ? parsed.recurring : []
+      recurring: Array.isArray(parsed.recurring) ? parsed.recurring : [],
+      selectedPlan: parsed.selectedPlan || ''
     };
   } catch {
-    return { goal: '', monthlyTarget: 0, proactiveTips: true, transactions: [], recurring: [] };
+    return { goal: '', monthlyTarget: 0, proactiveTips: true, transactions: [], recurring: [], selectedPlan: '' };
   }
 }
 
@@ -40,6 +42,9 @@ function cacheRefs() {
   refs.goalBadge = document.getElementById('goal-badge');
   refs.goalStatus = document.getElementById('goal-status');
 
+  refs.screenTitle = document.getElementById('screen-title');
+  refs.screenDescription = document.getElementById('screen-description');
+
   refs.balanceValue = document.getElementById('balance-value');
   refs.incomeValue = document.getElementById('income-value');
   refs.expenseValue = document.getElementById('expense-value');
@@ -52,7 +57,7 @@ function cacheRefs() {
   refs.chartList = document.getElementById('chart-list');
   refs.recentList = document.getElementById('recent-list');
   refs.allTransactions = document.getElementById('all-transactions');
-  refs.insightBox = document.getElementById('insight-box');
+  refs.insightBox = document.getElementById('plan-preview');
   refs.savingsBox = document.getElementById('savings-box');
   refs.budgetHealth = document.getElementById('budget-health');
 
@@ -66,6 +71,7 @@ function cacheRefs() {
   refs.chatInput = document.getElementById('chat-input');
   refs.chatBox = document.getElementById('chat-box');
 
+  refs.planTitle = document.getElementById('plan-title');
   refs.planBox = document.getElementById('plan-box');
   refs.ideaButton = document.getElementById('idea-button');
   refs.ideaBox = document.getElementById('idea-box');
@@ -115,7 +121,16 @@ function bindEvents() {
 function showTab(tabId) {
   refs.tabs.forEach((tab) => tab.classList.toggle('active', tab.id === tabId));
   refs.navLinks.forEach((link) => link.classList.toggle('active', link.dataset.tab === tabId));
+  syncScreenHeader(tabId);
   refs.sidebar.classList.remove('open');
+}
+
+function syncScreenHeader(tabId) {
+  const activeTab = refs.tabs.find((tab) => tab.id === tabId);
+  if (!activeTab) return;
+
+  refs.screenTitle.textContent = activeTab.dataset.tabName || 'Workspace';
+  refs.screenDescription.textContent = activeTab.dataset.tabDescription || 'Focused workspace view.';
 }
 
 function onAddTransaction(event) {
@@ -167,13 +182,13 @@ function onAskAi(event) {
   const totals = computeTotals();
   const p = prompt.toLowerCase();
 
-  let response = `Focus on one metric this week: protect at least 20% of income as savings.`;
+  let response = 'Focus on one metric this week: protect at least 20% of income as savings.';
   if (p.includes('expense') || p.includes('spend')) {
     response = `Your tracked expenses are ₹${formatCurrency(totals.expense)}. Reduce your top two categories by 10% and review results in 7 days.`;
   } else if (p.includes('save') || p.includes('savings')) {
     response = `Set an auto-transfer right after income hits. With current balance ₹${formatCurrency(totals.balance)}, prioritize emergency reserve then growth.`;
   } else if (p.includes('business') || p.includes('growth')) {
-    response = `Build a 4-week growth sprint: define one offer, one channel, one KPI, and review weekly conversion + cashflow.`;
+    response = 'Build a 4-week growth sprint: define one offer, one channel, one KPI, and review weekly conversion + cashflow.';
   } else if (p.includes('goal')) {
     response = state.goal ? `Your active goal is "${state.goal}". Break it into weekly milestones and track completion every Sunday.` : 'Set your main goal in Settings to unlock more tailored guidance.';
   }
@@ -196,12 +211,36 @@ function onSaveSettings(event) {
 function generatePlan(type) {
   const goalText = state.goal || 'grow financial stability';
   const templates = {
-    startup: `Startup guide: validate customer pain, launch minimum offer in 14 days, and track acquisition cost weekly. Goal context: ${goalText}.`,
-    business: `Business plan: define niche, pricing, sales funnel, and 90-day revenue roadmap. Goal context: ${goalText}.`,
-    cashflow: `Cashflow plan: speed up receivables, cut low-return spend, and build a 3-month safety runway. Goal context: ${goalText}.`
+    startup: {
+      title: 'Startup Guide',
+      body: `Validate customer pain, launch a minimum offer in 14 days, and track acquisition cost weekly. Goal context: ${goalText}.`
+    },
+    business: {
+      title: 'Plan Template',
+      body: `Define niche, pricing, sales funnel, and a 90-day revenue roadmap. Goal context: ${goalText}.`
+    },
+    cashflow: {
+      title: 'Cashflow Improvement',
+      body: `Speed up receivables, cut low-return spend, and build a 3-month safety runway. Goal context: ${goalText}.`
+    }
   };
 
-  refs.planBox.textContent = templates[type] || 'Pick a business planning tool to continue.';
+  const selected = templates[type];
+  if (!selected) {
+    refs.planTitle.textContent = 'No tool selected';
+    refs.planBox.textContent = 'Pick a business planning tool to continue.';
+    refs.insightBox.textContent = 'Choose a tool to generate and open its dedicated planning section.';
+    return;
+  }
+
+  state.selectedPlan = type;
+  saveState();
+
+  refs.planTitle.textContent = selected.title;
+  refs.planBox.textContent = selected.body;
+  refs.insightBox.textContent = `${selected.title} prepared. Opened in the dedicated Business Planning Tools screen.`;
+
+  showTab('planning-tools');
 }
 
 function generateIdea() {
@@ -254,6 +293,24 @@ function renderAll() {
   renderTransactions();
   renderRecurring();
   renderInsights();
+  restorePlanSelection();
+}
+
+function restorePlanSelection() {
+  if (!state.selectedPlan) return;
+  const currentTitle = refs.planTitle.textContent;
+  if (currentTitle && currentTitle !== 'No tool selected') return;
+
+  const selectionMap = {
+    startup: 'Startup Guide',
+    business: 'Plan Template',
+    cashflow: 'Cashflow Improvement'
+  };
+
+  if (selectionMap[state.selectedPlan]) {
+    generatePlan(state.selectedPlan);
+    showTab('dashboard');
+  }
 }
 
 function renderHeader() {
@@ -339,7 +396,6 @@ function renderInsights() {
   }
 
   const html = `<ul>${tips.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
-  refs.insightBox.innerHTML = html;
   refs.savingsBox.innerHTML = html;
 
   refs.budgetHealth.textContent = totals.expense > totals.income
