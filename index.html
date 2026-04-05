@@ -6,101 +6,80 @@
     <title>Barya Business AI Assistant</title>
     <meta name="description" content="Barya AI helps you track budget, improve financial habits, and plan business growth with simple guidance.">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="glow-bg"></div>
+    <div class="app-bg-glow" aria-hidden="true"></div>
 
-    <nav class="navbar">
-        <div class="logo">BARYA<span>.</span>AI</div>
-        <div class="nav-right">
-            <span id="user-goal-badge" class="badge">Goal: Not Set</span>
-            <button type="button" class="btn-primary mobile-hide" onclick="scrollToApp()">Launch App</button>
-        </div>
-    </nav>
-
-    <header class="hero" id="hero-section">
-        <div class="hero-content">
-            <span class="badge">Premium AI Business Operating System</span>
-            <h1>Build Smarter Growth with <span class="text-gradient">Barya AI</span></h1>
-            <div class="typing-container">
-                <span id="typing-text"></span><span class="cursor">|</span>
-            </div>
-            <p>An intelligent cockpit for daily finance decisions, business planning, and actionable AI guidance.</p>
-            <div class="hero-btns">
-                <button type="button" class="btn-primary" onclick="scrollToApp()">Enter Dashboard</button>
-            </div>
-        </div>
-    </header>
-
-    <main class="app-shell" id="main-app">
-        <aside class="sidebar" id="sidebar">
-            <div>
-                <div class="sidebar-brand">Barya AI</div>
-                <p class="sidebar-subtitle">Business Intelligence</p>
+    <main class="dashboard-shell" id="main-app">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">BA</div>
+                <div>
+                    <p class="brand-title">Barya AI</p>
+                    <p class="brand-subtitle">Business Intelligence</p>
+                </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <button type="button" class="side-link active" data-tab="dashboard" onclick="showTab('dashboard', this)">Dashboard</button>
-                <button type="button" class="side-link" data-tab="dashboard" onclick="showTab('dashboard', this)">Transactions</button>
-                <button type="button" class="side-link" data-tab="dashboard" onclick="showTab('dashboard', this)">Budget</button>
-                <button type="button" class="side-link" data-tab="ai-assistant" onclick="showTab('ai-assistant', this)">AI Assistant</button>
-                <button type="button" class="side-link" data-tab="dashboard" onclick="showTab('dashboard', this)">Savings Ideas</button>
-                <button type="button" class="side-link" data-tab="business-plan" onclick="showTab('business-plan', this)">Business Advisor</button>
-                <button type="button" class="side-link" data-tab="ideas" onclick="showTab('ideas', this)">Idea Generator</button>
-                <button type="button" class="side-link" data-tab="dashboard" onclick="showTab('dashboard', this)">Settings</button>
+            <nav class="sidebar-nav" aria-label="Primary navigation">
+                <button type="button" class="side-link active" data-tab="dashboard" onclick="showTab('dashboard', this)"><span>📊</span> Dashboard</button>
+                <button type="button" class="side-link" data-tab="transactions" onclick="showTab('transactions', this)"><span>💳</span> Transactions</button>
+                <button type="button" class="side-link" data-tab="budget" onclick="showTab('budget', this)"><span>🎯</span> Budget</button>
+                <button type="button" class="side-link" data-tab="ai-assistant" onclick="showTab('ai-assistant', this)"><span>🤖</span> AI Assistant</button>
+                <button type="button" class="side-link" data-tab="savings-ideas" onclick="showTab('savings-ideas', this)"><span>💎</span> Savings Ideas</button>
+                <button type="button" class="side-link" data-tab="business-plan" onclick="showTab('business-plan', this)"><span>💼</span> Business Advisor</button>
+                <button type="button" class="side-link" data-tab="ideas" onclick="showTab('ideas', this)"><span>💡</span> Idea Generator</button>
+                <button type="button" class="side-link" data-tab="settings" onclick="showTab('settings', this)"><span>⚙️</span> Settings</button>
             </nav>
 
-            <div class="sidebar-profile glass-card">
-                <div class="profile-avatar">BA</div>
-                <div>
-                    <p class="profile-name">Barya User</p>
-                    <p class="profile-meta">Premium Workspace</p>
-                </div>
+            <div class="sidebar-profile">
+                <p class="profile-label">Current focus</p>
+                <p id="user-goal-badge" class="profile-goal">Goal: Not Set</p>
+                <button type="button" class="btn-glass" onclick="scrollToApp()">Launch Workspace</button>
             </div>
         </aside>
 
-        <section class="content-area">
-            <header class="dashboard-header glass-card">
+        <section class="main-panel">
+            <header class="topbar glass-card">
                 <div>
-                    <h2>Good morning, User</h2>
-                    <p>Here’s your AI-powered business and finance overview for today.</p>
+                    <p class="topbar-kicker" id="greeting-text">Good day 👋</p>
+                    <h1>Barya Business AI Assistant</h1>
+                    <p class="topbar-subtitle">Track finances, improve savings, and get AI-powered business guidance in one place.</p>
                 </div>
-                <div class="header-right">
-                    <button type="button" class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-                    <span id="current-date" class="date-pill"></span>
-                    <span class="icon-pill">🔔</span>
-                    <span class="icon-pill">👤</span>
+                <div class="topbar-controls">
+                    <div class="chip" id="date-chip">Today</div>
+                    <div class="chip">Overview</div>
+                    <div class="chip">🔔</div>
                 </div>
             </header>
 
-            <div id="dashboard" class="tab-content active">
-                <section class="stat-grid">
-                    <article class="glass-card stat-card glow-blue">
-                        <p class="stat-title">Total Balance</p>
-                        <div id="display-balance" class="value">₹0</div>
-                        <p class="stat-meta">Net available this month</p>
-                    </article>
-                    <article class="glass-card stat-card glow-cyan">
-                        <p class="stat-title">Income</p>
-                        <div id="display-income" class="value">₹0</div>
-                        <p class="stat-meta">All income tracked</p>
-                    </article>
-                    <article class="glass-card stat-card glow-pink">
-                        <p class="stat-title">Expenses</p>
-                        <div id="display-expense" class="value text-red">₹0</div>
-                        <p class="stat-meta">Manual + recurring</p>
-                    </article>
-                    <article class="glass-card stat-card glow-violet">
-                        <p class="stat-title">Savings</p>
-                        <div id="display-savings" class="value text-green">₹0</div>
-                        <p class="stat-meta">Income minus expense</p>
-                    </article>
-                </section>
+            <section class="stats-grid" aria-label="Financial summary">
+                <article class="stat-card glass-card accent-blue">
+                    <p class="stat-label">💼 Total Balance</p>
+                    <p id="display-savings" class="stat-value">₹0</p>
+                    <p class="stat-trend">Live net from income and expenses</p>
+                </article>
+                <article class="stat-card glass-card accent-cyan">
+                    <p class="stat-label">📈 Income</p>
+                    <p id="display-income" class="stat-value">₹0</p>
+                    <p class="stat-trend">All tracked incoming amounts</p>
+                </article>
+                <article class="stat-card glass-card accent-pink">
+                    <p class="stat-label">📉 Expenses</p>
+                    <p id="display-expense" class="stat-value">₹0</p>
+                    <p class="stat-trend">Manual and recurring expenses</p>
+                </article>
+                <article class="stat-card glass-card accent-violet">
+                    <p class="stat-label">🎯 Goal Status</p>
+                    <p class="stat-value" id="goal-stat">Active</p>
+                    <p class="stat-trend">Your target updates AI recommendations</p>
+                </article>
+            </section>
 
-                <section class="dashboard-grid">
-                    <div class="glass-card add-entry-card">
-                        <h3>Add Entry</h3>
+            <div id="dashboard" class="tab-content active">
+                <div class="content-grid">
+                    <div class="glass-card">
+                        <h3>Budget Tracker</h3>
                         <div class="guide-box" id="flow-guide" aria-live="polite">
                             <p><strong>Recommended flow:</strong> 1) Add income → 2) Add expense → 3) Read insights → 4) Ask AI what to do next.</p>
                         </div>
@@ -137,21 +116,49 @@
                         <button type="button" class="btn-glass mt-20" onclick="showTab('ai-assistant')">Continue to AI Assistant</button>
                     </div>
                 </section>
-
-                <div class="glass-card recurring-card">
-                    <h3>Recurring Expenses</h3>
-                    <p class="helper-text">Recurring expenses are regular costs (like rent or internet) that are automatically counted each month so you don't re-enter them every time.</p>
-                    <div class="input-group recurring-input-group">
-                        <input type="text" id="recurring-name" placeholder="Expense name" maxlength="60">
-                        <input type="number" id="recurring-amount" placeholder="Amount" inputmode="decimal" min="0" step="0.01">
-                        <select id="recurring-frequency">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                        <button type="button" class="btn-primary" onclick="addRecurringExpense()">Add Recurring</button>
+                    <div class="glass-card">
+                        <h3>AI Savings Ideas</h3>
+                        <div id="insights-container" class="ai-msg" aria-live="polite">Add data to see AI analysis...</div>
+                        <button type="button" class="btn-glass mt-20" onclick="showTab('ai-assistant')">Continue to AI Assistant</button>
                     </div>
-                    <ul id="recurring-list" class="recurring-list"></ul>
+
+                    <div class="glass-card recurring-card">
+                        <h3>Recurring Expenses</h3>
+                        <p class="helper-text">Recurring expenses are regular costs (like rent or internet) that are automatically counted each month so you don't re-enter them every time.</p>
+                        <div class="input-group recurring-input-group">
+                            <input type="text" id="recurring-name" placeholder="Expense name" maxlength="60">
+                            <input type="number" id="recurring-amount" placeholder="Amount" inputmode="decimal" min="0" step="0.01">
+                            <select id="recurring-frequency">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                            <button type="button" class="btn-primary" onclick="addRecurringExpense()">Add Recurring</button>
+                        </div>
+                        <ul id="recurring-list" class="recurring-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transactions" class="tab-content">
+                <div class="glass-card">
+                    <h3>Recent Transactions</h3>
+                    <p class="helper-text">Your transaction summary is reflected in the dashboard totals and AI insights in real-time.</p>
+                    <div class="guide-box">
+                        <p><strong>Income:</strong> <span id="transactions-income">₹0</span></p>
+                        <p><strong>Expenses:</strong> <span id="transactions-expense">₹0</span></p>
+                        <p><strong>Savings:</strong> <span id="transactions-savings">₹0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="budget" class="tab-content">
+                <div class="glass-card">
+                    <h3>Monthly Overview / Analytics</h3>
+                    <p class="helper-text">Use the Budget Tracker card to update your values. This panel keeps your monthly snapshot easy to review.</p>
+                    <div class="guide-box">
+                        <p id="budget-health">Budget health updates appear here as you add entries.</p>
+                    </div>
                 </div>
             </div>
 
@@ -166,6 +173,14 @@
                         <button type="button" class="btn-primary" onclick="askAI()">Ask</button>
                     </div>
                     <p class="helper-text">New here? Ask: “Based on my goal, what should I do this week?”</p>
+                </div>
+            </div>
+
+            <div id="savings-ideas" class="tab-content">
+                <div class="glass-card">
+                    <h3>AI Savings Ideas</h3>
+                    <p class="helper-text">Generated insights are synced from your budget activity and recurring expense profile.</p>
+                    <div id="savings-mirror" class="ai-msg">Add financial entries on the Dashboard to see ideas here.</div>
                 </div>
             </div>
 
@@ -186,6 +201,16 @@
                     <p>Low-investment and online earning ideas.</p>
                     <button type="button" class="btn-primary mt-20" onclick="generateIdea()">Generate Idea</button>
                     <div id="idea-display" class="idea-box"></div>
+                </div>
+            </div>
+
+            <div id="settings" class="tab-content">
+                <div class="glass-card">
+                    <h3>Settings</h3>
+                    <p class="helper-text">Current preference controls are intentionally lightweight in this version.</p>
+                    <div class="guide-box">
+                        <p>Goal is stored locally and affects AI guidance quality. Continue using your existing workflow.</p>
+                    </div>
                 </div>
             </div>
         </section>
