@@ -43,6 +43,7 @@ function cacheElements() {
     elements.income = document.getElementById('display-income');
     elements.expense = document.getElementById('display-expense');
     elements.savings = document.getElementById('display-savings');
+    elements.balance = document.getElementById('display-balance');
     elements.insights = document.getElementById('insights-container');
     elements.flowGuide = document.getElementById('flow-guide');
     elements.chatInput = document.getElementById('chat-input');
@@ -53,6 +54,12 @@ function cacheElements() {
     elements.recurringAmount = document.getElementById('recurring-amount');
     elements.recurringFrequency = document.getElementById('recurring-frequency');
     elements.recurringList = document.getElementById('recurring-list');
+    elements.recentTransactions = document.getElementById('recent-transactions');
+    elements.incomeBarFill = document.getElementById('income-bar-fill');
+    elements.expenseBarFill = document.getElementById('expense-bar-fill');
+    elements.savingsBarFill = document.getElementById('savings-bar-fill');
+    elements.currentDate = document.getElementById('current-date');
+    elements.sidebar = document.getElementById('sidebar');
 }
 
 function bindEvents() {
@@ -228,6 +235,14 @@ function saveRecurringExpenses() {
 
 function updateGoalUI() {
     elements.goalBadge.innerText = userGoal ? `Goal: ${userGoal}` : 'Goal: Not Set';
+    if (elements.currentDate) {
+        const now = new Date();
+        elements.currentDate.textContent = now.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
 }
 
 // Set User Goal
@@ -472,6 +487,12 @@ function updateDashboard() {
 
     const savings = financeData.income - expenseWithRecurring;
     elements.savings.innerText = `₹${formatCurrency(savings)}`;
+    if (elements.balance) {
+        elements.balance.innerText = `₹${formatCurrency(savings)}`;
+    }
+
+    updateMonthlyChart(financeData.income, expenseWithRecurring, savings);
+    updateRecentTransactions();
 
     if (financeData.income === 0 && financeData.expense === 0 && recurringExpenses.length === 0) {
         elements.insights.textContent = 'Add your first income, expense, or recurring expense entry to receive tailored insights.';
@@ -504,6 +525,70 @@ function updateDashboard() {
 
     elements.insights.textContent = 'You are currently spending more than you earn. Start with small cuts and add one extra income source.';
     renderFlowGuidance();
+}
+
+function updateMonthlyChart(income, expense, savings) {
+    if (!elements.incomeBarFill || !elements.expenseBarFill || !elements.savingsBarFill) {
+        return;
+    }
+
+    const maxValue = Math.max(income, expense, Math.abs(savings), 1);
+    const incomeWidth = Math.max(6, Math.round((income / maxValue) * 100));
+    const expenseWidth = Math.max(6, Math.round((expense / maxValue) * 100));
+    const savingsWidth = Math.max(6, Math.round((Math.abs(savings) / maxValue) * 100));
+
+    elements.incomeBarFill.style.width = `${incomeWidth}%`;
+    elements.expenseBarFill.style.width = `${expenseWidth}%`;
+    elements.savingsBarFill.style.width = `${savingsWidth}%`;
+}
+
+function updateRecentTransactions() {
+    if (!elements.recentTransactions) {
+        return;
+    }
+
+    const recurringItems = recurringExpenses.map((item) => ({
+        label: `${item.name} · ${item.frequency}`,
+        amount: item.amount,
+        type: 'expense'
+    }));
+
+    const manualItems = financeData.manualExpenses.map((item) => ({
+        label: item.name || 'Manual expense',
+        amount: item.amount,
+        type: 'expense'
+    }));
+
+    const incomeEntry = financeData.income > 0
+        ? [{ label: 'Tracked income', amount: financeData.income, type: 'income' }]
+        : [];
+
+    const allItems = [...incomeEntry, ...manualItems, ...recurringItems].slice(-6).reverse();
+
+    if (!allItems.length) {
+        elements.recentTransactions.innerHTML = '<li class="recurring-empty">No transactions yet. Add your first entry to begin.</li>';
+        return;
+    }
+
+    elements.recentTransactions.innerHTML = allItems.map((item) => `
+        <li class="recurring-item">
+            <div>
+                <div class="recurring-title">${escapeHtml(item.label)}</div>
+                <div class="recurring-meta">${item.type === 'income' ? 'Income' : 'Expense'}</div>
+            </div>
+            <strong class="${item.type === 'income' ? 'text-green' : 'text-red'}">
+                ${item.type === 'income' ? '+' : '-'}₹${formatCurrency(item.amount)}
+            </strong>
+        </li>
+    `).join('');
+}
+
+function toggleSidebar() {
+    if (!elements.sidebar) {
+        return;
+    }
+
+    elements.sidebar.classList.toggle('open');
 }
 
 function appendMessage(content, type = 'ai') {
