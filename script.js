@@ -28,6 +28,7 @@ let hasAskedAI = false;
 window.addEventListener('DOMContentLoaded', () => {
     cacheElements();
     bindEvents();
+    updateHeaderMeta();
     updateDashboard();
     updateRecurringList();
     updateGoalUI();
@@ -53,29 +54,43 @@ function cacheElements() {
     elements.recurringAmount = document.getElementById('recurring-amount');
     elements.recurringFrequency = document.getElementById('recurring-frequency');
     elements.recurringList = document.getElementById('recurring-list');
+    elements.greetingText = document.getElementById('greeting-text');
+    elements.dateChip = document.getElementById('date-chip');
+    elements.goalStat = document.getElementById('goal-stat');
+    elements.transactionsIncome = document.getElementById('transactions-income');
+    elements.transactionsExpense = document.getElementById('transactions-expense');
+    elements.transactionsSavings = document.getElementById('transactions-savings');
+    elements.budgetHealth = document.getElementById('budget-health');
+    elements.savingsMirror = document.getElementById('savings-mirror');
 }
 
 function bindEvents() {
-    elements.chatInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            askAI();
-        }
-    });
+    if (elements.chatInput) {
+        elements.chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                askAI();
+            }
+        });
+    }
 
-    elements.amountInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            addTransaction();
-        }
-    });
+    if (elements.amountInput) {
+        elements.amountInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addTransaction();
+            }
+        });
+    }
 
-    elements.recurringAmount.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            addRecurringExpense();
-        }
-    });
+    if (elements.recurringAmount) {
+        elements.recurringAmount.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addRecurringExpense();
+            }
+        });
+    }
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && typingTimer) {
@@ -227,7 +242,12 @@ function saveRecurringExpenses() {
 }
 
 function updateGoalUI() {
-    elements.goalBadge.innerText = userGoal ? `Goal: ${userGoal}` : 'Goal: Not Set';
+    if (elements.goalBadge) {
+        elements.goalBadge.innerText = userGoal ? `Goal: ${userGoal}` : 'Goal: Not Set';
+    }
+    if (elements.goalStat) {
+        elements.goalStat.innerText = userGoal || 'Not Set';
+    }
 }
 
 // Set User Goal
@@ -241,6 +261,9 @@ function setGoal(goal) {
 
 // Typing Animation for Hero
 function typeAnimation() {
+    if (!elements.typingText) {
+        return;
+    }
     const currentPhrase = phrases[phraseIndex];
 
     if (isDeleting) {
@@ -282,7 +305,9 @@ function showTab(tabId, btn) {
 }
 
 function scrollToApp() {
-    elements.mainApp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (elements.mainApp) {
+        elements.mainApp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function formatCurrency(value) {
@@ -472,9 +497,11 @@ function updateDashboard() {
 
     const savings = financeData.income - expenseWithRecurring;
     elements.savings.innerText = `₹${formatCurrency(savings)}`;
+    syncAuxiliaryPanels(financeData.income, expenseWithRecurring, savings);
 
     if (financeData.income === 0 && financeData.expense === 0 && recurringExpenses.length === 0) {
         elements.insights.textContent = 'Add your first income, expense, or recurring expense entry to receive tailored insights.';
+        syncSavingsMirror();
         return;
     }
 
@@ -486,11 +513,13 @@ function updateDashboard() {
             : '✅ Smart suggestion based on your recurring + manual expenses:';
 
         elements.insights.innerHTML = `${healthMessage}<br>${suggestionLines.join('<br>')}`;
+        syncSavingsMirror();
         return;
     }
 
     if (financeData.expense > financeData.income * 0.8) {
         elements.insights.textContent = '⚠️ Expenses are high compared to income. Review non-essential spending this week.';
+        syncSavingsMirror();
         renderFlowGuidance();
         return;
     }
@@ -498,12 +527,59 @@ function updateDashboard() {
     if (savings > 0) {
         const suggestedInvestment = Math.round(savings * 0.3);
         elements.insights.textContent = `✅ Good progress. You could consider investing ₹${formatCurrency(suggestedInvestment)} this month.`;
+        syncSavingsMirror();
         renderFlowGuidance();
         return;
     }
 
     elements.insights.textContent = 'You are currently spending more than you earn. Start with small cuts and add one extra income source.';
+    syncSavingsMirror();
     renderFlowGuidance();
+}
+
+function syncAuxiliaryPanels(income, expense, savings) {
+    if (elements.transactionsIncome) {
+        elements.transactionsIncome.textContent = `₹${formatCurrency(income)}`;
+    }
+    if (elements.transactionsExpense) {
+        elements.transactionsExpense.textContent = `₹${formatCurrency(expense)}`;
+    }
+    if (elements.transactionsSavings) {
+        elements.transactionsSavings.textContent = `₹${formatCurrency(savings)}`;
+    }
+    if (elements.budgetHealth) {
+        if (income === 0 && expense === 0) {
+            elements.budgetHealth.textContent = 'Budget health updates appear here as you add entries.';
+        } else if (expense > income * 0.8) {
+            elements.budgetHealth.textContent = 'High spending detected. Prioritize reducing your largest recurring or manual category.';
+        } else {
+            elements.budgetHealth.textContent = 'Healthy trend. Keep expenses controlled and route extra savings to your target.';
+        }
+    }
+}
+
+function syncSavingsMirror() {
+    if (elements.savingsMirror && elements.insights) {
+        elements.savingsMirror.innerHTML = elements.insights.innerHTML;
+    }
+}
+
+function updateHeaderMeta() {
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Good morning 👋' : hour < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+
+    if (elements.greetingText) {
+        elements.greetingText.textContent = greeting;
+    }
+
+    if (elements.dateChip) {
+        elements.dateChip.textContent = now.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
 }
 
 function appendMessage(content, type = 'ai') {
