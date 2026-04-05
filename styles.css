@@ -438,4 +438,23 @@ select:focus {
     select {
         width: 100%;
     }
+
+    .mobile-hide {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .date-pill {
+        flex: 1;
+    }
 }

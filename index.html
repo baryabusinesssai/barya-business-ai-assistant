@@ -96,6 +96,26 @@
                         <p class="helper-text">Tip: Add one income entry first, then your top expense to unlock clearer insights.</p>
                     </div>
 
+                    <div class="glass-card monthly-card">
+                        <h3>Monthly Overview</h3>
+                        <div class="mini-chart" id="mini-chart">
+                            <div class="chart-bar income-bar"><span>Income</span><div id="income-bar-fill" class="bar-fill"></div></div>
+                            <div class="chart-bar expense-bar"><span>Expenses</span><div id="expense-bar-fill" class="bar-fill"></div></div>
+                            <div class="chart-bar savings-bar"><span>Savings</span><div id="savings-bar-fill" class="bar-fill"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Recent Transactions</h3>
+                        <ul id="recent-transactions" class="recurring-list"></ul>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>AI Suggestions / Savings Ideas</h3>
+                        <div id="insights-container" class="ai-msg" aria-live="polite">Add data to see AI analysis...</div>
+                        <button type="button" class="btn-glass mt-20" onclick="showTab('ai-assistant')">Continue to AI Assistant</button>
+                    </div>
+                </section>
                     <div class="glass-card">
                         <h3>AI Savings Ideas</h3>
                         <div id="insights-container" class="ai-msg" aria-live="polite">Add data to see AI analysis...</div>
@@ -166,7 +186,7 @@
 
             <div id="business-plan" class="tab-content">
                 <div class="glass-card">
-                    <h3>Business Planning Tools</h3>
+                    <h3>Business Tools</h3>
                     <div class="tool-grid">
                         <button type="button" class="btn-glass" onclick="getPlan('Startup Guide')">📝 Startup Guide</button>
                         <button type="button" class="btn-glass" onclick="getPlan('Business Plan')">📋 Plan Template</button>
