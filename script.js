@@ -1,5 +1,158 @@
 const STORAGE_KEY = 'barya_dashboard_state_v2';
 
+const IDEA_LIBRARY = [
+  {
+    title: 'Local Social Media Management',
+    category: 'Service • Low investment',
+    description: 'Manage Instagram/Facebook pages for local shops by creating weekly content calendars, posting, and basic analytics reporting.'
+  },
+  {
+    title: 'Freelancer Invoice & Bookkeeping Support',
+    category: 'Service • Online',
+    description: 'Offer monthly invoice tracking, expense categorization, and payment reminder support to freelancers and solo founders.'
+  },
+  {
+    title: 'Home-Based Tiffin Delivery',
+    category: 'Food • Low investment',
+    description: 'Provide healthy subscription meals for office workers with weekly menu options and prepaid monthly plans.'
+  },
+  {
+    title: 'Resume + LinkedIn Profile Studio',
+    category: 'Service • Online',
+    description: 'Help job seekers improve resumes, optimize LinkedIn profiles, and prepare role-specific application documents.'
+  },
+  {
+    title: 'Micro Digital Marketing Agency',
+    category: 'Service • Online',
+    description: 'Run focused ad campaigns for small businesses with clear deliverables: ad setup, copywriting, and monthly performance summaries.'
+  },
+  {
+    title: 'Custom Gift Box Business',
+    category: 'Product • Low investment',
+    description: 'Curate themed gift boxes for birthdays, festivals, and corporate events with local supplier tie-ups.'
+  },
+  {
+    title: 'Neighborhood Laundry Pickup Service',
+    category: 'Service • Local',
+    description: 'Collect laundry from homes, partner with local laundry units, and charge service margins for pickup and delivery convenience.'
+  },
+  {
+    title: 'Virtual Assistant for Coaches',
+    category: 'Service • Online',
+    description: 'Support coaches with appointment scheduling, payment follow-up, email management, and client onboarding workflows.'
+  },
+  {
+    title: 'Pet Care Visits',
+    category: 'Service • Local',
+    description: 'Offer dog walking and pet sitting packages with daily photo updates and flexible subscription-based pricing.'
+  },
+  {
+    title: 'Beginner Coding Bootcamp for Kids',
+    category: 'Education • Online',
+    description: 'Host weekend coding classes focused on logic, simple app/game projects, and parent progress reports.'
+  },
+  {
+    title: 'Handmade Eco-Friendly Products',
+    category: 'Product • Online',
+    description: 'Sell reusable cloth bags, natural cleaners, or eco gift kits through social commerce and local pop-up stalls.'
+  },
+  {
+    title: 'Subscription-Based Meal Prep Plans',
+    category: 'Food • Service',
+    description: 'Design weekly meal prep plans for working professionals with calorie-focused options and routine delivery slots.'
+  },
+  {
+    title: 'Niche Blog + Affiliate Income',
+    category: 'Online • Low investment',
+    description: 'Create practical guides for one niche topic and monetize with affiliate recommendations and downloadable resources.'
+  },
+  {
+    title: 'Local Event Planning Assistance',
+    category: 'Service • Local',
+    description: 'Coordinate small functions such as birthdays and engagement events with vendor management and budget tracking.'
+  },
+  {
+    title: 'YouTube Shorts Editing Service',
+    category: 'Service • Online',
+    description: 'Provide short-form video editing, captions, and thumbnail packaging for creators and small brands.'
+  },
+  {
+    title: 'Print-on-Demand Niche Store',
+    category: 'Online • Product',
+    description: 'Launch a themed apparel/accessories brand without inventory by using print-on-demand platforms and social selling.'
+  },
+  {
+    title: 'Study Notes Marketplace',
+    category: 'Education • Online',
+    description: 'Compile and sell structured exam notes, summary sheets, and revision planners for specific student segments.'
+  },
+  {
+    title: 'Mobile Car/Bike Cleaning',
+    category: 'Service • Low investment',
+    description: 'Offer doorstep cleaning subscriptions in apartment complexes with weekly and monthly plans.'
+  },
+  {
+    title: 'WhatsApp Commerce Setup Service',
+    category: 'Service • Local business',
+    description: 'Help small stores set up WhatsApp catalogs, order forms, and payment collection workflows.'
+  },
+  {
+    title: 'Corporate Snack Box Supply',
+    category: 'Product • B2B',
+    description: 'Deliver curated healthy snack packs to offices with recurring corporate contracts and custom branding.'
+  },
+  {
+    title: 'Interior Styling for Small Homes',
+    category: 'Service • Local',
+    description: 'Provide low-budget room makeover plans with shopping lists, layout suggestions, and execution support.'
+  },
+  {
+    title: 'Online Language Conversation Club',
+    category: 'Education • Online',
+    description: 'Run paid speaking clubs for beginners with weekly sessions, partner practice, and structured feedback sheets.'
+  },
+  {
+    title: 'Freelance Presentation Design',
+    category: 'Service • Online',
+    description: 'Design polished pitch decks and sales presentations for founders, agencies, and educators.'
+  },
+  {
+    title: 'Second-Hand Furniture Resale',
+    category: 'Product • Low investment',
+    description: 'Source used furniture, refurbish basics, and resell via local marketplaces with pickup and delivery options.'
+  },
+  {
+    title: 'Digital Product Templates Shop',
+    category: 'Online • Product',
+    description: 'Sell Canva/Notion templates for specific users such as freelancers, students, or salon owners.'
+  },
+  {
+    title: 'Local Tour Experience Curation',
+    category: 'Service • Tourism',
+    description: 'Design half-day local experiences for visitors, including food, markets, and culture-based guided routes.'
+  },
+  {
+    title: 'At-Home Fitness Coaching',
+    category: 'Service • Health',
+    description: 'Provide beginner-friendly workout plans, accountability check-ins, and progress tracking for busy adults.'
+  },
+  {
+    title: 'School Project Assistance Studio',
+    category: 'Education • Service',
+    description: 'Help students create practical project models, presentations, and documentation aligned with school rubrics.'
+  },
+  {
+    title: 'CRM Cleanup for Small Teams',
+    category: 'Service • B2B',
+    description: 'Organize leads, pipelines, and follow-up reminders for small businesses struggling with scattered customer data.'
+  },
+  {
+    title: 'Home Bakery Pre-Order Brand',
+    category: 'Food • Product',
+    description: 'Sell cakes and desserts through pre-orders, festival specials, and neighborhood referral programs.'
+  }
+];
+
 const state = loadState();
 const refs = {};
 
@@ -8,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   renderHeader();
   renderAll();
+  renderBusinessToolsOverview();
+  appendChat('Barya', 'Hello! I am your AI business assistant. Ask any question and I will reply with a clear summary, practical advice, and action tips.');
   syncScreenHeader('dashboard');
   appendChat('Barya', 'Hello! I am your AI business assistant. Ask for savings, finance, or growth guidance.');
 });
@@ -18,7 +173,7 @@ function loadState() {
     return {
       goal: parsed.goal || '',
       monthlyTarget: Number(parsed.monthlyTarget || 0),
-      proactiveTips: Boolean(parsed.proactiveTips),
+      proactiveTips: parsed.proactiveTips !== undefined ? Boolean(parsed.proactiveTips) : true,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
       recurring: Array.isArray(parsed.recurring) ? parsed.recurring : [],
       selectedPlan: parsed.selectedPlan || ''
@@ -73,6 +228,9 @@ function cacheRefs() {
 
   refs.planTitle = document.getElementById('plan-title');
   refs.planBox = document.getElementById('plan-box');
+  refs.businessIdeaInput = document.getElementById('business-idea-input');
+  refs.businessIdeaButton = document.getElementById('business-idea-button');
+
   refs.ideaButton = document.getElementById('idea-button');
   refs.ideaBox = document.getElementById('idea-box');
 
@@ -106,6 +264,14 @@ function bindEvents() {
   });
 
   refs.ideaButton.addEventListener('click', generateIdea);
+  refs.businessIdeaButton?.addEventListener('click', adviseBusinessIdea);
+  refs.businessIdeaInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      adviseBusinessIdea();
+    }
+  });
+
   refs.sidebarOpen.addEventListener('click', () => refs.sidebar.classList.add('open'));
   refs.sidebarClose.addEventListener('click', () => refs.sidebar.classList.remove('open'));
   refs.jumpDashboard.addEventListener('click', () => {
@@ -180,21 +346,74 @@ function onAskAi(event) {
   appendChat('You', prompt, true);
 
   const totals = computeTotals();
-  const p = prompt.toLowerCase();
-
-  let response = 'Focus on one metric this week: protect at least 20% of income as savings.';
-  if (p.includes('expense') || p.includes('spend')) {
-    response = `Your tracked expenses are ₹${formatCurrency(totals.expense)}. Reduce your top two categories by 10% and review results in 7 days.`;
-  } else if (p.includes('save') || p.includes('savings')) {
-    response = `Set an auto-transfer right after income hits. With current balance ₹${formatCurrency(totals.balance)}, prioritize emergency reserve then growth.`;
-  } else if (p.includes('business') || p.includes('growth')) {
-    response = 'Build a 4-week growth sprint: define one offer, one channel, one KPI, and review weekly conversion + cashflow.';
-  } else if (p.includes('goal')) {
-    response = state.goal ? `Your active goal is "${state.goal}". Break it into weekly milestones and track completion every Sunday.` : 'Set your main goal in Settings to unlock more tailored guidance.';
-  }
+  const response = createAssistantResponse(prompt, totals);
 
   setTimeout(() => appendChat('Barya', response), 260);
   refs.chatForm.reset();
+}
+
+function createAssistantResponse(prompt, totals) {
+  const p = prompt.toLowerCase();
+  const summary = [];
+  const advice = [];
+  const tips = [];
+
+  const hasFinancialData = totals.income > 0 || totals.expense > 0;
+
+  if (p.includes('expense') || p.includes('spend') || p.includes('cost')) {
+    summary.push(`Your current tracked expenses are ₹${formatCurrency(totals.expense)} (manual: ₹${formatCurrency(totals.manualExpense)}, recurring: ₹${formatCurrency(totals.recurringExpense)}).`);
+    advice.push('Cut one high-cost area first (not all categories together) so progress is easier to track.');
+    advice.push('Set a weekly spending cap for non-essential purchases and review every Sunday.');
+    tips.push('Use the Transactions tab daily for 7 days to identify your top 2 avoidable costs.');
+    tips.push('Before each non-essential purchase, apply a 24-hour waiting rule.');
+  } else if (p.includes('save') || p.includes('savings') || p.includes('emergency')) {
+    summary.push(`Current balance is ₹${formatCurrency(totals.balance)} with income ₹${formatCurrency(totals.income)} and total expenses ₹${formatCurrency(totals.expense)}.`);
+    advice.push('Automate savings right after income arrives (pay yourself first).');
+    advice.push('Split savings into two buckets: emergency fund first, growth/investment second.');
+    tips.push(`Start with a small fixed weekly transfer (for example ₹${formatCurrency(Math.max(500, Math.round(Math.max(totals.income, 2000) * 0.05)))}).`);
+    tips.push('Pause or renegotiate one recurring payment before reducing essentials.');
+  } else if (p.includes('business') || p.includes('growth') || p.includes('customer') || p.includes('sales')) {
+    summary.push('Business growth improves fastest when offer, audience, and channel are specific.');
+    advice.push('Define one target customer segment and one clear problem you solve this month.');
+    advice.push('Run a 4-week sprint with one acquisition channel and one conversion metric.');
+    tips.push('Track weekly: leads, conversion rate, average order value, and net cashflow.');
+    tips.push('Interview 3 customers before changing pricing or launching a new service.');
+  } else if (p.includes('goal') || p.includes('plan')) {
+    if (state.goal) {
+      summary.push(`Your active goal is: "${state.goal}".`);
+      advice.push('Break this into weekly milestones with clear target amounts or outcomes.');
+      advice.push('Schedule one fixed weekly review to check progress and blockers.');
+      tips.push('Use Sunday review: what worked, what did not, and one action for next week.');
+      if (state.monthlyTarget > 0) tips.push(`Monthly savings target is ₹${formatCurrency(state.monthlyTarget)}. Keep progress visible in Dashboard metrics.`);
+    } else {
+      summary.push('No primary goal is set yet, so guidance is more general right now.');
+      advice.push('Set one measurable goal in Settings (amount + timeline).');
+      advice.push('Choose only 1–2 focus actions to avoid overplanning.');
+      tips.push('Example beginner goal: save one month of essential expenses within 6 months.');
+    }
+  } else {
+    summary.push(hasFinancialData
+      ? `Quick snapshot: income ₹${formatCurrency(totals.income)}, expenses ₹${formatCurrency(totals.expense)}, balance ₹${formatCurrency(totals.balance)}.`
+      : 'I can provide better guidance once you add at least one income and one expense entry.');
+    advice.push('Pick one priority for this week: reduce expense, increase income, or improve sales consistency.');
+    advice.push('Use short review cycles (weekly) instead of monthly-only tracking for faster course correction.');
+    tips.push('Ask specific questions like “How do I reduce food costs by 15%?” for more precise guidance.');
+    tips.push('Keep decisions simple: one experiment, one metric, one deadline.');
+  }
+
+  if (totals.balance < 0) {
+    advice.push('You are currently cashflow-negative, so focus on immediate cost control before expansion spending.');
+    tips.push('List all recurring expenses and pause low-value subscriptions this week.');
+  }
+
+  return [
+    'Summary:',
+    `• ${summary.join(' ')}`,
+    'Advice:',
+    ...advice.slice(0, 3).map((item) => `• ${item}`),
+    'Tips:',
+    ...tips.slice(0, 3).map((item) => `• ${item}`)
+  ].join('\n');
 }
 
 function onSaveSettings(event) {
@@ -209,24 +428,63 @@ function onSaveSettings(event) {
 }
 
 function generatePlan(type) {
-  const goalText = state.goal || 'grow financial stability';
+  const totals = computeTotals();
+  const goalText = state.goal || 'build stable cashflow and predictable growth';
+
   const templates = {
     startup: {
-      title: 'Startup Guide',
-      body: `Validate customer pain, launch a minimum offer in 14 days, and track acquisition cost weekly. Goal context: ${goalText}.`
+      title: 'Startup Launch Guide',
+      steps: [
+        'Validate the problem with at least 10 target users and note repeated pain points.',
+        'Build a minimum offer you can deliver in 7-14 days with clear pricing.',
+        'Launch with one low-cost channel (WhatsApp, local groups, or referrals).',
+        'Track results weekly: leads, conversions, delivery quality, and profit per customer.'
+      ],
+      reality: 'Most beginners overbuild early. Validate demand first, then improve delivery after first paying customers.'
     },
     business: {
-      title: 'Plan Template',
-      body: `Define niche, pricing, sales funnel, and a 90-day revenue roadmap. Goal context: ${goalText}.`
+      title: 'Business Plan Builder',
+      steps: [
+        'Define customer segment, problem, value proposition, and pricing in one page.',
+        'Estimate monthly fixed + variable costs and set a break-even target.',
+        'Create a 90-day sales plan with realistic weekly lead targets.',
+        'Prepare a simple operations checklist for delivery, support, and follow-up.'
+      ],
+      reality: 'A useful business plan should be actionable, not long. Keep assumptions testable and update monthly.'
     },
     cashflow: {
-      title: 'Cashflow Improvement',
-      body: `Speed up receivables, cut low-return spend, and build a 3-month safety runway. Goal context: ${goalText}.`
+      title: 'Cashflow Improvement Plan',
+      steps: [
+        'Collect payments faster using upfront deposits or shorter billing cycles.',
+        'Reduce unnecessary recurring expenses and renegotiate supplier terms.',
+        'Prioritize products/services with higher margins and quicker payment turnaround.',
+        'Maintain a minimum reserve target for 2-3 months of essential costs.'
+      ],
+      reality: totals.balance < 0
+        ? `Current balance is ₹${formatCurrency(totals.balance)}; prioritize cash survival actions first.`
+        : `Current balance is ₹${formatCurrency(totals.balance)}; use positive cashflow to build reserve and reinvest cautiously.`
     }
   };
 
   const selected = templates[type];
   if (!selected) {
+    renderBusinessToolsOverview();
+    return;
+  }
+
+  refs.planBox.innerHTML = `
+    <strong>${escapeHtml(selected.title)}</strong><br>
+    Goal context: ${escapeHtml(goalText)}<br><br>
+    <strong>Action steps:</strong>
+    <ul>${selected.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
+    <strong>Reality check:</strong> ${escapeHtml(selected.reality)}<br><br>
+    <strong>Business tools you can use now:</strong>
+    <ul>
+      <li>Break-even estimate = Fixed cost ÷ (Price - Variable cost).</li>
+      <li>Weekly runway check = Current cash ÷ weekly essential spend.</li>
+      <li>Lead conversion tracker = customers won ÷ qualified leads.</li>
+    </ul>
+  `;
     refs.planTitle.textContent = 'No tool selected';
     refs.planBox.textContent = 'Pick a business planning tool to continue.';
     refs.insightBox.textContent = 'Choose a tool to generate and open its dedicated planning section.';
@@ -243,16 +501,95 @@ function generatePlan(type) {
   showTab('planning-tools');
 }
 
-function generateIdea() {
-  const ideas = [
-    'AI-assisted bookkeeping service for small retailers.',
-    'Local business social media analytics subscription.',
-    'Digital expense coaching package for freelancers.',
-    'Niche e-commerce toolkit for handmade brands.',
-    'Voice-note to invoice assistant for solo founders.'
+function adviseBusinessIdea() {
+  const rawIdea = refs.businessIdeaInput?.value.trim() || '';
+  if (!rawIdea) {
+    showTemporaryMessage(refs.planBox, 'Enter your business idea first (example: “home bakery subscription”).');
+    return;
+  }
+
+  const idea = rawIdea.toLowerCase();
+  const steps = [
+    'Validate demand by speaking to at least 10 target users and noting repeated needs.',
+    'Create a starter offer with clear pricing, scope, and delivery timeline.',
+    'Launch with one channel first (social media, referrals, or local partnerships).',
+    'Track weekly metrics: leads, conversions, cost to deliver, and customer feedback.',
+    'Improve offer based on actual customer objections, not assumptions.'
   ];
-  const idea = ideas[Math.floor(Math.random() * ideas.length)];
-  refs.ideaBox.textContent = `💡 ${idea}`;
+
+  const challengePool = [
+    'Inconsistent customer demand during the first 2-3 months.',
+    'Pricing too low due to fear of losing customers.',
+    'Underestimating delivery time and operational effort.',
+    'Cashflow pressure caused by delayed payments.',
+    'Difficulty standing out against existing alternatives.'
+  ];
+
+  if (idea.includes('food') || idea.includes('bakery') || idea.includes('tiffin') || idea.includes('meal')) {
+    steps[1] = 'Design a small menu/offer for one customer segment and test prepaid weekly subscriptions.';
+    challengePool.unshift('Maintaining quality and consistency at scale, especially during peak demand.');
+  }
+
+  if (idea.includes('online') || idea.includes('digital') || idea.includes('app') || idea.includes('saas')) {
+    steps[2] = 'Start with a landing page + waitlist before building full product features.';
+    challengePool.unshift('Spending too much time building features before validating willingness to pay.');
+  }
+
+  if (idea.includes('service') || idea.includes('agency') || idea.includes('consult')) {
+    steps[3] = 'Use a simple client onboarding checklist to prevent scope creep and delays.';
+    challengePool.unshift('Scope creep when client expectations are not clearly defined upfront.');
+  }
+
+  const chosenChallenges = shuffle(challengePool).slice(0, 3);
+  const beginnerTips = [
+    'Start small and charge early; real customers teach faster than perfect planning.',
+    'Use simple numbers: monthly cost, expected revenue, and break-even timeline.',
+    'Document your weekly lessons so decisions become easier each month.'
+  ];
+
+  refs.planBox.innerHTML = `
+    <strong>Idea summary</strong><br>
+    ${escapeHtml(rawIdea)} can be positioned as a beginner-friendly business if you target one customer segment and solve one specific pain point clearly.<br><br>
+
+    <strong>3-5 steps to start</strong>
+    <ul>${steps.slice(0, 5).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
+
+    <strong>Likely challenges</strong>
+    <ul>${chosenChallenges.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+
+    <strong>Beginner tips</strong>
+    <ul>${beginnerTips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}</ul>
+
+    <strong>Useful business tools</strong>
+    <ul>
+      <li>Break-even estimate = Fixed monthly costs ÷ average contribution per sale.</li>
+      <li>Weekly action tracker: Leads → Meetings → Sales → Repeat customers.</li>
+      <li>Cash buffer rule: keep at least 8-12 weeks of essential business costs.</li>
+    </ul>
+  `;
+}
+
+function renderBusinessToolsOverview() {
+  refs.planBox.innerHTML = `
+    <strong>Business tools overview</strong><br>
+    Use these built-in tools to make faster beginner decisions:
+    <ul>
+      <li><strong>Startup Guide:</strong> practical launch sequence for first customers.</li>
+      <li><strong>Business Plan:</strong> one-page planning framework with realistic milestones.</li>
+      <li><strong>Cashflow Improvement:</strong> actions to reduce financial stress and improve runway.</li>
+      <li><strong>Core formulas:</strong> break-even, runway, and conversion tracking included in each response.</li>
+    </ul>
+    Tip: add your idea below to receive a tailored step-by-step advisor plan.
+  `;
+}
+
+function generateIdea() {
+  const idea = IDEA_LIBRARY[Math.floor(Math.random() * IDEA_LIBRARY.length)];
+  refs.ideaBox.innerHTML = `
+    <strong>💡 ${escapeHtml(idea.title)}</strong><br>
+    <strong>Category:</strong> ${escapeHtml(idea.category)}<br>
+    <strong>Description:</strong> ${escapeHtml(idea.description)}
+  `;
 }
 
 function removeTransaction(id) {
@@ -442,6 +779,15 @@ function formatCurrency(value) {
 
 function capitalize(value) {
   return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+}
+
+function shuffle(items) {
+  const clone = [...items];
+  for (let i = clone.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [clone[i], clone[j]] = [clone[j], clone[i]];
+  }
+  return clone;
 }
 
 function escapeHtml(text) {
