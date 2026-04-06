@@ -162,9 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHeader();
   renderAll();
   renderBusinessToolsOverview();
-  appendChat('Barya', 'Hello! I am your AI business assistant. Ask any question and I will reply with a clear summary, practical advice, and action tips.');
+  appendChat('Barya', 'Hello! I am your AI business assistant. Ask me about saving money, controlling expenses, increasing income, business basics, or finance learning.');
   syncScreenHeader('dashboard');
-  appendChat('Barya', 'Hello! I am your AI business assistant. Ask for savings, finance, or growth guidance.');
 });
 
 function loadState() {
@@ -353,66 +352,97 @@ function onAskAi(event) {
 }
 
 function createAssistantResponse(prompt, totals) {
-  const p = prompt.toLowerCase();
-  const summary = [];
-  const advice = [];
-  const tips = [];
+  const normalizedPrompt = prompt.toLowerCase();
+  const suggestedWeeklySavings = Math.max(300, Math.round(Math.max(totals.income, 3000) * 0.05));
 
-  const hasFinancialData = totals.income > 0 || totals.expense > 0;
-
-  if (p.includes('expense') || p.includes('spend') || p.includes('cost')) {
-    summary.push(`Your current tracked expenses are ₹${formatCurrency(totals.expense)} (manual: ₹${formatCurrency(totals.manualExpense)}, recurring: ₹${formatCurrency(totals.recurringExpense)}).`);
-    advice.push('Cut one high-cost area first (not all categories together) so progress is easier to track.');
-    advice.push('Set a weekly spending cap for non-essential purchases and review every Sunday.');
-    tips.push('Use the Transactions tab daily for 7 days to identify your top 2 avoidable costs.');
-    tips.push('Before each non-essential purchase, apply a 24-hour waiting rule.');
-  } else if (p.includes('save') || p.includes('savings') || p.includes('emergency')) {
-    summary.push(`Current balance is ₹${formatCurrency(totals.balance)} with income ₹${formatCurrency(totals.income)} and total expenses ₹${formatCurrency(totals.expense)}.`);
-    advice.push('Automate savings right after income arrives (pay yourself first).');
-    advice.push('Split savings into two buckets: emergency fund first, growth/investment second.');
-    tips.push(`Start with a small fixed weekly transfer (for example ₹${formatCurrency(Math.max(500, Math.round(Math.max(totals.income, 2000) * 0.05)))}).`);
-    tips.push('Pause or renegotiate one recurring payment before reducing essentials.');
-  } else if (p.includes('business') || p.includes('growth') || p.includes('customer') || p.includes('sales')) {
-    summary.push('Business growth improves fastest when offer, audience, and channel are specific.');
-    advice.push('Define one target customer segment and one clear problem you solve this month.');
-    advice.push('Run a 4-week sprint with one acquisition channel and one conversion metric.');
-    tips.push('Track weekly: leads, conversion rate, average order value, and net cashflow.');
-    tips.push('Interview 3 customers before changing pricing or launching a new service.');
-  } else if (p.includes('goal') || p.includes('plan')) {
-    if (state.goal) {
-      summary.push(`Your active goal is: "${state.goal}".`);
-      advice.push('Break this into weekly milestones with clear target amounts or outcomes.');
-      advice.push('Schedule one fixed weekly review to check progress and blockers.');
-      tips.push('Use Sunday review: what worked, what did not, and one action for next week.');
-      if (state.monthlyTarget > 0) tips.push(`Monthly savings target is ₹${formatCurrency(state.monthlyTarget)}. Keep progress visible in Dashboard metrics.`);
-    } else {
-      summary.push('No primary goal is set yet, so guidance is more general right now.');
-      advice.push('Set one measurable goal in Settings (amount + timeline).');
-      advice.push('Choose only 1–2 focus actions to avoid overplanning.');
-      tips.push('Example beginner goal: save one month of essential expenses within 6 months.');
+  const categories = [
+    {
+      id: 'saving-money',
+      keywords: ['save', 'saving', 'savings', 'emergency fund', 'money save'],
+      shortAnswer: `Start small and save consistently. Based on your current numbers, a realistic start is about ₹${formatCurrency(suggestedWeeklySavings)} per week.`,
+      tips: [
+        'Move a fixed amount to savings on the same day income arrives.',
+        'Use two savings buckets: emergency first, then future goals.',
+        'Reduce one recurring cost this week and send that amount to savings.',
+        'Track savings progress every Sunday to stay consistent.'
+      ],
+      motivation: 'Small weekly wins build strong long-term savings.'
+    },
+    {
+      id: 'expense-control',
+      keywords: ['expense', 'expenses', 'spend', 'spending', 'cost', 'budget leak'],
+      shortAnswer: `Control expenses by tracking where money goes first. Your tracked expense is ₹${formatCurrency(totals.expense)} right now.`,
+      tips: [
+        'List your top 3 spending categories and set a simple limit for each.',
+        'Use a 24-hour pause before non-essential purchases.',
+        'Check recurring subscriptions and cancel one low-value item today.',
+        'Review spending once a week, not only at month end.'
+      ],
+      motivation: 'When you control spending, your money starts working for you.'
+    },
+    {
+      id: 'income-growth',
+      keywords: ['income', 'earn', 'earning', 'increase income', 'more money', 'side income', 'salary growth'],
+      shortAnswer: 'Increase income by improving one skill and offering one clear service people will pay for.',
+      tips: [
+        'Pick one monetizable skill and practice it daily for 30 minutes.',
+        'Offer a small paid service to 5 people in your network first.',
+        'Track leads, paid clients, and average earning every week.',
+        'Reinvest part of new income into tools or learning to grow faster.'
+      ],
+      motivation: 'A focused effort can create a new income stream faster than you think.'
+    },
+    {
+      id: 'business-basics',
+      keywords: ['start a business', 'business', 'startup', 'customer', 'sales', 'business basics'],
+      shortAnswer: 'A good business starts with one customer problem and one simple paid solution.',
+      tips: [
+        'Choose one target customer group and define their main pain point.',
+        'Create a basic offer with clear price, benefit, and delivery timeline.',
+        'Validate your idea by talking to at least 5 potential customers.',
+        'Start lean: low cost, quick launch, and improve from feedback.'
+      ],
+      motivation: 'Simple businesses with clear value often grow the strongest.'
+    },
+    {
+      id: 'finance-learning',
+      keywords: ['what is budgeting', 'budgeting', 'finance', 'financial literacy', 'learn finance', 'cashflow'],
+      shortAnswer: 'Budgeting means planning your income before spending so every rupee has a job.',
+      tips: [
+        'Use a simple split: needs, wants, and savings.',
+        'Track income and expenses daily for at least 14 days.',
+        'Learn one topic per week: budgeting, debt, savings, then investing.',
+        'Use your dashboard numbers to review progress every Sunday.'
+      ],
+      motivation: 'Finance becomes easy when you learn and apply one step at a time.'
     }
-  } else {
-    summary.push(hasFinancialData
-      ? `Quick snapshot: income ₹${formatCurrency(totals.income)}, expenses ₹${formatCurrency(totals.expense)}, balance ₹${formatCurrency(totals.balance)}.`
-      : 'I can provide better guidance once you add at least one income and one expense entry.');
-    advice.push('Pick one priority for this week: reduce expense, increase income, or improve sales consistency.');
-    advice.push('Use short review cycles (weekly) instead of monthly-only tracking for faster course correction.');
-    tips.push('Ask specific questions like “How do I reduce food costs by 15%?” for more precise guidance.');
-    tips.push('Keep decisions simple: one experiment, one metric, one deadline.');
-  }
+  ];
 
-  if (totals.balance < 0) {
-    advice.push('You are currently cashflow-negative, so focus on immediate cost control before expansion spending.');
-    tips.push('List all recurring expenses and pause low-value subscriptions this week.');
-  }
+  const matchedCategory = categories.find((category) => (
+    category.keywords.some((keyword) => normalizedPrompt.includes(keyword))
+  ));
+
+  const fallbackCategory = {
+    shortAnswer: 'I can help best when your question is specific. Choose one topic: saving money, expense control, income growth, business basics, or finance learning.',
+    tips: [
+      'Ask one clear question like “How can I save money from my salary?”',
+      'Share your goal and timeline for more practical guidance.',
+      'Track your dashboard data to get more tailored advice.',
+      'Focus on one topic per week so progress is clear.'
+    ],
+    motivation: 'Clear questions lead to clear progress.'
+  };
+
+  const selected = matchedCategory || fallbackCategory;
 
   return [
-    'Summary:',
-    `• ${summary.join(' ')}`,
-    'Advice:',
-    ...advice.slice(0, 3).map((item) => `• ${item}`),
-    'Tips:',
-    ...tips.slice(0, 3).map((item) => `• ${item}`)
+    'Short answer:',
+    selected.shortAnswer,
+    '',
+    'Practical tips:',
+    ...selected.tips.slice(0, 4).map((tip, index) => `${index + 1}. ${tip}`),
+    '',
+    `Motivation: ${selected.motivation}`
   ].join('\n');
 }
 
