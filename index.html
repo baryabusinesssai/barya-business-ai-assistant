@@ -195,19 +195,65 @@
           <article class="glass card">
             <h3>Settings</h3>
             <form id="settings-form" class="form-grid">
-              <label class="field">
-                <span>Primary Goal</span>
-                <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
-              </label>
-              <label class="field">
-                <span id="target-label">Monthly Savings Target (₹)</span>
-                <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
-              </label>
-              <label class="field toggle">
-                <input id="tips-toggle" type="checkbox">
-                <span>Enable proactive AI tips</span>
-              </label>
-              <button class="btn btn-primary" type="submit">Save Settings</button>
+              <section class="settings-block">
+                <h4>Profile</h4>
+                <p class="subtle">Keep your workspace personal and goal-focused.</p>
+                <label class="field">
+                  <span>Name</span>
+                  <input id="name-input" type="text" maxlength="50" placeholder="e.g. Alex">
+                </label>
+                <label class="field">
+                  <span>Selected Goal</span>
+                  <select id="goal-select">
+                    <option value="build-emergency-fund">Build an emergency fund</option>
+                    <option value="increase-monthly-savings">Increase monthly savings</option>
+                    <option value="grow-business-revenue">Grow business revenue</option>
+                    <option value="reduce-expenses">Reduce monthly expenses</option>
+                    <option value="custom">Custom goal</option>
+                  </select>
+                </label>
+                <label class="field" id="goal-input-wrap">
+                  <span>Custom Goal</span>
+                  <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
+                </label>
+              </section>
+
+              <section class="settings-block">
+                <h4>Preferences</h4>
+                <p class="subtle">Choose how numbers and language appear in your workspace.</p>
+                <label class="field">
+                  <span>Currency</span>
+                  <select id="settings-currency-select" aria-label="Settings currency">
+                    <option value="INR">INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="KRW">KRW (₩)</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Language</span>
+                  <select id="settings-language-select" aria-label="Settings language">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="de">German</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span id="target-label">Monthly Savings Target (₹)</span>
+                  <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
+                </label>
+                <label class="field toggle">
+                  <input id="tips-toggle" type="checkbox">
+                  <span>Enable proactive AI tips</span>
+                </label>
+                <div class="settings-actions">
+                  <button class="btn btn-primary" type="submit">Save Settings</button>
+                  <button id="reset-data-button" class="btn btn-secondary" type="button">Reset Data</button>
+                </div>
+              </section>
             </form>
             <div id="settings-feedback" class="message mt-16">Save your settings to personalize recommendations.</div>
           </article>
