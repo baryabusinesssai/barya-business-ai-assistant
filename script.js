@@ -227,6 +227,7 @@ function cacheRefs() {
 
   refs.planTitle = document.getElementById('plan-title');
   refs.planBox = document.getElementById('plan-box');
+  refs.ideaValidatorForm = document.getElementById('idea-validator-form');
   refs.businessIdeaInput = document.getElementById('business-idea-input');
   refs.businessIdeaButton = document.getElementById('business-idea-button');
 
@@ -458,41 +459,41 @@ function onSaveSettings(event) {
 }
 
 function generatePlan(type) {
-  const totals = computeTotals();
-  const goalText = state.goal || 'build stable cashflow and predictable growth';
+  const goalText = state.goal || 'start with a simple plan and first paying customer';
+  toggleIdeaValidator(false);
+  setActivePlanButtons(type);
 
   const templates = {
     startup: {
-      title: 'Startup Launch Guide',
+      title: 'Startup Guide',
       steps: [
-        'Validate the problem with at least 10 target users and note repeated pain points.',
-        'Build a minimum offer you can deliver in 7-14 days with clear pricing.',
-        'Launch with one low-cost channel (WhatsApp, local groups, or referrals).',
-        'Track results weekly: leads, conversions, delivery quality, and profit per customer.'
+        'Pick one customer group. Example: college students, local shop owners, or working parents.',
+        'Write the one problem you will solve for them in one clear sentence.',
+        'Create a basic offer with one price, one promise, and one delivery timeline.',
+        'Talk to at least 5 people from that group and ask if they would pay.',
+        'Start small this week: serve your first 1-3 customers and collect feedback.'
       ],
-      reality: 'Most beginners overbuild early. Validate demand first, then improve delivery after first paying customers.'
+      reality: 'Do not wait for perfect branding or a full website. First proof = first paying customer.'
     },
     business: {
-      title: 'Business Plan Builder',
+      title: 'Plan Template',
       steps: [
-        'Define customer segment, problem, value proposition, and pricing in one page.',
-        'Estimate monthly fixed + variable costs and set a break-even target.',
-        'Create a 90-day sales plan with realistic weekly lead targets.',
-        'Prepare a simple operations checklist for delivery, support, and follow-up.'
+        '<strong>1) Business idea:</strong> What do you sell and why people need it.',
+        '<strong>2) Target customer:</strong> Who is the exact buyer (age, location, type).',
+        '<strong>3) Problem + solution:</strong> What pain point you solve and how.',
+        '<strong>4) Costs:</strong> Monthly fixed costs + per-sale variable costs.',
+        '<strong>5) Earnings:</strong> Expected monthly sales × price - total costs.'
       ],
-      reality: 'A useful business plan should be actionable, not long. Keep assumptions testable and update monthly.'
+      reality: 'Keep this plan to one page. Update it every month with real numbers.'
     },
-    cashflow: {
-      title: 'Cashflow Improvement Plan',
+    validator: {
+      title: 'Idea Validator',
       steps: [
-        'Collect payments faster using upfront deposits or shorter billing cycles.',
-        'Reduce unnecessary recurring expenses and renegotiate supplier terms.',
-        'Prioritize products/services with higher margins and quicker payment turnaround.',
-        'Maintain a minimum reserve target for 2-3 months of essential costs.'
+        'Enter your business idea above and click "Validate Idea".',
+        'You will get a quick decision: promising, needs work, or risky.',
+        'You will also get simple suggestions to improve demand, pricing, and launch clarity.'
       ],
-      reality: totals.balance < 0
-        ? `Current balance is ₹${formatCurrency(totals.balance)}; prioritize cash survival actions first.`
-        : `Current balance is ₹${formatCurrency(totals.balance)}; use positive cashflow to build reserve and reinvest cautiously.`
+      reality: 'A good idea is helpful only when people are willing to pay for it.'
     }
   };
 
@@ -506,14 +507,9 @@ function generatePlan(type) {
     <strong>${escapeHtml(selected.title)}</strong><br>
     Goal context: ${escapeHtml(goalText)}<br><br>
     <strong>Action steps:</strong>
-    <ul>${selected.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
+    <ul>${selected.steps.map((step) => `<li>${type === 'business' ? step : escapeHtml(step)}</li>`).join('')}</ul>
     <strong>Reality check:</strong> ${escapeHtml(selected.reality)}<br><br>
-    <strong>Business tools you can use now:</strong>
-    <ul>
-      <li>Break-even estimate = Fixed cost ÷ (Price - Variable cost).</li>
-      <li>Weekly runway check = Current cash ÷ weekly essential spend.</li>
-      <li>Lead conversion tracker = customers won ÷ qualified leads.</li>
-    </ul>
+    ${type === 'business' ? '<strong>Quick formula:</strong> Profit = Earnings - Costs.' : ''}
   `;
 
   state.selectedPlan = type;
@@ -521,6 +517,7 @@ function generatePlan(type) {
 
   refs.planTitle.textContent = selected.title;
   refs.insightBox.textContent = `${selected.title} prepared. Opened in the dedicated Business Planning Tools screen.`;
+  toggleIdeaValidator(type === 'validator');
 
   showTab('planning-tools');
 }
@@ -644,40 +641,53 @@ function adviseBusinessIdea() {
   }
 
   const ideaSummary = `${rawIdea} is best positioned for ${audience}. Focus your first offer on helping them ${painPoint}.`;
+  const score = scoreIdea(rawIdea);
+  const verdict = score >= 7 ? 'Good idea to test now ✅' : score >= 5 ? 'Promising but needs improvement ⚠️' : 'Risky right now ❌';
   const chosenChallenges = challenges.slice(0, 3);
   const chosenTips = tips.slice(0, 3);
   const motivationLine = selectedAdvice.motivation || defaultAdvice.motivation;
 
   refs.planBox.innerHTML = `
-    <strong>1. Idea Summary</strong><br>
+    <strong>1. Validation Result</strong><br>
+    ${escapeHtml(verdict)} (Score: ${score}/10)<br><br>
+
+    <strong>2. Idea Summary</strong><br>
     ${escapeHtml(ideaSummary)}<br><br>
 
-    <strong>2. Steps to Start (3–5 steps)</strong>
+    <strong>3. Steps to Start (3–5 steps)</strong>
     <ol>${steps.slice(0, 5).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>
 
-    <strong>3. Challenges</strong>
+    <strong>4. Challenges</strong>
     <ul>${chosenChallenges.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
 
-    <strong>4. Tips</strong>
+    <strong>5. Improvement Suggestions</strong>
     <ul>${chosenTips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}</ul>
 
-    <strong>5. Motivation line</strong><br>
+    <strong>6. Motivation line</strong><br>
     ${escapeHtml(motivationLine)}
   `;
 }
 
 function renderBusinessToolsOverview() {
+  setActivePlanButtons('');
   refs.planBox.innerHTML = `
     <strong>Business tools overview</strong><br>
     Use these built-in tools to make faster beginner decisions:
     <ul>
-      <li><strong>Startup Guide:</strong> practical launch sequence for first customers.</li>
-      <li><strong>Business Plan:</strong> one-page planning framework with realistic milestones.</li>
-      <li><strong>Cashflow Improvement:</strong> actions to reduce financial stress and improve runway.</li>
-      <li><strong>Core formulas:</strong> break-even, runway, and conversion tracking included in each response.</li>
+      <li><strong>Startup Guide:</strong> simple step-by-step launch path for beginners.</li>
+      <li><strong>Plan Template:</strong> one-page format with idea, customer, cost, and earnings.</li>
+      <li><strong>Idea Validator:</strong> type an idea and get a quick score plus improvements.</li>
     </ul>
-    Tip: add your idea below to receive a tailored step-by-step advisor plan.
+    Tip: choose one tool to open it in the panel below.
   `;
+  refs.planTitle.textContent = 'No tool selected';
+  toggleIdeaValidator(false);
+}
+
+function setActivePlanButtons(type) {
+  document.querySelectorAll('[data-plan]').forEach((button) => {
+    button.classList.toggle('active-tool', button.dataset.plan === type);
+  });
 }
 
 function generateIdea() {
@@ -738,13 +748,31 @@ function restorePlanSelection() {
   const selectionMap = {
     startup: 'Startup Guide',
     business: 'Plan Template',
-    cashflow: 'Cashflow Improvement'
+    validator: 'Idea Validator'
   };
 
   if (selectionMap[state.selectedPlan]) {
     generatePlan(state.selectedPlan);
     showTab('dashboard');
   }
+}
+
+function toggleIdeaValidator(show) {
+  if (!refs.ideaValidatorForm) return;
+  refs.ideaValidatorForm.classList.toggle('hidden', !show);
+}
+
+function scoreIdea(rawIdea) {
+  const idea = rawIdea.toLowerCase();
+  let score = 4;
+
+  if (idea.split(/\s+/).length >= 3) score += 1;
+  if (/(local|online|subscription|service|delivery|coaching|agency|store)/.test(idea)) score += 1;
+  if (/(monthly|weekly|package|plan|premium|basic|price)/.test(idea)) score += 1;
+  if (/(for|to|help)/.test(idea)) score += 1;
+  if (/(busy|students|parents|shops|businesses|freelancers|offices)/.test(idea)) score += 1;
+
+  return Math.max(1, Math.min(10, score));
 }
 
 function renderHeader() {
