@@ -1,4 +1,114 @@
 const STORAGE_KEY = 'barya_dashboard_state_v2';
+const DEFAULT_LANGUAGE = 'en';
+const DEFAULT_CURRENCY = 'INR';
+
+const CURRENCY_CONFIG = {
+  INR: { locale: 'en-IN', symbol: '₹' },
+  USD: { locale: 'en-US', symbol: '$' },
+  EUR: { locale: 'de-DE', symbol: '€' },
+  GBP: { locale: 'en-GB', symbol: '£' },
+  JPY: { locale: 'ja-JP', symbol: '¥' },
+  KRW: { locale: 'ko-KR', symbol: '₩' }
+};
+
+const TRANSLATIONS = {
+  en: {
+    appTitle: 'Barya Business AI Assistant',
+    appSubtitle: 'A clean AI workspace for tracking finances, generating savings plans, and making business decisions with confidence.',
+    workspaceChip: 'Live Workspace',
+    languageLabel: 'Language',
+    currencyLabel: 'Currency',
+    statBalanceLabel: 'Total Balance',
+    statBalanceCaption: 'Net from income and expenses.',
+    statIncomeLabel: 'Income',
+    statIncomeCaption: 'All tracked incoming funds.',
+    statExpenseLabel: 'Expenses',
+    statExpenseCaption: 'Manual + recurring expenses.',
+    txnAmountLabel: 'Amount',
+    recAmountLabel: 'Amount',
+    targetLabel: 'Monthly Savings Target',
+    greetingMorning: 'Good morning 👋',
+    greetingAfternoon: 'Good afternoon 👋',
+    greetingEvening: 'Good evening 👋',
+    goalPrefix: 'Goal',
+    notSet: 'Not set',
+    chartIncome: 'Income',
+    chartExpense: 'Expenses',
+    chartSavings: 'Savings'
+  },
+  hi: {
+    appTitle: 'बार्या बिज़नेस एआई असिस्टेंट',
+    appSubtitle: 'वित्त ट्रैक करने, बचत योजना बनाने और आत्मविश्वास से व्यावसायिक निर्णय लेने के लिए सरल एआई वर्कस्पेस।',
+    workspaceChip: 'लाइव वर्कस्पेस',
+    languageLabel: 'भाषा',
+    currencyLabel: 'मुद्रा',
+    statBalanceLabel: 'कुल बैलेंस',
+    statBalanceCaption: 'आय और खर्च के बाद शेष राशि।',
+    statIncomeLabel: 'आय',
+    statIncomeCaption: 'सभी दर्ज की गई आय।',
+    statExpenseLabel: 'खर्च',
+    statExpenseCaption: 'मैनुअल + आवर्ती खर्च।',
+    txnAmountLabel: 'राशि',
+    recAmountLabel: 'राशि',
+    targetLabel: 'मासिक बचत लक्ष्य',
+    greetingMorning: 'सुप्रभात 👋',
+    greetingAfternoon: 'नमस्कार 👋',
+    greetingEvening: 'शुभ संध्या 👋',
+    goalPrefix: 'लक्ष्य',
+    notSet: 'सेट नहीं',
+    chartIncome: 'आय',
+    chartExpense: 'खर्च',
+    chartSavings: 'बचत'
+  },
+  es: {
+    appTitle: 'Asistente de IA Empresarial Barya',
+    appSubtitle: 'Un espacio de IA limpio para controlar finanzas, planear ahorros y decidir con confianza.',
+    workspaceChip: 'Espacio en vivo',
+    languageLabel: 'Idioma',
+    currencyLabel: 'Moneda',
+    statBalanceLabel: 'Balance total',
+    statBalanceCaption: 'Neto de ingresos y gastos.',
+    statIncomeLabel: 'Ingresos',
+    statIncomeCaption: 'Todos los fondos registrados.',
+    statExpenseLabel: 'Gastos',
+    statExpenseCaption: 'Gastos manuales + recurrentes.',
+    txnAmountLabel: 'Monto',
+    recAmountLabel: 'Monto',
+    targetLabel: 'Meta mensual de ahorro',
+    greetingMorning: 'Buenos días 👋',
+    greetingAfternoon: 'Buenas tardes 👋',
+    greetingEvening: 'Buenas noches 👋',
+    goalPrefix: 'Meta',
+    notSet: 'No definida',
+    chartIncome: 'Ingresos',
+    chartExpense: 'Gastos',
+    chartSavings: 'Ahorros'
+  },
+  de: {
+    appTitle: 'Barya Business-KI-Assistent',
+    appSubtitle: 'Ein klarer KI-Arbeitsbereich zum Verfolgen von Finanzen, Planen von Ersparnissen und sicheren Geschäftsentscheidungen.',
+    workspaceChip: 'Live-Arbeitsbereich',
+    languageLabel: 'Sprache',
+    currencyLabel: 'Währung',
+    statBalanceLabel: 'Gesamtguthaben',
+    statBalanceCaption: 'Netto aus Einnahmen und Ausgaben.',
+    statIncomeLabel: 'Einnahmen',
+    statIncomeCaption: 'Alle erfassten Einnahmen.',
+    statExpenseLabel: 'Ausgaben',
+    statExpenseCaption: 'Manuelle + wiederkehrende Ausgaben.',
+    txnAmountLabel: 'Betrag',
+    recAmountLabel: 'Betrag',
+    targetLabel: 'Monatliches Sparziel',
+    greetingMorning: 'Guten Morgen 👋',
+    greetingAfternoon: 'Guten Tag 👋',
+    greetingEvening: 'Guten Abend 👋',
+    goalPrefix: 'Ziel',
+    notSet: 'Nicht festgelegt',
+    chartIncome: 'Einnahmen',
+    chartExpense: 'Ausgaben',
+    chartSavings: 'Ersparnisse'
+  }
+};
 
 const IDEA_LIBRARY = [
   {
@@ -175,10 +285,21 @@ function loadState() {
       proactiveTips: parsed.proactiveTips !== undefined ? Boolean(parsed.proactiveTips) : true,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
       recurring: Array.isArray(parsed.recurring) ? parsed.recurring : [],
-      selectedPlan: parsed.selectedPlan || ''
+      selectedPlan: parsed.selectedPlan || '',
+      language: parsed.language || DEFAULT_LANGUAGE,
+      currency: parsed.currency || DEFAULT_CURRENCY
     };
   } catch {
-    return { goal: '', monthlyTarget: 0, proactiveTips: true, transactions: [], recurring: [], selectedPlan: '' };
+    return {
+      goal: '',
+      monthlyTarget: 0,
+      proactiveTips: true,
+      transactions: [],
+      recurring: [],
+      selectedPlan: '',
+      language: DEFAULT_LANGUAGE,
+      currency: DEFAULT_CURRENCY
+    };
   }
 }
 
@@ -193,6 +314,13 @@ function cacheRefs() {
 
   refs.greeting = document.getElementById('greeting');
   refs.dateChip = document.getElementById('date-chip');
+  refs.appTitle = document.getElementById('app-title');
+  refs.appSubtitle = document.getElementById('app-subtitle');
+  refs.workspaceChip = document.getElementById('workspace-chip');
+  refs.languageLabel = document.getElementById('language-label');
+  refs.currencyLabel = document.getElementById('currency-label');
+  refs.languageSelect = document.getElementById('language-select');
+  refs.currencySelect = document.getElementById('currency-select');
   refs.goalBadge = document.getElementById('goal-badge');
   refs.goalStatus = document.getElementById('goal-status');
 
@@ -202,6 +330,12 @@ function cacheRefs() {
   refs.balanceValue = document.getElementById('balance-value');
   refs.incomeValue = document.getElementById('income-value');
   refs.expenseValue = document.getElementById('expense-value');
+  refs.statBalanceLabel = document.getElementById('stat-balance-label');
+  refs.statBalanceCaption = document.getElementById('stat-balance-caption');
+  refs.statIncomeLabel = document.getElementById('stat-income-label');
+  refs.statIncomeCaption = document.getElementById('stat-income-caption');
+  refs.statExpenseLabel = document.getElementById('stat-expense-label');
+  refs.statExpenseCaption = document.getElementById('stat-expense-caption');
 
   refs.transactionForm = document.getElementById('transaction-form');
   refs.txnLabel = document.getElementById('txn-label');
@@ -237,6 +371,9 @@ function cacheRefs() {
   refs.settingsForm = document.getElementById('settings-form');
   refs.goalInput = document.getElementById('goal-input');
   refs.targetInput = document.getElementById('target-input');
+  refs.txnAmountLabel = document.getElementById('txn-amount-label');
+  refs.recAmountLabel = document.getElementById('rec-amount-label');
+  refs.targetLabel = document.getElementById('target-label');
   refs.tipsToggle = document.getElementById('tips-toggle');
   refs.settingsFeedback = document.getElementById('settings-feedback');
 
@@ -274,6 +411,8 @@ function bindEvents() {
 
   refs.sidebarOpen.addEventListener('click', () => refs.sidebar.classList.add('open'));
   refs.sidebarClose.addEventListener('click', () => refs.sidebar.classList.remove('open'));
+  refs.languageSelect.addEventListener('change', onLanguageChange);
+  refs.currencySelect.addEventListener('change', onCurrencyChange);
   refs.jumpDashboard.addEventListener('click', () => {
     showTab('dashboard');
     refs.sidebar.classList.remove('open');
@@ -282,6 +421,24 @@ function bindEvents() {
   window.addEventListener('resize', () => {
     if (window.innerWidth > 860) refs.sidebar.classList.remove('open');
   });
+}
+
+function onLanguageChange(event) {
+  state.language = event.target.value || DEFAULT_LANGUAGE;
+  saveState();
+  renderHeader();
+  renderAll();
+}
+
+function onCurrencyChange(event) {
+  state.currency = event.target.value || DEFAULT_CURRENCY;
+  saveState();
+  renderHeader();
+  renderAll();
+}
+
+function t(key) {
+  return (TRANSLATIONS[state.language] && TRANSLATIONS[state.language][key]) || TRANSLATIONS.en[key] || key;
 }
 
 function showTab(tabId) {
@@ -360,7 +517,7 @@ function createAssistantResponse(prompt, totals) {
     {
       id: 'saving-money',
       keywords: ['save', 'saving', 'savings', 'emergency fund', 'money save'],
-      shortAnswer: `Start small and save consistently. Based on your current numbers, a realistic start is about ₹${formatCurrency(suggestedWeeklySavings)} per week.`,
+      shortAnswer: `Start small and save consistently. Based on your current numbers, a realistic start is about ${formatMoney(suggestedWeeklySavings)} per week.`,
       tips: [
         'Move a fixed amount to savings on the same day income arrives.',
         'Use two savings buckets: emergency first, then future goals.',
@@ -372,7 +529,7 @@ function createAssistantResponse(prompt, totals) {
     {
       id: 'expense-control',
       keywords: ['expense', 'expenses', 'spend', 'spending', 'cost', 'budget leak'],
-      shortAnswer: `Control expenses by tracking where money goes first. Your tracked expense is ₹${formatCurrency(totals.expense)} right now.`,
+      shortAnswer: `Control expenses by tracking where money goes first. Your tracked expense is ${formatMoney(totals.expense)} right now.`,
       tips: [
         'List your top 3 spending categories and set a simple limit for each.',
         'Use a 24-hour pause before non-essential purchases.',
@@ -729,9 +886,9 @@ function computeTotals() {
 function renderAll() {
   const totals = computeTotals();
 
-  refs.incomeValue.textContent = `₹${formatCurrency(totals.income)}`;
-  refs.expenseValue.textContent = `₹${formatCurrency(totals.expense)}`;
-  refs.balanceValue.textContent = `₹${formatCurrency(totals.balance)}`;
+  refs.incomeValue.textContent = formatMoney(totals.income);
+  refs.expenseValue.textContent = formatMoney(totals.expense);
+  refs.balanceValue.textContent = formatMoney(totals.balance);
 
   renderChart(totals);
   renderTransactions();
@@ -777,13 +934,31 @@ function scoreIdea(rawIdea) {
 
 function renderHeader() {
   const now = new Date();
-  refs.dateChip.textContent = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const currencyConfig = CURRENCY_CONFIG[state.currency] || CURRENCY_CONFIG[DEFAULT_CURRENCY];
+  refs.dateChip.textContent = now.toLocaleDateString(currencyConfig.locale, { day: '2-digit', month: 'short', year: 'numeric' });
 
   const h = now.getHours();
-  refs.greeting.textContent = h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+  refs.greeting.textContent = h < 12 ? t('greetingMorning') : h < 17 ? t('greetingAfternoon') : t('greetingEvening');
 
-  const goal = state.goal || 'Not set';
-  refs.goalBadge.textContent = `Goal: ${goal}`;
+  refs.appTitle.textContent = t('appTitle');
+  refs.appSubtitle.textContent = t('appSubtitle');
+  refs.workspaceChip.textContent = t('workspaceChip');
+  refs.languageLabel.textContent = t('languageLabel');
+  refs.currencyLabel.textContent = t('currencyLabel');
+  refs.statBalanceLabel.textContent = t('statBalanceLabel');
+  refs.statBalanceCaption.textContent = t('statBalanceCaption');
+  refs.statIncomeLabel.textContent = t('statIncomeLabel');
+  refs.statIncomeCaption.textContent = t('statIncomeCaption');
+  refs.statExpenseLabel.textContent = t('statExpenseLabel');
+  refs.statExpenseCaption.textContent = t('statExpenseCaption');
+  refs.txnAmountLabel.textContent = `${t('txnAmountLabel')} (${currencyConfig.symbol})`;
+  refs.recAmountLabel.textContent = `${t('recAmountLabel')} (${currencyConfig.symbol})`;
+  refs.targetLabel.textContent = `${t('targetLabel')} (${currencyConfig.symbol})`;
+  refs.languageSelect.value = state.language;
+  refs.currencySelect.value = state.currency;
+
+  const goal = state.goal || t('notSet');
+  refs.goalBadge.textContent = `${t('goalPrefix')}: ${goal}`;
   refs.goalStatus.textContent = goal;
 
   refs.goalInput.value = state.goal;
@@ -793,15 +968,15 @@ function renderHeader() {
 
 function renderChart(totals) {
   const rows = [
-    ['Income', totals.income, 'bar-income'],
-    ['Expenses', totals.expense, 'bar-expense'],
-    ['Savings', Math.max(totals.balance, 0), 'bar-savings']
+    [t('chartIncome'), totals.income, 'bar-income'],
+    [t('chartExpense'), totals.expense, 'bar-expense'],
+    [t('chartSavings'), Math.max(totals.balance, 0), 'bar-savings']
   ];
 
   const max = Math.max(1, ...rows.map((r) => r[1]));
   refs.chartList.innerHTML = rows.map(([label, value, klass]) => {
     const width = Math.max(8, Math.round((value / max) * 100));
-    return `<div class="chart-row"><span>${label}</span><div class="bar"><span class="${klass}" style="width:${width}%"></span></div><strong>₹${formatCurrency(value)}</strong></div>`;
+    return `<div class="chart-row"><span>${label}</span><div class="bar"><span class="${klass}" style="width:${width}%"></span></div><strong>${formatMoney(value)}</strong></div>`;
   }).join('');
 }
 
@@ -827,7 +1002,7 @@ function renderRecurring() {
       <li class="item">
         <div>
           <strong>${escapeHtml(item.name)}</strong>
-          <div class="meta">${capitalize(item.frequency)} • ₹${formatCurrency(item.amount)}</div>
+          <div class="meta">${capitalize(item.frequency)} • ${formatMoney(item.amount)}</div>
         </div>
         <button class="btn btn-secondary" type="button" data-remove-recurring="${item.id}">Remove</button>
       </li>
@@ -847,12 +1022,12 @@ function renderInsights() {
     tips.push('Add your first income and expense to unlock tailored guidance.');
   } else {
     if (totals.expense > totals.income * 0.8) tips.push('Expenses are above 80% of income. Reduce your highest-cost category first.');
-    if (totals.balance > 0) tips.push(`You are cashflow-positive. Reserve at least ₹${formatCurrency(Math.round(totals.balance * 0.3))} for savings.`);
+    if (totals.balance > 0) tips.push(`You are cashflow-positive. Reserve at least ${formatMoney(Math.round(totals.balance * 0.3))} for savings.`);
     if (state.monthlyTarget > 0) {
       const remaining = Math.max(state.monthlyTarget - Math.max(totals.balance, 0), 0);
       tips.push(remaining === 0
         ? 'Great work — your monthly savings target is currently met.'
-        : `You need ₹${formatCurrency(remaining)} more to hit your monthly savings target.`);
+        : `You need ${formatMoney(remaining)} more to hit your monthly savings target.`);
     }
     if (state.proactiveTips) tips.push('Pro tip: review recurring expenses weekly to avoid silent budget creep.');
   }
@@ -878,10 +1053,10 @@ function renderTransactionItem(item) {
     <li class="item">
       <div>
         <strong>${escapeHtml(item.label)}</strong>
-        <div class="meta">${new Date(item.createdAt).toLocaleDateString('en-IN')} • ${capitalize(item.type)}</div>
+        <div class="meta">${new Date(item.createdAt).toLocaleDateString(getCurrencyLocale())} • ${capitalize(item.type)}</div>
       </div>
       <div>
-        <strong class="${item.type === 'income' ? 'amount-income' : 'amount-expense'}">${item.type === 'income' ? '+' : '-'}₹${formatCurrency(item.amount)}</strong>
+        <strong class="${item.type === 'income' ? 'amount-income' : 'amount-expense'}">${item.type === 'income' ? '+' : '-'}${formatMoney(item.amount)}</strong>
         <button class="btn btn-secondary" type="button" data-remove-transaction="${item.id}">Delete</button>
       </div>
     </li>
@@ -898,8 +1073,17 @@ function emptyItem(text) {
   return `<li class="item"><span class="meta">${escapeHtml(text)}</span></li>`;
 }
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.round(value));
+function getCurrencyLocale() {
+  return (CURRENCY_CONFIG[state.currency] || CURRENCY_CONFIG[DEFAULT_CURRENCY]).locale;
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat(getCurrencyLocale(), { maximumFractionDigits: 0 }).format(Math.round(value));
+}
+
+function formatMoney(value) {
+  const symbol = (CURRENCY_CONFIG[state.currency] || CURRENCY_CONFIG[DEFAULT_CURRENCY]).symbol;
+  return `${symbol}${formatNumber(value)}`;
 }
 
 function capitalize(value) {
