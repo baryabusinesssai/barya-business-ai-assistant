@@ -1,6 +1,16 @@
 const STORAGE_KEY = 'barya_dashboard_state_v2';
 const DEFAULT_LANGUAGE = 'en';
 const DEFAULT_CURRENCY = 'INR';
+const MOTIVATIONAL_QUOTES = [
+  '“Do not save what is left after spending; spend what is left after saving.” — Warren Buffett',
+  '“The more you learn, the more you earn.” — Warren Buffett',
+  '“Success in business requires training, discipline, and hard work.” — David Rockefeller',
+  '“Growth is never by mere chance; it is the result of forces working together.” — James Cash Penney',
+  '“If you are not willing to risk the usual, you will have to settle for the ordinary.” — Jim Rohn',
+  '“Formal education will make you a living; self-education will make you a fortune.” — Jim Rohn',
+  '“The way to get started is to quit talking and begin doing.” — Walt Disney',
+  '“Opportunities do not happen. You create them.” — Chris Grosser'
+];
 
 const CURRENCY_CONFIG = {
   INR: { locale: 'en-IN', symbol: '₹' },
@@ -271,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   renderHeader();
   renderAll();
+  renderMotivationalQuote();
   renderBusinessToolsOverview();
   appendChat('Barya', 'Hello! I am your AI business assistant. Ask me about saving money, controlling expenses, increasing income, business basics, or finance learning.');
   syncScreenHeader('dashboard');
@@ -336,6 +347,7 @@ function cacheRefs() {
   refs.statIncomeCaption = document.getElementById('stat-income-caption');
   refs.statExpenseLabel = document.getElementById('stat-expense-label');
   refs.statExpenseCaption = document.getElementById('stat-expense-caption');
+  refs.motivationalQuote = document.getElementById('motivational-quote');
 
   refs.transactionForm = document.getElementById('transaction-form');
   refs.txnLabel = document.getElementById('txn-label');
@@ -908,6 +920,12 @@ function renderAll() {
   renderRecurring();
   renderInsights();
   restorePlanSelection();
+}
+
+function renderMotivationalQuote() {
+  if (!refs.motivationalQuote) return;
+  const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+  refs.motivationalQuote.textContent = randomQuote;
 }
 
 function restorePlanSelection() {
