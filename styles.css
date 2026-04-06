@@ -186,6 +186,9 @@ body {
   gap: 12px;
 }
 .field { display: flex; flex-direction: column; gap: 7px; }
+.category-field {
+  grid-column: 1 / -1;
+}
 .field span {
   font-size: 0.86rem;
   color: #314675;
@@ -211,6 +214,37 @@ body {
 .chat-form input:focus {
   border-color: rgba(59, 130, 246, 0.82);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
+}
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.category-chip {
+  border: 1px solid #cad8ff;
+  background: #f7faff;
+  color: #314675;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.category-chip:hover {
+  background: #edf3ff;
+  border-color: #adc5ff;
+}
+.category-chip:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.35);
+  outline-offset: 1px;
+}
+.category-chip.selected {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.96), rgba(124, 92, 255, 0.96));
+  box-shadow: 0 8px 16px rgba(84, 110, 222, 0.28);
 }
 
 .toggle {
@@ -315,6 +349,16 @@ body {
   padding: 11px;
 }
 .meta { color: var(--muted); font-size: 0.84rem; }
+.txn-category-badge {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #c9d8ff;
+  background: #f3f8ff;
+  font-size: 0.76rem;
+  color: #3a548a;
+}
 .amount-income { color: var(--good); }
 .amount-expense { color: var(--bad); }
 
@@ -405,6 +449,18 @@ body {
   .stats { grid-template-columns: 1fr; }
 
   .chat-form { grid-template-columns: 1fr; }
+
+  .category-chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .category-chip {
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
 
   .btn,
   .quick-actions .btn,

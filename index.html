@@ -126,6 +126,20 @@
                   <option value="expense">Expense</option>
                 </select>
               </label>
+              <div class="field category-field" id="txn-category-field">
+                <span>Category</span>
+                <input id="txn-category" type="hidden" value="Food">
+                <div class="category-chips" role="group" aria-label="Expense category">
+                  <button type="button" class="category-chip selected" data-category="Food" aria-pressed="true">Food</button>
+                  <button type="button" class="category-chip" data-category="Transport" aria-pressed="false">Transport</button>
+                  <button type="button" class="category-chip" data-category="Bills" aria-pressed="false">Bills</button>
+                  <button type="button" class="category-chip" data-category="Shopping" aria-pressed="false">Shopping</button>
+                  <button type="button" class="category-chip" data-category="Entertainment" aria-pressed="false">Entertainment</button>
+                  <button type="button" class="category-chip" data-category="Health" aria-pressed="false">Health</button>
+                  <button type="button" class="category-chip" data-category="Education" aria-pressed="false">Education</button>
+                  <button type="button" class="category-chip" data-category="Other" aria-pressed="false">Other</button>
+                </div>
+              </div>
               <button class="btn btn-primary" type="submit">Add Entry</button>
             </form>
           </article>
