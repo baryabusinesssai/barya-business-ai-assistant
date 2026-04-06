@@ -256,6 +256,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(255,255,255,0.16);
   background: rgba(4, 8, 20, 0.45);
+  white-space: pre-line;
 }
 .chat-msg.user { background: rgba(59, 130, 246, 0.25); border-color: rgba(125, 211, 252, 0.4); }
 .chat-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
