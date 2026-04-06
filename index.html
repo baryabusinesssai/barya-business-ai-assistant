@@ -128,16 +128,39 @@
               </label>
               <div class="field category-field" id="txn-category-field">
                 <span>Category</span>
-                <input id="txn-category" type="hidden" value="Food">
-                <div class="category-chips" role="group" aria-label="Expense category">
-                  <button type="button" class="category-chip selected" data-category="Food" aria-pressed="true">Food</button>
-                  <button type="button" class="category-chip" data-category="Transport" aria-pressed="false">Transport</button>
-                  <button type="button" class="category-chip" data-category="Bills" aria-pressed="false">Bills</button>
-                  <button type="button" class="category-chip" data-category="Shopping" aria-pressed="false">Shopping</button>
-                  <button type="button" class="category-chip" data-category="Entertainment" aria-pressed="false">Entertainment</button>
-                  <button type="button" class="category-chip" data-category="Health" aria-pressed="false">Health</button>
-                  <button type="button" class="category-chip" data-category="Education" aria-pressed="false">Education</button>
-                  <button type="button" class="category-chip" data-category="Other" aria-pressed="false">Other</button>
+                <div class="category-chips" role="radiogroup" aria-label="Expense category">
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Food" checked>
+                    <span>Food</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Transport">
+                    <span>Transport</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Bills">
+                    <span>Bills</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Shopping">
+                    <span>Shopping</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Entertainment">
+                    <span>Entertainment</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Health">
+                    <span>Health</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Education">
+                    <span>Education</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="radio" name="txn-category" value="Other">
+                    <span>Other</span>
+                  </label>
                 </div>
               </div>
               <button class="btn btn-primary" type="submit">Add Entry</button>
