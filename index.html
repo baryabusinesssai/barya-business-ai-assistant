@@ -199,26 +199,10 @@
             <div class="quick-actions mb-16">
               <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
               <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
-              <button type="button" class="btn btn-secondary" data-plan="cashflow">Cashflow Improvement</button>
+              <button type="button" class="btn btn-secondary" data-plan="validator">Idea Validator</button>
             </div>
             <div id="plan-preview" class="message">Choose a tool to generate and open its dedicated planning section.</div>
           </article>
-
-      <section id="business-plan" class="tab">
-        <article class="glass card">
-          <h3>Business Advisor</h3>
-          <p class="subtle mb-16">Use the tools below or enter your own business idea for a practical starter plan.</p>
-          <div class="quick-actions mb-16">
-            <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
-            <button type="button" class="btn btn-secondary" data-plan="business">Business Plan</button>
-            <button type="button" class="btn btn-secondary" data-plan="cashflow">Cashflow Improvement</button>
-          </div>
-          <div class="chat-form mb-16">
-            <input id="business-idea-input" type="text" maxlength="180" placeholder="Enter your idea (e.g. home bakery subscription)">
-            <button id="business-idea-button" type="button" class="btn btn-primary">Analyze Idea</button>
-          </div>
-          <div id="plan-box" class="message">Choose a tool to generate an advisor response.</div>
-        </article>
           <article class="glass card">
             <h3>Savings Ideas</h3>
             <div id="savings-box" class="message">Your latest AI recommendations will appear here.</div>
@@ -238,16 +222,20 @@
       <section id="planning-tools" class="tab" data-tab-name="Business Planning Tools" data-tab-description="Each planning option opens in its own dedicated panel for better context and focus.">
         <article class="glass card">
           <h3>Business Planning Tools</h3>
-          <p class="subtle mb-16">Choose a planning tool to load a dedicated output panel.</p>
+          <p class="subtle mb-16">Choose a tool to load a clear panel with practical beginner guidance.</p>
           <div class="quick-actions mb-16 plan-options">
             <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
             <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
-            <button type="button" class="btn btn-secondary" data-plan="cashflow">Cashflow Improvement</button>
+            <button type="button" class="btn btn-secondary" data-plan="validator">Idea Validator</button>
+          </div>
+          <div id="idea-validator-form" class="chat-form mb-16 hidden" aria-live="polite">
+            <input id="business-idea-input" type="text" maxlength="180" placeholder="Enter your business idea (e.g. home bakery subscription)">
+            <button id="business-idea-button" type="button" class="btn btn-primary">Validate Idea</button>
           </div>
           <section class="plan-result" aria-live="polite">
             <p class="subtle">Current Tool</p>
             <h4 id="plan-title">No tool selected</h4>
-            <div id="plan-box" class="message">Choose Startup Guide, Plan Template, or Cashflow Improvement to open that section here.</div>
+            <div id="plan-box" class="message">Choose Startup Guide, Plan Template, or Idea Validator to open that tool here.</div>
           </section>
         </article>
       </section>

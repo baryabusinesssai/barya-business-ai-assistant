@@ -191,6 +191,11 @@ body {
   background: rgba(255, 255, 255, 0.07);
 }
 .btn-secondary:hover { background: rgba(255, 255, 255, 0.13); }
+.btn-secondary.active-tool {
+  color: #fff;
+  border-color: rgba(125, 211, 252, 0.6);
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.45), rgba(139, 92, 246, 0.45));
+}
 
 .quick-actions { display: grid; gap: 8px; }
 .plan-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -274,6 +279,7 @@ body {
 
 .mb-16 { margin-bottom: 16px; }
 .mt-16 { margin-top: 16px; }
+.hidden { display: none; }
 
 @keyframes fade {
   from { opacity: 0; transform: translateY(6px); }
