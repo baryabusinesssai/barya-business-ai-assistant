@@ -46,13 +46,33 @@
       <header class="topbar glass">
         <div>
           <p id="greeting" class="kicker">Welcome back 👋</p>
-          <h1>Barya Business AI Assistant</h1>
-          <p class="subtle">A clean AI workspace for tracking finances, generating savings plans, and making business decisions with confidence.</p>
+          <h1 id="app-title">Barya Business AI Assistant</h1>
+          <p id="app-subtitle" class="subtle">A clean AI workspace for tracking finances, generating savings plans, and making business decisions with confidence.</p>
         </div>
         <div class="topbar-actions">
           <button id="sidebar-open" class="icon-btn mobile-only" type="button" aria-label="Open menu">☰</button>
           <span id="date-chip" class="chip"></span>
-          <span class="chip">Live Workspace</span>
+          <span id="workspace-chip" class="chip">Live Workspace</span>
+          <label class="field compact-field">
+            <span id="language-label">Language</span>
+            <select id="language-select" aria-label="Language">
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="es">Spanish</option>
+              <option value="de">German</option>
+            </select>
+          </label>
+          <label class="field compact-field">
+            <span id="currency-label">Currency</span>
+            <select id="currency-select" aria-label="Currency">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="JPY">JPY (¥)</option>
+              <option value="KRW">KRW (₩)</option>
+            </select>
+          </label>
         </div>
       </header>
 
@@ -65,19 +85,19 @@
       <section id="dashboard" class="tab active" data-tab-name="Dashboard" data-tab-description="Track finances, monitor budgets, and update workspace preferences in one clear view.">
         <section class="stats" aria-label="Summary metrics">
           <article class="stat glass">
-            <p class="subtle">Total Balance</p>
+            <p id="stat-balance-label" class="subtle">Total Balance</p>
             <h2 id="balance-value">₹0</h2>
-            <p class="stat-caption">Net from income and expenses.</p>
+            <p id="stat-balance-caption" class="stat-caption">Net from income and expenses.</p>
           </article>
           <article class="stat glass">
-            <p class="subtle">Income</p>
+            <p id="stat-income-label" class="subtle">Income</p>
             <h2 id="income-value">₹0</h2>
-            <p class="stat-caption">All tracked incoming funds.</p>
+            <p id="stat-income-caption" class="stat-caption">All tracked incoming funds.</p>
           </article>
           <article class="stat glass">
-            <p class="subtle">Expenses</p>
+            <p id="stat-expense-label" class="subtle">Expenses</p>
             <h2 id="expense-value">₹0</h2>
-            <p class="stat-caption">Manual + recurring expenses.</p>
+            <p id="stat-expense-caption" class="stat-caption">Manual + recurring expenses.</p>
           </article>
           <article class="stat glass">
             <p class="subtle">Savings Goal</p>
@@ -96,7 +116,7 @@
                 <input id="txn-label" type="text" placeholder="e.g. Client Payment, Rent" maxlength="60" required>
               </label>
               <label class="field">
-                <span>Amount (₹)</span>
+                <span id="txn-amount-label">Amount (₹)</span>
                 <input id="txn-amount" type="number" min="1" step="0.01" placeholder="0.00" required>
               </label>
               <label class="field">
@@ -141,7 +161,7 @@
                 <input id="rec-name" type="text" placeholder="e.g. Internet" maxlength="50" required>
               </label>
               <label class="field">
-                <span>Amount (₹)</span>
+                <span id="rec-amount-label">Amount (₹)</span>
                 <input id="rec-amount" type="number" min="1" step="0.01" placeholder="0.00" required>
               </label>
               <label class="field">
@@ -166,7 +186,7 @@
                 <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
               </label>
               <label class="field">
-                <span>Monthly Savings Target (₹)</span>
+                <span id="target-label">Monthly Savings Target (₹)</span>
                 <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
               </label>
               <label class="field toggle">
