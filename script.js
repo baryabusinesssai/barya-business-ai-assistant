@@ -342,8 +342,7 @@ function cacheRefs() {
   refs.txnAmount = document.getElementById('txn-amount');
   refs.txnType = document.getElementById('txn-type');
   refs.txnCategoryField = document.getElementById('txn-category-field');
-  refs.txnCategory = document.getElementById('txn-category');
-  refs.txnCategoryChips = [...document.querySelectorAll('.category-chip')];
+  refs.txnCategoryInputs = [...document.querySelectorAll('input[name="txn-category"]')];
 
   refs.chartList = document.getElementById('chart-list');
   refs.recentList = document.getElementById('recent-list');
@@ -417,9 +416,6 @@ function bindEvents() {
   refs.languageSelect.addEventListener('change', onLanguageChange);
   refs.currencySelect.addEventListener('change', onCurrencyChange);
   refs.txnType.addEventListener('change', onTransactionTypeChange);
-  refs.txnCategoryChips.forEach((chip) => {
-    chip.addEventListener('click', () => setTransactionCategory(chip.dataset.category || 'Other'));
-  });
   refs.jumpDashboard.addEventListener('click', () => {
     showTab('dashboard');
     refs.sidebar.classList.remove('open');
@@ -470,10 +466,11 @@ function onAddTransaction(event) {
   const label = refs.txnLabel.value.trim();
   const amount = Number(refs.txnAmount.value);
   const type = refs.txnType.value;
-  const category = refs.txnCategory.value;
+  const category = getSelectedTransactionCategory();
 
   if (!label) return showTemporaryMessage(refs.insightBox, 'Transaction label is required.');
   if (!Number.isFinite(amount) || amount <= 0) return showTemporaryMessage(refs.insightBox, 'Enter a valid amount greater than zero.');
+  if (type === 'expense' && !category) return showTemporaryMessage(refs.insightBox, 'Please choose an expense category.');
 
   state.transactions.unshift({
     id: crypto.randomUUID(),
@@ -1082,12 +1079,14 @@ function renderTransactionItem(item) {
 }
 
 function setTransactionCategory(category) {
-  refs.txnCategory.value = category;
-  refs.txnCategoryChips.forEach((chip) => {
-    const selected = chip.dataset.category === category;
-    chip.classList.toggle('selected', selected);
-    chip.setAttribute('aria-pressed', String(selected));
+  refs.txnCategoryInputs.forEach((input) => {
+    input.checked = input.value === category;
   });
+}
+
+function getSelectedTransactionCategory() {
+  const selectedInput = refs.txnCategoryInputs.find((input) => input.checked);
+  return selectedInput ? selectedInput.value : '';
 }
 
 function onTransactionTypeChange() {

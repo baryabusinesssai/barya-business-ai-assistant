@@ -226,23 +226,37 @@ body {
   color: #314675;
   border-radius: 999px;
   min-height: 40px;
-  padding: 8px 14px;
+  padding: 0;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
+  display: inline-flex;
 }
 .category-chip:hover {
   background: #edf3ff;
   border-color: #adc5ff;
 }
-.category-chip:focus-visible {
+.category-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.category-chip span {
+  display: inline-flex;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 14px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+}
+.category-chip input:focus-visible + span {
   outline: 3px solid rgba(59, 130, 246, 0.35);
   outline-offset: 1px;
 }
-.category-chip.selected {
+.category-chip input:checked + span {
   color: #fff;
-  border-color: transparent;
   background: linear-gradient(120deg, rgba(59, 130, 246, 0.96), rgba(124, 92, 255, 0.96));
   box-shadow: 0 8px 16px rgba(84, 110, 222, 0.28);
 }
@@ -459,7 +473,10 @@ body {
   .category-chip {
     min-height: 44px;
     width: 100%;
-    justify-content: center;
+  }
+
+  .category-chip span {
+    min-height: 44px;
   }
 
   .btn,
