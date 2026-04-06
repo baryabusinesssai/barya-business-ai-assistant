@@ -341,6 +341,9 @@ function cacheRefs() {
   refs.txnLabel = document.getElementById('txn-label');
   refs.txnAmount = document.getElementById('txn-amount');
   refs.txnType = document.getElementById('txn-type');
+  refs.txnCategoryField = document.getElementById('txn-category-field');
+  refs.txnCategory = document.getElementById('txn-category');
+  refs.txnCategoryChips = [...document.querySelectorAll('.category-chip')];
 
   refs.chartList = document.getElementById('chart-list');
   refs.recentList = document.getElementById('recent-list');
@@ -413,6 +416,10 @@ function bindEvents() {
   refs.sidebarClose.addEventListener('click', () => refs.sidebar.classList.remove('open'));
   refs.languageSelect.addEventListener('change', onLanguageChange);
   refs.currencySelect.addEventListener('change', onCurrencyChange);
+  refs.txnType.addEventListener('change', onTransactionTypeChange);
+  refs.txnCategoryChips.forEach((chip) => {
+    chip.addEventListener('click', () => setTransactionCategory(chip.dataset.category || 'Other'));
+  });
   refs.jumpDashboard.addEventListener('click', () => {
     showTab('dashboard');
     refs.sidebar.classList.remove('open');
@@ -421,6 +428,8 @@ function bindEvents() {
   window.addEventListener('resize', () => {
     if (window.innerWidth > 860) refs.sidebar.classList.remove('open');
   });
+
+  onTransactionTypeChange();
 }
 
 function onLanguageChange(event) {
@@ -461,6 +470,7 @@ function onAddTransaction(event) {
   const label = refs.txnLabel.value.trim();
   const amount = Number(refs.txnAmount.value);
   const type = refs.txnType.value;
+  const category = refs.txnCategory.value;
 
   if (!label) return showTemporaryMessage(refs.insightBox, 'Transaction label is required.');
   if (!Number.isFinite(amount) || amount <= 0) return showTemporaryMessage(refs.insightBox, 'Enter a valid amount greater than zero.');
@@ -470,12 +480,15 @@ function onAddTransaction(event) {
     label,
     amount,
     type,
+    category: type === 'expense' ? category : '',
     createdAt: new Date().toISOString()
   });
 
   saveState();
   refs.transactionForm.reset();
   refs.txnType.value = 'income';
+  setTransactionCategory('Food');
+  onTransactionTypeChange();
   renderAll();
 }
 
@@ -1049,11 +1062,16 @@ function appendChat(author, text, isUser = false) {
 }
 
 function renderTransactionItem(item) {
+  const categoryTag = item.type === 'expense' && item.category
+    ? `<div class="txn-category-badge">${escapeHtml(item.category)}</div>`
+    : '';
+
   return `
     <li class="item">
       <div>
         <strong>${escapeHtml(item.label)}</strong>
         <div class="meta">${new Date(item.createdAt).toLocaleDateString(getCurrencyLocale())} • ${capitalize(item.type)}</div>
+        ${categoryTag}
       </div>
       <div>
         <strong class="${item.type === 'income' ? 'amount-income' : 'amount-expense'}">${item.type === 'income' ? '+' : '-'}${formatMoney(item.amount)}</strong>
@@ -1061,6 +1079,20 @@ function renderTransactionItem(item) {
       </div>
     </li>
   `;
+}
+
+function setTransactionCategory(category) {
+  refs.txnCategory.value = category;
+  refs.txnCategoryChips.forEach((chip) => {
+    const selected = chip.dataset.category === category;
+    chip.classList.toggle('selected', selected);
+    chip.setAttribute('aria-pressed', String(selected));
+  });
+}
+
+function onTransactionTypeChange() {
+  const isExpense = refs.txnType.value === 'expense';
+  refs.txnCategoryField.classList.toggle('hidden', !isExpense);
 }
 
 function showTemporaryMessage(node, message) {
