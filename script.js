@@ -485,17 +485,11 @@ function generatePlan(type) {
       <li>Lead conversion tracker = customers won ÷ qualified leads.</li>
     </ul>
   `;
-    refs.planTitle.textContent = 'No tool selected';
-    refs.planBox.textContent = 'Pick a business planning tool to continue.';
-    refs.insightBox.textContent = 'Choose a tool to generate and open its dedicated planning section.';
-    return;
-  }
 
   state.selectedPlan = type;
   saveState();
 
   refs.planTitle.textContent = selected.title;
-  refs.planBox.textContent = selected.body;
   refs.insightBox.textContent = `${selected.title} prepared. Opened in the dedicated Business Planning Tools screen.`;
 
   showTab('planning-tools');
@@ -509,63 +503,136 @@ function adviseBusinessIdea() {
   }
 
   const idea = rawIdea.toLowerCase();
-  const steps = [
-    'Validate demand by speaking to at least 10 target users and noting repeated needs.',
-    'Create a starter offer with clear pricing, scope, and delivery timeline.',
-    'Launch with one channel first (social media, referrals, or local partnerships).',
-    'Track weekly metrics: leads, conversions, cost to deliver, and customer feedback.',
-    'Improve offer based on actual customer objections, not assumptions.'
+  const segments = {
+    food: ['food', 'bakery', 'tiffin', 'meal', 'cafe', 'restaurant'],
+    digital: ['online', 'digital', 'app', 'saas', 'website', 'software'],
+    service: ['service', 'agency', 'consult', 'freelance', 'coaching']
+  };
+
+  const defaultAdvice = {
+    audience: 'busy people who already pay for a similar solution',
+    painPoint: 'save time and make one daily task easier',
+    steps: [
+      'Talk to 10 potential customers and ask what they currently use and what frustrates them.',
+      'Create one simple starter package with clear price, delivery time, and expected result.',
+      'Start promotion on one channel only (for example: local WhatsApp groups or Instagram).',
+      'Track weekly numbers: inquiries, sales, delivery cost, and repeat buyers.'
+    ],
+    challenges: [
+      'Demand may be slow in the first 1-2 months.',
+      'You may underprice and work too much for too little margin.',
+      'Operations can become messy without a clear weekly process.'
+    ],
+    tips: [
+      'Collect at least 50% payment upfront when possible.',
+      'Write one-page SOPs for repeated tasks to save time.',
+      'Review costs weekly and increase price if margin is too low.'
+    ],
+    motivation: 'Start small, stay consistent, and improve every week.'
+  };
+
+  const categoryAdvice = [
+    {
+      type: 'food',
+      config: {
+        audience: 'working professionals and families who need reliable daily meals',
+        painPoint: 'avoid cooking stress and get predictable food quality',
+        steps: [
+          'Test a small weekly menu with 5-10 trial customers before scaling.',
+          'Offer prepaid weekly plans to improve cashflow and reduce cancellations.'
+        ],
+        challenges: [
+          'Maintaining taste and quality during busy days.',
+          'Ingredient price changes can reduce profit quickly.'
+        ],
+        tips: [
+          'Standardize portions and recipes to keep quality consistent.',
+          'Use a simple daily prep checklist to control wastage.'
+        ],
+        motivation: 'Great food habits can build loyal customers faster than ads.'
+      }
+    },
+    {
+      type: 'digital',
+      config: {
+        audience: 'small businesses that want growth but do not have technical support',
+        painPoint: 'get results faster without learning complex tools',
+        steps: [
+          'Build a simple landing page and collect interest before building full features.',
+          'Launch a minimum version focused on one core outcome.'
+        ],
+        challenges: [
+          'Spending too much time building features nobody pays for.',
+          'Customer trust is hard without early testimonials.'
+        ],
+        tips: [
+          'Pre-sell to early users to validate willingness to pay.',
+          'Measure activation and retention, not only website traffic.'
+        ],
+        motivation: 'A simple product that solves one problem can beat a complex product.'
+      }
+    },
+    {
+      type: 'service',
+      config: {
+        audience: 'clients who need done-for-you support and quick execution',
+        painPoint: 'save time by outsourcing tasks to one reliable partner',
+        steps: [
+          'Define scope clearly: what is included, what is extra, and delivery timeline.',
+          'Use a client onboarding form and checklist to avoid confusion.'
+        ],
+        challenges: [
+          'Scope creep when requests are not documented clearly.',
+          'Delayed client approvals can block your delivery schedule.'
+        ],
+        tips: [
+          'Use milestone-based billing to protect your time.',
+          'Share weekly updates to reduce uncertainty and rework.'
+        ],
+        motivation: 'Clear communication and reliability can become your biggest advantage.'
+      }
+    }
   ];
 
-  const challengePool = [
-    'Inconsistent customer demand during the first 2-3 months.',
-    'Pricing too low due to fear of losing customers.',
-    'Underestimating delivery time and operational effort.',
-    'Cashflow pressure caused by delayed payments.',
-    'Difficulty standing out against existing alternatives.'
-  ];
+  const selectedType = categoryAdvice.find((item) => segments[item.type].some((keyword) => idea.includes(keyword)));
+  const selectedAdvice = selectedType ? selectedType.config : {};
 
-  if (idea.includes('food') || idea.includes('bakery') || idea.includes('tiffin') || idea.includes('meal')) {
-    steps[1] = 'Design a small menu/offer for one customer segment and test prepaid weekly subscriptions.';
-    challengePool.unshift('Maintaining quality and consistency at scale, especially during peak demand.');
+  const audience = selectedAdvice.audience || defaultAdvice.audience;
+  const painPoint = selectedAdvice.painPoint || defaultAdvice.painPoint;
+  const steps = [...defaultAdvice.steps];
+  const challenges = [...defaultAdvice.challenges];
+  const tips = [...defaultAdvice.tips];
+
+  if (selectedAdvice.steps) {
+    steps.splice(1, selectedAdvice.steps.length, ...selectedAdvice.steps);
+  }
+  if (selectedAdvice.challenges) {
+    challenges.unshift(...selectedAdvice.challenges);
+  }
+  if (selectedAdvice.tips) {
+    tips.unshift(...selectedAdvice.tips);
   }
 
-  if (idea.includes('online') || idea.includes('digital') || idea.includes('app') || idea.includes('saas')) {
-    steps[2] = 'Start with a landing page + waitlist before building full product features.';
-    challengePool.unshift('Spending too much time building features before validating willingness to pay.');
-  }
-
-  if (idea.includes('service') || idea.includes('agency') || idea.includes('consult')) {
-    steps[3] = 'Use a simple client onboarding checklist to prevent scope creep and delays.';
-    challengePool.unshift('Scope creep when client expectations are not clearly defined upfront.');
-  }
-
-  const chosenChallenges = shuffle(challengePool).slice(0, 3);
-  const beginnerTips = [
-    'Start small and charge early; real customers teach faster than perfect planning.',
-    'Use simple numbers: monthly cost, expected revenue, and break-even timeline.',
-    'Document your weekly lessons so decisions become easier each month.'
-  ];
+  const ideaSummary = `${rawIdea} is best positioned for ${audience}. Focus your first offer on helping them ${painPoint}.`;
+  const chosenChallenges = challenges.slice(0, 3);
+  const chosenTips = tips.slice(0, 3);
+  const motivationLine = selectedAdvice.motivation || defaultAdvice.motivation;
 
   refs.planBox.innerHTML = `
-    <strong>Idea summary</strong><br>
-    ${escapeHtml(rawIdea)} can be positioned as a beginner-friendly business if you target one customer segment and solve one specific pain point clearly.<br><br>
+    <strong>1. Idea Summary</strong><br>
+    ${escapeHtml(ideaSummary)}<br><br>
 
-    <strong>3-5 steps to start</strong>
-    <ul>${steps.slice(0, 5).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
+    <strong>2. Steps to Start (3–5 steps)</strong>
+    <ol>${steps.slice(0, 5).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>
 
-    <strong>Likely challenges</strong>
+    <strong>3. Challenges</strong>
     <ul>${chosenChallenges.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
 
-    <strong>Beginner tips</strong>
-    <ul>${beginnerTips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}</ul>
+    <strong>4. Tips</strong>
+    <ul>${chosenTips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}</ul>
 
-    <strong>Useful business tools</strong>
-    <ul>
-      <li>Break-even estimate = Fixed monthly costs ÷ average contribution per sale.</li>
-      <li>Weekly action tracker: Leads → Meetings → Sales → Repeat customers.</li>
-      <li>Cash buffer rule: keep at least 8-12 weeks of essential business costs.</li>
-    </ul>
+    <strong>5. Motivation line</strong><br>
+    ${escapeHtml(motivationLine)}
   `;
 }
 
