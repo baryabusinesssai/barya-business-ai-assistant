@@ -14,7 +14,7 @@
   <div class="bg-layer" aria-hidden="true"></div>
 
   <main class="app" id="app">
-    <aside class="sidebar glass" id="sidebar" aria-label="Sidebar navigation">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
       <div class="sidebar-top">
         <div class="brand" aria-label="Barya logo">
           <div class="barya-mark" aria-hidden="true">
@@ -45,11 +45,14 @@
       </div>
 
       <nav class="nav" aria-label="Primary">
-        <button type="button" class="nav-link active" data-tab="dashboard">📊 Dashboard</button>
-        <button type="button" class="nav-link" data-tab="ai-assistant">🤖 AI Assistant</button>
-        <button type="button" class="nav-link" data-tab="business-advisor">💼 Business Advisor</button>
-        <button type="button" class="nav-link" data-tab="idea-generator">💡 Idea Generator</button>
-        <button type="button" class="nav-link" data-tab="planning-tools">🧭 Business Planning Tools</button>
+        <button type="button" class="nav-link active" data-tab="dashboard">Dashboard</button>
+        <button type="button" class="nav-link" data-tab="dashboard">Expenses</button>
+        <button type="button" class="nav-link" data-tab="dashboard">Income</button>
+        <button type="button" class="nav-link" data-tab="ai-assistant">AI Assistant</button>
+        <button type="button" class="nav-link" data-tab="idea-generator">Business Ideas</button>
+        <button type="button" class="nav-link" data-tab="business-advisor">Insights</button>
+        <button type="button" class="nav-link" data-tab="planning-tools">Goals</button>
+        <button type="button" class="nav-link" data-tab="dashboard">Settings</button>
       </nav>
 
       <section class="goal-box">
@@ -90,6 +93,10 @@
           <h1 id="app-title">Barya Business AI Assistant</h1>
           <p id="app-subtitle" class="subtle">A clean AI workspace for tracking finances, generating savings plans, and making business decisions with confidence.</p>
         </div>
+        <article class="quote-card">
+          <p class="subtle">Daily Momentum</p>
+          <p class="quote">"Small smart decisions today build a stronger business tomorrow."</p>
+        </article>
         <div class="topbar-actions">
           <button id="sidebar-open" class="icon-btn mobile-only" type="button" aria-label="Open menu">☰</button>
           <span id="date-chip" class="chip"></span>
@@ -117,7 +124,7 @@
         </div>
       </header>
 
-      <section class="screen-head glass" aria-live="polite">
+      <section class="screen-head" aria-live="polite">
         <p class="subtle">Current Screen</p>
         <h2 id="screen-title">Dashboard</h2>
         <p id="screen-description" class="subtle">Track finances, monitor budgets, and update workspace preferences in one clear view.</p>
@@ -125,30 +132,76 @@
 
       <section id="dashboard" class="tab active" data-tab-name="Dashboard" data-tab-description="Track finances, monitor budgets, and update workspace preferences in one clear view.">
         <section class="stats" aria-label="Summary metrics">
-          <article class="stat glass">
-            <p id="stat-balance-label" class="subtle">Total Balance</p>
-            <h2 id="balance-value">₹0</h2>
-            <p id="stat-balance-caption" class="stat-caption">Net from income and expenses.</p>
-          </article>
-          <article class="stat glass">
+          <article class="stat income-card">
             <p id="stat-income-label" class="subtle">Income</p>
             <h2 id="income-value">₹0</h2>
+            <p class="stat-trend">↗ +8.4% this month</p>
             <p id="stat-income-caption" class="stat-caption">All tracked incoming funds.</p>
           </article>
-          <article class="stat glass">
+          <article class="stat expense-card">
             <p id="stat-expense-label" class="subtle">Expenses</p>
             <h2 id="expense-value">₹0</h2>
+            <p class="stat-trend">↘ -2.1% this month</p>
             <p id="stat-expense-caption" class="stat-caption">Manual + recurring expenses.</p>
           </article>
-          <article class="stat glass">
-            <p class="subtle">Savings Goal</p>
-            <h2 id="goal-status">Not set</h2>
-            <p class="stat-caption">Used in AI recommendations.</p>
+          <article class="stat savings-card">
+            <p id="stat-balance-label" class="subtle">Total Savings</p>
+            <h2 id="balance-value">₹0</h2>
+            <p class="stat-trend">⬈ +5.9% this month</p>
+            <p id="stat-balance-caption" class="stat-caption">Net from income and expenses.</p>
+          </article>
+        </section>
+
+        <section class="middle-grid">
+          <article class="card spending-card">
+            <h3>Spending Overview</h3>
+            <div class="donut-wrap">
+              <div class="donut-chart" aria-hidden="true"></div>
+              <div>
+                <p class="subtle">Category Breakdown</p>
+                <div class="chart-list" id="chart-list"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card insight-card">
+            <h3>Smart Insight</h3>
+            <p id="plan-preview" class="message">Keep your top 3 expenses below 60% of your total spending to improve monthly savings consistency.</p>
+            <div class="insight-mini-graph" aria-hidden="true"></div>
+            <button type="button" class="btn btn-secondary" data-jump="business-advisor">View Tips</button>
+          </article>
+        </section>
+
+        <section class="action-section">
+          <button class="btn btn-income" type="button" data-jump="dashboard">Add Income</button>
+          <button class="btn btn-action" type="button" data-jump="dashboard">Add Expense</button>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="card">
+            <h3>AI Assistant</h3>
+            <div id="chat-box" class="chat"></div>
+            <form id="chat-form" class="chat-form">
+              <input aria-label="Ask the AI assistant a question" id="chat-input" type="text" placeholder="Ask about business strategy, savings, or spending..." maxlength="250" required>
+              <button class="btn btn-primary" type="submit">Ask AI</button>
+            </form>
+            <div class="suggestion-chips" aria-label="Suggested prompts">
+              <span class="chip">How can I reduce fixed expenses?</span>
+              <span class="chip">Best way to start saving weekly?</span>
+              <span class="chip">How to increase side income?</span>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Business Idea</h3>
+            <div id="idea-box" class="message">Tap “Generate Idea” to begin.</div>
+            <button type="button" id="idea-button" class="btn btn-secondary mt-16">Generate Idea</button>
+            <button type="button" class="btn btn-primary mt-16" data-jump="idea-generator">Explore More Ideas</button>
           </article>
         </section>
 
         <div class="grid two-col">
-          <article class="glass card">
+          <article class="card">
             <h3>Transaction Center</h3>
             <p class="subtle mb-16">Track money in or out quickly.</p>
             <form id="transaction-form" class="form-grid">
@@ -170,45 +223,21 @@
               <div class="field category-field" id="txn-category-field">
                 <span>Category</span>
                 <div class="category-chips" role="radiogroup" aria-label="Expense category">
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Food" checked>
-                    <span>Food</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Transport">
-                    <span>Transport</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Bills">
-                    <span>Bills</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Shopping">
-                    <span>Shopping</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Entertainment">
-                    <span>Entertainment</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Health">
-                    <span>Health</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Education">
-                    <span>Education</span>
-                  </label>
-                  <label class="category-chip">
-                    <input type="radio" name="txn-category" value="Other">
-                    <span>Other</span>
-                  </label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Food" checked><span>Food</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Transport"><span>Transport</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Bills"><span>Bills</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Shopping"><span>Shopping</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Entertainment"><span>Entertainment</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Health"><span>Health</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Education"><span>Education</span></label>
+                  <label class="category-chip"><input type="radio" name="txn-category" value="Other"><span>Other</span></label>
                 </div>
               </div>
               <button class="btn btn-primary" type="submit">Add Entry</button>
             </form>
           </article>
 
-          <article class="glass card">
+          <article class="card">
             <h3>Quick Navigation</h3>
             <div class="quick-actions">
               <button class="btn btn-secondary" type="button" data-jump="ai-assistant">Go to AI Assistant</button>
@@ -216,22 +245,22 @@
               <button class="btn btn-secondary" type="button" data-jump="planning-tools">Open Planning Tools</button>
             </div>
 
-            <h4>Monthly Snapshot</h4>
-            <div class="chart-list" id="chart-list"></div>
+            <h4>Savings Goal</h4>
+            <div class="message"><strong id="goal-status">Not set</strong></div>
           </article>
 
-          <article class="glass card">
+          <article class="card">
             <h3>Recent Transactions</h3>
             <ul id="recent-list" class="list"></ul>
           </article>
 
-          <article class="glass card">
+          <article class="card">
             <h3>All Transactions</h3>
             <p class="subtle mb-16">Review every entry and remove incorrect records.</p>
             <ul id="all-transactions" class="list"></ul>
           </article>
 
-          <article class="glass card">
+          <article class="card">
             <h3>Recurring Expenses + Budget Health</h3>
             <form id="recurring-form" class="form-grid">
               <label class="field">
@@ -256,7 +285,7 @@
             <div id="budget-health" class="message mt-16">Start by adding at least one income and one expense entry.</div>
           </article>
 
-          <article class="glass card">
+          <article class="card">
             <h3>Settings</h3>
             <form id="settings-form" class="form-grid">
               <section class="settings-block">
@@ -325,21 +354,17 @@
       </section>
 
       <section id="ai-assistant" class="tab" data-tab-name="AI Assistant" data-tab-description="Get focused guidance without scrolling through unrelated tools.">
-        <article class="glass card">
+        <article class="card">
           <h3>Barya AI Assistant</h3>
           <p class="subtle mb-16">Use this space to ask beginner-friendly questions and get practical guidance in clear steps.</p>
-          <p class="subtle mb-16">AI Responses</p>
-          <div id="chat-box" class="chat"></div>
-          <form id="chat-form" class="chat-form">
-            <input aria-label="Ask the AI assistant a question" id="chat-input" type="text" placeholder="Ask about business strategy, savings, or spending..." maxlength="250" required>
-            <button class="btn btn-primary" type="submit">Ask AI</button>
-          </form>
+          <p class="subtle mb-16">Your active AI chat is available in the Dashboard bottom section for faster actions.</p>
+          <button class="btn btn-primary" type="button" data-jump="dashboard">Open AI Chat Panel</button>
         </article>
       </section>
 
       <section id="business-advisor" class="tab" data-tab-name="Business Advisor" data-tab-description="View strategic recommendations in a dedicated advisor workspace.">
         <div class="grid two-col">
-          <article class="glass card">
+          <article class="card">
             <h3>Advisor Actions</h3>
             <p class="subtle mb-16">Select an advisor tool. The result opens in the Planning Tools screen.</p>
             <div class="quick-actions mb-16">
@@ -347,9 +372,9 @@
               <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
               <button type="button" class="btn btn-secondary" data-plan="validator">Idea Validator</button>
             </div>
-            <div id="plan-preview" class="message">Choose a tool to generate and open its dedicated planning section.</div>
+            <div class="message">Choose a tool to generate and open its dedicated planning section.</div>
           </article>
-          <article class="glass card">
+          <article class="card">
             <h3>Savings Ideas</h3>
             <div id="savings-box" class="message">Your latest AI recommendations will appear here.</div>
           </article>
@@ -357,16 +382,16 @@
       </section>
 
       <section id="idea-generator" class="tab" data-tab-name="Idea Generator" data-tab-description="Generate practical business concepts in a distraction-free screen.">
-        <article class="glass card">
+        <article class="card">
           <h3>Idea Generator</h3>
           <p class="subtle mb-16">Generate practical business concepts aligned with your current profile.</p>
-          <button type="button" id="idea-button" class="btn btn-primary">Generate Idea</button>
-          <div id="idea-box" class="message mt-16">Tap “Generate Idea” to begin.</div>
+          <div class="message">Use the Dashboard Business Idea card to generate and explore new ideas in one click.</div>
+          <button type="button" class="btn btn-primary mt-16" data-jump="dashboard">Open Business Idea Card</button>
         </article>
       </section>
 
       <section id="planning-tools" class="tab" data-tab-name="Business Planning Tools" data-tab-description="Each planning option opens in its own dedicated panel for better context and focus.">
-        <article class="glass card">
+        <article class="card">
           <h3>Business Planning Tools</h3>
           <p class="subtle mb-16">Choose a tool to load a clear panel with practical beginner guidance.</p>
           <div class="quick-actions mb-16 plan-options">
@@ -387,6 +412,14 @@
       </section>
     </section>
   </main>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <button type="button" class="nav-link active" data-tab="dashboard">Home</button>
+    <button type="button" class="nav-link" data-tab="dashboard">Expenses</button>
+    <button type="button" class="nav-link" data-tab="ai-assistant">AI</button>
+    <button type="button" class="nav-link" data-tab="idea-generator">Ideas</button>
+    <button type="button" class="nav-link" data-tab="planning-tools">Settings</button>
+  </nav>
 
   <script src="script.js" defer></script>
 </body>
