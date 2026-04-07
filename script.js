@@ -443,8 +443,8 @@ function bindEvents() {
     }
   });
 
-  refs.sidebarOpen.addEventListener('click', () => refs.sidebar.classList.add('open'));
-  refs.sidebarClose.addEventListener('click', () => refs.sidebar.classList.remove('open'));
+  refs.sidebarOpen?.addEventListener('click', () => refs.sidebar?.classList.add('open'));
+  refs.sidebarClose?.addEventListener('click', () => refs.sidebar?.classList.remove('open'));
   refs.languageSelect.addEventListener('change', onLanguageChange);
   refs.currencySelect.addEventListener('change', onCurrencyChange);
   refs.settingsLanguageSelect.addEventListener('change', onLanguageChange);
@@ -452,13 +452,13 @@ function bindEvents() {
   refs.goalSelect.addEventListener('change', onGoalSelectionChange);
   refs.resetDataButton.addEventListener('click', onResetData);
   refs.txnType.addEventListener('change', onTransactionTypeChange);
-  refs.jumpDashboard.addEventListener('click', () => {
+  refs.jumpDashboard?.addEventListener('click', () => {
     showTab('dashboard');
-    refs.sidebar.classList.remove('open');
+    refs.sidebar?.classList.remove('open');
   });
 
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 860) refs.sidebar.classList.remove('open');
+    if (window.innerWidth > 860) refs.sidebar?.classList.remove('open');
   });
 
   onTransactionTypeChange();
@@ -489,15 +489,18 @@ function t(key) {
 }
 
 function showTab(tabId) {
-  refs.tabs.forEach((tab) => tab.classList.toggle('active', tab.id === tabId));
+  const target = refs.tabs.find((tab) => tab.id === tabId);
+  if (!target) return;
+
+  refs.tabs.forEach((tab) => tab.classList.add('active'));
   refs.navLinks.forEach((link) => link.classList.toggle('active', link.dataset.tab === tabId));
-  syncScreenHeader(tabId);
-  refs.sidebar.classList.remove('open');
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  refs.sidebar?.classList.remove('open');
 }
 
 function syncScreenHeader(tabId) {
   const activeTab = refs.tabs.find((tab) => tab.id === tabId);
-  if (!activeTab) return;
+  if (!activeTab || !refs.screenTitle || !refs.screenDescription) return;
 
   refs.screenTitle.textContent = activeTab.dataset.tabName || 'Workspace';
   refs.screenDescription.textContent = activeTab.dataset.tabDescription || 'Focused workspace view.';
