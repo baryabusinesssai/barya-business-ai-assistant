@@ -177,6 +177,37 @@ body {
 .stat h2 { margin: 8px 0; font-size: clamp(1.3rem, 2vw, 1.8rem); }
 .stat-trend { margin: 0 0 8px; font-size: 0.86rem; font-weight: 600; }
 .stat-caption { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+.quote-card {
+  margin-bottom: 14px;
+  padding: 20px 22px;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.97), rgba(245, 248, 255, 0.96));
+  border-radius: 18px;
+}
+.quote-kicker {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f66a3;
+  font-weight: 700;
+}
+.motivational-quote {
+  margin: 0;
+  color: #263965;
+  font-size: clamp(1rem, 1.5vw, 1.22rem);
+  line-height: 1.65;
+  font-weight: 600;
+}
+
+.tab { display: none; }
+.tab.active { display: block; animation: fade 0.25s ease; }
+
+.grid { display: grid; gap: 14px; }
+.grid.two-col { grid-template-columns: 1.12fr 1fr; }
+.card {
+  padding: 22px;
+  border-radius: 18px;
 .income-card { border-left: 4px solid var(--income); }
 .expense-card { border-left: 4px solid var(--expense); }
 .savings-card { border-left: 4px solid var(--savings); }
