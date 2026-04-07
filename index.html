@@ -3,428 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barya Business AI Assistant</title>
-  <meta name="description" content="Premium AI-powered business and finance dashboard for tracking money, planning growth, and improving savings.">
+  <title>Barya | AI-Powered Financial Growth</title>
+  <meta name="description" content="Barya helps individuals and small teams track money, get AI guidance, and make confident business decisions.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="page-bg" aria-hidden="true"></div>
 
-  <main class="app" id="app">
-    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
-      <div class="sidebar-top">
-        <div class="brand" aria-label="Barya logo">
-          <div class="barya-mark" aria-hidden="true">
-            <svg viewBox="0 0 96 96" role="presentation" focusable="false">
-              <defs>
-                <linearGradient id="baryaBGradientSidebar" x1="12%" y1="8%" x2="88%" y2="92%">
-                  <stop offset="0%" stop-color="#2d6cf7"></stop>
-                  <stop offset="100%" stop-color="#5a42f2"></stop>
-                </linearGradient>
-                <linearGradient id="baryaArrowGradientSidebar" x1="20%" y1="70%" x2="90%" y2="30%">
-                  <stop offset="0%" stop-color="#16a34a"></stop>
-                  <stop offset="100%" stop-color="#22c55e"></stop>
-                </linearGradient>
-              </defs>
-              <path d="M20 8h28c16.5 0 30 13.5 30 30 0 10.1-5.1 18.9-12.9 24.2 9.8 4.7 16.5 14.7 16.5 26.2 0 16.4-13.3 29.6-29.6 29.6H20V8Zm17 16v29.2c5.7-3.2 11.5-4.9 18.3-5.3 8.8-.5 15.7-7.6 15.7-16.2 0-9.3-7.6-16.7-16.9-16.7H37Zm0 50.2V104h14.8c9.7 0 17.6-7.8 17.6-17.6 0-9.6-7.8-17.4-17.4-17.4H37Z" fill="url(#baryaBGradientSidebar)" transform="translate(0 -26) scale(0.86)"></path>
-              <path d="M9 69c16-15.8 34.1-23.4 56.6-23.1l-2.8-4.1c-1.5-2.2-.2-5.1 2.3-5.6l12.6-2.4c2.2-.4 4.2 1.4 4.1 3.7L81 50.2c-.1 2.7-3.2 4.2-5.5 2.8l-3.7-2.2c-26.8-.8-44.8 6.8-59.5 24-2.2 2.6-6.3.7-5.6-2.5.2-1.1.8-2.2 1.8-3.3Z" fill="url(#baryaArrowGradientSidebar)"></path>
-              <rect x="26" y="58" width="9" height="19" rx="4.5" fill="#17a35a"></rect>
-              <rect x="39" y="51" width="9" height="26" rx="4.5" fill="#17a35a"></rect>
-            </svg>
-          </div>
-          <div class="barya-wordmark barya-wordmark-sidebar">
-            <p class="barya-brand-name">Barya</p>
-            <p class="barya-brand-tag">Track. Learn. Grow.</p>
-          </div>
-        </div>
-
-        <button id="sidebar-close" class="icon-btn mobile-only" type="button" aria-label="Close menu">✕</button>
+  <header class="navbar-wrap">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a href="#" class="brand">Barya</a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="#features">Features</a>
+        <a href="#" class="link-muted">Login</a>
+        <a href="#" class="btn btn-primary">Get Started</a>
       </div>
+    </nav>
+  </header>
 
-      <nav class="nav" aria-label="Primary">
-        <button type="button" class="nav-link active" data-tab="dashboard">Dashboard</button>
-        <button type="button" class="nav-link" data-tab="dashboard">Expenses</button>
-        <button type="button" class="nav-link" data-tab="dashboard">Income</button>
-        <button type="button" class="nav-link" data-tab="ai-assistant">AI Assistant</button>
-        <button type="button" class="nav-link" data-tab="idea-generator">Business Ideas</button>
-        <button type="button" class="nav-link" data-tab="business-advisor">Insights</button>
-        <button type="button" class="nav-link" data-tab="planning-tools">Goals</button>
-        <button type="button" class="nav-link" data-tab="dashboard">Settings</button>
-      </nav>
+  <main>
+    <section class="hero container">
+      <p class="eyebrow">AI Finance Assistant for Everyday Growth</p>
+      <h1>Smart financial management for modern founders and beginners.</h1>
+      <p class="hero-copy">Barya combines simple tracking, AI-powered support, and clear insights so you can understand your money and grow with confidence.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary">Get Started</a>
+        <a href="#" class="btn btn-secondary">Login</a>
+      </div>
+    </section>
 
-      <section class="goal-box">
-        <p class="subtle">Current focus</p>
-        <p id="goal-badge" class="goal-text">Goal: Not set</p>
-        <button id="jump-dashboard" type="button" class="btn btn-secondary">Open Dashboard</button>
-      </section>
-    </aside>
-
-    <section class="main">
-      <header class="topbar glass">
-        <div class="topbar-brand-block" aria-label="Barya logo">
-          <div class="barya-mark" aria-hidden="true">
-            <svg viewBox="0 0 96 96" role="presentation" focusable="false">
-              <defs>
-                <linearGradient id="baryaBGradientTopbar" x1="12%" y1="8%" x2="88%" y2="92%">
-                  <stop offset="0%" stop-color="#2d6cf7"></stop>
-                  <stop offset="100%" stop-color="#5a42f2"></stop>
-                </linearGradient>
-                <linearGradient id="baryaArrowGradientTopbar" x1="20%" y1="70%" x2="90%" y2="30%">
-                  <stop offset="0%" stop-color="#16a34a"></stop>
-                  <stop offset="100%" stop-color="#22c55e"></stop>
-                </linearGradient>
-              </defs>
-              <path d="M20 8h28c16.5 0 30 13.5 30 30 0 10.1-5.1 18.9-12.9 24.2 9.8 4.7 16.5 14.7 16.5 26.2 0 16.4-13.3 29.6-29.6 29.6H20V8Zm17 16v29.2c5.7-3.2 11.5-4.9 18.3-5.3 8.8-.5 15.7-7.6 15.7-16.2 0-9.3-7.6-16.7-16.9-16.7H37Zm0 50.2V104h14.8c9.7 0 17.6-7.8 17.6-17.6 0-9.6-7.8-17.4-17.4-17.4H37Z" fill="url(#baryaBGradientTopbar)" transform="translate(0 -26) scale(0.86)"></path>
-              <path d="M9 69c16-15.8 34.1-23.4 56.6-23.1l-2.8-4.1c-1.5-2.2-.2-5.1 2.3-5.6l12.6-2.4c2.2-.4 4.2 1.4 4.1 3.7L81 50.2c-.1 2.7-3.2 4.2-5.5 2.8l-3.7-2.2c-26.8-.8-44.8 6.8-59.5 24-2.2 2.6-6.3.7-5.6-2.5.2-1.1.8-2.2 1.8-3.3Z" fill="url(#baryaArrowGradientTopbar)"></path>
-              <rect x="26" y="58" width="9" height="19" rx="4.5" fill="#17a35a"></rect>
-              <rect x="39" y="51" width="9" height="26" rx="4.5" fill="#17a35a"></rect>
-            </svg>
-          </div>
-          <div class="barya-wordmark">
-            <p class="barya-brand-name">Barya</p>
-            <p class="barya-brand-tag">Track. Learn. Grow.</p>
-          </div>
-        </div>
-        <div>
-          <p id="greeting" class="kicker">Welcome back 👋</p>
-          <h1 id="app-title">Barya Business AI Assistant</h1>
-          <p id="app-subtitle" class="subtle">A clean AI workspace for tracking finances, generating savings plans, and making business decisions with confidence.</p>
-        </div>
-        <article class="quote-card">
-          <p class="subtle">Daily Momentum</p>
-          <p class="quote">"Small smart decisions today build a stronger business tomorrow."</p>
-        </article>
-        <div class="topbar-actions">
-          <button id="sidebar-open" class="icon-btn mobile-only" type="button" aria-label="Open menu">☰</button>
-          <span id="date-chip" class="chip"></span>
-          <span id="workspace-chip" class="chip">Live Workspace</span>
-          <label class="field compact-field">
-            <span id="language-label">Language</span>
-            <select id="language-select" aria-label="Language">
-              <option value="en">English</option>
-              <option value="hi">Hindi</option>
-              <option value="es">Spanish</option>
-              <option value="de">German</option>
-            </select>
-          </label>
-          <label class="field compact-field">
-            <span id="currency-label">Currency</span>
-            <select id="currency-select" aria-label="Currency">
-              <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="JPY">JPY (¥)</option>
-              <option value="KRW">KRW (₩)</option>
-            </select>
-          </label>
-        </div>
-      </header>
-
-      <section class="screen-head" aria-live="polite">
-        <p class="subtle">Current Screen</p>
-        <h2 id="screen-title">Dashboard</h2>
-        <p id="screen-description" class="subtle">Track finances, monitor budgets, and update workspace preferences in one clear view.</p>
-      </section>
-
-      <section id="dashboard" class="tab active" data-tab-name="Dashboard" data-tab-description="Track finances, monitor budgets, and update workspace preferences in one clear view.">
-        <section class="stats" aria-label="Summary metrics">
-          <article class="stat income-card">
-            <p id="stat-income-label" class="subtle">Income</p>
-            <h2 id="income-value">₹0</h2>
-            <p class="stat-trend">↗ +8.4% this month</p>
-            <p id="stat-income-caption" class="stat-caption">All tracked incoming funds.</p>
-          </article>
-          <article class="stat expense-card">
-            <p id="stat-expense-label" class="subtle">Expenses</p>
-            <h2 id="expense-value">₹0</h2>
-            <p class="stat-trend">↘ -2.1% this month</p>
-            <p id="stat-expense-caption" class="stat-caption">Manual + recurring expenses.</p>
-          </article>
-          <article class="stat savings-card">
-            <p id="stat-balance-label" class="subtle">Total Savings</p>
-            <h2 id="balance-value">₹0</h2>
-            <p class="stat-trend">⬈ +5.9% this month</p>
-            <p id="stat-balance-caption" class="stat-caption">Net from income and expenses.</p>
-          </article>
-        </section>
-
-        <section class="middle-grid">
-          <article class="card spending-card">
-            <h3>Spending Overview</h3>
-            <div class="donut-wrap">
-              <div class="donut-chart" aria-hidden="true"></div>
-              <div>
-                <p class="subtle">Category Breakdown</p>
-                <div class="chart-list" id="chart-list"></div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card insight-card">
-            <h3>Smart Insight</h3>
-            <p id="plan-preview" class="message">Keep your top 3 expenses below 60% of your total spending to improve monthly savings consistency.</p>
-            <div class="insight-mini-graph" aria-hidden="true"></div>
-            <button type="button" class="btn btn-secondary" data-jump="business-advisor">View Tips</button>
-          </article>
-        </section>
-
-        <section class="action-section">
-          <button class="btn btn-income" type="button" data-jump="dashboard">Add Income</button>
-          <button class="btn btn-action" type="button" data-jump="dashboard">Add Expense</button>
-        </section>
-
-        <section class="bottom-grid">
-          <article class="card">
-            <h3>AI Assistant</h3>
-            <div id="chat-box" class="chat"></div>
-            <form id="chat-form" class="chat-form">
-              <input aria-label="Ask the AI assistant a question" id="chat-input" type="text" placeholder="Ask about business strategy, savings, or spending..." maxlength="250" required>
-              <button class="btn btn-primary" type="submit">Ask AI</button>
-            </form>
-            <div class="suggestion-chips" aria-label="Suggested prompts">
-              <span class="chip">How can I reduce fixed expenses?</span>
-              <span class="chip">Best way to start saving weekly?</span>
-              <span class="chip">How to increase side income?</span>
-            </div>
-          </article>
-
-          <article class="card">
-            <h3>Business Idea</h3>
-            <div id="idea-box" class="message">Tap “Generate Idea” to begin.</div>
-            <button type="button" id="idea-button" class="btn btn-secondary mt-16">Generate Idea</button>
-            <button type="button" class="btn btn-primary mt-16" data-jump="idea-generator">Explore More Ideas</button>
-          </article>
-        </section>
-
-        <article class="glass quote-card" aria-live="polite">
-          <p class="quote-kicker">Daily Motivation</p>
-          <blockquote id="motivational-quote" class="motivational-quote">“Success is where preparation and opportunity meet.”</blockquote>
-        </article>
-
-        <div class="grid two-col">
-          <article class="card">
-            <h3>Transaction Center</h3>
-            <p class="subtle mb-16">Track money in or out quickly.</p>
-            <form id="transaction-form" class="form-grid">
-              <label class="field">
-                <span>Label</span>
-                <input id="txn-label" type="text" placeholder="e.g. Client Payment, Rent" maxlength="60" required>
-              </label>
-              <label class="field">
-                <span id="txn-amount-label">Amount (₹)</span>
-                <input id="txn-amount" type="number" min="1" step="0.01" placeholder="0.00" required>
-              </label>
-              <label class="field">
-                <span>Type</span>
-                <select id="txn-type">
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
-              </label>
-              <div class="field category-field" id="txn-category-field">
-                <span>Category</span>
-                <div class="category-chips" role="radiogroup" aria-label="Expense category">
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Food" checked><span>Food</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Transport"><span>Transport</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Bills"><span>Bills</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Shopping"><span>Shopping</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Entertainment"><span>Entertainment</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Health"><span>Health</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Education"><span>Education</span></label>
-                  <label class="category-chip"><input type="radio" name="txn-category" value="Other"><span>Other</span></label>
-                </div>
-              </div>
-              <button class="btn btn-primary" type="submit">Add Entry</button>
-            </form>
-          </article>
-
-          <article class="card">
-            <h3>Quick Navigation</h3>
-            <div class="quick-actions">
-              <button class="btn btn-secondary" type="button" data-jump="ai-assistant">Go to AI Assistant</button>
-              <button class="btn btn-secondary" type="button" data-jump="business-advisor">Open Business Advisor</button>
-              <button class="btn btn-secondary" type="button" data-jump="planning-tools">Open Planning Tools</button>
-            </div>
-
-            <h4>Savings Goal</h4>
-            <div class="message"><strong id="goal-status">Not set</strong></div>
-          </article>
-
-          <article class="card">
-            <h3>Recent Transactions</h3>
-            <ul id="recent-list" class="list"></ul>
-          </article>
-
-          <article class="card">
-            <h3>All Transactions</h3>
-            <p class="subtle mb-16">Review every entry and remove incorrect records.</p>
-            <ul id="all-transactions" class="list"></ul>
-          </article>
-
-          <article class="card">
-            <h3>Recurring Expenses + Budget Health</h3>
-            <form id="recurring-form" class="form-grid">
-              <label class="field">
-                <span>Name</span>
-                <input id="rec-name" type="text" placeholder="e.g. Internet" maxlength="50" required>
-              </label>
-              <label class="field">
-                <span id="rec-amount-label">Amount (₹)</span>
-                <input id="rec-amount" type="number" min="1" step="0.01" placeholder="0.00" required>
-              </label>
-              <label class="field">
-                <span>Frequency</span>
-                <select id="rec-frequency">
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly" selected>Monthly</option>
-                </select>
-              </label>
-              <button class="btn btn-primary" type="submit">Add Recurring</button>
-            </form>
-            <ul id="recurring-list" class="list mt-16"></ul>
-            <div id="budget-health" class="message mt-16">Start by adding at least one income and one expense entry.</div>
-          </article>
-
-          <article class="card">
-            <h3>Settings</h3>
-            <form id="settings-form" class="form-grid">
-              <section class="settings-block">
-                <h4>Profile</h4>
-                <p class="subtle">Keep your workspace personal and goal-focused.</p>
-                <label class="field">
-                  <span>Name</span>
-                  <input id="name-input" type="text" maxlength="50" placeholder="e.g. Alex">
-                </label>
-                <label class="field">
-                  <span>Selected Goal</span>
-                  <select id="goal-select">
-                    <option value="build-emergency-fund">Build an emergency fund</option>
-                    <option value="increase-monthly-savings">Increase monthly savings</option>
-                    <option value="grow-business-revenue">Grow business revenue</option>
-                    <option value="reduce-expenses">Reduce monthly expenses</option>
-                    <option value="custom">Custom goal</option>
-                  </select>
-                </label>
-                <label class="field" id="goal-input-wrap">
-                  <span>Custom Goal</span>
-                  <input id="goal-input" type="text" maxlength="80" placeholder="e.g. Save ₹50,000 for expansion">
-                </label>
-              </section>
-
-              <section class="settings-block">
-                <h4>Preferences</h4>
-                <p class="subtle">Choose how numbers and language appear in your workspace.</p>
-                <label class="field">
-                  <span>Currency</span>
-                  <select id="settings-currency-select" aria-label="Settings currency">
-                    <option value="INR">INR (₹)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="JPY">JPY (¥)</option>
-                    <option value="KRW">KRW (₩)</option>
-                  </select>
-                </label>
-                <label class="field">
-                  <span>Language</span>
-                  <select id="settings-language-select" aria-label="Settings language">
-                    <option value="en">English</option>
-                    <option value="hi">Hindi</option>
-                    <option value="es">Spanish</option>
-                    <option value="de">German</option>
-                  </select>
-                </label>
-                <label class="field">
-                  <span id="target-label">Monthly Savings Target (₹)</span>
-                  <input id="target-input" type="number" min="0" step="100" placeholder="e.g. 10000">
-                </label>
-                <label class="field toggle">
-                  <input id="tips-toggle" type="checkbox">
-                  <span>Enable proactive AI tips</span>
-                </label>
-                <div class="settings-actions">
-                  <button class="btn btn-primary" type="submit">Save Settings</button>
-                  <button id="reset-data-button" class="btn btn-secondary" type="button">Reset Data</button>
-                </div>
-              </section>
-            </form>
-            <div id="settings-feedback" class="message mt-16">Save your settings to personalize recommendations.</div>
-          </article>
-        </div>
-      </section>
-
-      <section id="ai-assistant" class="tab" data-tab-name="AI Assistant" data-tab-description="Get focused guidance without scrolling through unrelated tools.">
+    <section id="features" class="section container">
+      <div class="section-head">
+        <p class="eyebrow">Features</p>
+        <h2>Everything you need to manage money better</h2>
+      </div>
+      <div class="feature-grid">
         <article class="card">
-          <h3>Barya AI Assistant</h3>
-          <p class="subtle mb-16">Use this space to ask beginner-friendly questions and get practical guidance in clear steps.</p>
-          <p class="subtle mb-16">Your active AI chat is available in the Dashboard bottom section for faster actions.</p>
-          <button class="btn btn-primary" type="button" data-jump="dashboard">Open AI Chat Panel</button>
+          <h3>Financial Tracking</h3>
+          <p>Monitor income, expenses, and savings in one clean dashboard designed for real-world use.</p>
         </article>
-      </section>
-
-      <section id="business-advisor" class="tab" data-tab-name="Business Advisor" data-tab-description="View strategic recommendations in a dedicated advisor workspace.">
-        <div class="grid two-col">
-          <article class="card">
-            <h3>Advisor Actions</h3>
-            <p class="subtle mb-16">Select an advisor tool. The result opens in the Planning Tools screen.</p>
-            <div class="quick-actions mb-16">
-              <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
-              <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
-              <button type="button" class="btn btn-secondary" data-plan="validator">Idea Validator</button>
-            </div>
-            <div class="message">Choose a tool to generate and open its dedicated planning section.</div>
-          </article>
-          <article class="card">
-            <h3>Savings Ideas</h3>
-            <div id="savings-box" class="message">Your latest AI recommendations will appear here.</div>
-          </article>
-        </div>
-      </section>
-
-      <section id="idea-generator" class="tab" data-tab-name="Idea Generator" data-tab-description="Generate practical business concepts in a distraction-free screen.">
         <article class="card">
-          <h3>Idea Generator</h3>
-          <p class="subtle mb-16">Generate practical business concepts aligned with your current profile.</p>
-          <div class="message">Use the Dashboard Business Idea card to generate and explore new ideas in one click.</div>
-          <button type="button" class="btn btn-primary mt-16" data-jump="dashboard">Open Business Idea Card</button>
+          <h3>AI Guidance</h3>
+          <p>Ask practical questions and get clear suggestions to improve spending and business decisions.</p>
         </article>
-      </section>
-
-      <section id="planning-tools" class="tab" data-tab-name="Business Planning Tools" data-tab-description="Each planning option opens in its own dedicated panel for better context and focus.">
         <article class="card">
-          <h3>Business Planning Tools</h3>
-          <p class="subtle mb-16">Choose a tool to load a clear panel with practical beginner guidance.</p>
-          <div class="quick-actions mb-16 plan-options">
-            <button type="button" class="btn btn-secondary" data-plan="startup">Startup Guide</button>
-            <button type="button" class="btn btn-secondary" data-plan="business">Plan Template</button>
-            <button type="button" class="btn btn-secondary" data-plan="validator">Idea Validator</button>
-          </div>
-          <div id="idea-validator-form" class="chat-form mb-16 hidden" aria-live="polite">
-            <input aria-label="Enter a business idea for validation" id="business-idea-input" type="text" maxlength="180" placeholder="Enter your business idea (e.g. home bakery subscription)">
-            <button id="business-idea-button" type="button" class="btn btn-primary">Validate Idea</button>
-          </div>
-          <section class="plan-result" aria-live="polite">
-            <p class="subtle">Current Tool</p>
-            <h4 id="plan-title">No tool selected</h4>
-            <div id="plan-box" class="message">Choose Startup Guide, Plan Template, or Idea Validator to open that tool here.</div>
-          </section>
+          <h3>Smart Insights</h3>
+          <p>See easy-to-understand summaries that help you spot trends and take action quickly.</p>
         </article>
-      </section>
+        <article class="card">
+          <h3>Business Planning</h3>
+          <p>Turn your goals into a simple roadmap with ideas and planning tools built for beginners.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container value-section">
+      <div class="section-head">
+        <p class="eyebrow">Why Barya</p>
+        <h2>Built to keep finance simple and useful</h2>
+      </div>
+      <div class="value-grid">
+        <div class="value-item">Beginner-friendly flow with guided steps.</div>
+        <div class="value-item">Simple interface that works without training.</div>
+        <div class="value-item">Saves time with AI-powered recommendations.</div>
+        <div class="value-item">Helps you understand money with clarity.</div>
+      </div>
+    </section>
+
+    <section class="section container cta-section">
+      <h2>Ready to take control?</h2>
+      <p>Start with Barya today and make smarter financial decisions every week.</p>
+      <a href="#" class="btn btn-primary">Start Free with Barya</a>
     </section>
   </main>
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <button type="button" class="nav-link active" data-tab="dashboard">Home</button>
-    <button type="button" class="nav-link" data-tab="dashboard">Expenses</button>
-    <button type="button" class="nav-link" data-tab="ai-assistant">AI</button>
-    <button type="button" class="nav-link" data-tab="idea-generator">Ideas</button>
-    <button type="button" class="nav-link" data-tab="planning-tools">Settings</button>
-  </nav>
+  <footer class="footer">
+    <div class="container footer-links">
+      <a href="#">Product</a>
+      <a href="#features">Features</a>
+      <a href="#">Login</a>
+      <a href="#">Sign up</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+    <p class="footer-copy">© <span id="year"></span> Barya. All rights reserved.</p>
+  </footer>
 
   <script src="script.js" defer></script>
 </body>
