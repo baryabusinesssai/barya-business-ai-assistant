@@ -53,18 +53,40 @@ body {
 }
 .sidebar-top { display: flex; justify-content: space-between; align-items: center; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
+
+.barya-mark {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
 }
-.brand-title { margin: 0; font-weight: 700; }
-.brand-subtitle { margin: 0; font-size: 0.82rem; color: var(--muted); }
+.barya-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.barya-wordmark {
+  min-width: 0;
+}
+.barya-brand-name {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 1.08rem;
+  color: #06153d;
+  line-height: 1.05;
+}
+.barya-brand-tag {
+  margin: 2px 0 0;
+  color: #7d889f;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.barya-wordmark-sidebar .barya-brand-name {
+  font-size: 1rem;
+}
+.barya-wordmark-sidebar .barya-brand-tag {
+  font-size: 0.76rem;
+}
 
 .nav { display: grid; gap: 6px; }
 .nav-link {
@@ -88,11 +110,40 @@ body {
 
 .main { min-width: 0; display: grid; gap: 16px; }
 .topbar {
-  padding: 18px;
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 14px;
-  align-items: start;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.topbar-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.topbar-brand-block .barya-mark {
+  width: 56px;
+  height: 56px;
+}
+.topbar-brand-block .barya-brand-name {
+  font-size: 1.65rem;
+  color: #071743;
+}
+.topbar-brand-block .barya-brand-tag {
+  font-size: 0.94rem;
+}
+.topbar h1 {
+  margin: 8px 0;
+  font-size: clamp(1.35rem, 2.1vw, 1.95rem);
+  letter-spacing: -0.01em;
+}
+.topbar-actions { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.compact-field {
+  min-width: 150px;
+  max-width: 180px;
+  gap: 4px;
 }
 .topbar-actions {
   grid-column: 1 / -1;
@@ -177,10 +228,38 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-
-.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field span { font-size: 0.85rem; color: #344054; font-weight: 600; }
+.settings-block {
+  grid-column: 1 / -1;
+  border: 1px solid #d9e3ff;
+  background: #f8fbff;
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.settings-block h4 {
+  margin: 0;
+  grid-column: 1 / -1;
+}
+.settings-block .subtle {
+  grid-column: 1 / -1;
+}
+.settings-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.field { display: flex; flex-direction: column; gap: 7px; }
+.category-field {
+  grid-column: 1 / -1;
+}
+.field span {
+  font-size: 0.86rem;
+  color: #314675;
+  font-weight: 600;
+}
 .field input,
 .field select,
 .chat-form input {
@@ -271,6 +350,8 @@ body {
   .middle-grid,
   .bottom-grid,
   .grid.two-col { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .settings-block { grid-template-columns: 1fr; }
   .plan-options { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
 }
@@ -296,9 +377,26 @@ body {
   .sidebar.open { transform: translateX(0); }
   .mobile-only { display: inline-grid; place-items: center; }
 
-  .stats,
-  .action-section { grid-template-columns: 1fr; }
-  .donut-wrap { grid-template-columns: 1fr; }
+  .topbar,
+  .screen-head,
+  .card { padding: 16px; }
+
+  .topbar { flex-direction: column; }
+  .topbar-brand-block {
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .topbar-brand-block .barya-mark {
+    width: 42px;
+    height: 42px;
+  }
+  .topbar-brand-block .barya-wordmark {
+    display: none;
+  }
+  .topbar h1 { font-size: 1.35rem; }
+
+  .stats { grid-template-columns: 1fr; }
+
   .chat-form { grid-template-columns: 1fr; }
 
   .btn,
