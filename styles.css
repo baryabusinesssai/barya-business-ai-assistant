@@ -64,19 +64,41 @@ body {
 }
 
 .sidebar-top { display: flex; justify-content: space-between; align-items: center; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: #fff;
-  background: linear-gradient(130deg, var(--accent-2), var(--accent-1));
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.barya-mark {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
 }
-.brand-title { margin: 0; font-weight: 700; }
-.brand-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 0.8rem; }
+.barya-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.barya-wordmark {
+  min-width: 0;
+}
+.barya-brand-name {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 1.08rem;
+  color: #06153d;
+  line-height: 1.05;
+}
+.barya-brand-tag {
+  margin: 2px 0 0;
+  color: #7d889f;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.barya-wordmark-sidebar .barya-brand-name {
+  font-size: 1rem;
+}
+.barya-wordmark-sidebar .barya-brand-tag {
+  font-size: 0.76rem;
+}
 
 .nav { display: flex; flex-direction: column; gap: 10px; overflow: auto; }
 .nav-link {
@@ -126,29 +148,16 @@ body {
   gap: 12px;
   margin-bottom: 14px;
 }
-.topbar-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.26);
-  flex: 0 0 auto;
+.topbar-brand-block .barya-mark {
+  width: 56px;
+  height: 56px;
 }
-.topbar-logo svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+.topbar-brand-block .barya-brand-name {
+  font-size: 1.65rem;
+  color: #071743;
 }
-.topbar-brand-name {
-  margin: 0;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #1f356a;
-}
-.topbar-brand-tag {
-  margin: 1px 0 0;
-  color: var(--muted);
-  font-size: 0.84rem;
+.topbar-brand-block .barya-brand-tag {
+  font-size: 0.94rem;
 }
 .topbar h1 {
   margin: 8px 0;
@@ -517,12 +526,13 @@ body {
     margin-bottom: 10px;
     gap: 10px;
   }
-  .topbar-logo {
+  .topbar-brand-block .barya-mark {
     width: 42px;
     height: 42px;
   }
-  .topbar-brand-name { font-size: 0.98rem; }
-  .topbar-brand-tag { font-size: 0.78rem; }
+  .topbar-brand-block .barya-wordmark {
+    display: none;
+  }
   .topbar h1 { font-size: 1.35rem; }
 
   .stats { grid-template-columns: 1fr; }
