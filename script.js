@@ -11,6 +11,7 @@ const MOTIVATIONAL_QUOTES = [
   '“The way to get started is to quit talking and begin doing.” — Walt Disney',
   '“Opportunities do not happen. You create them.” — Chris Grosser'
 ];
+const DEFAULT_GOAL = 'build-emergency-fund';
 
 const CURRENCY_CONFIG = {
   INR: { locale: 'en-IN', symbol: '₹' },
@@ -118,6 +119,14 @@ const TRANSLATIONS = {
     chartExpense: 'Ausgaben',
     chartSavings: 'Ersparnisse'
   }
+};
+
+const GOAL_OPTIONS = {
+  'build-emergency-fund': 'Build an emergency fund',
+  'increase-monthly-savings': 'Increase monthly savings',
+  'grow-business-revenue': 'Grow business revenue',
+  'reduce-expenses': 'Reduce monthly expenses',
+  custom: 'Custom goal'
 };
 
 const IDEA_LIBRARY = [
@@ -290,8 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadState() {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const hasLegacyGoal = Boolean(parsed.goal) && !parsed.selectedGoal;
     return {
+      profileName: parsed.profileName || '',
       goal: parsed.goal || '',
+      selectedGoal: hasLegacyGoal ? 'custom' : (parsed.selectedGoal || DEFAULT_GOAL),
       monthlyTarget: Number(parsed.monthlyTarget || 0),
       proactiveTips: parsed.proactiveTips !== undefined ? Boolean(parsed.proactiveTips) : true,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
@@ -302,7 +314,9 @@ function loadState() {
     };
   } catch {
     return {
+      profileName: '',
       goal: '',
+      selectedGoal: DEFAULT_GOAL,
       monthlyTarget: 0,
       proactiveTips: true,
       transactions: [],
@@ -354,8 +368,7 @@ function cacheRefs() {
   refs.txnAmount = document.getElementById('txn-amount');
   refs.txnType = document.getElementById('txn-type');
   refs.txnCategoryField = document.getElementById('txn-category-field');
-  refs.txnCategory = document.getElementById('txn-category');
-  refs.txnCategoryChips = [...document.querySelectorAll('.category-chip')];
+  refs.txnCategoryInputs = [...document.querySelectorAll('input[name="txn-category"]')];
 
   refs.chartList = document.getElementById('chart-list');
   refs.recentList = document.getElementById('recent-list');
@@ -384,13 +397,19 @@ function cacheRefs() {
   refs.ideaBox = document.getElementById('idea-box');
 
   refs.settingsForm = document.getElementById('settings-form');
+  refs.nameInput = document.getElementById('name-input');
+  refs.goalSelect = document.getElementById('goal-select');
+  refs.goalInputWrap = document.getElementById('goal-input-wrap');
   refs.goalInput = document.getElementById('goal-input');
   refs.targetInput = document.getElementById('target-input');
+  refs.settingsLanguageSelect = document.getElementById('settings-language-select');
+  refs.settingsCurrencySelect = document.getElementById('settings-currency-select');
   refs.txnAmountLabel = document.getElementById('txn-amount-label');
   refs.recAmountLabel = document.getElementById('rec-amount-label');
   refs.targetLabel = document.getElementById('target-label');
   refs.tipsToggle = document.getElementById('tips-toggle');
   refs.settingsFeedback = document.getElementById('settings-feedback');
+  refs.resetDataButton = document.getElementById('reset-data-button');
 
   refs.sidebarOpen = document.getElementById('sidebar-open');
   refs.sidebarClose = document.getElementById('sidebar-close');
@@ -428,10 +447,11 @@ function bindEvents() {
   refs.sidebarClose.addEventListener('click', () => refs.sidebar.classList.remove('open'));
   refs.languageSelect.addEventListener('change', onLanguageChange);
   refs.currencySelect.addEventListener('change', onCurrencyChange);
+  refs.settingsLanguageSelect.addEventListener('change', onLanguageChange);
+  refs.settingsCurrencySelect.addEventListener('change', onCurrencyChange);
+  refs.goalSelect.addEventListener('change', onGoalSelectionChange);
+  refs.resetDataButton.addEventListener('click', onResetData);
   refs.txnType.addEventListener('change', onTransactionTypeChange);
-  refs.txnCategoryChips.forEach((chip) => {
-    chip.addEventListener('click', () => setTransactionCategory(chip.dataset.category || 'Other'));
-  });
   refs.jumpDashboard.addEventListener('click', () => {
     showTab('dashboard');
     refs.sidebar.classList.remove('open');
@@ -458,6 +478,12 @@ function onCurrencyChange(event) {
   renderAll();
 }
 
+function onGoalSelectionChange(event) {
+  state.selectedGoal = event.target.value in GOAL_OPTIONS ? event.target.value : DEFAULT_GOAL;
+  if (state.selectedGoal !== 'custom') state.goal = GOAL_OPTIONS[state.selectedGoal];
+  updateGoalInputVisibility();
+}
+
 function t(key) {
   return (TRANSLATIONS[state.language] && TRANSLATIONS[state.language][key]) || TRANSLATIONS.en[key] || key;
 }
@@ -482,10 +508,11 @@ function onAddTransaction(event) {
   const label = refs.txnLabel.value.trim();
   const amount = Number(refs.txnAmount.value);
   const type = refs.txnType.value;
-  const category = refs.txnCategory.value;
+  const category = getSelectedTransactionCategory();
 
   if (!label) return showTemporaryMessage(refs.insightBox, 'Transaction label is required.');
   if (!Number.isFinite(amount) || amount <= 0) return showTemporaryMessage(refs.insightBox, 'Enter a valid amount greater than zero.');
+  if (type === 'expense' && !category) return showTemporaryMessage(refs.insightBox, 'Please choose an expense category.');
 
   state.transactions.unshift({
     id: crypto.randomUUID(),
@@ -631,17 +658,41 @@ function createAssistantResponse(prompt, totals) {
 
 function onSaveSettings(event) {
   event.preventDefault();
-  state.goal = refs.goalInput.value.trim();
+  state.profileName = refs.nameInput.value.trim();
+  state.selectedGoal = refs.goalSelect.value in GOAL_OPTIONS ? refs.goalSelect.value : DEFAULT_GOAL;
+  state.goal = state.selectedGoal === 'custom' ? refs.goalInput.value.trim() : GOAL_OPTIONS[state.selectedGoal];
   state.monthlyTarget = Number(refs.targetInput.value) || 0;
   state.proactiveTips = refs.tipsToggle.checked;
+  state.language = refs.settingsLanguageSelect.value || DEFAULT_LANGUAGE;
+  state.currency = refs.settingsCurrencySelect.value || DEFAULT_CURRENCY;
   saveState();
   renderHeader();
-  renderInsights();
-  refs.settingsFeedback.textContent = 'Settings saved successfully. AI guidance is now updated.';
+  renderAll();
+  refs.settingsFeedback.textContent = 'Profile and preferences saved. Your workspace is now personalized.';
+}
+
+function onResetData() {
+  state.profileName = '';
+  state.goal = '';
+  state.selectedGoal = DEFAULT_GOAL;
+  state.monthlyTarget = 0;
+  state.proactiveTips = true;
+  state.transactions = [];
+  state.recurring = [];
+  state.selectedPlan = '';
+  state.language = DEFAULT_LANGUAGE;
+  state.currency = DEFAULT_CURRENCY;
+  saveState();
+  refs.settingsForm.reset();
+  setTransactionCategory('Food');
+  onTransactionTypeChange();
+  renderHeader();
+  renderAll();
+  refs.settingsFeedback.textContent = 'All local data has been reset. You can set up your profile again.';
 }
 
 function generatePlan(type) {
-  const goalText = state.goal || 'start with a simple plan and first paying customer';
+  const goalText = getSelectedGoalText() || 'start with a simple plan and first paying customer';
   toggleIdeaValidator(false);
   setActivePlanButtons(type);
 
@@ -969,7 +1020,8 @@ function renderHeader() {
   refs.dateChip.textContent = now.toLocaleDateString(currencyConfig.locale, { day: '2-digit', month: 'short', year: 'numeric' });
 
   const h = now.getHours();
-  refs.greeting.textContent = h < 12 ? t('greetingMorning') : h < 17 ? t('greetingAfternoon') : t('greetingEvening');
+  const greetingText = h < 12 ? t('greetingMorning') : h < 17 ? t('greetingAfternoon') : t('greetingEvening');
+  refs.greeting.textContent = state.profileName ? `${greetingText.split(' 👋')[0]}, ${state.profileName} 👋` : greetingText;
 
   refs.appTitle.textContent = t('appTitle');
   refs.appSubtitle.textContent = t('appSubtitle');
@@ -987,14 +1039,29 @@ function renderHeader() {
   refs.targetLabel.textContent = `${t('targetLabel')} (${currencyConfig.symbol})`;
   refs.languageSelect.value = state.language;
   refs.currencySelect.value = state.currency;
+  refs.settingsLanguageSelect.value = state.language;
+  refs.settingsCurrencySelect.value = state.currency;
 
-  const goal = state.goal || t('notSet');
+  const goal = getSelectedGoalText() || t('notSet');
   refs.goalBadge.textContent = `${t('goalPrefix')}: ${goal}`;
   refs.goalStatus.textContent = goal;
 
-  refs.goalInput.value = state.goal;
+  refs.nameInput.value = state.profileName;
+  refs.goalSelect.value = state.selectedGoal in GOAL_OPTIONS ? state.selectedGoal : DEFAULT_GOAL;
+  refs.goalInput.value = state.selectedGoal === 'custom' ? state.goal : '';
+  updateGoalInputVisibility();
   refs.targetInput.value = state.monthlyTarget || '';
   refs.tipsToggle.checked = state.proactiveTips;
+}
+
+function getSelectedGoalText() {
+  if (state.selectedGoal === 'custom') return state.goal;
+  return GOAL_OPTIONS[state.selectedGoal] || state.goal;
+}
+
+function updateGoalInputVisibility() {
+  const isCustomGoal = refs.goalSelect.value === 'custom';
+  refs.goalInputWrap.classList.toggle('hidden', !isCustomGoal);
 }
 
 function renderChart(totals) {
@@ -1100,12 +1167,14 @@ function renderTransactionItem(item) {
 }
 
 function setTransactionCategory(category) {
-  refs.txnCategory.value = category;
-  refs.txnCategoryChips.forEach((chip) => {
-    const selected = chip.dataset.category === category;
-    chip.classList.toggle('selected', selected);
-    chip.setAttribute('aria-pressed', String(selected));
+  refs.txnCategoryInputs.forEach((input) => {
+    input.checked = input.value === category;
   });
+}
+
+function getSelectedTransactionCategory() {
+  const selectedInput = refs.txnCategoryInputs.find((input) => input.checked);
+  return selectedInput ? selectedInput.value : '';
 }
 
 function onTransactionTypeChange() {
