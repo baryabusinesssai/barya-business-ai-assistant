@@ -1,7 +1,241 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Barya’s | Business AI Assistant</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"></head><body>
-<header class="site-header"><nav class="container nav"><a href="index.html" class="brand"><span class="brand-mark">B</span><span>Barya’s</span></a><button class="menu-toggle" aria-expanded="false">Menu</button><div class="nav-links"><a href="#features">Features</a><a href="#preview">Preview</a><a href="#about">About</a><a href="login.html" class="btn btn-soft">Login</a><a href="signup.html" class="btn btn-primary">Get Started</a></div></nav></header>
-<main>
-<section class="section hero"><div class="container hero-grid"><div><p class="eyebrow">Founder: Shruti Barya</p><h1>Barya Business AI Assistant</h1><p class="lead">Track money, learn with AI guidance, and grow with confidence. Every page below now follows this exact premium dark glass identity.</p><div class="hero-actions"><a class="btn btn-primary" href="dashboard.html">Open Dashboard</a><a class="btn btn-soft" href="financial-tracking.html">Financial Tracking</a></div><div class="hero-trust"><span>Dark premium theme</span><span>Glassmorphism</span><span>Modern SaaS polish</span></div></div><aside class="glass preview"><p class="eyebrow">Unified Product Preview</p><div class="preview-grid"><div class="mini-card"><small>Business Health</small><h3>89/100</h3></div><div class="mini-card"><small>Weekly Goal</small><h3>76%</h3></div><div class="mini-card"><small>AI Insight</small><p>Cut logistics spend by 8%.</p></div><div class="mini-card"><small>Transactions</small><p>34 this week</p></div></div></aside></div></section>
-<section id="features" class="section"><div class="container"><p class="eyebrow">Internal Pages</p><div class="feature-grid"><a class="card feature-card" href="dashboard.html">Dashboard</a><a class="card feature-card" href="financial-tracking.html">Financial Tracking</a><a class="card feature-card" href="ai-guidance.html">AI Guidance</a><a class="card feature-card" href="smart-insights.html">Smart Insights</a><a class="card feature-card" href="business-ideas.html">Business Ideas</a><a class="card feature-card" href="profile.html">Profile</a><a class="card feature-card" href="settings.html">Settings</a><a class="card feature-card" href="login.html">Login</a><a class="card feature-card" href="signup.html">Signup</a></div></div></section>
-<section id="about" class="section"><div class="container card card-pad"><p class="eyebrow">Brand Mission</p><h2>One consistent design DNA across landing and product.</h2><p style="color:var(--muted)">Barya’s helps beginners and small businesses make smarter financial decisions with AI-backed clarity.</p></div></section>
-</main><footer class="site-footer"><div class="container">© <span id="year"></span> Barya’s — Track. Learn. Grow.</div></footer><script src="landing.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barya | Premium AI Finance Growth Platform</title>
+  <meta name="description" content="Barya helps beginners and small businesses track money, learn finance with AI, and grow with confidence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header" id="home">
+    <nav class="container nav" aria-label="Main navigation">
+      <a href="#home" class="brand" aria-label="Barya home page">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Barya</span>
+      </a>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="menu" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-links" id="menu">
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a href="dashboard.html" class="btn btn-soft">Login</a>
+        <a href="#cta" class="btn btn-primary">Get Started</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section">
+      <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Premium finance + AI assistant</p>
+          <h1>Track money. Learn finance. Build growth with confidence.</h1>
+          <p class="lead">Barya is a premium, beginner-friendly platform that combines financial tracking, AI-powered guidance, and clear growth planning for people and small businesses.</p>
+          <div class="hero-actions">
+            <a href="#cta" class="btn btn-primary">Get Started</a>
+            <a href="dashboard.html" class="btn btn-soft">Login</a>
+          </div>
+          <div class="hero-trust">
+            <span>Beginner-first design</span>
+            <span>Smart AI guidance</span>
+            <span>Action-ready insights</span>
+          </div>
+        </div>
+
+        <aside class="hero-preview card" aria-label="Barya dashboard preview">
+          <div class="preview-top">
+            <div>
+              <p class="mini-label">Barya Workspace</p>
+              <h2>Business Snapshot</h2>
+            </div>
+            <span class="status">Live</span>
+          </div>
+          <div class="preview-stats">
+            <article>
+              <p>Net balance</p>
+              <h3>$42,780</h3>
+            </article>
+            <article>
+              <p>Savings target</p>
+              <h3>86%</h3>
+            </article>
+          </div>
+          <article class="preview-panel">
+            <p>Cash flow trend</p>
+            <div class="bars" aria-hidden="true">
+              <span style="--h: 30%"></span>
+              <span style="--h: 55%"></span>
+              <span style="--h: 48%"></span>
+              <span style="--h: 68%"></span>
+              <span style="--h: 85%"></span>
+            </div>
+          </article>
+          <article class="preview-panel preview-ai">
+            <p>AI guidance</p>
+            <small>“Reduce non-essential expenses by 9% to improve monthly growth margin.”</small>
+          </article>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section surface" id="features">
+      <div class="container">
+        <div class="section-title">
+          <p class="eyebrow">Core features</p>
+          <h2>Everything you need to manage, understand, and grow</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="card feature-card">
+            <div class="icon">📈</div>
+            <h3>Financial Tracking</h3>
+            <p>Track income, expenses, and savings in one clean view with helpful trend summaries.</p>
+          </article>
+          <article class="card feature-card">
+            <div class="icon">🤖</div>
+            <h3>AI Guidance</h3>
+            <p>Get simple, step-by-step recommendations tailored for beginners and growing businesses.</p>
+          </article>
+          <article class="card feature-card">
+            <div class="icon">✨</div>
+            <h3>Smart Insights</h3>
+            <p>Turn your data into practical weekly insights you can use to make better decisions.</p>
+          </article>
+          <article class="card feature-card">
+            <div class="icon">🧭</div>
+            <h3>Business Planning</h3>
+            <p>Set goals, organize priorities, and follow a clear roadmap for healthier growth.</p>
+          </article>
+          <article class="card feature-card">
+            <div class="icon">💡</div>
+            <h3>Idea Generator</h3>
+            <p>Discover practical business ideas aligned with your budget, skills, and long-term vision.</p>
+          </article>
+          <article class="card feature-card">
+            <div class="icon">🌱</div>
+            <h3>Beginner-Friendly Experience</h3>
+            <p>Designed to stay clear and supportive, so you can learn confidently without confusion.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="why-barya">
+      <div class="container why-layout">
+        <div>
+          <p class="eyebrow">Why Barya</p>
+          <h2>A modern platform built for real beginners and real progress</h2>
+          <p class="why-intro">Barya combines finance + AI + growth into one clear product. It removes confusion, builds better habits, and helps you move step by step with confidence.</p>
+        </div>
+        <div class="why-grid">
+          <article class="card why-card"><h3>Built for beginners</h3><p>No jargon-heavy workflows. Just guided actions that are easy to follow.</p></article>
+          <article class="card why-card"><h3>Simple, not confusing</h3><p>Focused interface, clear language, and recommendations that are easy to act on.</p></article>
+          <article class="card why-card"><h3>Finance + AI + growth</h3><p>Track money, understand insights, and build your next growth steps in one place.</p></article>
+          <article class="card why-card"><h3>Step-by-step momentum</h3><p>Build strong habits with milestones, progress signals, and consistent guidance.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section surface" id="product-preview">
+      <div class="container section-title">
+        <p class="eyebrow">Product preview</p>
+        <h2>A polished product experience from first click to daily workflow</h2>
+      </div>
+      <div class="container preview-grid">
+        <article class="card showcase-card">
+          <h3>Unified dashboard</h3>
+          <p>Monitor balances, goals, and growth metrics together in one premium workspace.</p>
+          <div class="showcase-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        </article>
+        <article class="card showcase-card">
+          <h3>AI co-pilot</h3>
+          <p>Ask questions and receive practical guidance for budgeting, planning, and scaling.</p>
+          <div class="showcase-rings" aria-hidden="true"><span></span><span></span></div>
+        </article>
+        <article class="card showcase-card">
+          <h3>Growth actions</h3>
+          <p>Convert insights into actionable tasks with clear deadlines and measurable outcomes.</p>
+          <div class="showcase-check" aria-hidden="true"><span></span><span></span><span></span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="container about-wrap card">
+        <p class="eyebrow">About Barya</p>
+        <h2>Mission-driven innovation for people and small businesses</h2>
+        <p><strong>Founder:</strong> Shruti Barya</p>
+        <p>Our mission is to help people, beginners, and small businesses grow with AI and better financial understanding so they can make smarter decisions and build a stronger future.</p>
+      </div>
+    </section>
+
+    <section class="section surface" id="contact">
+      <div class="container contact-layout">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2>Let’s collaborate and build something meaningful</h2>
+          <p>We welcome feedback, collaboration, and ideas. Reach out anytime at <a href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a>.</p>
+        </div>
+        <form class="card contact-form" action="#" method="post" onsubmit="return false" aria-label="Contact form">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" placeholder="Your full name">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="4" placeholder="Tell us about your project or feedback"></textarea>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section" id="cta">
+      <div class="container cta card">
+        <p class="eyebrow">Ready to start with Barya?</p>
+        <h2>Track. Learn. Grow.</h2>
+        <p>Join Barya and build your financial confidence with a premium AI-guided experience.</p>
+        <a href="dashboard.html" class="btn btn-primary">Get Started</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>Barya</h3>
+        <p>Premium SaaS platform helping beginners and small businesses track money, learn finance, and grow with AI confidence.</p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Legal</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">© <span id="year"></span> Barya. All rights reserved.</p>
+  </footer>
+
+  <script src="landing.js"></script>
+</body>
+</html>
