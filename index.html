@@ -89,6 +89,7 @@
         <button data-tab="dashboard" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="dashboard">Dashboard</button>
         <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="businessAdvisor">Business Advisor</button>
         <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="ideaGenerator">Idea Generator</button>
+        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Business Planning</button>
         <button data-tab="profile" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="settings">Settings</button>
       </nav>
     </header>
@@ -268,6 +269,29 @@
         </article>
       </section>
 
+      <section id="panel-planning" class="panel hidden">
+        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
+              <h2 class="font-semibold text-2xl mt-2">Startup Guides</h2>
+              <p class="text-slate-300 mt-2 max-w-3xl">A beginner-friendly business learning toolkit with practical templates and detailed guidance.</p>
+            </div>
+            <div class="soft-card rounded-2xl px-4 py-3">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
+              <p class="font-semibold mt-1">4 Core Guides</p>
+            </div>
+          </div>
+
+          <div id="startupGuideCards" class="mt-6 grid md:grid-cols-2 gap-4"></div>
+
+          <div class="mt-6 border border-slate-800/80 rounded-2xl p-4 md:p-5 bg-slate-950/40">
+            <div class="flex flex-wrap items-center gap-2" id="guideSwitcher"></div>
+            <div id="guideDetail" class="mt-5 space-y-5"></div>
+          </div>
+        </article>
+      </section>
+
       <section id="panel-profile" class="panel hidden">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div>
@@ -328,7 +352,8 @@
       settings: 'barya_settings',
       monthlyIncome: 'barya_monthlyIncome',
       expenses: 'barya_expenses',
-      recurringExpenses: 'barya_recurringExpenses'
+      recurringExpenses: 'barya_recurringExpenses',
+      startupGuides: 'barya_startup_guides_v1'
     };
 
     const CURRENCIES = [
@@ -410,7 +435,8 @@
       chats: JSON.parse(localStorage.getItem(KEYS.chats) || '{}'),
       memories: JSON.parse(localStorage.getItem(KEYS.memories) || '{}'),
       workspace: JSON.parse(localStorage.getItem(KEYS.workspace) || '{}'),
-      faq: JSON.parse(localStorage.getItem(KEYS.faq) || '{}')
+      faq: JSON.parse(localStorage.getItem(KEYS.faq) || '{}'),
+      startupGuides: JSON.parse(localStorage.getItem(KEYS.startupGuides) || '{}')
     };
 
     const $ = (id) => document.getElementById(id);
@@ -428,6 +454,7 @@
       localStorage.setItem(KEYS.memories, JSON.stringify(state.memories));
       localStorage.setItem(KEYS.workspace, JSON.stringify(state.workspace));
       localStorage.setItem(KEYS.faq, JSON.stringify(state.faq));
+      localStorage.setItem(KEYS.startupGuides, JSON.stringify(state.startupGuides));
     }
 
     function getMonthlyIncome() {
@@ -549,6 +576,97 @@
       growthStrategy: ['growth','scale','expand','strategy','acquisition','retention']
     };
 
+    const STARTUP_GUIDES = [
+      {
+        id: 'start-business',
+        title: 'How to Start a Business',
+        summary: 'Follow a clear path from idea to first launch.',
+        steps: [
+          'Define the customer problem and your solution in one sentence.',
+          'Validate demand with at least 10 real customer conversations.',
+          'Build a lean offer and test sales before full development.',
+          'Set a 90-day plan with weekly execution targets.'
+        ],
+        templateFields: [
+          { id: 'businessIdea', label: 'Business idea', type: 'textarea', placeholder: 'Describe your business idea in simple terms.' },
+          { id: 'targetCustomer', label: 'Target customer', type: 'textarea', placeholder: 'Who has this problem and can pay for your solution?' },
+          { id: 'offerMvp', label: 'Minimum viable offer', type: 'textarea', placeholder: 'What is the smallest useful version of your offer?' },
+          { id: 'first90Days', label: 'First 90-day execution plan', type: 'textarea', placeholder: 'List key milestones by month.' }
+        ],
+        ebook: [
+          { heading: 'Foundation', text: 'Most new businesses fail because they build too much before proving demand. Start by identifying one painful and frequent customer problem. Your first offer should solve that single problem clearly.' },
+          { heading: 'Validation', text: 'Run structured interviews, collect patterns, and ask potential buyers what they currently do instead. If they are already spending time or money on alternatives, you likely found real demand.' },
+          { heading: 'Execution', text: 'Launch with a small, focused offer and collect feedback immediately. Improve quickly, document lessons each week, and avoid distractions until you achieve steady early traction.' }
+        ]
+      },
+      {
+        id: 'market-research',
+        title: 'Market Research',
+        summary: 'Understand your market, competitors, and customer behavior.',
+        steps: [
+          'Define the market segment you will serve first.',
+          'Research direct and indirect competitors.',
+          'Identify customer buying triggers and objections.',
+          'Turn research into positioning and pricing decisions.'
+        ],
+        templateFields: [
+          { id: 'segment', label: 'Primary market segment', type: 'input', placeholder: 'Example: Independent fitness coaches in urban areas.' },
+          { id: 'competitors', label: 'Top competitors', type: 'textarea', placeholder: 'List 3-5 competitors and what they do well.' },
+          { id: 'customerNeeds', label: 'Customer needs and pain points', type: 'textarea', placeholder: 'What are the top customer problems and goals?' },
+          { id: 'marketOpportunity', label: 'Opportunity statement', type: 'textarea', placeholder: 'Describe the market gap you can win.' }
+        ],
+        ebook: [
+          { heading: 'Market Clarity', text: 'Good research reduces guesswork. Start narrow. One segment with clear needs gives better insights than a broad audience with mixed behavior.' },
+          { heading: 'Competitor Analysis', text: 'Study competitor offers, messaging, customer reviews, and pricing. Do not copy them directly. Instead, find what customers still complain about and solve that gap better.' },
+          { heading: 'Decision Use', text: 'Market research is only valuable when it guides action. Use findings to improve positioning, pricing, channel strategy, and product priorities.' }
+        ]
+      },
+      {
+        id: 'branding-basics',
+        title: 'Branding Basics',
+        summary: 'Build a clear and consistent brand identity.',
+        steps: [
+          'Define your brand promise and value proposition.',
+          'Choose a consistent tone of voice and personality.',
+          'Create basic visual direction: colors, logo style, and layout.',
+          'Apply brand consistency across website, social media, and sales assets.'
+        ],
+        templateFields: [
+          { id: 'brandPromise', label: 'Brand promise', type: 'input', placeholder: 'What do customers reliably get from your brand?' },
+          { id: 'valueProposition', label: 'Value proposition', type: 'textarea', placeholder: 'Why should customers choose you over alternatives?' },
+          { id: 'brandVoice', label: 'Brand voice guidelines', type: 'textarea', placeholder: 'Describe your tone: professional, friendly, expert, etc.' },
+          { id: 'visualDirection', label: 'Visual direction', type: 'textarea', placeholder: 'Define visual style, color direction, and logo notes.' }
+        ],
+        ebook: [
+          { heading: 'Strategic Branding', text: 'Branding is not only visual design. It is the promise customers associate with your company. Strong brands communicate value quickly and build trust over time.' },
+          { heading: 'Messaging Consistency', text: 'Use the same core message in every touchpoint. Inconsistent language creates confusion and lowers credibility, especially for new businesses.' },
+          { heading: 'Brand Operations', text: 'Document simple brand guidelines early. This helps your team, freelancers, and partners keep communication and design aligned as the business grows.' }
+        ]
+      },
+      {
+        id: 'legal-basics',
+        title: 'Legal Basics',
+        summary: 'Set up legal essentials to reduce risk from day one.',
+        steps: [
+          'Select a business structure with professional legal advice.',
+          'Register your business name and required permits.',
+          'Prepare basic contracts, terms, and privacy documents.',
+          'Set up compliance reminders for taxes and renewals.'
+        ],
+        templateFields: [
+          { id: 'businessStructure', label: 'Planned business structure', type: 'input', placeholder: 'Example: LLC, sole proprietorship, corporation.' },
+          { id: 'licensesNeeded', label: 'Licenses and permits checklist', type: 'textarea', placeholder: 'List required licenses and application steps.' },
+          { id: 'legalDocs', label: 'Required legal documents', type: 'textarea', placeholder: 'Contracts, policy pages, invoices, NDAs, etc.' },
+          { id: 'complianceSchedule', label: 'Compliance schedule', type: 'textarea', placeholder: 'List legal and tax deadlines by month.' }
+        ],
+        ebook: [
+          { heading: 'Risk Prevention', text: 'Legal setup protects the business, the founder, and the customer. Early structure decisions influence taxation, liability, and future fundraising options.' },
+          { heading: 'Documentation', text: 'Use professional contracts and policy documents even at early stage. Clear documentation lowers disputes and creates operational discipline.' },
+          { heading: 'Practical Reminder', text: 'This guide is educational and not legal advice. Always consult a qualified legal professional for jurisdiction-specific requirements.' }
+        ]
+      }
+    ];
+
     function detectIntents(input) {
       const text = input.toLowerCase();
       const scores = Object.entries(intentLexicon).map(([intent, keywords]) => {
@@ -567,6 +685,15 @@
 
     function tokenize(s='') {
       return s.toLowerCase().split(/[^a-z0-9\u00C0-\u017F\u0600-\u06FF\u0900-\u097F\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+/).filter(Boolean);
+    }
+
+    function escapeHtml(value = '') {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function jaccard(a,b) {
@@ -768,6 +895,10 @@
       });
 
       document.querySelectorAll('.tabBtn').forEach(btn => {
+        if (btn.dataset.tab === 'planning') {
+          btn.textContent = 'Business Planning';
+          return;
+        }
         const map = {
           dashboard: 'dashboard',
           chat: 'aiChat',
@@ -860,6 +991,7 @@
       renderFaq();
       renderChat();
       renderDashboard();
+      setupStartupGuides();
       loadWorkspaceToUI();
     }
 
@@ -924,6 +1056,129 @@
       $('autoRecommendations').innerHTML = recs.map(r => `<li>${r}</li>`).join('');
     }
 
+    function ensureStartupGuideState() {
+      const guides = getBucket(state.startupGuides, {});
+      STARTUP_GUIDES.forEach((guide) => {
+        if (!guides[guide.id]) guides[guide.id] = {};
+      });
+      state.startupGuides[uid()] = guides;
+      return guides;
+    }
+
+    function getGuideCompletion(guideId) {
+      const guides = ensureStartupGuideState();
+      const saved = guides[guideId] || {};
+      const guide = STARTUP_GUIDES.find((item) => item.id === guideId);
+      if (!guide) return { filled: 0, total: 0 };
+      const total = guide.templateFields.length;
+      const filled = guide.templateFields.filter((field) => String(saved[field.id] || '').trim().length > 0).length;
+      return { filled, total };
+    }
+
+    function renderStartupGuideCards() {
+      const container = $('startupGuideCards');
+      container.innerHTML = STARTUP_GUIDES.map((guide) => {
+        const progress = getGuideCompletion(guide.id);
+        return `
+          <article class="soft-card rounded-2xl p-4">
+            <h3 class="text-lg font-semibold">${guide.title}</h3>
+            <p class="text-slate-300 text-sm mt-2">${guide.summary}</p>
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">Template Progress</p>
+            <p class="text-sm mt-1">${progress.filled}/${progress.total} fields completed</p>
+            <button data-open-guide="${guide.id}" class="mt-4 w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-2.5 font-medium text-sm">Open Guide</button>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderGuideSwitcher(activeGuideId) {
+      $('guideSwitcher').innerHTML = STARTUP_GUIDES.map((guide) => `
+        <button data-switch-guide="${guide.id}" class="rounded-xl px-3 py-2 text-sm font-medium border ${guide.id === activeGuideId ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-indigo-500'}">
+          ${guide.title}
+        </button>
+      `).join('');
+    }
+
+    function renderGuideDetail(activeGuideId) {
+      const guide = STARTUP_GUIDES.find((item) => item.id === activeGuideId) || STARTUP_GUIDES[0];
+      const saved = ensureStartupGuideState()[guide.id] || {};
+      const detail = $('guideDetail');
+
+      const template = guide.templateFields.map((field) => {
+        if (field.type === 'textarea') {
+          return `
+            <label class="block">
+              <span class="text-sm text-slate-300">${field.label}</span>
+              <textarea data-guide-field="${field.id}" class="mt-1 w-full min-h-24 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400 text-sm" placeholder="${field.placeholder}">${escapeHtml(saved[field.id] || '')}</textarea>
+            </label>
+          `;
+        }
+
+        return `
+          <label class="block">
+            <span class="text-sm text-slate-300">${field.label}</span>
+            <input data-guide-field="${field.id}" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400 text-sm" placeholder="${field.placeholder}" value="${escapeHtml(saved[field.id] || '')}" />
+          </label>
+        `;
+      }).join('');
+
+      detail.innerHTML = `
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+          <div>
+            <p class="text-xs uppercase tracking-[0.22em] text-indigo-300 font-semibold">Structured Guide</p>
+            <h3 class="text-2xl font-semibold mt-2">${guide.title}</h3>
+            <p class="text-slate-300 mt-2">${guide.summary}</p>
+          </div>
+          <p id="guideSaveStatus" class="text-xs text-emerald-300 bg-emerald-400/10 border border-emerald-400/30 rounded-lg px-3 py-2 h-fit">All changes are saved locally</p>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="soft-card rounded-2xl p-4">
+            <p class="text-sm uppercase tracking-[0.2em] text-slate-400">Step-by-step guide</p>
+            <ol class="mt-3 space-y-2 text-sm text-slate-200 list-decimal list-inside">
+              ${guide.steps.map(step => `<li>${step}</li>`).join('')}
+            </ol>
+          </div>
+          <div class="soft-card rounded-2xl p-4">
+            <p class="text-sm uppercase tracking-[0.2em] text-slate-400">Fillable template</p>
+            <div class="mt-3 space-y-3">${template}</div>
+          </div>
+        </div>
+        <div class="soft-card rounded-2xl p-4">
+          <p class="text-sm uppercase tracking-[0.2em] text-slate-400">Extended content view</p>
+          <div class="mt-3 space-y-4 text-sm text-slate-200 leading-relaxed">
+            ${guide.ebook.map(chapter => `
+              <section>
+                <h4 class="font-semibold text-base">${chapter.heading}</h4>
+                <p class="text-slate-300 mt-1">${chapter.text}</p>
+              </section>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function saveGuideField(activeGuideId, fieldId, value) {
+      const guides = ensureStartupGuideState();
+      guides[activeGuideId][fieldId] = value;
+      state.startupGuides[uid()] = guides;
+      persist();
+      renderStartupGuideCards();
+      const status = $('guideSaveStatus');
+      if (!status) return;
+      status.textContent = 'Saved';
+      setTimeout(() => {
+        if ($('guideSaveStatus')) $('guideSaveStatus').textContent = 'All changes are saved locally';
+      }, 900);
+    }
+
+    function setupStartupGuides() {
+      ensureStartupGuideState();
+      state.activeGuideId = STARTUP_GUIDES[0].id;
+      renderStartupGuideCards();
+      renderGuideSwitcher(state.activeGuideId);
+      renderGuideDetail(state.activeGuideId);
+    }
+
     function loadWorkspaceToUI() {
       const ws = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
 
@@ -947,6 +1202,28 @@
         const b = e.target.closest('button[data-tab]');
         if (!b) return;
         setActiveTab(b.dataset.tab);
+      });
+
+      $('startupGuideCards').addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-open-guide]');
+        if (!button) return;
+        state.activeGuideId = button.dataset.openGuide;
+        renderGuideSwitcher(state.activeGuideId);
+        renderGuideDetail(state.activeGuideId);
+      });
+
+      $('guideSwitcher').addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-switch-guide]');
+        if (!button) return;
+        state.activeGuideId = button.dataset.switchGuide;
+        renderGuideSwitcher(state.activeGuideId);
+        renderGuideDetail(state.activeGuideId);
+      });
+
+      $('guideDetail').addEventListener('input', (e) => {
+        const field = e.target.closest('[data-guide-field]');
+        if (!field || !state.activeGuideId) return;
+        saveGuideField(state.activeGuideId, field.dataset.guideField, field.value);
       });
 
       $('startConversationBtn').addEventListener('click', () => {
