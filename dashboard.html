@@ -295,5 +295,251 @@
   </footer>
 
   <script src="script.js" defer></script>
+  <style>
+    .barya-float-ai-btn {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 1200;
+      width: 58px;
+      height: 58px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #5d5fef 0%, #2aa7ff 100%);
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(33, 55, 132, 0.3);
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+
+    .barya-float-ai-btn:hover { transform: translateY(-2px); }
+
+    .barya-float-ai-popup {
+      position: fixed;
+      right: 22px;
+      bottom: 90px;
+      z-index: 1199;
+      width: min(360px, calc(100vw - 24px));
+      height: 480px;
+      border: 1px solid #e3e8ff;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 24px 55px rgba(31, 46, 113, 0.24);
+      display: none;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+    }
+
+    .barya-float-ai-popup.open { display: grid; }
+
+    .barya-float-ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid #eef1ff;
+      background: #f7f9ff;
+    }
+
+    .barya-float-ai-head h4 {
+      margin: 0;
+      font-size: 0.98rem;
+      color: #161a36;
+    }
+
+    .barya-float-ai-close {
+      border: none;
+      background: transparent;
+      color: #5f678b;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .barya-float-ai-messages {
+      padding: 12px;
+      overflow-y: auto;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .barya-float-ai-msg {
+      max-width: 88%;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .barya-float-ai-msg.user {
+      align-self: flex-end;
+      background: #5d5fef;
+      color: #fff;
+    }
+
+    .barya-float-ai-msg.bot {
+      align-self: flex-start;
+      background: #f1f4ff;
+      color: #20254a;
+      border: 1px solid #e4e9ff;
+    }
+
+    .barya-float-ai-form {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #eef1ff;
+      background: #fff;
+    }
+
+    .barya-float-ai-input {
+      flex: 1;
+      border: 1px solid #dce3ff;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.9rem;
+      outline: none;
+      color: #1c2246;
+    }
+
+    .barya-float-ai-input:focus { border-color: #5d5fef; }
+
+    .barya-float-ai-send {
+      border: none;
+      border-radius: 10px;
+      background: #5d5fef;
+      color: #fff;
+      padding: 0 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+
+  <button id="baryaFloatAiBtn" class="barya-float-ai-btn" type="button" aria-label="Open AI assistant">💬</button>
+
+  <aside id="baryaFloatAiPopup" class="barya-float-ai-popup" aria-label="Floating AI assistant" aria-hidden="true">
+    <header class="barya-float-ai-head">
+      <h4>Barya AI Assistant</h4>
+      <button id="baryaFloatAiClose" class="barya-float-ai-close" type="button" aria-label="Close AI assistant">✕</button>
+    </header>
+    <div id="baryaFloatAiMessages" class="barya-float-ai-messages"></div>
+    <form id="baryaFloatAiForm" class="barya-float-ai-form">
+      <input id="baryaFloatAiInput" class="barya-float-ai-input" type="text" maxlength="220" placeholder="Ask about startup, pricing, marketing, finance..." required>
+      <button class="barya-float-ai-send" type="submit">Send</button>
+    </form>
+  </aside>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      const storageKey = 'barya_floating_ai_memory_v1';
+      const button = document.getElementById('baryaFloatAiBtn');
+      const popup = document.getElementById('baryaFloatAiPopup');
+      const close = document.getElementById('baryaFloatAiClose');
+      const messages = document.getElementById('baryaFloatAiMessages');
+      const form = document.getElementById('baryaFloatAiForm');
+      const input = document.getElementById('baryaFloatAiInput');
+
+      const knowledge = {
+        startup: [
+          'Validate your idea quickly with 10-20 customer interviews before building.',
+          'Start with one core problem and launch a simple MVP in 2-4 weeks.',
+          'Track activation, retention, and repeat usage from day one.'
+        ],
+        pricing: [
+          'Use 3 tiers: Starter, Growth, and Pro to anchor value.',
+          'Tie price to outcomes, not only features (time saved, revenue gained).',
+          'Run small pricing tests every month and monitor conversion rate.'
+        ],
+        marketing: [
+          'Pick one main channel first (SEO, short video, or partnerships).',
+          'Publish trust-building content weekly: case studies, tips, and social proof.',
+          'Use a simple funnel: awareness -> lead capture -> nurture -> close.'
+        ],
+        finance: [
+          'Keep at least 6 months of runway for stability.',
+          'Review fixed vs variable costs monthly and cut low-ROI expenses.',
+          'Track cash flow weekly, not just monthly profit.'
+        ]
+      };
+
+      function loadHistory() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (err) {
+          return [];
+        }
+      }
+
+      function saveHistory(history) {
+        localStorage.setItem(storageKey, JSON.stringify(history.slice(-24)));
+      }
+
+      function addMessage(role, text) {
+        const node = document.createElement('div');
+        node.className = 'barya-float-ai-msg ' + role;
+        node.textContent = text;
+        messages.appendChild(node);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function detectTopic(userText) {
+        const text = userText.toLowerCase();
+        if (/startup|founder|mvp|launch|idea|validate/.test(text)) return 'startup';
+        if (/price|pricing|plan|tier|subscription|discount/.test(text)) return 'pricing';
+        if (/market|marketing|seo|content|social|campaign|ads/.test(text)) return 'marketing';
+        if (/finance|cash|budget|profit|loss|expense|income|runway/.test(text)) return 'finance';
+        return null;
+      }
+
+      function aiReply(userText) {
+        const topic = detectTopic(userText);
+        if (!topic) {
+          return 'I can help with startup, pricing, marketing, and finance. Try a question in one of these areas for focused advice.';
+        }
+        return knowledge[topic].map(function (tip, idx) {
+          return (idx + 1) + '. ' + tip;
+        }).join('\n');
+      }
+
+      const history = loadHistory();
+      if (history.length) {
+        history.forEach(function (item) { addMessage(item.role, item.text); });
+      } else {
+        const welcome = 'Hi! I am your business assistant. Ask me about startup, pricing, marketing, or finance.';
+        addMessage('bot', welcome);
+        saveHistory([{ role: 'bot', text: welcome }]);
+      }
+
+      button.addEventListener('click', function () {
+        const isOpen = popup.classList.toggle('open');
+        popup.setAttribute('aria-hidden', String(!isOpen));
+        if (isOpen) input.focus();
+      });
+
+      close.addEventListener('click', function () {
+        popup.classList.remove('open');
+        popup.setAttribute('aria-hidden', 'true');
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const userText = input.value.trim();
+        if (!userText) return;
+
+        addMessage('user', userText);
+        const response = aiReply(userText);
+        addMessage('bot', response);
+        input.value = '';
+
+        const nextHistory = loadHistory();
+        nextHistory.push({ role: 'user', text: userText }, { role: 'bot', text: response });
+        saveHistory(nextHistory);
+      });
+    });
+  </script>
 </body>
 </html>
