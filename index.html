@@ -85,11 +85,11 @@
       </div>
 
       <nav id="tabs" class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-5">
-        <button data-tab="dashboard" class="tabBtn bg-indigo-600 rounded-xl px-3 py-3 font-medium">Dashboard</button>
-        <button data-tab="chat" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium">AI Chat</button>
-        <button data-tab="workspace" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium">Workspace</button>
-        <button data-tab="memory" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium">Memory</button>
-        <button data-tab="profile" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium">Settings</button>
+        <button data-tab="dashboard" class="tabBtn bg-indigo-600 rounded-xl px-3 py-3 font-medium" data-i18n="dashboard">Dashboard</button>
+        <button data-tab="chat" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium" data-i18n="aiAssistant">AI Chat</button>
+        <button data-tab="workspace" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium" data-i18n="businessAdvisor">Business Advisor</button>
+        <button data-tab="memory" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium" data-i18n="ideaGenerator">Idea Generator</button>
+        <button data-tab="profile" class="tabBtn bg-slate-800 rounded-xl px-3 py-3 font-medium" data-i18n="settings">Settings</button>
       </nav>
     </header>
 
@@ -199,7 +199,7 @@
 
           <div class="space-y-3 mt-5">
             <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-            <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium">Save Income</button>
+            <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium" data-i18n="save">Save</button>
 
             <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
               <p class="text-sm font-medium text-slate-200">One-time Expense</p>
@@ -304,6 +304,22 @@
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Identity</p>
             <h2 class="font-semibold text-2xl mt-2" data-i18n="settings">Settings</h2>
+          </div>
+
+          <div class="mt-5 grid md:grid-cols-2 gap-3">
+            <div>
+              <label for="currencySelect" class="text-sm text-slate-300" data-i18n="currency">Currency</label>
+              <select id="currencySelect" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400"></select>
+            </div>
+            <div>
+              <label for="settingsLanguageSelect" class="text-sm text-slate-300" data-i18n="language">Language</label>
+              <select id="settingsLanguageSelect" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400"></select>
+            </div>
+            <div class="md:col-span-2">
+              <label for="goalInput" class="text-sm text-slate-300" data-i18n="goal">Goal</label>
+              <input id="goalInput" placeholder="Set your goal" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" />
+            </div>
+            <button id="saveSettingsBtn" class="bg-indigo-600 hover:bg-indigo-500 rounded-xl py-3 font-medium md:col-span-2" data-i18n="save">Save</button>
           </div>
 
           <form id="profileForm" class="mt-5 grid md:grid-cols-2 gap-3">
@@ -465,25 +481,54 @@
 
     function getCurrencySymbol(currencyCode = state.settings.currency) {
       try {
-        const parts = new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode }).formatToParts(0);
-        return parts.find((p) => p.type === 'currency')?.value || currencyCode;
+        const parts = new Intl.NumberFormat(LANGUAGE_META[state.settings.language]?.locale || 'en-US', {
+          style: 'currency',
+          currency: currencyCode,
+          currencyDisplay: 'narrowSymbol'
+        }).formatToParts(1);
+        return parts.find(p => p.type === 'currency')?.value || currencyCode;
       } catch {
         return currencyCode;
       }
     }
 
-    function formatCurrency(amount = 0) {
-      const value = Number(amount || 0);
+    function formatCurrency(amount, currencyCode = state.settings.currency) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(LANGUAGE_META[state.settings.language]?.locale || 'en-US', {
           style: 'currency',
-          currency: state.settings.currency,
+          currency: currencyCode,
           maximumFractionDigits: 2
-        }).format(value);
+        }).format(Number(amount || 0));
       } catch {
-        const symbol = getCurrencySymbol(state.settings.currency);
-        return `${symbol}${value.toFixed(2)}`;
+        return `${getCurrencySymbol(currencyCode)} ${Number(amount || 0).toFixed(2)}`;
       }
+    }
+
+    function getTranslations() {
+      return TRANSLATIONS[state.settings.language] || TRANSLATIONS.English;
+    }
+
+    function t(key) {
+      const dictionary = getTranslations();
+      return dictionary[key] || TRANSLATIONS.English[key] || key;
+    }
+
+    function saveSettings() {
+      localStorage.setItem('barya_settings', JSON.stringify(state.settings));
+      state.language = state.settings.language;
+      $('languageSelect').value = state.settings.language;
+      $('settingsLanguageSelect').value = state.settings.language;
+      $('currencySelect').value = state.settings.currency;
+      persist();
+    }
+
+    function loadSettings() {
+      const raw = JSON.parse(localStorage.getItem('barya_settings') || '{}');
+      return {
+        currency: raw.currency || 'INR',
+        language: raw.language || 'English',
+        goal: raw.goal || ''
+      };
     }
 
     function getTranslations() {
@@ -993,7 +1038,26 @@
       $('languageSelect').addEventListener('change', e => {
         state.settings.language = e.target.value;
         saveSettings();
-        $('settingsLanguageSelect').value = state.settings.language;
+        applyLanguage();
+      });
+
+      $('settingsLanguageSelect').addEventListener('change', e => {
+        state.settings.language = e.target.value;
+        saveSettings();
+        applyLanguage();
+      });
+
+      $('currencySelect').addEventListener('change', e => {
+        state.settings.currency = e.target.value;
+        saveSettings();
+        renderDashboard();
+      });
+
+      $('saveSettingsBtn').addEventListener('click', () => {
+        state.settings.goal = $('goalInput').value.trim();
+        state.settings.currency = $('currencySelect').value;
+        state.settings.language = $('settingsLanguageSelect').value;
+        saveSettings();
         applyLanguage();
       });
 
@@ -1179,6 +1243,7 @@
       $('settingsLanguageSelect').value = state.settings.language;
       $('currencySelect').value = state.settings.currency;
       $('goalInput').value = state.settings.goal;
+      state.language = state.settings.language;
       applyLanguage();
       setupEvents();
       renderDashboard();
