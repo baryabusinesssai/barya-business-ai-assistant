@@ -144,6 +144,34 @@
 
           <div id="dashboardSummary" class="mt-5 text-slate-300"></div>
 
+          <div id="monthlyOverviewCard" class="soft-card rounded-2xl p-4 mt-4">
+            <p class="text-sm text-slate-400 uppercase tracking-[0.2em]">Monthly Overview</p>
+            <div class="grid md:grid-cols-3 gap-3 mt-3">
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400">Total Income</p>
+                <p class="text-xl font-semibold mt-1" id="overviewIncome">$0.00</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400">Total Expenses</p>
+                <p class="text-xl font-semibold mt-1" id="overviewExpenses">$0.00</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400">Net Savings</p>
+                <p class="text-xl font-semibold mt-1" id="overviewSavings">$0.00</p>
+              </div>
+            </div>
+            <p id="savingsStatus" class="text-sm text-slate-300 mt-3"></p>
+            <p id="topCategoryOutput" class="text-sm text-slate-300 mt-1"></p>
+          </div>
+
+          <div class="soft-card rounded-2xl p-4 mt-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold">Recent Expenses</h3>
+              <span class="text-xs text-slate-400">Last 5 added</span>
+            </div>
+            <ul id="recentExpensesList" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
+          </div>
+
           <div class="grid md:grid-cols-3 gap-3 mt-5">
             <div class="soft-card rounded-2xl p-4">
               <p class="text-sm text-slate-400">System Type</p>
@@ -170,13 +198,31 @@
           <h3 class="font-semibold text-xl mt-2" data-i18n="finance">Finance Intelligence</h3>
 
           <div class="space-y-3 mt-5">
-            <input id="incomeInput" type="number" min="0" placeholder="Monthly income" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-            <input id="expenseInput" type="number" min="0" placeholder="Monthly expense" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-            <button id="saveFinanceBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium" data-i18n="saveFinance">Save Finance</button>
+            <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+            <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium">Save Income</button>
+
+            <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
+              <p class="text-sm font-medium text-slate-200">One-time Expense</p>
+              <input id="expenseCategoryInput" placeholder="Category" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              <input id="expenseAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              <button id="addExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium">Add Expense</button>
+            </div>
+
+            <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
+              <p class="text-sm font-medium text-slate-200">Recurring Expense</p>
+              <input id="recurringCategoryInput" placeholder="Category" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              <input id="recurringAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              <select id="recurringFrequencyInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <button id="addRecurringExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium">Add Recurring Expense</button>
+            </div>
 
             <div class="soft-card rounded-2xl p-4">
-              <p class="text-sm text-slate-400">Profit</p>
-              <p class="text-3xl font-bold mt-1"><span id="profitOutput">0</span></p>
+              <p class="text-sm text-slate-400">Net Savings</p>
+              <p class="text-3xl font-bold mt-1"><span id="profitOutput">$0.00</span></p>
             </div>
 
             <p id="financeInsight" class="text-slate-300 text-sm leading-relaxed"></p>
@@ -279,9 +325,11 @@
       chats: 'barya_chats_v3',
       memories: 'barya_memories_v3',
       workspace: 'barya_workspace_v3',
-      finance: 'barya_finance_v3',
       faq: 'barya_faq_v3',
-      language: 'barya_lang_v3'
+      language: 'barya_lang_v3',
+      monthlyIncome: 'barya_monthlyIncome',
+      expenses: 'barya_expenses',
+      recurringExpenses: 'barya_recurringExpenses'
     };
 
     const LANGS = ['en','hi','es','fr','ar','ko','ja'];
@@ -313,7 +361,6 @@
       chats: JSON.parse(localStorage.getItem(KEYS.chats) || '{}'),
       memories: JSON.parse(localStorage.getItem(KEYS.memories) || '{}'),
       workspace: JSON.parse(localStorage.getItem(KEYS.workspace) || '{}'),
-      finance: JSON.parse(localStorage.getItem(KEYS.finance) || '{}'),
       faq: JSON.parse(localStorage.getItem(KEYS.faq) || '{}')
     };
 
@@ -333,8 +380,19 @@
       localStorage.setItem(KEYS.chats, JSON.stringify(state.chats));
       localStorage.setItem(KEYS.memories, JSON.stringify(state.memories));
       localStorage.setItem(KEYS.workspace, JSON.stringify(state.workspace));
-      localStorage.setItem(KEYS.finance, JSON.stringify(state.finance));
       localStorage.setItem(KEYS.faq, JSON.stringify(state.faq));
+    }
+
+    function getMonthlyIncome() {
+      return Number(localStorage.getItem(KEYS.monthlyIncome) || 0);
+    }
+
+    function getOneTimeExpenses() {
+      return JSON.parse(localStorage.getItem(KEYS.expenses) || '[]');
+    }
+
+    function getRecurringExpenses() {
+      return JSON.parse(localStorage.getItem(KEYS.recurringExpenses) || '[]');
     }
 
     function t(key) {
@@ -428,7 +486,8 @@
     function buildContext(userInput) {
       const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
       const workspace = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
-      const finance = getBucket(state.finance, { income:0, expense:0 });
+      const income = getMonthlyIncome();
+      const totalExpenses = calculateTotalExpenses();
       const relevantMemory = getRelevantMemory(userInput);
 
       return {
@@ -437,7 +496,7 @@
         relevantMemory,
         uploadedFile: { name: workspace.fileName, text: workspace.fileText, summary: workspace.fileSummary },
         uploadedImage: { name: workspace.imageName, note: workspace.imageNote },
-        financialData: { ...finance, profit: Number(finance.income) - Number(finance.expense) }
+        financialData: { income, expense: totalExpenses, profit: income - totalExpenses }
       };
     }
 
@@ -645,11 +704,44 @@
       return await file.text();
     }
 
-    function financeInsight(income, expense) {
-      const profit = income - expense;
-      if (profit < 0) return { profit, message: 'You are operating at a loss. Focus on reducing fixed costs and improving conversion.' };
-      if (profit < income * 0.2) return { profit, message: 'Your margin is positive but still thin. Improve pricing, reduce waste, and strengthen upsells.' };
-      return { profit, message: 'You have a healthy margin. Reinvest carefully into growth experiments and stronger systems.' };
+    function calculateRecurringMonthly() {
+      const recurringExpenses = getRecurringExpenses();
+      return recurringExpenses.reduce((sum, item) => {
+        const amount = Number(item.amount || 0);
+        if (item.frequency === 'weekly') return sum + (amount * 52 / 12);
+        if (item.frequency === 'yearly') return sum + (amount / 12);
+        return sum + amount;
+      }, 0);
+    }
+
+    function calculateTotalExpenses() {
+      const oneTimeTotal = getOneTimeExpenses().reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      return oneTimeTotal + calculateRecurringMonthly();
+    }
+
+    function getTopCategory() {
+      const totals = {};
+      getOneTimeExpenses().forEach(item => {
+        const category = item.category || 'Uncategorized';
+        totals[category] = (totals[category] || 0) + Number(item.amount || 0);
+      });
+      getRecurringExpenses().forEach(item => {
+        const category = item.category || 'Uncategorized';
+        let monthlyAmount = Number(item.amount || 0);
+        if (item.frequency === 'weekly') monthlyAmount = monthlyAmount * 52 / 12;
+        if (item.frequency === 'yearly') monthlyAmount = monthlyAmount / 12;
+        totals[category] = (totals[category] || 0) + monthlyAmount;
+      });
+
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      if (!sorted.length) return null;
+      return { category: sorted[0][0], amount: sorted[0][1] };
+    }
+
+    function getSavingsStatus(savings) {
+      if (savings > 0) return 'Good: You are saving money';
+      if (savings === 0) return 'Balanced: No savings';
+      return 'Warning: Expenses exceed income';
     }
 
     function register(name, email, password) {
@@ -690,13 +782,10 @@
       $('loggedInAs').textContent = `${state.currentUser.name} (${state.currentUser.email})`;
 
       const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
-      const fin = getBucket(state.finance, { income:0, expense:0 });
-
       $('businessTypeInput').value = profile.businessType;
       $('audienceInput').value = profile.audience;
       $('preferenceInput').value = profile.preference;
-      $('incomeInput').value = fin.income;
-      $('expenseInput').value = fin.expense;
+      $('incomeInput').value = getMonthlyIncome() || '';
 
       renderMemory();
       renderFaq();
@@ -729,13 +818,38 @@
     }
 
     function renderDashboard() {
-      const fin = getBucket(state.finance, { income:0, expense:0 });
       const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
-      const insight = financeInsight(Number(fin.income), Number(fin.expense));
+      const income = getMonthlyIncome();
+      const totalExpenses = calculateTotalExpenses();
+      const savings = income - totalExpenses;
+      const topCategory = getTopCategory();
 
-      $('profitOutput').textContent = insight.profit.toFixed(2);
-      $('financeInsight').textContent = insight.message;
+      $('profitOutput').textContent = `$${savings.toFixed(2)}`;
+      $('overviewIncome').textContent = `$${income.toFixed(2)}`;
+      $('overviewExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+      $('overviewSavings').textContent = `$${savings.toFixed(2)}`;
+      $('savingsStatus').textContent = getSavingsStatus(savings);
+      $('topCategoryOutput').textContent = topCategory
+        ? `Top Category: ${topCategory.category} ($${topCategory.amount.toFixed(2)}/month)`
+        : 'Top Category: No expenses yet';
+      $('financeInsight').textContent = savings < 0
+        ? 'You are operating at a loss. Focus on reducing fixed costs and improving conversion.'
+        : 'Track your spending mix and maintain a healthy monthly savings trend.';
       $('dashboardSummary').textContent = `Business: ${profile.businessType || 'Not set'} | Audience: ${profile.audience || 'Not set'} | Communication: ${profile.preference || 'Not set'}`;
+
+      const allExpenses = [
+        ...getOneTimeExpenses().map(item => ({ ...item, type: 'One-time' })),
+        ...getRecurringExpenses().map(item => ({ ...item, type: `Recurring (${item.frequency || 'monthly'})` }))
+      ].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0)).slice(0, 5);
+
+      $('recentExpensesList').innerHTML = allExpenses.length
+        ? allExpenses.map(item => `
+          <li class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+            <p class="font-medium">${item.category || 'Uncategorized'} <span class="text-xs text-slate-400">• ${item.type}</span></p>
+            <p class="text-slate-300">$${Number(item.amount || 0).toFixed(2)} • ${new Date(item.date || item.createdAt).toLocaleDateString()}</p>
+          </li>
+        `).join('')
+        : '<li class="text-slate-400">No expenses added yet.</li>';
 
       const recs = recommendationEngine(buildContext('dashboard'), detectIntents('growth finance marketing'));
       $('autoRecommendations').innerHTML = recs.map(r => `<li>${r}</li>`).join('');
@@ -810,12 +924,47 @@
         renderMemory();
       });
 
-      $('saveFinanceBtn').addEventListener('click', () => {
-        state.finance[uid()] = {
-          income: Number($('incomeInput').value || 0),
-          expense: Number($('expenseInput').value || 0)
-        };
-        persist();
+      $('saveIncomeBtn').addEventListener('click', () => {
+        localStorage.setItem(KEYS.monthlyIncome, String(Number($('incomeInput').value || 0)));
+        renderDashboard();
+      });
+
+      $('addExpenseBtn').addEventListener('click', () => {
+        const category = $('expenseCategoryInput').value.trim() || 'Uncategorized';
+        const amount = Number($('expenseAmountInput').value || 0);
+        if (amount <= 0) return;
+
+        const expenses = getOneTimeExpenses();
+        expenses.unshift({
+          category,
+          amount,
+          date: new Date().toISOString(),
+          createdAt: Date.now()
+        });
+        localStorage.setItem(KEYS.expenses, JSON.stringify(expenses));
+        $('expenseCategoryInput').value = '';
+        $('expenseAmountInput').value = '';
+        renderDashboard();
+      });
+
+      $('addRecurringExpenseBtn').addEventListener('click', () => {
+        const category = $('recurringCategoryInput').value.trim() || 'Uncategorized';
+        const amount = Number($('recurringAmountInput').value || 0);
+        const frequency = $('recurringFrequencyInput').value;
+        if (amount <= 0) return;
+
+        const recurringExpenses = getRecurringExpenses();
+        recurringExpenses.unshift({
+          category,
+          amount,
+          frequency,
+          date: new Date().toISOString(),
+          createdAt: Date.now()
+        });
+        localStorage.setItem(KEYS.recurringExpenses, JSON.stringify(recurringExpenses));
+        $('recurringCategoryInput').value = '';
+        $('recurringAmountInput').value = '';
+        $('recurringFrequencyInput').value = 'monthly';
         renderDashboard();
       });
 
@@ -902,6 +1051,7 @@
       $('languageSelect').value = state.language;
       applyLanguage();
       setupEvents();
+      renderDashboard();
       refreshAuthUI();
     }
 
