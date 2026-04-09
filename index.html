@@ -8,23 +8,35 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: light;
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --border-soft: #e5e7eb;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --btn-bg: #111827;
+      --btn-bg-hover: #1f2937;
+      --btn-text: #ffffff;
+      --focus-ring: rgba(17, 24, 39, 0.18);
+    }
+    [data-theme="dark"] {
+      color-scheme: dark;
+    }
     html { scroll-behavior: smooth; }
     body {
-      background:
-        radial-gradient(circle at top left, rgba(99,102,241,.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(168,85,247,.12), transparent 24%),
-        linear-gradient(135deg, #020617 0%, #0f172a 40%, #111827 100%);
+      background: var(--bg-page);
+      color: var(--text-primary);
     }
     .glass {
-      background: rgba(15, 23, 42, 0.68);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
     }
     .soft-card {
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(99, 102, 241, 0.18);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
     }
     .fade-in {
       animation: fadeIn .22s ease;
@@ -38,33 +50,90 @@
       height: 8px;
     }
     .scrollbar-thin::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.35);
+      background: rgba(100, 116, 139, 0.24);
       border-radius: 999px;
     }
     .gradient-text {
-      background: linear-gradient(90deg, #c4b5fd, #93c5fd, #67e8f9);
+      background: linear-gradient(90deg, #111827, #374151, #4b5563);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
     .tabBtn {
-      background: rgba(30, 41, 59, 0.55);
-      color: rgb(203 213 225);
-      border: 1px solid rgba(71, 85, 105, 0.55);
+      background: #ffffff;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-soft);
       transition: all .18s ease;
     }
     .tabBtn:hover {
-      border-color: rgba(129, 140, 248, 0.65);
-      color: #fff;
+      border-color: #9ca3af;
+      color: var(--text-primary);
+      background: #f9fafb;
     }
     .tabBtn.active {
-      background: rgb(79 70 229);
-      border-color: rgba(129, 140, 248, 0.9);
+      background: #111827;
+      border-color: #111827;
       color: #fff;
+    }
+    .bg-indigo-600,
+    .bg-emerald-600,
+    .bg-slate-700,
+    .bg-rose-600 {
+      background: var(--btn-bg) !important;
+      color: var(--btn-text) !important;
+    }
+    .hover\:bg-indigo-500:hover,
+    .hover\:bg-emerald-500:hover,
+    .hover\:bg-slate-600:hover,
+    .hover\:bg-rose-500:hover {
+      background: var(--btn-bg-hover) !important;
+    }
+    .text-slate-100,
+    .text-slate-200,
+    .text-slate-300 {
+      color: var(--text-primary) !important;
+    }
+    .text-slate-400,
+    .text-indigo-200,
+    .text-indigo-300 {
+      color: var(--text-secondary) !important;
+    }
+    .bg-slate-900,
+    .bg-slate-900\/70,
+    .bg-slate-900\/80,
+    .bg-slate-900\/90,
+    .bg-slate-950,
+    .bg-slate-950\/40,
+    .bg-slate-950\/60,
+    .bg-slate-950\/80,
+    .bg-indigo-500\/10,
+    .bg-rose-700\/90 {
+      background: #ffffff !important;
+    }
+    .border-slate-700,
+    .border-slate-800,
+    .border-slate-800\/80,
+    .border-indigo-500\/40,
+    .border-emerald-500\/40,
+    .border-indigo-400\/30,
+    .border-indigo-800\/30,
+    .border-indigo-900\/40 {
+      border-color: var(--border-soft) !important;
+    }
+    input, select, textarea {
+      background: #ffffff !important;
+      border: 1px solid var(--border-soft) !important;
+      color: var(--text-primary) !important;
+      box-shadow: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #9ca3af !important;
+      box-shadow: 0 0 0 4px var(--focus-ring);
     }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen">
+<body class="text-slate-100 min-h-screen" data-theme="light">
   <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
     <header class="glass border border-indigo-900/40 rounded-3xl p-5 md:p-6 shadow-2xl">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
