@@ -61,12 +61,12 @@
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+          <span class="px-3 py-2 rounded-xl text-xs font-medium uppercase tracking-[0.2em] text-indigo-200 bg-indigo-500/10 border border-indigo-400/30">
+            Local Mode
+          </span>
           <select id="languageSelect" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm" aria-label="Language">
           </select>
-          <button id="logoutBtn" class="hidden px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-sm font-medium" data-i18n="logout">
-            Logout
-          </button>
         </div>
       </div>
 
@@ -93,48 +93,14 @@
       </nav>
     </header>
 
-    <section id="authSection" class="grid lg:grid-cols-2 gap-4">
-      <article class="glass rounded-3xl border border-indigo-800/30 p-6">
-        <div class="mb-5">
-          <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Access</p>
-          <h2 class="text-2xl font-semibold mt-2" data-i18n="register">Register</h2>
-          <p class="text-slate-300 mt-2">Create your workspace account to save profile, memory, files, and business conversations.</p>
-        </div>
-
-        <form id="registerForm" class="space-y-3">
-          <input id="regName" required placeholder="Full name" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-          <input id="regEmail" type="email" required placeholder="Email address" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-          <input id="regPassword" type="password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-          <button class="w-full bg-indigo-600 hover:bg-indigo-500 rounded-xl py-3 font-medium" data-i18n="register">Register</button>
-        </form>
-      </article>
-
-      <article class="glass rounded-3xl border border-indigo-800/30 p-6">
-        <div class="mb-5">
-          <p class="text-xs uppercase tracking-[0.25em] text-emerald-300 font-semibold">Welcome Back</p>
-          <h2 class="text-2xl font-semibold mt-2" data-i18n="login">Login</h2>
-          <p class="text-slate-300 mt-2">Continue into your AI-powered business dashboard and saved local workspace.</p>
-        </div>
-
-        <form id="loginForm" class="space-y-3">
-          <input id="loginEmail" type="email" required placeholder="Email address" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" />
-          <input id="loginPassword" type="password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" />
-          <button class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-xl py-3 font-medium" data-i18n="login">Login</button>
-        </form>
-      </article>
-    </section>
-
-    <main id="appSection" class="hidden space-y-5">
+    <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel grid xl:grid-cols-3 gap-4">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Overview</p>
               <h2 class="font-semibold text-2xl mt-2" data-i18n="dashboard">Dashboard</h2>
-              <p class="text-slate-300 mt-2">
-                <span data-i18n="loggedIn">Logged in</span>:
-                <strong id="loggedInAs"></strong>
-              </p>
+              <p class="text-slate-300 mt-2">Guest mode enabled for local-first workspace access.</p>
             </div>
             <div class="soft-card rounded-2xl px-4 py-3">
               <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Workspace Status</p>
@@ -351,8 +317,6 @@
 
   <script>
     const KEYS = {
-      users: 'barya_users_v3',
-      currentUser: 'barya_current_user_v3',
       profiles: 'barya_profiles_v3',
       chats: 'barya_chats_v3',
       memories: 'barya_memories_v3',
@@ -403,18 +367,18 @@
     ];
 
     const TRANSLATIONS = {
-      English: { dashboard:'Dashboard', aiAssistant:'AI Assistant', aiChat:'AI Chat', businessAdvisor:'Business Advisor', ideaGenerator:'Idea Generator', settings:'Settings', monthlyIncome:'Monthly Income', totalExpenses:'Total Expenses', netSavings:'Net Savings', monthlyOverview:'Monthly Overview', recentExpenses:'Recent Expenses', topCategory:'Top Category', savingsStatus:'Savings Status', save:'Save', addExpense:'Add Expense', addRecurringExpense:'Add Recurring Expense', currency:'Currency', language:'Language', goal:'Goal', chat:'AI Chat', memory:'Memory', fileIntelligence:'File Intelligence', profile:'Settings', recommendations:'Recommendations', login:'Login', register:'Register', logout:'Logout', send:'Send', loggedIn:'Logged in', voiceInput:'Voice input', clearChat:'Clear', title:'Barya Business AI', subtitle:'Professional local-first business intelligence without external AI APIs.', saveImageNote:'Save image context', saveProfile:'Save profile', adaptiveLearning:'Adaptive Learning FAQ' },
-      Hindi: { dashboard:'डैशबोर्ड', aiAssistant:'एआई असिस्टेंट', aiChat:'एआई चैट', businessAdvisor:'बिजनेस सलाहकार', ideaGenerator:'आइडिया जनरेटर', settings:'सेटिंग्स', monthlyIncome:'मासिक आय', totalExpenses:'कुल खर्च', netSavings:'शुद्ध बचत', monthlyOverview:'मासिक सारांश', recentExpenses:'हाल के खर्च', topCategory:'टॉप श्रेणी', savingsStatus:'बचत स्थिति', save:'सेव', addExpense:'खर्च जोड़ें', addRecurringExpense:'आवर्ती खर्च जोड़ें', currency:'मुद्रा', language:'भाषा', goal:'लक्ष्य', chat:'एआई चैट', memory:'मेमोरी', fileIntelligence:'फाइल इंटेलिजेंस', profile:'सेटिंग्स', recommendations:'सुझाव', login:'लॉगिन', register:'रजिस्टर', logout:'लॉगआउट', send:'भेजें', loggedIn:'लॉगिन', voiceInput:'वॉइस इनपुट', clearChat:'साफ़', title:'बार्या बिज़नेस एआई', subtitle:'बिना बाहरी AI API के प्रोफेशनल लोकल बिज़नेस इंटेलिजेंस।', saveImageNote:'इमेज संदर्भ सेव करें', saveProfile:'प्रोफ़ाइल सेव करें', adaptiveLearning:'एडैप्टिव FAQ' },
-      Hinglish: { dashboard:'Dashboard', aiAssistant:'AI Assistant', aiChat:'AI Chat', businessAdvisor:'Business Advisor', ideaGenerator:'Idea Generator', settings:'Settings', monthlyIncome:'Mahine ki Income', totalExpenses:'Total Kharcha', netSavings:'Net Bachat', monthlyOverview:'Monthly Overview', recentExpenses:'Recent Expenses', topCategory:'Top Category', savingsStatus:'Savings Status', save:'Save Karo', addExpense:'Expense Add Karo', addRecurringExpense:'Recurring Expense Add Karo', currency:'Currency', language:'Language', goal:'Goal', chat:'AI Chat', memory:'Memory', fileIntelligence:'File Intelligence', profile:'Settings', recommendations:'Recommendations', login:'Login', register:'Register', logout:'Logout', send:'Send', loggedIn:'Logged in', voiceInput:'Voice input', clearChat:'Clear', title:'Barya Business AI', subtitle:'Professional local-first business intelligence without external AI APIs.', saveImageNote:'Image context save karo', saveProfile:'Profile save karo', adaptiveLearning:'Adaptive Learning FAQ' },
-      Korean: { dashboard:'대시보드', aiAssistant:'AI 어시스턴트', aiChat:'AI 채팅', businessAdvisor:'비즈니스 어드바이저', ideaGenerator:'아이디어 생성기', settings:'설정', monthlyIncome:'월수입', totalExpenses:'총지출', netSavings:'순저축', monthlyOverview:'월간 개요', recentExpenses:'최근 지출', topCategory:'최대 카테고리', savingsStatus:'저축 상태', save:'저장', addExpense:'지출 추가', addRecurringExpense:'반복 지출 추가', currency:'통화', language:'언어', goal:'목표', chat:'AI 채팅', memory:'메모리', fileIntelligence:'파일 인텔리전스', profile:'설정', recommendations:'추천', login:'로그인', register:'회원가입', logout:'로그아웃', send:'보내기', loggedIn:'로그인', voiceInput:'음성 입력', clearChat:'지우기', title:'바르야 비즈니스 AI', subtitle:'외부 AI API 없이 로컬 기반의 전문 비즈니스 인텔리전스.', saveImageNote:'이미지 컨텍스트 저장', saveProfile:'프로필 저장', adaptiveLearning:'적응형 FAQ' },
-      Japanese: { dashboard:'ダッシュボード', aiAssistant:'AIアシスタント', aiChat:'AIチャット', businessAdvisor:'ビジネスアドバイザー', ideaGenerator:'アイデアジェネレーター', settings:'設定', monthlyIncome:'月間収入', totalExpenses:'総支出', netSavings:'純貯蓄', monthlyOverview:'月次概要', recentExpenses:'最近の支出', topCategory:'トップカテゴリ', savingsStatus:'貯蓄ステータス', save:'保存', addExpense:'支出を追加', addRecurringExpense:'定期支出を追加', currency:'通貨', language:'言語', goal:'目標', chat:'AIチャット', memory:'メモリ', fileIntelligence:'ファイルインテリジェンス', profile:'設定', recommendations:'推奨', login:'ログイン', register:'登録', logout:'ログアウト', send:'送信', loggedIn:'ログイン中', voiceInput:'音声入力', clearChat:'クリア', title:'Barya ビジネスAI', subtitle:'外部AI APIなしのプロ向けローカルビジネス支援。', saveImageNote:'画像コンテキストを保存', saveProfile:'プロフィールを保存', adaptiveLearning:'学習FAQ' },
-      Chinese: { dashboard:'仪表盘', aiAssistant:'AI 助手', aiChat:'AI 聊天', businessAdvisor:'商业顾问', ideaGenerator:'创意生成器', settings:'设置', monthlyIncome:'月收入', totalExpenses:'总支出', netSavings:'净储蓄', monthlyOverview:'月度概览', recentExpenses:'最近支出', topCategory:'最高类别', savingsStatus:'储蓄状态', save:'保存', addExpense:'添加支出', addRecurringExpense:'添加周期支出', currency:'货币', language:'语言', goal:'目标', chat:'AI 聊天', memory:'记忆', fileIntelligence:'文件智能', profile:'设置', recommendations:'建议', login:'登录', register:'注册', logout:'退出', send:'发送', loggedIn:'已登录', voiceInput:'语音输入', clearChat:'清除', title:'Barya 商业 AI', subtitle:'无需外部 AI API 的本地优先商业智能。', saveImageNote:'保存图像上下文', saveProfile:'保存资料', adaptiveLearning:'自适应 FAQ' },
-      Arabic: { dashboard:'لوحة التحكم', aiAssistant:'مساعد الذكاء الاصطناعي', aiChat:'دردشة الذكاء الاصطناعي', businessAdvisor:'مستشار الأعمال', ideaGenerator:'مولد الأفكار', settings:'الإعدادات', monthlyIncome:'الدخل الشهري', totalExpenses:'إجمالي المصروفات', netSavings:'صافي الادخار', monthlyOverview:'نظرة شهرية', recentExpenses:'المصروفات الأخيرة', topCategory:'أعلى فئة', savingsStatus:'حالة الادخار', save:'حفظ', addExpense:'إضافة مصروف', addRecurringExpense:'إضافة مصروف متكرر', currency:'العملة', language:'اللغة', goal:'الهدف', chat:'دردشة الذكاء', memory:'الذاكرة', fileIntelligence:'ذكاء الملفات', profile:'الإعدادات', recommendations:'التوصيات', login:'دخول', register:'تسجيل', logout:'خروج', send:'إرسال', loggedIn:'مسجل الدخول', voiceInput:'إدخال صوتي', clearChat:'مسح', title:'باريا بزنس AI', subtitle:'ذكاء أعمال احترافي محلي بدون واجهات AI خارجية.', saveImageNote:'حفظ سياق الصورة', saveProfile:'حفظ الملف', adaptiveLearning:'الأسئلة المتكررة' },
-      French: { dashboard:'Tableau de bord', aiAssistant:'Assistant IA', aiChat:'Chat IA', businessAdvisor:'Conseiller Business', ideaGenerator:'Générateur d’idées', settings:'Paramètres', monthlyIncome:'Revenu mensuel', totalExpenses:'Dépenses totales', netSavings:'Épargne nette', monthlyOverview:'Aperçu mensuel', recentExpenses:'Dépenses récentes', topCategory:'Catégorie principale', savingsStatus:'Statut de l’épargne', save:'Enregistrer', addExpense:'Ajouter une dépense', addRecurringExpense:'Ajouter une dépense récurrente', currency:'Devise', language:'Langue', goal:'Objectif', chat:'Chat IA', memory:'Mémoire', fileIntelligence:'Intelligence de fichier', profile:'Paramètres', recommendations:'Recommandations', login:'Connexion', register:'Créer compte', logout:'Déconnexion', send:'Envoyer', loggedIn:'Connecté', voiceInput:'Entrée vocale', clearChat:'Effacer', title:'Barya Business AI', subtitle:'Intelligence métier locale et professionnelle sans API IA externe.', saveImageNote:'Enregistrer le contexte image', saveProfile:'Enregistrer le profil', adaptiveLearning:'FAQ Adaptative' },
-      Spanish: { dashboard:'Panel', aiAssistant:'Asistente IA', aiChat:'Chat IA', businessAdvisor:'Asesor de negocios', ideaGenerator:'Generador de ideas', settings:'Configuración', monthlyIncome:'Ingreso mensual', totalExpenses:'Gastos totales', netSavings:'Ahorro neto', monthlyOverview:'Resumen mensual', recentExpenses:'Gastos recientes', topCategory:'Categoría principal', savingsStatus:'Estado de ahorro', save:'Guardar', addExpense:'Agregar gasto', addRecurringExpense:'Agregar gasto recurrente', currency:'Moneda', language:'Idioma', goal:'Meta', chat:'Chat IA', memory:'Memoria', fileIntelligence:'Inteligencia de archivo', profile:'Configuración', recommendations:'Recomendaciones', login:'Entrar', register:'Registro', logout:'Salir', send:'Enviar', loggedIn:'Sesión', voiceInput:'Entrada de voz', clearChat:'Limpiar', title:'Barya Business AI', subtitle:'Inteligencia empresarial profesional local sin APIs externas.', saveImageNote:'Guardar contexto de imagen', saveProfile:'Guardar perfil', adaptiveLearning:'FAQ Adaptativo' },
-      German: { dashboard:'Dashboard', aiAssistant:'KI-Assistent', aiChat:'KI-Chat', businessAdvisor:'Business-Berater', ideaGenerator:'Ideengenerator', settings:'Einstellungen', monthlyIncome:'Monatliches Einkommen', totalExpenses:'Gesamtausgaben', netSavings:'Nettoersparnis', monthlyOverview:'Monatsübersicht', recentExpenses:'Letzte Ausgaben', topCategory:'Top-Kategorie', savingsStatus:'Sparstatus', save:'Speichern', addExpense:'Ausgabe hinzufügen', addRecurringExpense:'Wiederkehrende Ausgabe hinzufügen', currency:'Währung', language:'Sprache', goal:'Ziel', chat:'KI-Chat', memory:'Speicher', fileIntelligence:'Datei-Intelligenz', profile:'Einstellungen', recommendations:'Empfehlungen', login:'Anmelden', register:'Registrieren', logout:'Abmelden', send:'Senden', loggedIn:'Angemeldet', voiceInput:'Spracheingabe', clearChat:'Leeren', title:'Barya Business AI', subtitle:'Professionelle lokale Business-Intelligence ohne externe KI-APIs.', saveImageNote:'Bildkontext speichern', saveProfile:'Profil speichern', adaptiveLearning:'Adaptives FAQ' },
-      Russian: { dashboard:'Панель', aiAssistant:'ИИ помощник', aiChat:'ИИ чат', businessAdvisor:'Бизнес-консультант', ideaGenerator:'Генератор идей', settings:'Настройки', monthlyIncome:'Месячный доход', totalExpenses:'Общие расходы', netSavings:'Чистые сбережения', monthlyOverview:'Месячный обзор', recentExpenses:'Недавние расходы', topCategory:'Топ категория', savingsStatus:'Статус сбережений', save:'Сохранить', addExpense:'Добавить расход', addRecurringExpense:'Добавить регулярный расход', currency:'Валюта', language:'Язык', goal:'Цель', chat:'ИИ чат', memory:'Память', fileIntelligence:'Аналитика файлов', profile:'Настройки', recommendations:'Рекомендации', login:'Вход', register:'Регистрация', logout:'Выход', send:'Отправить', loggedIn:'Вход выполнен', voiceInput:'Голосовой ввод', clearChat:'Очистить', title:'Barya Business AI', subtitle:'Профессиональная локальная бизнес-аналитика без внешних AI API.', saveImageNote:'Сохранить контекст изображения', saveProfile:'Сохранить профиль', adaptiveLearning:'Адаптивный FAQ' },
-      Portuguese: { dashboard:'Painel', aiAssistant:'Assistente de IA', aiChat:'Chat IA', businessAdvisor:'Consultor de negócios', ideaGenerator:'Gerador de ideias', settings:'Configurações', monthlyIncome:'Renda mensal', totalExpenses:'Despesas totais', netSavings:'Economia líquida', monthlyOverview:'Visão mensal', recentExpenses:'Despesas recentes', topCategory:'Categoria principal', savingsStatus:'Status da economia', save:'Salvar', addExpense:'Adicionar despesa', addRecurringExpense:'Adicionar despesa recorrente', currency:'Moeda', language:'Idioma', goal:'Meta', chat:'Chat IA', memory:'Memória', fileIntelligence:'Inteligência de arquivo', profile:'Configurações', recommendations:'Recomendações', login:'Entrar', register:'Cadastro', logout:'Sair', send:'Enviar', loggedIn:'Conectado', voiceInput:'Entrada por voz', clearChat:'Limpar', title:'Barya Business AI', subtitle:'Inteligência de negócios local e profissional sem APIs externas.', saveImageNote:'Salvar contexto da imagem', saveProfile:'Salvar perfil', adaptiveLearning:'FAQ Adaptativo' }
+      English: { dashboard:'Dashboard', aiAssistant:'AI Assistant', aiChat:'AI Chat', businessAdvisor:'Business Advisor', ideaGenerator:'Idea Generator', settings:'Settings', monthlyIncome:'Monthly Income', totalExpenses:'Total Expenses', netSavings:'Net Savings', monthlyOverview:'Monthly Overview', recentExpenses:'Recent Expenses', topCategory:'Top Category', savingsStatus:'Savings Status', save:'Save', addExpense:'Add Expense', addRecurringExpense:'Add Recurring Expense', currency:'Currency', language:'Language', goal:'Goal', chat:'AI Chat', memory:'Memory', fileIntelligence:'File Intelligence', profile:'Settings', recommendations:'Recommendations', send:'Send', voiceInput:'Voice input', clearChat:'Clear', title:'Barya Business AI', subtitle:'Professional local-first business intelligence without external AI APIs.', saveImageNote:'Save image context', saveProfile:'Save profile', adaptiveLearning:'Adaptive Learning FAQ' },
+      Hindi: { dashboard:'डैशबोर्ड', aiAssistant:'एआई असिस्टेंट', aiChat:'एआई चैट', businessAdvisor:'बिजनेस सलाहकार', ideaGenerator:'आइडिया जनरेटर', settings:'सेटिंग्स', monthlyIncome:'मासिक आय', totalExpenses:'कुल खर्च', netSavings:'शुद्ध बचत', monthlyOverview:'मासिक सारांश', recentExpenses:'हाल के खर्च', topCategory:'टॉप श्रेणी', savingsStatus:'बचत स्थिति', save:'सेव', addExpense:'खर्च जोड़ें', addRecurringExpense:'आवर्ती खर्च जोड़ें', currency:'मुद्रा', language:'भाषा', goal:'लक्ष्य', chat:'एआई चैट', memory:'मेमोरी', fileIntelligence:'फाइल इंटेलिजेंस', profile:'सेटिंग्स', recommendations:'सुझाव', send:'भेजें', voiceInput:'वॉइस इनपुट', clearChat:'साफ़', title:'बार्या बिज़नेस एआई', subtitle:'बिना बाहरी AI API के प्रोफेशनल लोकल बिज़नेस इंटेलिजेंस।', saveImageNote:'इमेज संदर्भ सेव करें', saveProfile:'प्रोफ़ाइल सेव करें', adaptiveLearning:'एडैप्टिव FAQ' },
+      Hinglish: { dashboard:'Dashboard', aiAssistant:'AI Assistant', aiChat:'AI Chat', businessAdvisor:'Business Advisor', ideaGenerator:'Idea Generator', settings:'Settings', monthlyIncome:'Mahine ki Income', totalExpenses:'Total Kharcha', netSavings:'Net Bachat', monthlyOverview:'Monthly Overview', recentExpenses:'Recent Expenses', topCategory:'Top Category', savingsStatus:'Savings Status', save:'Save Karo', addExpense:'Expense Add Karo', addRecurringExpense:'Recurring Expense Add Karo', currency:'Currency', language:'Language', goal:'Goal', chat:'AI Chat', memory:'Memory', fileIntelligence:'File Intelligence', profile:'Settings', recommendations:'Recommendations', send:'Send', voiceInput:'Voice input', clearChat:'Clear', title:'Barya Business AI', subtitle:'Professional local-first business intelligence without external AI APIs.', saveImageNote:'Image context save karo', saveProfile:'Profile save karo', adaptiveLearning:'Adaptive Learning FAQ' },
+      Korean: { dashboard:'대시보드', aiAssistant:'AI 어시스턴트', aiChat:'AI 채팅', businessAdvisor:'비즈니스 어드바이저', ideaGenerator:'아이디어 생성기', settings:'설정', monthlyIncome:'월수입', totalExpenses:'총지출', netSavings:'순저축', monthlyOverview:'월간 개요', recentExpenses:'최근 지출', topCategory:'최대 카테고리', savingsStatus:'저축 상태', save:'저장', addExpense:'지출 추가', addRecurringExpense:'반복 지출 추가', currency:'통화', language:'언어', goal:'목표', chat:'AI 채팅', memory:'메모리', fileIntelligence:'파일 인텔리전스', profile:'설정', recommendations:'추천', send:'보내기', voiceInput:'음성 입력', clearChat:'지우기', title:'바르야 비즈니스 AI', subtitle:'외부 AI API 없이 로컬 기반의 전문 비즈니스 인텔리전스.', saveImageNote:'이미지 컨텍스트 저장', saveProfile:'프로필 저장', adaptiveLearning:'적응형 FAQ' },
+      Japanese: { dashboard:'ダッシュボード', aiAssistant:'AIアシスタント', aiChat:'AIチャット', businessAdvisor:'ビジネスアドバイザー', ideaGenerator:'アイデアジェネレーター', settings:'設定', monthlyIncome:'月間収入', totalExpenses:'総支出', netSavings:'純貯蓄', monthlyOverview:'月次概要', recentExpenses:'最近の支出', topCategory:'トップカテゴリ', savingsStatus:'貯蓄ステータス', save:'保存', addExpense:'支出を追加', addRecurringExpense:'定期支出を追加', currency:'通貨', language:'言語', goal:'目標', chat:'AIチャット', memory:'メモリ', fileIntelligence:'ファイルインテリジェンス', profile:'設定', recommendations:'推奨', send:'送信', voiceInput:'音声入力', clearChat:'クリア', title:'Barya ビジネスAI', subtitle:'外部AI APIなしのプロ向けローカルビジネス支援。', saveImageNote:'画像コンテキストを保存', saveProfile:'プロフィールを保存', adaptiveLearning:'学習FAQ' },
+      Chinese: { dashboard:'仪表盘', aiAssistant:'AI 助手', aiChat:'AI 聊天', businessAdvisor:'商业顾问', ideaGenerator:'创意生成器', settings:'设置', monthlyIncome:'月收入', totalExpenses:'总支出', netSavings:'净储蓄', monthlyOverview:'月度概览', recentExpenses:'最近支出', topCategory:'最高类别', savingsStatus:'储蓄状态', save:'保存', addExpense:'添加支出', addRecurringExpense:'添加周期支出', currency:'货币', language:'语言', goal:'目标', chat:'AI 聊天', memory:'记忆', fileIntelligence:'文件智能', profile:'设置', recommendations:'建议', send:'发送', voiceInput:'语音输入', clearChat:'清除', title:'Barya 商业 AI', subtitle:'无需外部 AI API 的本地优先商业智能。', saveImageNote:'保存图像上下文', saveProfile:'保存资料', adaptiveLearning:'自适应 FAQ' },
+      Arabic: { dashboard:'لوحة التحكم', aiAssistant:'مساعد الذكاء الاصطناعي', aiChat:'دردشة الذكاء الاصطناعي', businessAdvisor:'مستشار الأعمال', ideaGenerator:'مولد الأفكار', settings:'الإعدادات', monthlyIncome:'الدخل الشهري', totalExpenses:'إجمالي المصروفات', netSavings:'صافي الادخار', monthlyOverview:'نظرة شهرية', recentExpenses:'المصروفات الأخيرة', topCategory:'أعلى فئة', savingsStatus:'حالة الادخار', save:'حفظ', addExpense:'إضافة مصروف', addRecurringExpense:'إضافة مصروف متكرر', currency:'العملة', language:'اللغة', goal:'الهدف', chat:'دردشة الذكاء', memory:'الذاكرة', fileIntelligence:'ذكاء الملفات', profile:'الإعدادات', recommendations:'التوصيات', send:'إرسال', voiceInput:'إدخال صوتي', clearChat:'مسح', title:'باريا بزنس AI', subtitle:'ذكاء أعمال احترافي محلي بدون واجهات AI خارجية.', saveImageNote:'حفظ سياق الصورة', saveProfile:'حفظ الملف', adaptiveLearning:'الأسئلة المتكررة' },
+      French: { dashboard:'Tableau de bord', aiAssistant:'Assistant IA', aiChat:'Chat IA', businessAdvisor:'Conseiller Business', ideaGenerator:'Générateur d’idées', settings:'Paramètres', monthlyIncome:'Revenu mensuel', totalExpenses:'Dépenses totales', netSavings:'Épargne nette', monthlyOverview:'Aperçu mensuel', recentExpenses:'Dépenses récentes', topCategory:'Catégorie principale', savingsStatus:'Statut de l’épargne', save:'Enregistrer', addExpense:'Ajouter une dépense', addRecurringExpense:'Ajouter une dépense récurrente', currency:'Devise', language:'Langue', goal:'Objectif', chat:'Chat IA', memory:'Mémoire', fileIntelligence:'Intelligence de fichier', profile:'Paramètres', recommendations:'Recommandations', send:'Envoyer', voiceInput:'Entrée vocale', clearChat:'Effacer', title:'Barya Business AI', subtitle:'Intelligence métier locale et professionnelle sans API IA externe.', saveImageNote:'Enregistrer le contexte image', saveProfile:'Enregistrer le profil', adaptiveLearning:'FAQ Adaptative' },
+      Spanish: { dashboard:'Panel', aiAssistant:'Asistente IA', aiChat:'Chat IA', businessAdvisor:'Asesor de negocios', ideaGenerator:'Generador de ideas', settings:'Configuración', monthlyIncome:'Ingreso mensual', totalExpenses:'Gastos totales', netSavings:'Ahorro neto', monthlyOverview:'Resumen mensual', recentExpenses:'Gastos recientes', topCategory:'Categoría principal', savingsStatus:'Estado de ahorro', save:'Guardar', addExpense:'Agregar gasto', addRecurringExpense:'Agregar gasto recurrente', currency:'Moneda', language:'Idioma', goal:'Meta', chat:'Chat IA', memory:'Memoria', fileIntelligence:'Inteligencia de archivo', profile:'Configuración', recommendations:'Recomendaciones', send:'Enviar', voiceInput:'Entrada de voz', clearChat:'Limpiar', title:'Barya Business AI', subtitle:'Inteligencia empresarial profesional local sin APIs externas.', saveImageNote:'Guardar contexto de imagen', saveProfile:'Guardar perfil', adaptiveLearning:'FAQ Adaptativo' },
+      German: { dashboard:'Dashboard', aiAssistant:'KI-Assistent', aiChat:'KI-Chat', businessAdvisor:'Business-Berater', ideaGenerator:'Ideengenerator', settings:'Einstellungen', monthlyIncome:'Monatliches Einkommen', totalExpenses:'Gesamtausgaben', netSavings:'Nettoersparnis', monthlyOverview:'Monatsübersicht', recentExpenses:'Letzte Ausgaben', topCategory:'Top-Kategorie', savingsStatus:'Sparstatus', save:'Speichern', addExpense:'Ausgabe hinzufügen', addRecurringExpense:'Wiederkehrende Ausgabe hinzufügen', currency:'Währung', language:'Sprache', goal:'Ziel', chat:'KI-Chat', memory:'Speicher', fileIntelligence:'Datei-Intelligenz', profile:'Einstellungen', recommendations:'Empfehlungen', send:'Senden', voiceInput:'Spracheingabe', clearChat:'Leeren', title:'Barya Business AI', subtitle:'Professionelle lokale Business-Intelligence ohne externe KI-APIs.', saveImageNote:'Bildkontext speichern', saveProfile:'Profil speichern', adaptiveLearning:'Adaptives FAQ' },
+      Russian: { dashboard:'Панель', aiAssistant:'ИИ помощник', aiChat:'ИИ чат', businessAdvisor:'Бизнес-консультант', ideaGenerator:'Генератор идей', settings:'Настройки', monthlyIncome:'Месячный доход', totalExpenses:'Общие расходы', netSavings:'Чистые сбережения', monthlyOverview:'Месячный обзор', recentExpenses:'Недавние расходы', topCategory:'Топ категория', savingsStatus:'Статус сбережений', save:'Сохранить', addExpense:'Добавить расход', addRecurringExpense:'Добавить регулярный расход', currency:'Валюта', language:'Язык', goal:'Цель', chat:'ИИ чат', memory:'Память', fileIntelligence:'Аналитика файлов', profile:'Настройки', recommendations:'Рекомендации', send:'Отправить', voiceInput:'Голосовой ввод', clearChat:'Очистить', title:'Barya Business AI', subtitle:'Профессиональная локальная бизнес-аналитика без внешних AI API.', saveImageNote:'Сохранить контекст изображения', saveProfile:'Сохранить профиль', adaptiveLearning:'Адаптивный FAQ' },
+      Portuguese: { dashboard:'Painel', aiAssistant:'Assistente de IA', aiChat:'Chat IA', businessAdvisor:'Consultor de negócios', ideaGenerator:'Gerador de ideias', settings:'Configurações', monthlyIncome:'Renda mensal', totalExpenses:'Despesas totais', netSavings:'Economia líquida', monthlyOverview:'Visão mensal', recentExpenses:'Despesas recentes', topCategory:'Categoria principal', savingsStatus:'Status da economia', save:'Salvar', addExpense:'Adicionar despesa', addRecurringExpense:'Adicionar despesa recorrente', currency:'Moeda', language:'Idioma', goal:'Meta', chat:'Chat IA', memory:'Memória', fileIntelligence:'Inteligência de arquivo', profile:'Configurações', recommendations:'Recomendações', send:'Enviar', voiceInput:'Entrada por voz', clearChat:'Limpar', title:'Barya Business AI', subtitle:'Inteligência de negócios local e profissional sem APIs externas.', saveImageNote:'Salvar contexto da imagem', saveProfile:'Salvar perfil', adaptiveLearning:'FAQ Adaptativo' }
     };
 
     function loadSettings() {
@@ -439,8 +403,6 @@
 
     const state = {
       settings: loadSettings(),
-      currentUser: JSON.parse(localStorage.getItem(KEYS.currentUser) || 'null'),
-      users: JSON.parse(localStorage.getItem(KEYS.users) || '[]'),
       profiles: JSON.parse(localStorage.getItem(KEYS.profiles) || '{}'),
       chats: JSON.parse(localStorage.getItem(KEYS.chats) || '{}'),
       memories: JSON.parse(localStorage.getItem(KEYS.memories) || '{}'),
@@ -449,7 +411,7 @@
     };
 
     const $ = (id) => document.getElementById(id);
-    const uid = () => state.currentUser?.email || 'guest';
+    const uid = () => 'guest';
 
     function getBucket(store, fallback) {
       if (!store[uid()]) store[uid()] = fallback;
@@ -458,8 +420,6 @@
 
     function persist() {
       saveSettings();
-      localStorage.setItem(KEYS.currentUser, JSON.stringify(state.currentUser));
-      localStorage.setItem(KEYS.users, JSON.stringify(state.users));
       localStorage.setItem(KEYS.profiles, JSON.stringify(state.profiles));
       localStorage.setItem(KEYS.chats, JSON.stringify(state.chats));
       localStorage.setItem(KEYS.memories, JSON.stringify(state.memories));
@@ -886,43 +846,7 @@
       return 'Warning: Expenses exceed income';
     }
 
-    function register(name, email, password) {
-      if (state.users.find(u => u.email === email)) {
-        alert('Email already exists.');
-        return;
-      }
-      state.users.push({ name, email, password });
-      persist();
-      alert('Registered successfully. Please login.');
-    }
-
-    function login(email, password) {
-      const user = state.users.find(u => u.email === email && u.password === password);
-      if (!user) {
-        alert('Invalid credentials.');
-        return;
-      }
-      state.currentUser = user;
-      persist();
-      refreshAuthUI();
-    }
-
-    function logout() {
-      state.currentUser = null;
-      persist();
-      refreshAuthUI();
-    }
-
-    function refreshAuthUI() {
-      const loggedIn = !!state.currentUser;
-      $('authSection').classList.toggle('hidden', loggedIn);
-      $('appSection').classList.toggle('hidden', !loggedIn);
-      $('logoutBtn').classList.toggle('hidden', !loggedIn);
-
-      if (!loggedIn) return;
-
-      $('loggedInAs').textContent = `${state.currentUser.name} (${state.currentUser.email})`;
-
+    function initializeWorkspaceUI() {
       const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
       $('businessTypeInput').value = profile.businessType;
       $('audienceInput').value = profile.audience;
@@ -1008,19 +932,6 @@
     }
 
     function setupEvents() {
-      $('registerForm').addEventListener('submit', e => {
-        e.preventDefault();
-        register($('regName').value.trim(), $('regEmail').value.trim(), $('regPassword').value);
-        e.target.reset();
-      });
-
-      $('loginForm').addEventListener('submit', e => {
-        e.preventDefault();
-        login($('loginEmail').value.trim(), $('loginPassword').value);
-      });
-
-      $('logoutBtn').addEventListener('click', logout);
-
       $('tabs').addEventListener('click', e => {
         const b = e.target.closest('button[data-tab]');
         if (!b) return;
@@ -1246,8 +1157,7 @@
       state.language = state.settings.language;
       applyLanguage();
       setupEvents();
-      renderDashboard();
-      refreshAuthUI();
+      initializeWorkspaceUI();
     }
 
     init();
