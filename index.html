@@ -245,6 +245,39 @@
           <p id="imageStatus" class="text-slate-300 text-sm mt-3"></p>
           <img id="imagePreview" class="hidden mt-4 max-h-72 rounded-2xl border border-slate-700" alt="preview" />
         </article>
+
+        <article class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
+              <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
+              <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
+            </div>
+            <div class="soft-card rounded-2xl px-4 py-3">
+              <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Storage</p>
+              <p class="font-semibold mt-1">Local First</p>
+            </div>
+          </div>
+
+          <div id="businessPlanTemplateCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+
+          <div class="soft-card rounded-2xl p-4 mt-5">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
+                <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="businessPlanSaveBtn" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Save Template</button>
+                <button id="businessPlanResetBtn" class="rounded-xl bg-rose-700/90 hover:bg-rose-600 px-4 py-2.5 text-sm font-medium">Clear Template</button>
+              </div>
+            </div>
+
+            <p id="businessPlanStatus" class="text-sm text-slate-300 mt-3">Open a template card to start editing.</p>
+
+            <form id="businessPlanEditorForm" class="mt-4 grid lg:grid-cols-2 gap-3"></form>
+          </div>
+        </article>
       </section>
 
       <section id="panel-memory" class="panel hidden">
@@ -353,8 +386,101 @@
       monthlyIncome: 'barya_monthlyIncome',
       expenses: 'barya_expenses',
       recurringExpenses: 'barya_recurringExpenses',
+      templateLeanCanvas: 'barya_template_lean_canvas_v1',
+      templateFullBusinessPlan: 'barya_template_full_business_plan_v1',
+      templatePitchDeckOutline: 'barya_template_pitch_deck_outline_v1',
+      templateFinancialPlan: 'barya_template_financial_plan_v1',
+      templateMarketingPlan: 'barya_template_marketing_plan_v1'
       startupGuides: 'barya_startup_guides_v1'
     };
+
+    const BUSINESS_PLAN_TEMPLATES = [
+      {
+        id: 'leanCanvas',
+        title: 'Lean Canvas',
+        description: 'One-page strategic model for startups and new ventures.',
+        storageKey: KEYS.templateLeanCanvas,
+        sections: [
+          { id: 'problem', label: 'Problem', placeholder: 'Top 3 customer problems.' },
+          { id: 'customerSegments', label: 'Customer Segments', placeholder: 'Who are your primary and secondary users?' },
+          { id: 'uniqueValue', label: 'Unique Value Proposition', placeholder: 'Why should customers choose you?' },
+          { id: 'solution', label: 'Solution', placeholder: 'How will you solve each problem?' },
+          { id: 'channels', label: 'Channels', placeholder: 'How will you reach customers?' },
+          { id: 'revenueStreams', label: 'Revenue Streams', placeholder: 'How does the business make money?' },
+          { id: 'costStructure', label: 'Cost Structure', placeholder: 'Main fixed and variable costs.' },
+          { id: 'keyMetrics', label: 'Key Metrics', placeholder: 'What numbers define success?' },
+          { id: 'unfairAdvantage', label: 'Unfair Advantage', placeholder: 'What makes your offer hard to copy?' }
+        ]
+      },
+      {
+        id: 'fullBusinessPlan',
+        title: 'Full Business Plan',
+        description: 'Comprehensive plan suitable for investors, lenders, and operators.',
+        storageKey: KEYS.templateFullBusinessPlan,
+        sections: [
+          { id: 'executiveSummary', label: 'Executive Summary', placeholder: 'Summarize mission, offer, market, and goals.' },
+          { id: 'companyDescription', label: 'Company Description', placeholder: 'Company structure, history, and legal setup.' },
+          { id: 'marketAnalysis', label: 'Market Analysis', placeholder: 'Industry trends, TAM/SAM/SOM, competitor insights.' },
+          { id: 'productsServices', label: 'Products & Services', placeholder: 'What are you selling and why it matters.' },
+          { id: 'operationsPlan', label: 'Operations Plan', placeholder: 'Daily operations, suppliers, workflow, technology.' },
+          { id: 'managementTeam', label: 'Management Team', placeholder: 'Leadership strengths, roles, and hiring plan.' },
+          { id: 'goToMarket', label: 'Go-To-Market Strategy', placeholder: 'Sales process, channels, pricing, and conversion funnel.' },
+          { id: 'financialForecast', label: 'Financial Forecast', placeholder: '3-year projections, assumptions, and break-even point.' },
+          { id: 'riskMitigation', label: 'Risk & Mitigation', placeholder: 'Key risks and mitigation plans.' },
+          { id: 'fundingRequest', label: 'Funding Request', placeholder: 'Capital needed, use of funds, and expected outcomes.' }
+        ]
+      },
+      {
+        id: 'pitchDeckOutline',
+        title: 'Pitch Deck Outline',
+        description: 'Investor-ready narrative flow for startup fundraising decks.',
+        storageKey: KEYS.templatePitchDeckOutline,
+        sections: [
+          { id: 'coverSlide', label: 'Cover Slide', placeholder: 'Company name, tagline, and founder contact.' },
+          { id: 'problemSlide', label: 'Problem Slide', placeholder: 'Urgent customer problem with evidence.' },
+          { id: 'solutionSlide', label: 'Solution Slide', placeholder: 'Your product and key differentiators.' },
+          { id: 'marketOpportunity', label: 'Market Opportunity', placeholder: 'Market size and growth potential.' },
+          { id: 'businessModelSlide', label: 'Business Model', placeholder: 'How money is made and pricing logic.' },
+          { id: 'tractionSlide', label: 'Traction', placeholder: 'KPIs, milestones, and validation signals.' },
+          { id: 'competitionSlide', label: 'Competition', placeholder: 'Landscape and your positioning matrix.' },
+          { id: 'teamSlide', label: 'Team', placeholder: 'Why this team is uniquely qualified.' },
+          { id: 'financialSlide', label: 'Financial Highlights', placeholder: 'Revenue forecasts and unit economics snapshot.' },
+          { id: 'askSlide', label: 'The Ask', placeholder: 'Funding ask, runway, and strategic use of capital.' }
+        ]
+      },
+      {
+        id: 'financialPlan',
+        title: 'Financial Plan',
+        description: 'Budgeting and forecasting template for financial control and growth.',
+        storageKey: KEYS.templateFinancialPlan,
+        sections: [
+          { id: 'assumptions', label: 'Core Assumptions', placeholder: 'Pricing, demand, inflation, growth assumptions.' },
+          { id: 'startupCosts', label: 'Startup / Setup Costs', placeholder: 'Initial one-time investments and setup expenses.' },
+          { id: 'monthlyBudget', label: 'Monthly Budget', placeholder: 'Projected monthly income and expense categories.' },
+          { id: 'cashFlowProjection', label: 'Cash Flow Projection', placeholder: 'Expected inflows/outflows for next 12 months.' },
+          { id: 'profitLossPlan', label: 'Profit & Loss Plan', placeholder: 'Revenue, COGS, gross margin, operating expenses.' },
+          { id: 'breakEvenAnalysis', label: 'Break-Even Analysis', placeholder: 'Break-even sales volume and timeframe.' },
+          { id: 'fundingAndCapital', label: 'Funding & Capital Plan', placeholder: 'Debt/equity strategy and repayment or dilution notes.' },
+          { id: 'financialRisks', label: 'Financial Risks', placeholder: 'Financial downside risks and contingency plans.' }
+        ]
+      },
+      {
+        id: 'marketingPlan',
+        title: 'Marketing Plan',
+        description: 'Actionable marketing strategy with audience, channels, and KPIs.',
+        storageKey: KEYS.templateMarketingPlan,
+        sections: [
+          { id: 'targetAudience', label: 'Target Audience', placeholder: 'Primary segments, personas, and needs.' },
+          { id: 'positioningMessaging', label: 'Positioning & Messaging', placeholder: 'Core message, value themes, and proof points.' },
+          { id: 'goalsKpis', label: 'Goals & KPIs', placeholder: 'Campaign goals with measurable KPI targets.' },
+          { id: 'channelStrategy', label: 'Channel Strategy', placeholder: 'Which channels and why (SEO, ads, email, social, partnerships).' },
+          { id: 'contentPlan', label: 'Content Plan', placeholder: 'Content pillars, cadence, and production workflow.' },
+          { id: 'campaignCalendar', label: 'Campaign Calendar', placeholder: 'Quarterly campaign roadmap and launch windows.' },
+          { id: 'budgetAllocation', label: 'Budget Allocation', placeholder: 'Spend by channel and expected return.' },
+          { id: 'measurementOptimization', label: 'Measurement & Optimization', placeholder: 'Reporting cadence and optimization loops.' }
+        ]
+      }
+    ];
 
     const CURRENCIES = [
       { code: 'INR', name: 'Indian Rupee' },
@@ -438,6 +564,8 @@
       faq: JSON.parse(localStorage.getItem(KEYS.faq) || '{}'),
       startupGuides: JSON.parse(localStorage.getItem(KEYS.startupGuides) || '{}')
     };
+    let selectedBusinessTemplateId = BUSINESS_PLAN_TEMPLATES[0].id;
+    let businessTemplateAutoSaveTimer = null;
 
     const $ = (id) => document.getElementById(id);
     const uid = () => 'guest';
@@ -993,6 +1121,99 @@
       renderDashboard();
       setupStartupGuides();
       loadWorkspaceToUI();
+      renderBusinessTemplateCards();
+      renderBusinessTemplateEditor(selectedBusinessTemplateId);
+    }
+
+    function loadBusinessTemplateData(template) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(template.storageKey) || '{}');
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveBusinessTemplateData(template, data) {
+      localStorage.setItem(template.storageKey, JSON.stringify({
+        ...data,
+        updatedAt: new Date().toISOString()
+      }));
+    }
+
+    function getTemplateCompletion(template, data) {
+      const completedCount = template.sections.filter((section) => String(data[section.id] || '').trim().length > 0).length;
+      return { completedCount, totalCount: template.sections.length };
+    }
+
+    function renderBusinessTemplateCards() {
+      const container = $('businessPlanTemplateCards');
+      if (!container) return;
+
+      container.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
+        const data = loadBusinessTemplateData(template);
+        const progress = getTemplateCompletion(template, data);
+        const isSelected = template.id === selectedBusinessTemplateId;
+
+        return `
+          <button
+            type="button"
+            class="business-template-card text-left soft-card rounded-2xl p-4 border ${isSelected ? 'border-indigo-400/80' : 'border-slate-700'} hover:border-indigo-400/70 transition"
+            data-template-id="${template.id}"
+          >
+            <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
+            <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
+            <p class="text-sm text-slate-300 mt-2">${template.description}</p>
+            <p class="text-xs text-cyan-200 mt-3">${progress.completedCount}/${progress.totalCount} sections completed</p>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderBusinessTemplateEditor(templateId) {
+      const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === templateId);
+      if (!template) return;
+
+      const data = loadBusinessTemplateData(template);
+      $('businessPlanEditorHeader').textContent = template.title;
+      $('businessPlanStatus').textContent = data.updatedAt
+        ? `Last saved: ${new Date(data.updatedAt).toLocaleString()}`
+        : 'No saved content yet. Start typing to build your plan.';
+
+      $('businessPlanEditorForm').innerHTML = template.sections.map((section) => `
+        <label class="block bg-slate-950/70 border border-slate-700 rounded-2xl p-3">
+          <span class="text-sm font-medium text-slate-200">${section.label}</span>
+          <textarea
+            data-section-id="${section.id}"
+            rows="4"
+            class="business-template-input mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none focus:border-indigo-400"
+            placeholder="${section.placeholder}"
+          >${data[section.id] || ''}</textarea>
+        </label>
+      `).join('');
+
+      renderBusinessTemplateCards();
+    }
+
+    function collectBusinessTemplateFormData() {
+      const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === selectedBusinessTemplateId);
+      if (!template) return null;
+
+      const data = {};
+      template.sections.forEach((section) => {
+        const input = document.querySelector(`#businessPlanEditorForm [data-section-id="${section.id}"]`);
+        data[section.id] = input ? input.value.trim() : '';
+      });
+      return { template, data };
+    }
+
+    function saveActiveBusinessTemplate(statusMessage = 'Template saved.') {
+      const payload = collectBusinessTemplateFormData();
+      if (!payload) return;
+
+      saveBusinessTemplateData(payload.template, payload.data);
+      $('businessPlanStatus').textContent = `${statusMessage} ${new Date().toLocaleString()}`;
+      renderBusinessTemplateCards();
     }
 
     function renderMemory() {
@@ -1424,6 +1645,32 @@
         state.workspace[uid()] = ws;
         persist();
         loadWorkspaceToUI();
+      });
+
+      $('businessPlanTemplateCards').addEventListener('click', (e) => {
+        const card = e.target.closest('[data-template-id]');
+        if (!card) return;
+        selectedBusinessTemplateId = card.dataset.templateId;
+        renderBusinessTemplateEditor(selectedBusinessTemplateId);
+      });
+
+      $('businessPlanSaveBtn').addEventListener('click', () => {
+        saveActiveBusinessTemplate('Template saved manually.');
+      });
+
+      $('businessPlanResetBtn').addEventListener('click', () => {
+        const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === selectedBusinessTemplateId);
+        if (!template) return;
+        localStorage.removeItem(template.storageKey);
+        $('businessPlanStatus').textContent = `${template.title} was cleared.`;
+        renderBusinessTemplateEditor(selectedBusinessTemplateId);
+      });
+
+      $('businessPlanEditorForm').addEventListener('input', () => {
+        clearTimeout(businessTemplateAutoSaveTimer);
+        businessTemplateAutoSaveTimer = setTimeout(() => {
+          saveActiveBusinessTemplate('Auto-saved.');
+        }, 700);
       });
     }
 
