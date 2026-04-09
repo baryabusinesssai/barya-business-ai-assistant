@@ -3,606 +3,677 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Barya Business AI Assistant</title>
-  <meta name="description" content="Barya Business AI Assistant - premium AI business dashboard with multilingual assistant, memory, uploads, and finance insights." />
+  <title>Barya Business AI</title>
+  <meta name="description" content="Barya Business AI - advanced local AI web app for business strategy without external AI APIs." />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            barya: {
-              bg: '#05060b',
-              card: '#0b1020',
-              card2: '#121a33',
-              indigo: '#6366f1',
-              accent: '#8b5cf6'
-            }
-          },
-          boxShadow: {
-            glow: '0 0 0 1px rgba(99,102,241,.35), 0 20px 40px rgba(2,6,23,.55)'
-          }
-        }
-      }
-    }
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <style>
+    :root { color-scheme: dark; }
+    .glass { backdrop-filter: blur(8px); background: rgba(15, 23, 42, .65); }
+    .fade-in { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-black via-slate-950 to-indigo-950 text-slate-100 min-h-screen">
-  <div class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-    <header class="bg-barya-card/90 border border-indigo-900/60 rounded-2xl p-4 md:p-6 shadow-glow backdrop-blur sticky top-3 z-30">
-      <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+<body class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 py-6 space-y-5">
+    <header class="glass border border-indigo-800/60 rounded-2xl p-4 shadow-2xl">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 data-i18n="appTitle" class="text-2xl md:text-3xl font-bold tracking-tight">Barya Business AI Assistant</h1>
-          <p data-i18n="appSubtitle" class="text-slate-300 text-sm md:text-base mt-1">Your premium AI co-pilot for startup planning, pricing, marketing, finance, and growth.</p>
+          <h1 data-i18n="title" class="text-2xl md:text-3xl font-bold tracking-tight">Barya Business AI</h1>
+          <p data-i18n="subtitle" class="text-slate-300">Advanced local-first business intelligence without external AI APIs.</p>
         </div>
-        <div class="flex flex-wrap gap-2 items-center">
-          <label data-i18n="language" for="languageSelect" class="text-sm text-slate-300">Language</label>
-          <select id="languageSelect" class="bg-slate-900 border border-indigo-800 rounded-lg px-3 py-2 text-sm"></select>
-          <button id="logoutBtn" class="hidden px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm font-medium" data-i18n="logout">Logout</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="languageSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          <button id="logoutBtn" class="hidden px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm" data-i18n="logout">Logout</button>
         </div>
       </div>
-      <nav class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2" aria-label="Section Navigation">
-        <button class="tab-btn px-3 py-2 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-sm font-semibold" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</button>
-        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="assistant" data-i18n="tabAssistant">AI Assistant</button>
-        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="workspace" data-i18n="tabWorkspace">Workspace</button>
-        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="memory" data-i18n="tabMemory">Memory</button>
+      <nav id="tabs" class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
+        <button data-tab="dashboard" class="tabBtn bg-indigo-600 rounded-lg px-3 py-2">Dashboard</button>
+        <button data-tab="chat" class="tabBtn bg-slate-800 rounded-lg px-3 py-2">AI Chat</button>
+        <button data-tab="workspace" class="tabBtn bg-slate-800 rounded-lg px-3 py-2">Workspace</button>
+        <button data-tab="memory" class="tabBtn bg-slate-800 rounded-lg px-3 py-2">Memory</button>
+        <button data-tab="profile" class="tabBtn bg-slate-800 rounded-lg px-3 py-2">Profile</button>
       </nav>
     </header>
 
-    <!-- Authentication Feature: localStorage based login/register -->
-    <section id="authSection" class="mt-6 grid md:grid-cols-2 gap-4">
-      <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+    <section id="authSection" class="grid md:grid-cols-2 gap-4">
+      <article class="glass rounded-2xl border border-indigo-800/40 p-5">
         <h2 class="text-xl font-semibold" data-i18n="register">Register</h2>
-        <form id="registerForm" class="mt-4 space-y-3">
-          <input id="regName" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Name" />
-          <input id="regEmail" type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Email" />
-          <input id="regPassword" type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Password" />
-          <button class="w-full bg-indigo-600 hover:bg-indigo-500 rounded-lg py-2 font-medium" data-i18n="createAccount">Create Account</button>
+        <form id="registerForm" class="space-y-3 mt-3">
+          <input id="regName" required placeholder="Name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <input id="regEmail" type="email" required placeholder="Email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <input id="regPassword" type="password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <button class="w-full bg-indigo-600 hover:bg-indigo-500 rounded-lg py-2" data-i18n="register">Register</button>
         </form>
-      </div>
-      <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+      </article>
+      <article class="glass rounded-2xl border border-indigo-800/40 p-5">
         <h2 class="text-xl font-semibold" data-i18n="login">Login</h2>
-        <form id="loginForm" class="mt-4 space-y-3">
-          <input id="loginEmail" type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Email" />
-          <input id="loginPassword" type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Password" />
-          <button class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium" data-i18n="login">Login</button>
+        <form id="loginForm" class="space-y-3 mt-3">
+          <input id="loginEmail" type="email" required placeholder="Email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <input id="loginPassword" type="password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <button class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2" data-i18n="login">Login</button>
         </form>
-      </div>
+      </article>
     </section>
 
-    <main id="appSection" class="hidden mt-6 space-y-6">
-      <!-- Dashboard Section -->
-      <section class="tab-panel" id="dashboardPanel">
-        <div class="grid lg:grid-cols-3 gap-4">
-          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow lg:col-span-2">
-            <h2 class="text-xl font-semibold" data-i18n="welcome">Welcome</h2>
-            <p class="text-slate-300 mt-2"><span data-i18n="loggedInAs">Logged in as</span>: <strong id="loggedInUser"></strong></p>
-            <p id="dashboardSummary" class="mt-4 text-slate-300"></p>
-          </article>
-          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
-            <h3 class="font-semibold" data-i18n="quickActions">Quick Suggestions</h3>
-            <div id="quickSuggestions" class="mt-3 flex flex-wrap gap-2"></div>
-          </article>
-        </div>
-
-        <!-- Finance Dashboard Feature -->
-        <div class="grid md:grid-cols-3 gap-4 mt-4">
-          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
-            <label class="text-sm text-slate-300" data-i18n="income">Income</label>
-            <input id="incomeInput" type="number" min="0" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
-          </article>
-          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
-            <label class="text-sm text-slate-300" data-i18n="expense">Expense</label>
-            <input id="expenseInput" type="number" min="0" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
-          </article>
-          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
-            <p class="text-sm text-slate-300" data-i18n="profit">Profit</p>
-            <p id="profitOutput" class="text-2xl font-bold mt-2">0</p>
-            <p id="financeInsight" class="text-sm text-slate-300 mt-2"></p>
-          </article>
-        </div>
+    <main id="appSection" class="hidden space-y-4">
+      <section id="panel-dashboard" class="panel grid lg:grid-cols-3 gap-4">
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5 lg:col-span-2">
+          <h2 class="font-semibold text-xl" data-i18n="dashboard">Dashboard</h2>
+          <p class="text-slate-300 mt-2"><span data-i18n="loggedIn">Logged in</span>: <strong id="loggedInAs"></strong></p>
+          <div id="dashboardSummary" class="mt-3 text-slate-300"></div>
+          <div class="mt-4">
+            <h3 class="font-semibold" data-i18n="recommendations">Recommendations</h3>
+            <ul id="autoRecommendations" class="list-disc list-inside text-slate-300 mt-2 space-y-1"></ul>
+          </div>
+        </article>
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5">
+          <h3 class="font-semibold text-lg" data-i18n="finance">Finance Intelligence</h3>
+          <div class="space-y-3 mt-3">
+            <input id="incomeInput" type="number" min="0" placeholder="Income" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <input id="expenseInput" type="number" min="0" placeholder="Expense" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <button id="saveFinanceBtn" class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 py-2" data-i18n="saveFinance">Save Finance</button>
+            <p class="text-xl font-bold">Profit: <span id="profitOutput">0</span></p>
+            <p id="financeInsight" class="text-slate-300 text-sm"></p>
+          </div>
+        </article>
       </section>
 
-      <!-- AI Assistant + Chat Section -->
-      <section class="tab-panel hidden" id="assistantPanel">
-        <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-4 md:p-5 shadow-glow">
-          <div class="flex flex-wrap justify-between gap-3 items-center">
-            <h2 class="text-xl font-semibold" data-i18n="assistantTitle">AI Assistant</h2>
+      <section id="panel-chat" class="panel hidden">
+        <article class="glass rounded-2xl border border-indigo-800/40 p-4">
+          <div class="flex justify-between items-center gap-3 flex-wrap">
+            <h2 class="font-semibold text-xl" data-i18n="chat">AI Chat</h2>
             <div class="flex gap-2">
-              <button id="voiceInputBtn" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm" data-i18n="voiceInput">Voice Input</button>
-              <button id="clearChatBtn" class="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm" data-i18n="clearChat">Clear Chat</button>
+              <button id="voiceInputBtn" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm" data-i18n="voiceInput">Voice input</button>
+              <button id="clearChatBtn" class="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm" data-i18n="clearChat">Clear</button>
             </div>
           </div>
-          <div id="chatBox" class="mt-4 h-[380px] overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-3"></div>
-          <form id="chatForm" class="mt-3 flex flex-col md:flex-row gap-2">
-            <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Ask about startup, pricing, marketing, finance, or name ideas..." />
-            <button class="bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-lg font-semibold" data-i18n="send">Send</button>
+          <div id="chatBox" class="mt-3 h-[420px] overflow-y-auto bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2"></div>
+          <form id="chatForm" class="mt-3 flex gap-2">
+            <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Ask anything about your business..." />
+            <button class="bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4" data-i18n="send">Send</button>
           </form>
-        </div>
+        </article>
       </section>
 
-      <!-- Workspace Section: File + Image Upload -->
-      <section class="tab-panel hidden" id="workspacePanel">
-        <div class="grid lg:grid-cols-2 gap-4">
-          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
-            <h2 class="text-xl font-semibold" data-i18n="fileUpload">File Upload Context</h2>
-            <p class="text-slate-300 text-sm mt-2" data-i18n="fileHelp">Upload TXT, CSV, JSON, or PDF. Content will be used for AI context.</p>
-            <input id="fileInput" type="file" accept=".txt,.csv,.json,.pdf" class="mt-4 w-full text-sm" />
-            <p class="mt-3 text-sm text-slate-300" id="fileStatus"></p>
-            <textarea id="filePreview" class="mt-3 w-full min-h-[180px] bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm" readonly></textarea>
-          </article>
-          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
-            <h2 class="text-xl font-semibold" data-i18n="imageUpload">Image Upload Context</h2>
-            <p class="text-slate-300 text-sm mt-2" data-i18n="imageHelp">Upload an image for workspace context; image name is stored for AI.</p>
-            <input id="imageInput" type="file" accept="image/*" class="mt-4 w-full text-sm" />
-            <p id="imageStatus" class="mt-3 text-sm text-slate-300"></p>
-            <img id="imagePreview" class="mt-3 max-h-64 rounded-lg border border-slate-800 hidden" alt="Uploaded preview" />
-          </article>
-        </div>
+      <section id="panel-workspace" class="panel hidden grid lg:grid-cols-2 gap-4">
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5">
+          <h2 class="font-semibold text-xl" data-i18n="fileIntelligence">File Intelligence</h2>
+          <input id="fileInput" type="file" accept=".txt,.csv,.json,.pdf" class="mt-3 w-full" />
+          <p id="fileStatus" class="text-slate-300 text-sm mt-2"></p>
+          <textarea id="filePreview" class="w-full mt-3 min-h-56 bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm"></textarea>
+          <p id="fileSummary" class="text-slate-300 text-sm mt-2"></p>
+        </article>
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5">
+          <h2 class="font-semibold text-xl" data-i18n="imageContext">Image Context</h2>
+          <input id="imageInput" type="file" accept="image/*" class="mt-3 w-full" />
+          <input id="imageNoteInput" placeholder="Add branding/product note" class="w-full mt-3 bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          <button id="saveImageNoteBtn" class="mt-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3 py-2" data-i18n="saveImageNote">Save image context</button>
+          <p id="imageStatus" class="text-slate-300 text-sm mt-2"></p>
+          <img id="imagePreview" class="hidden mt-3 max-h-72 rounded-lg border border-slate-700" alt="preview" />
+        </article>
       </section>
 
-      <!-- Memory Section -->
-      <section class="tab-panel hidden" id="memoryPanel">
-        <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
-          <h2 class="text-xl font-semibold" data-i18n="memoryTitle">Memory Notes</h2>
-          <p class="text-slate-300 text-sm mt-2" data-i18n="memoryHelp">Save important business preferences, goals, and context for smarter AI replies.</p>
-          <form id="memoryForm" class="mt-4 flex flex-col md:flex-row gap-2">
-            <input id="memoryInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Add a memory note..." />
-            <button class="bg-indigo-600 hover:bg-indigo-500 px-4 py-3 rounded-lg" data-i18n="save">Save</button>
+      <section id="panel-memory" class="panel hidden">
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5">
+          <h2 class="font-semibold text-xl" data-i18n="memory">Memory</h2>
+          <form id="memoryForm" class="mt-3 grid md:grid-cols-5 gap-2">
+            <input id="memoryType" placeholder="Type (preference/business/audience)" class="md:col-span-2 bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <input id="memoryInput" placeholder="Memory note" class="md:col-span-2 bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <button class="bg-indigo-600 hover:bg-indigo-500 rounded-lg" data-i18n="save">Save</button>
           </form>
-          <ul id="memoryList" class="mt-4 space-y-2"></ul>
+          <ul id="memoryList" class="mt-3 space-y-2"></ul>
+          <div class="mt-4">
+            <h3 class="font-semibold" data-i18n="adaptiveLearning">Adaptive Learning FAQ</h3>
+            <ul id="faqList" class="list-disc list-inside text-slate-300 text-sm mt-2"></ul>
+          </div>
+        </article>
+      </section>
+
+      <section id="panel-profile" class="panel hidden">
+        <article class="glass rounded-2xl border border-indigo-800/40 p-5">
+          <h2 class="font-semibold text-xl" data-i18n="profile">Profile</h2>
+          <form id="profileForm" class="mt-3 grid md:grid-cols-2 gap-3">
+            <input id="businessTypeInput" placeholder="Business type" class="bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <input id="audienceInput" placeholder="Target audience" class="bg-slate-900 border border-slate-700 rounded-lg p-2" />
+            <input id="preferenceInput" placeholder="Communication preference" class="bg-slate-900 border border-slate-700 rounded-lg p-2 md:col-span-2" />
+            <button class="bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2" data-i18n="saveProfile">Save profile</button>
+          </form>
         </article>
       </section>
     </main>
   </div>
 
   <script>
-    // =========================
-    // Storage & state constants
-    // =========================
-    const STORAGE_KEYS = {
-      users: 'barya_users',
-      currentUser: 'barya_current_user',
-      chats: 'barya_chat_history',
-      memories: 'barya_memories',
-      workspaceContext: 'barya_workspace_context',
-      finance: 'barya_finance',
-      language: 'barya_language'
+    // ===========================
+    // App Data & Storage Helpers
+    // ===========================
+    const KEYS = {
+      users: 'barya_users_v2',
+      currentUser: 'barya_current_user_v2',
+      profiles: 'barya_profiles_v2',
+      chats: 'barya_chats_v2',
+      memories: 'barya_memories_v2',
+      workspace: 'barya_workspace_v2',
+      finance: 'barya_finance_v2',
+      faq: 'barya_faq_v2',
+      language: 'barya_lang_v2'
     };
 
-    const SUPPORTED_LANGS = ['en', 'hi', 'es', 'fr', 'ar', 'ko', 'ja'];
+    const LANGS = ['en','hi','es','fr','ar','ko','ja'];
+    const LANGUAGE_META = {
+      en: { name: 'English', speech: 'en-US' }, hi: { name: 'हिन्दी', speech: 'hi-IN' },
+      es: { name: 'Español', speech: 'es-ES' }, fr: { name: 'Français', speech: 'fr-FR' },
+      ar: { name: 'العربية', speech: 'ar-SA' }, ko: { name: '한국어', speech: 'ko-KR' }, ja: { name: '日本語', speech: 'ja-JP' }
+    };
 
-    // ==================================================
-    // Internal dictionary for UI + AI phrase translation
-    // ==================================================
     const I18N = {
-      en: { name: 'English', appTitle: 'Barya Business AI Assistant', appSubtitle: 'Your premium AI co-pilot for startup planning, pricing, marketing, finance, and growth.', language: 'Language', logout: 'Logout', tabDashboard: 'Dashboard', tabAssistant: 'AI Assistant', tabWorkspace: 'Workspace', tabMemory: 'Memory', register: 'Register', login: 'Login', createAccount: 'Create Account', welcome: 'Welcome', loggedInAs: 'Logged in as', quickActions: 'Quick Suggestions', income: 'Income', expense: 'Expense', profit: 'Profit', assistantTitle: 'AI Assistant', voiceInput: 'Voice Input', clearChat: 'Clear Chat', send: 'Send', fileUpload: 'File Upload Context', fileHelp: 'Upload TXT, CSV, JSON, or PDF. Content will be used for AI context.', imageUpload: 'Image Upload Context', imageHelp: 'Upload an image for workspace context; image name is stored for AI.', memoryTitle: 'Memory Notes', memoryHelp: 'Save important business preferences, goals, and context for smarter AI replies.', save: 'Save', askPlaceholder: 'Ask about startup, pricing, marketing, finance, or name ideas...' },
-      hi: { name: 'हिन्दी', appTitle: 'बार्या बिज़नेस एआई असिस्टेंट', appSubtitle: 'स्टार्टअप, प्राइसिंग, मार्केटिंग और फाइनेंस के लिए आपका एआई सहायक।', language: 'भाषा', logout: 'लॉगआउट', tabDashboard: 'डैशबोर्ड', tabAssistant: 'एआई असिस्टेंट', tabWorkspace: 'वर्कस्पेस', tabMemory: 'मेमोरी', register: 'रजिस्टर', login: 'लॉगिन', createAccount: 'अकाउंट बनाएं', welcome: 'स्वागत है', loggedInAs: 'लॉगिन यूज़र', quickActions: 'त्वरित सुझाव', income: 'आय', expense: 'खर्च', profit: 'लाभ', assistantTitle: 'एआई असिस्टेंट', voiceInput: 'वॉइस इनपुट', clearChat: 'चैट साफ करें', send: 'भेजें', fileUpload: 'फाइल अपलोड कॉन्टेक्स्ट', fileHelp: 'TXT, CSV, JSON या PDF अपलोड करें। AI इसे कॉन्टेक्स्ट में उपयोग करेगा।', imageUpload: 'इमेज अपलोड कॉन्टेक्स्ट', imageHelp: 'इमेज अपलोड करें; AI के लिए नाम सेव होगा।', memoryTitle: 'मेमोरी नोट्स', memoryHelp: 'बेहतर AI जवाबों के लिए अपनी जानकारी सेव करें।', save: 'सेव', askPlaceholder: 'स्टार्टअप, प्राइसिंग, मार्केटिंग, फाइनेंस या नाम आइडिया पूछें...' },
-      es: { name: 'Español', appTitle: 'Asistente IA Empresarial Barya', appSubtitle: 'Tu copiloto de IA para startup, precios, marketing y finanzas.', language: 'Idioma', logout: 'Cerrar sesión', tabDashboard: 'Panel', tabAssistant: 'Asistente IA', tabWorkspace: 'Espacio', tabMemory: 'Memoria', register: 'Registro', login: 'Iniciar sesión', createAccount: 'Crear cuenta', welcome: 'Bienvenido', loggedInAs: 'Conectado como', quickActions: 'Sugerencias rápidas', income: 'Ingresos', expense: 'Gastos', profit: 'Ganancia', assistantTitle: 'Asistente IA', voiceInput: 'Voz a texto', clearChat: 'Borrar chat', send: 'Enviar', fileUpload: 'Contexto de archivos', fileHelp: 'Sube TXT, CSV, JSON o PDF para contexto de IA.', imageUpload: 'Contexto de imagen', imageHelp: 'Sube una imagen; el nombre se guarda como contexto.', memoryTitle: 'Notas de memoria', memoryHelp: 'Guarda preferencias y datos para respuestas inteligentes.', save: 'Guardar', askPlaceholder: 'Pregunta sobre startup, precios, marketing, finanzas o nombres...' },
-      fr: { name: 'Français', appTitle: 'Assistant IA Business Barya', appSubtitle: 'Votre copilote IA pour startup, tarification, marketing et finance.', language: 'Langue', logout: 'Déconnexion', tabDashboard: 'Tableau de bord', tabAssistant: 'Assistant IA', tabWorkspace: 'Espace', tabMemory: 'Mémoire', register: 'Créer un compte', login: 'Connexion', createAccount: 'Créer', welcome: 'Bienvenue', loggedInAs: 'Connecté en tant que', quickActions: 'Suggestions rapides', income: 'Revenu', expense: 'Dépense', profit: 'Profit', assistantTitle: 'Assistant IA', voiceInput: 'Entrée vocale', clearChat: 'Effacer le chat', send: 'Envoyer', fileUpload: 'Contexte fichier', fileHelp: 'Téléchargez TXT, CSV, JSON ou PDF pour le contexte IA.', imageUpload: 'Contexte image', imageHelp: 'Téléchargez une image ; le nom sera mémorisé.', memoryTitle: 'Notes mémoire', memoryHelp: 'Sauvegardez des notes pour améliorer les réponses IA.', save: 'Enregistrer', askPlaceholder: 'Demandez startup, prix, marketing, finance ou idées de nom...' },
-      ar: { name: 'العربية', appTitle: 'مساعد باريا للأعمال بالذكاء الاصطناعي', appSubtitle: 'مساعدك الذكي للتخطيط والتسعير والتسويق والتمويل.', language: 'اللغة', logout: 'تسجيل خروج', tabDashboard: 'لوحة التحكم', tabAssistant: 'المساعد الذكي', tabWorkspace: 'مساحة العمل', tabMemory: 'الذاكرة', register: 'إنشاء حساب', login: 'تسجيل دخول', createAccount: 'إنشاء الحساب', welcome: 'مرحباً', loggedInAs: 'المستخدم الحالي', quickActions: 'اقتراحات سريعة', income: 'الدخل', expense: 'المصروف', profit: 'الربح', assistantTitle: 'المساعد الذكي', voiceInput: 'إدخال صوتي', clearChat: 'مسح المحادثة', send: 'إرسال', fileUpload: 'سياق الملفات', fileHelp: 'ارفع TXT أو CSV أو JSON أو PDF لاستخدامه كسياق.', imageUpload: 'سياق الصور', imageHelp: 'ارفع صورة وسيتم حفظ اسمها كسياق.', memoryTitle: 'ملاحظات الذاكرة', memoryHelp: 'احفظ معلومات مهمة لتحسين ردود الذكاء الاصطناعي.', save: 'حفظ', askPlaceholder: 'اسأل عن بدء مشروع أو التسعير أو التسويق أو التمويل أو الاسم...' },
-      ko: { name: '한국어', appTitle: '바르야 비즈니스 AI 어시스턴트', appSubtitle: '스타트업, 가격, 마케팅, 재무를 위한 AI 코파일럿.', language: '언어', logout: '로그아웃', tabDashboard: '대시보드', tabAssistant: 'AI 어시스턴트', tabWorkspace: '워크스페이스', tabMemory: '메모리', register: '회원가입', login: '로그인', createAccount: '계정 만들기', welcome: '환영합니다', loggedInAs: '로그인 사용자', quickActions: '빠른 제안', income: '수입', expense: '지출', profit: '이익', assistantTitle: 'AI 어시스턴트', voiceInput: '음성 입력', clearChat: '채팅 지우기', send: '보내기', fileUpload: '파일 컨텍스트', fileHelp: 'TXT, CSV, JSON, PDF를 업로드하여 AI 컨텍스트로 사용합니다.', imageUpload: '이미지 컨텍스트', imageHelp: '이미지를 업로드하면 파일명이 컨텍스트로 저장됩니다.', memoryTitle: '메모리 노트', memoryHelp: '더 똑똑한 답변을 위해 메모를 저장하세요.', save: '저장', askPlaceholder: '스타트업, 가격, 마케팅, 재무, 이름 아이디어를 물어보세요...' },
-      ja: { name: '日本語', appTitle: 'Barya ビジネスAIアシスタント', appSubtitle: 'スタートアップ、価格設定、マーケティング、財務のAI支援。', language: '言語', logout: 'ログアウト', tabDashboard: 'ダッシュボード', tabAssistant: 'AIアシスタント', tabWorkspace: 'ワークスペース', tabMemory: 'メモリー', register: '登録', login: 'ログイン', createAccount: 'アカウント作成', welcome: 'ようこそ', loggedInAs: 'ログイン中', quickActions: 'クイック提案', income: '収入', expense: '支出', profit: '利益', assistantTitle: 'AIアシスタント', voiceInput: '音声入力', clearChat: 'チャットクリア', send: '送信', fileUpload: 'ファイルコンテキスト', fileHelp: 'TXT/CSV/JSON/PDFをアップロードしてAI文脈に利用します。', imageUpload: '画像コンテキスト', imageHelp: '画像をアップロードすると名前が文脈に保存されます。', memoryTitle: 'メモリーノート', memoryHelp: 'AI回答向上のためメモを保存します。', save: '保存', askPlaceholder: 'スタートアップ、価格、マーケ、財務、名前案を質問...' }
+      en: { title:'Barya Business AI', subtitle:'Advanced local-first business intelligence without external AI APIs.', dashboard:'Dashboard', chat:'AI Chat', memory:'Memory', profile:'Profile', login:'Login', register:'Register', logout:'Logout', send:'Send', recommendations:'Recommendations', loggedIn:'Logged in', voiceInput:'Voice input', clearChat:'Clear', save:'Save', finance:'Finance Intelligence', saveFinance:'Save Finance', fileIntelligence:'File Intelligence', imageContext:'Image Context', saveImageNote:'Save image context', saveProfile:'Save profile', adaptiveLearning:'Adaptive Learning FAQ' },
+      hi: { title:'बार्या बिज़नेस एआई', subtitle:'बिना बाहरी AI API के लोकल बिज़नेस इंटेलिजेंस।', dashboard:'डैशबोर्ड', chat:'एआई चैट', memory:'मेमोरी', profile:'प्रोफ़ाइल', login:'लॉगिन', register:'रजिस्टर', logout:'लॉगआउट', send:'भेजें', recommendations:'सुझाव', loggedIn:'लॉगिन', voiceInput:'वॉइस', clearChat:'साफ़', save:'सेव', finance:'फाइनेंस', saveFinance:'फाइनेंस सेव', fileIntelligence:'फ़ाइल इंटेलिजेंस', imageContext:'इमेज संदर्भ', saveImageNote:'इमेज सेव', saveProfile:'प्रोफ़ाइल सेव', adaptiveLearning:'एडैप्टिव FAQ' },
+      es: { title:'Barya Business AI', subtitle:'Inteligencia empresarial local sin APIs de IA externas.', dashboard:'Panel', chat:'Chat IA', memory:'Memoria', profile:'Perfil', login:'Entrar', register:'Registro', logout:'Salir', send:'Enviar', recommendations:'Recomendaciones', loggedIn:'Sesión', voiceInput:'Voz', clearChat:'Limpiar', save:'Guardar', finance:'Finanzas', saveFinance:'Guardar finanzas', fileIntelligence:'Inteligencia de archivo', imageContext:'Contexto de imagen', saveImageNote:'Guardar contexto', saveProfile:'Guardar perfil', adaptiveLearning:'FAQ Adaptativo' },
+      fr: { title:'Barya Business AI', subtitle:'Intelligence métier locale sans API IA externe.', dashboard:'Tableau de bord', chat:'Chat IA', memory:'Mémoire', profile:'Profil', login:'Connexion', register:'Créer compte', logout:'Déconnexion', send:'Envoyer', recommendations:'Recommandations', loggedIn:'Connecté', voiceInput:'Voix', clearChat:'Effacer', save:'Enregistrer', finance:'Finance', saveFinance:'Enregistrer finance', fileIntelligence:'Fichiers intelligents', imageContext:'Contexte image', saveImageNote:'Enregistrer image', saveProfile:'Enregistrer profil', adaptiveLearning:'FAQ Adaptative' },
+      ar: { title:'باريا بزنس AI', subtitle:'ذكاء أعمال محلي بدون واجهات AI خارجية.', dashboard:'لوحة التحكم', chat:'المحادثة', memory:'الذاكرة', profile:'الملف', login:'دخول', register:'تسجيل', logout:'خروج', send:'إرسال', recommendations:'التوصيات', loggedIn:'المستخدم', voiceInput:'صوت', clearChat:'مسح', save:'حفظ', finance:'المالية', saveFinance:'حفظ المالية', fileIntelligence:'ذكاء الملفات', imageContext:'سياق الصورة', saveImageNote:'حفظ السياق', saveProfile:'حفظ الملف', adaptiveLearning:'الأسئلة المتكررة' },
+      ko: { title:'바르야 비즈니스 AI', subtitle:'외부 AI API 없이 로컬 비즈니스 인텔리전스.', dashboard:'대시보드', chat:'AI 채팅', memory:'메모리', profile:'프로필', login:'로그인', register:'가입', logout:'로그아웃', send:'보내기', recommendations:'추천', loggedIn:'사용자', voiceInput:'음성', clearChat:'지우기', save:'저장', finance:'재무', saveFinance:'재무 저장', fileIntelligence:'파일 인텔리전스', imageContext:'이미지 컨텍스트', saveImageNote:'이미지 저장', saveProfile:'프로필 저장', adaptiveLearning:'적응형 FAQ' },
+      ja: { title:'Barya ビジネスAI', subtitle:'外部AI APIなしのローカルビジネス支援。', dashboard:'ダッシュボード', chat:'AIチャット', memory:'メモリ', profile:'プロフィール', login:'ログイン', register:'登録', logout:'ログアウト', send:'送信', recommendations:'提案', loggedIn:'ログイン中', voiceInput:'音声', clearChat:'クリア', save:'保存', finance:'財務', saveFinance:'財務保存', fileIntelligence:'ファイル分析', imageContext:'画像コンテキスト', saveImageNote:'画像保存', saveProfile:'プロフィール保存', adaptiveLearning:'学習FAQ' }
     };
 
-    // ==============================
-    // App state and utility helpers
-    // ==============================
     const state = {
-      language: localStorage.getItem(STORAGE_KEYS.language) || 'en',
-      currentUser: JSON.parse(localStorage.getItem(STORAGE_KEYS.currentUser) || 'null'),
-      chats: JSON.parse(localStorage.getItem(STORAGE_KEYS.chats) || '[]'),
-      memories: JSON.parse(localStorage.getItem(STORAGE_KEYS.memories) || '[]'),
-      workspaceContext: JSON.parse(localStorage.getItem(STORAGE_KEYS.workspaceContext) || '{"fileText":"","fileName":"","images":[]}'),
-      finance: JSON.parse(localStorage.getItem(STORAGE_KEYS.finance) || '{"income":0,"expense":0}')
+      language: localStorage.getItem(KEYS.language) || 'en',
+      currentUser: JSON.parse(localStorage.getItem(KEYS.currentUser) || 'null'),
+      users: JSON.parse(localStorage.getItem(KEYS.users) || '[]'),
+      profiles: JSON.parse(localStorage.getItem(KEYS.profiles) || '{}'),
+      chats: JSON.parse(localStorage.getItem(KEYS.chats) || '{}'),
+      memories: JSON.parse(localStorage.getItem(KEYS.memories) || '{}'),
+      workspace: JSON.parse(localStorage.getItem(KEYS.workspace) || '{}'),
+      finance: JSON.parse(localStorage.getItem(KEYS.finance) || '{}'),
+      faq: JSON.parse(localStorage.getItem(KEYS.faq) || '{}')
     };
 
     const $ = (id) => document.getElementById(id);
+    const uid = () => state.currentUser?.email || 'guest';
+    const getBucket = (store, fallback) => { if (!store[uid()]) store[uid()] = fallback; return store[uid()]; };
 
     function persist() {
-      localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(state.currentUser));
-      localStorage.setItem(STORAGE_KEYS.chats, JSON.stringify(state.chats));
-      localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(state.memories));
-      localStorage.setItem(STORAGE_KEYS.workspaceContext, JSON.stringify(state.workspaceContext));
-      localStorage.setItem(STORAGE_KEYS.finance, JSON.stringify(state.finance));
-      localStorage.setItem(STORAGE_KEYS.language, state.language);
+      localStorage.setItem(KEYS.language, state.language);
+      localStorage.setItem(KEYS.currentUser, JSON.stringify(state.currentUser));
+      localStorage.setItem(KEYS.users, JSON.stringify(state.users));
+      localStorage.setItem(KEYS.profiles, JSON.stringify(state.profiles));
+      localStorage.setItem(KEYS.chats, JSON.stringify(state.chats));
+      localStorage.setItem(KEYS.memories, JSON.stringify(state.memories));
+      localStorage.setItem(KEYS.workspace, JSON.stringify(state.workspace));
+      localStorage.setItem(KEYS.finance, JSON.stringify(state.finance));
+      localStorage.setItem(KEYS.faq, JSON.stringify(state.faq));
     }
 
-    function t(key) {
-      return (I18N[state.language] && I18N[state.language][key]) || I18N.en[key] || key;
-    }
+    function t(key) { return I18N[state.language]?.[key] || I18N.en[key] || key; }
 
-    // =======================
-    // Language implementation
-    // =======================
-    function initLanguageSelector() {
-      const select = $('languageSelect');
-      select.innerHTML = SUPPORTED_LANGS.map((code) => `<option value="${code}">${I18N[code].name}</option>`).join('');
-      select.value = state.language;
-      select.addEventListener('change', () => {
-        state.language = select.value;
-        persist();
-        applyTranslations();
-        renderChat();
-      });
-      applyTranslations();
-    }
-
-    function applyTranslations() {
-      document.documentElement.lang = state.language;
-      document.querySelectorAll('[data-i18n]').forEach((el) => {
-        const key = el.getAttribute('data-i18n');
-        el.textContent = t(key);
-      });
-      $('chatInput').placeholder = t('askPlaceholder');
-      if (state.language === 'ar') {
-        document.body.dir = 'rtl';
-      } else {
-        document.body.dir = 'ltr';
-      }
-    }
-
-    // ========================================
-    // Authentication (localStorage user system)
-    // ========================================
-    function getUsers() {
-      return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '[]');
-    }
-
-    function saveUsers(users) {
-      localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
-    }
-
-    $('registerForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = $('regName').value.trim();
-      const email = $('regEmail').value.trim().toLowerCase();
-      const password = $('regPassword').value;
-      const users = getUsers();
-      if (users.some((u) => u.email === email)) {
-        alert('Email already registered. Please login.');
-        return;
-      }
-      users.push({ name, email, password });
-      saveUsers(users);
-      alert('Registration successful. Please login.');
-      $('registerForm').reset();
-    });
-
-    $('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = $('loginEmail').value.trim().toLowerCase();
-      const password = $('loginPassword').value;
-      const user = getUsers().find((u) => u.email === email && u.password === password);
-      if (!user) {
-        alert('Invalid email or password.');
-        return;
-      }
-      state.currentUser = { name: user.name, email: user.email };
-      persist();
-      initAuthView();
-    });
-
-    $('logoutBtn').addEventListener('click', () => {
-      state.currentUser = null;
-      persist();
-      initAuthView();
-    });
-
-    function initAuthView() {
-      const isLoggedIn = Boolean(state.currentUser);
-      $('authSection').classList.toggle('hidden', isLoggedIn);
-      $('appSection').classList.toggle('hidden', !isLoggedIn);
-      $('logoutBtn').classList.toggle('hidden', !isLoggedIn);
-      if (isLoggedIn) {
-        $('loggedInUser').textContent = `${state.currentUser.name} (${state.currentUser.email})`;
-        updateDashboardSummary();
-      }
-    }
-
-    // =============================
-    // Dashboard + finance functions
-    // =============================
-    function updateDashboardSummary() {
-      const { income, expense } = state.finance;
-      const profit = Number(income) - Number(expense);
-      const memoryCount = state.memories.length;
-      const contextInfo = [state.workspaceContext.fileName, ...(state.workspaceContext.images || [])].filter(Boolean).join(', ') || 'No workspace context yet';
-      $('dashboardSummary').textContent = `Profit snapshot: ${profit.toFixed(2)} | Saved memories: ${memoryCount} | Context: ${contextInfo}`;
-    }
-
-    function updateFinance() {
-      const income = Number($('incomeInput').value || 0);
-      const expense = Number($('expenseInput').value || 0);
-      const profit = income - expense;
-      state.finance = { income, expense };
-      $('profitOutput').textContent = profit.toFixed(2);
-      $('financeInsight').textContent = profit >= 0
-        ? `Healthy margin. Consider allocating ${(profit * 0.2).toFixed(2)} to growth experiments.`
-        : `Negative margin. Reduce discretionary spending and validate your pricing quickly.`;
-      persist();
-      updateDashboardSummary();
-    }
-
-    $('incomeInput').addEventListener('input', updateFinance);
-    $('expenseInput').addEventListener('input', updateFinance);
-
-    // ===================
-    // Memory note system
-    // ===================
-    function renderMemories() {
-      $('memoryList').innerHTML = state.memories.map((m, i) => `
-        <li class="bg-slate-900 border border-slate-800 rounded-lg p-3 flex justify-between items-start gap-2">
-          <span class="text-sm">${m}</span>
-          <button class="text-rose-400 text-xs" onclick="removeMemory(${i})">Delete</button>
-        </li>
-      `).join('');
-    }
-
-    window.removeMemory = function (index) {
-      state.memories.splice(index, 1);
-      persist();
-      renderMemories();
-      updateDashboardSummary();
+    // ========================
+    // Knowledge Engine (JSON)
+    // ========================
+    const knowledgeBase = {
+      startup: ['Validate problem-solution fit using 20 interviews.', 'Build MVP with one core value proposition.', 'Track weekly activation and retention metrics.'],
+      pricing: ['Use value-based anchoring with 3 tiers.', 'Offer annual discount to improve cash flow.', 'Test willingness-to-pay using pilots.'],
+      marketing: ['Use one primary channel before expanding.', 'Map content funnel: awareness > trust > conversion.', 'Create weekly experiment backlog with KPI per test.'],
+      finance: ['Keep runway > 6 months.', 'Cap fixed costs early.', 'Review unit economics monthly.'],
+      branding: ['Define brand promise in one sentence.', 'Align tone, visuals, and audience pain points.', 'Use consistent narrative across channels.'],
+      customerSupport: ['Set response-time SLA.', 'Create issue taxonomy and knowledge articles.', 'Measure CSAT + first-contact resolution.'],
+      growthStrategy: ['Run hypothesis-driven growth loops.', 'Improve retention before heavy acquisition.', 'Build referral trigger moments in product.']
     };
 
-    $('memoryForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const text = $('memoryInput').value.trim();
-      if (!text) return;
-      state.memories.unshift(text);
-      $('memoryInput').value = '';
-      persist();
-      renderMemories();
-      updateDashboardSummary();
-    });
+    // =====================================
+    // Intent Detection Engine (multi-intent)
+    // =====================================
+    const intentLexicon = {
+      startup: ['startup','mvp','launch','idea','founder','product market fit'],
+      pricing: ['price','pricing','discount','plan','subscription','revenue model'],
+      marketing: ['marketing','ads','seo','content','campaign','social media'],
+      finance: ['finance','budget','income','expense','profit','cash flow','runway'],
+      branding: ['brand','branding','positioning','name','logo','identity'],
+      customerSupport: ['support','customer service','complaint','retention','ticket'],
+      growthStrategy: ['growth','scale','expand','strategy','acquisition','retention']
+    };
 
-    // =================================
-    // Workspace upload + context system
-    // =================================
-    $('fileInput').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      let text = '';
-      const ext = file.name.split('.').pop().toLowerCase();
+    function detectIntents(input) {
+      const text = input.toLowerCase();
+      const scores = Object.entries(intentLexicon).map(([intent, keywords]) => {
+        let score = 0;
+        for (const k of keywords) {
+          if (text.includes(k)) score += k.includes(' ') ? 2 : 1;
+          const regex = new RegExp(`\\b${k.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`, 'g');
+          score += (text.match(regex) || []).length;
+        }
+        return { intent, score };
+      });
+      const top = scores.filter(s => s.score > 0).sort((a,b)=>b.score-a.score);
+      return top.length ? top : [{ intent: 'growthStrategy', score: 1 }];
+    }
 
-      // File parsing feature: txt, csv, json, pdf
-      if (['txt', 'csv', 'json'].includes(ext)) {
-        text = await file.text();
-      } else if (ext === 'pdf') {
-        // Basic no-library PDF text extraction fallback.
-        const buffer = await file.arrayBuffer();
-        const raw = new TextDecoder('latin1').decode(buffer);
-        const matched = raw.match(/\(([^\)]{3,})\)/g) || [];
-        text = matched.slice(0, 200).map((m) => m.slice(1, -1)).join(' ').replace(/\\[rn]/g, ' ');
-        if (!text.trim()) text = 'PDF uploaded. Text extraction is limited in browser-only mode.';
-      }
+    // ===========================
+    // Memory Engine + Similarity
+    // ===========================
+    function tokenize(s='') { return s.toLowerCase().split(/[^a-z0-9\u00C0-\u017F\u0600-\u06FF\u0900-\u097F\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+/).filter(Boolean); }
+    function jaccard(a,b) {
+      const A = new Set(tokenize(a));
+      const B = new Set(tokenize(b));
+      const inter = [...A].filter(v=>B.has(v)).length;
+      const uni = new Set([...A,...B]).size || 1;
+      return inter/uni;
+    }
+    function getRelevantMemory(query) {
+      const mems = getBucket(state.memories, []);
+      return mems
+        .map(m => ({ ...m, sim: jaccard(query, `${m.type} ${m.text}`) }))
+        .sort((a,b)=>b.sim-a.sim)
+        .slice(0,3);
+    }
 
-      state.workspaceContext.fileText = text.slice(0, 8000);
-      state.workspaceContext.fileName = file.name;
-      $('fileStatus').textContent = `Loaded: ${file.name}`;
-      $('filePreview').value = state.workspaceContext.fileText;
-      persist();
-      updateDashboardSummary();
-    });
-
-    $('imageInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        $('imagePreview').src = reader.result;
-        $('imagePreview').classList.remove('hidden');
+    // ============================================
+    // Context Engine (input + memory + uploads ...)
+    // ============================================
+    function buildContext(userInput) {
+      const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
+      const workspace = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
+      const finance = getBucket(state.finance, { income:0, expense:0 });
+      const relevantMemory = getRelevantMemory(userInput);
+      return {
+        userInput,
+        profile,
+        relevantMemory,
+        uploadedFile: { name: workspace.fileName, text: workspace.fileText, summary: workspace.fileSummary },
+        uploadedImage: { name: workspace.imageName, note: workspace.imageNote },
+        financialData: { ...finance, profit: Number(finance.income) - Number(finance.expense) }
       };
-      reader.readAsDataURL(file);
+    }
 
-      state.workspaceContext.images = Array.from(new Set([...(state.workspaceContext.images || []), file.name]));
-      $('imageStatus').textContent = `Image context saved: ${file.name}`;
+    // ========================================
+    // Recommendation + Adaptive Learning Engine
+    // ========================================
+    function updateFaq(input) {
+      const faq = getBucket(state.faq, {});
+      const key = input.toLowerCase().trim();
+      faq[key] = (faq[key] || 0) + 1;
       persist();
-      updateDashboardSummary();
-    });
-
-    // ==================================
-    // AI assistant rule engine (no APIs)
-    // ==================================
-    function detectIntent(text) {
-      const q = text.toLowerCase();
-      if (/(startup|start business|launch|idea validation)/.test(q)) return 'startup';
-      if (/(pricing|price|charge|plan tiers|subscription)/.test(q)) return 'pricing';
-      if (/(marketing|leads|seo|social|promotion|ads)/.test(q)) return 'marketing';
-      if (/(finance|cash flow|profit|expense|budget|runway)/.test(q)) return 'finance';
-      if (/(name|brand name|business name)/.test(q)) return 'business_name_ideas';
-      return 'general';
+    }
+    function topFaq() {
+      const faq = getBucket(state.faq, {});
+      return Object.entries(faq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    }
+    function recommendationEngine(context, intents) {
+      const recs = [];
+      if (context.financialData.profit < 0) recs.push('Reduce non-essential expenses by 10% this month.');
+      if (!context.profile.businessType) recs.push('Complete profile with business type for sharper recommendations.');
+      if (!context.uploadedFile.name) recs.push('Upload a business document to unlock file-based strategy Q&A.');
+      if (intents.some(i=>i.intent==='marketing')) recs.push('Set one channel KPI and run 2 experiments this week.');
+      return recs.slice(0,4);
     }
 
-    function buildBusinessNameIdeas(prompt) {
-      const topic = (prompt.match(/for\s+([a-zA-Z\s]+)/i)?.[1] || 'your business').trim();
-      const base = ['Nova', 'Pulse', 'Nest', 'Forge', 'Bloom', 'Grid', 'Spark', 'Bridge'];
-      return base.slice(0, 5).map((w, i) => `${w} ${topic.split(' ')[0] || 'Works'} ${i + 1}`);
+    // =======================================
+    // Response Generator (smart response logic)
+    // =======================================
+    function pickVar(arr, salt='') {
+      const n = [...salt].reduce((a,c)=>a+c.charCodeAt(0), 0);
+      return arr[n % arr.length];
     }
+    function generateResponse(userInput) {
+      const intents = detectIntents(userInput);
+      const context = buildContext(userInput);
+      const primary = intents[0].intent;
+      const knowledge = knowledgeBase[primary] || knowledgeBase.growthStrategy;
+      const recs = recommendationEngine(context, intents);
 
-    function translateAi(text) {
-      // Lightweight response translation using phrase replacements.
-      const dict = {
-        hi: [['Intent', 'उद्देश्य'], ['Analysis', 'विश्लेषण'], ['Action Plan', 'कार्य योजना'], ['Next 7 Days', 'अगले 7 दिन'], ['Risks', 'जोखिम'], ['Use this immediately', 'इसे तुरंत उपयोग करें']],
-        es: [['Intent', 'Intención'], ['Analysis', 'Análisis'], ['Action Plan', 'Plan de acción'], ['Next 7 Days', 'Próximos 7 días'], ['Risks', 'Riesgos'], ['Use this immediately', 'Úsalo ahora']],
-        fr: [['Intent', 'Intention'], ['Analysis', 'Analyse'], ['Action Plan', 'Plan d’action'], ['Next 7 Days', '7 prochains jours'], ['Risks', 'Risques'], ['Use this immediately', 'À utiliser immédiatement']],
-        ar: [['Intent', 'النية'], ['Analysis', 'التحليل'], ['Action Plan', 'خطة العمل'], ['Next 7 Days', 'الأيام السبعة القادمة'], ['Risks', 'المخاطر'], ['Use this immediately', 'استخدم هذا فوراً']],
-        ko: [['Intent', '의도'], ['Analysis', '분석'], ['Action Plan', '실행 계획'], ['Next 7 Days', '다음 7일'], ['Risks', '리스크'], ['Use this immediately', '바로 실행하세요']],
-        ja: [['Intent', '意図'], ['Analysis', '分析'], ['Action Plan', '実行計画'], ['Next 7 Days', '次の7日'], ['Risks', 'リスク'], ['Use this immediately', '今すぐ使える提案']]
+      const memoryLine = context.relevantMemory.length
+        ? `Using your saved memory: ${context.relevantMemory.map(m=>m.text).join(' | ')}`
+        : 'No strong saved memory match found yet.';
+
+      const title = `Business Plan: ${primary.replace(/([A-Z])/g, ' $1')}`;
+      const steps = knowledge.map((k,i)=>`${i+1}. ${k}`);
+      const actionables = [
+        `Set 1 measurable target for the next 7 days in ${primary}.`,
+        `Use your audience (${context.profile.audience || 'not set'}) to adapt messaging.`,
+        context.uploadedFile.name ? `Reference file "${context.uploadedFile.name}" for decisions.` : 'Upload a TXT/CSV/JSON/PDF file to enrich context.',
+        context.uploadedImage.name ? `Align branding with image note: ${context.uploadedImage.note || context.uploadedImage.name}.` : 'Upload a product/branding image and add a note.'
+      ];
+      const optional = recs.length ? recs : ['Track daily learnings and save as memory notes for adaptive advice.'];
+
+      const result = {
+        title,
+        intents: intents.map(i=>`${i.intent} (${i.score})`).join(', '),
+        steps,
+        actionable: actionables,
+        optional,
+        contextHint: memoryLine,
+        variation: pickVar(['Focus on execution speed.', 'Prioritize high-impact activities.', 'Keep your feedback loop short.'], userInput)
       };
-      const pairs = dict[state.language] || [];
-      return pairs.reduce((acc, [en, tr]) => acc.replaceAll(en, tr), text);
+      return { result, context, intents };
     }
 
-    function generateAIResponse(userInput) {
-      const intent = detectIntent(userInput);
-      const memoryBlock = state.memories.slice(0, 5).join(' | ') || 'No saved memory notes.';
-      const fileContext = state.workspaceContext.fileText ? state.workspaceContext.fileText.slice(0, 300) : 'No uploaded file context.';
-      const imageContext = (state.workspaceContext.images || []).join(', ') || 'No image context.';
-      const finance = state.finance;
-
-      const templates = {
-        startup: `Focus on rapid validation before scale. Build one clear offer and test demand in 2 channels.`,
-        pricing: `Use value-based tiers: Starter, Growth, Premium. Anchor the mid tier with strongest outcome promise.`,
-        marketing: `Prioritize one acquisition engine (content, outbound, or paid ads) and define weekly KPI targets.`,
-        finance: `Track runway, break-even point, and conversion-to-cash timing. Protect cash before expansion.`,
-        business_name_ideas: `Here are sample names: ${buildBusinessNameIdeas(userInput).join(', ')}.`,
-        general: `I can help with startup launch, pricing strategy, marketing systems, finance planning, and naming.`
-      };
-
-      let response = `Intent: ${intent}\n\n` +
-        `Analysis:\n` +
-        `- User request: ${userInput}\n` +
-        `- Memory signals: ${memoryBlock}\n` +
-        `- File context: ${fileContext}\n` +
-        `- Image context: ${imageContext}\n` +
-        `- Finance snapshot: Income ${finance.income}, Expense ${finance.expense}, Profit ${(finance.income - finance.expense).toFixed(2)}\n\n` +
-        `Action Plan:\n` +
-        `1) ${templates[intent]}\n` +
-        `2) Convert this into a measurable goal with a number and deadline.\n` +
-        `3) Create a weekly review ritual: what worked, what failed, what to change.\n\n` +
-        `Next 7 Days:\n` +
-        `- Day 1-2: Define offer + ideal customer profile.\n` +
-        `- Day 3-4: Launch one small experiment and gather responses.\n` +
-        `- Day 5-7: Improve messaging, tighten pricing, and track outcomes.\n\n` +
-        `Risks:\n` +
-        `- Spreading efforts across too many channels.\n` +
-        `- Pricing too low without proving value.\n` +
-        `- Ignoring cash flow trends.\n\n` +
-        `Use this immediately: share your exact niche and current monthly revenue; I will generate a custom step-by-step growth plan.`;
-
-      return state.language === 'en' ? response : translateAi(response);
-    }
-
-    // =====================
-    // Chat + TTS/STT system
-    // =====================
-    function addMessage(role, text) {
-      state.chats.push({ role, text, time: new Date().toISOString() });
-      persist();
-      renderChat();
-    }
+    // ==================
+    // Chat UI + editing
+    // ==================
+    function getChat() { return getBucket(state.chats, []); }
+    function saveChat(chat) { state.chats[uid()] = chat; persist(); }
 
     function renderChat() {
       const box = $('chatBox');
-      box.innerHTML = state.chats.map((m) => {
-        const mine = m.role === 'user';
-        return `<div class="${mine ? 'text-right' : 'text-left'}">
-          <div class="inline-block max-w-[92%] whitespace-pre-wrap rounded-xl px-3 py-2 ${mine ? 'bg-indigo-600/90' : 'bg-slate-800 border border-slate-700'}">${m.text.replace(/</g, '&lt;')}</div>
-        </div>`;
-      }).join('');
+      const chat = getChat();
+      box.innerHTML = '';
+      chat.forEach((msg, index) => {
+        const row = document.createElement('div');
+        row.className = `fade-in p-3 rounded-xl border ${msg.role==='user' ? 'bg-indigo-950/60 border-indigo-800 ml-8' : 'bg-slate-900 border-slate-700 mr-8'}`;
+        row.innerHTML = `<div class="text-xs uppercase tracking-wide text-slate-400">${msg.role}</div><div class="mt-1 whitespace-pre-wrap text-sm">${msg.text}</div>`;
+        if (msg.role === 'user') {
+          const edit = document.createElement('button');
+          edit.textContent = 'Edit';
+          edit.className = 'mt-2 text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600';
+          edit.onclick = () => {
+            const v = prompt('Edit message', msg.text);
+            if (!v) return;
+            chat[index].text = v;
+            saveChat(chat);
+            renderChat();
+          };
+          row.appendChild(edit);
+        }
+        box.appendChild(row);
+      });
       box.scrollTop = box.scrollHeight;
     }
 
+    function formatResponseText(r) {
+      return [
+        `# ${r.title}`,
+        `Intents: ${r.intents}`,
+        '',
+        'Steps:',
+        ...r.steps,
+        '',
+        'Actionable Advice:',
+        ...r.actionable.map(v=>`- ${v}`),
+        '',
+        'Optional Suggestions:',
+        ...r.optional.map(v=>`- ${v}`),
+        '',
+        `Context Signal: ${r.contextHint}`,
+        `Adaptive Note: ${r.variation}`
+      ].join('\n');
+    }
+
+    // ========================
+    // Voice System (STT + TTS)
+    // ========================
     function speak(text) {
       if (!('speechSynthesis' in window)) return;
-      const utterance = new SpeechSynthesisUtterance(text.slice(0, 500));
-      utterance.lang = state.language === 'en' ? 'en-US' : `${state.language}`;
-      speechSynthesis.speak(utterance);
+      const utter = new SpeechSynthesisUtterance(text.slice(0, 400));
+      utter.lang = LANGUAGE_META[state.language].speech;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
     }
 
-    $('chatForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const prompt = $('chatInput').value.trim();
-      if (!prompt) return;
-      $('chatInput').value = '';
-      addMessage('user', prompt);
-      const answer = generateAIResponse(prompt);
-      addMessage('ai', answer);
-      speak(answer);
-    });
-
-    $('clearChatBtn').addEventListener('click', () => {
-      state.chats = [];
-      persist();
-      renderChat();
-    });
-
-    $('voiceInputBtn').addEventListener('click', () => {
+    function startVoiceInput() {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        alert('Speech recognition is not supported in this browser.');
-        return;
+      if (!SR) { alert('Speech recognition not supported in this browser.'); return; }
+      const recognition = new SR();
+      recognition.lang = LANGUAGE_META[state.language].speech;
+      recognition.interimResults = false;
+      recognition.onresult = (e) => { $('chatInput').value = e.results[0][0].transcript; };
+      recognition.start();
+    }
+
+    // ========================================
+    // Multilingual engine (UI translation only)
+    // ========================================
+    function applyLanguage() {
+      document.documentElement.lang = state.language;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+      document.querySelectorAll('.tabBtn').forEach(btn => {
+        const map = { dashboard:'dashboard', chat:'chat', workspace:'fileIntelligence', memory:'memory', profile:'profile' };
+        btn.textContent = t(map[btn.dataset.tab]);
+      });
+      localStorage.setItem(KEYS.language, state.language);
+    }
+
+    // ================================
+    // File Intelligence (txt/csv/json/pdf)
+    // ================================
+    function summarizeText(text) {
+      const lines = text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+      const first = lines.slice(0,3).join(' ');
+      const keywords = ['revenue','cost','customer','market','price','growth','profit'];
+      const found = keywords.filter(k => text.toLowerCase().includes(k));
+      return `Summary: ${first.slice(0,220)}${first.length>220?'...':''} | Detected themes: ${found.join(', ') || 'general business notes'}.`;
+    }
+
+    async function readUploadedFile(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) throw new Error('PDF parser unavailable.');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = '';
+        for (let p=1; p<=pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          text += content.items.map(i=>i.str).join(' ') + '\n';
+        }
+        return text;
       }
-      const recog = new SR();
-      recog.lang = state.language === 'en' ? 'en-US' : state.language;
-      recog.interimResults = false;
-      recog.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        $('chatInput').value = transcript;
-      };
-      recog.start();
-    });
+      return await file.text();
+    }
 
-    // =================
-    // Quick suggestions
-    // =================
-    const SUGGESTIONS = [
-      'How do I validate my startup idea quickly?',
-      'Give me a pricing strategy for 3 plans.',
-      'How can I market with low budget?',
-      'Analyze my finance and suggest improvements.',
-      'Generate business name ideas for my niche.'
-    ];
+    // =============================
+    // Finance Intelligence Engine
+    // =============================
+    function financeInsight(income, expense) {
+      const profit = income - expense;
+      if (profit < 0) return { profit, message: 'You are operating at a loss. Focus on reducing fixed costs and improving conversion.' };
+      if (profit < income * 0.2) return { profit, message: 'Healthy but thin margin. Optimize pricing tiers and upsells.' };
+      return { profit, message: 'Strong margin. Reinvest some profit into growth experiments.' };
+    }
 
-    function renderSuggestions() {
-      const container = $('quickSuggestions');
-      container.innerHTML = '';
-      SUGGESTIONS.forEach((text) => {
-        const button = document.createElement('button');
-        button.className = 'px-2 py-1.5 rounded-lg text-xs bg-indigo-600/70 hover:bg-indigo-500';
-        button.textContent = text;
-        button.addEventListener('click', () => {
-          $('chatInput').value = text;
-          document.querySelector('[data-tab=\"assistant\"]').click();
-        });
-        container.appendChild(button);
+    // =======================
+    // Authentication/Profile
+    // =======================
+    function register(name, email, password) {
+      if (state.users.find(u=>u.email===email)) return alert('Email already exists.');
+      state.users.push({ name, email, password });
+      persist();
+      alert('Registered. Please login.');
+    }
+    function login(email, password) {
+      const user = state.users.find(u=>u.email===email && u.password===password);
+      if (!user) return alert('Invalid credentials.');
+      state.currentUser = user;
+      persist();
+      refreshAuthUI();
+    }
+    function logout() { state.currentUser = null; persist(); refreshAuthUI(); }
+
+    // =======================
+    // Rendering and Bindings
+    // =======================
+    function refreshAuthUI() {
+      const loggedIn = !!state.currentUser;
+      $('authSection').classList.toggle('hidden', loggedIn);
+      $('appSection').classList.toggle('hidden', !loggedIn);
+      $('logoutBtn').classList.toggle('hidden', !loggedIn);
+      if (!loggedIn) return;
+
+      $('loggedInAs').textContent = `${state.currentUser.name} (${state.currentUser.email})`;
+      const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
+      const fin = getBucket(state.finance, { income:0, expense:0 });
+      $('businessTypeInput').value = profile.businessType;
+      $('audienceInput').value = profile.audience;
+      $('preferenceInput').value = profile.preference;
+      $('incomeInput').value = fin.income;
+      $('expenseInput').value = fin.expense;
+
+      renderMemory();
+      renderFaq();
+      renderChat();
+      renderDashboard();
+      loadWorkspaceToUI();
+    }
+
+    function renderMemory() {
+      const list = $('memoryList');
+      const mems = getBucket(state.memories, []);
+      list.innerHTML = mems.map((m, i) => `<li class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm flex justify-between"><span><strong>${m.type}</strong>: ${m.text}</span><button onclick="deleteMemory(${i})" class="text-rose-400 text-xs">Delete</button></li>`).join('') || '<li class="text-slate-400 text-sm">No memory notes yet.</li>';
+    }
+
+    window.deleteMemory = (idx) => {
+      const mems = getBucket(state.memories, []);
+      mems.splice(idx, 1);
+      persist();
+      renderMemory();
+    };
+
+    function renderFaq() {
+      const entries = topFaq();
+      $('faqList').innerHTML = entries.map(([q,c]) => `<li>${q} <span class="text-slate-500">(${c})</span></li>`).join('') || '<li>No patterns learned yet.</li>';
+    }
+
+    function renderDashboard() {
+      const fin = getBucket(state.finance, { income:0, expense:0 });
+      const profile = getBucket(state.profiles, { businessType:'', audience:'', preference:'' });
+      const insight = financeInsight(Number(fin.income), Number(fin.expense));
+      $('profitOutput').textContent = insight.profit.toFixed(2);
+      $('financeInsight').textContent = insight.message;
+      $('dashboardSummary').textContent = `Business: ${profile.businessType || 'Not set'} | Audience: ${profile.audience || 'Not set'} | Preference: ${profile.preference || 'Not set'}`;
+      const recs = recommendationEngine(buildContext('dashboard'), detectIntents('growth finance marketing'));
+      $('autoRecommendations').innerHTML = recs.map(r=>`<li>${r}</li>`).join('');
+    }
+
+    function loadWorkspaceToUI() {
+      const ws = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
+      $('fileStatus').textContent = ws.fileName ? `Loaded: ${ws.fileName}` : 'No file loaded.';
+      $('filePreview').value = ws.fileText || '';
+      $('fileSummary').textContent = ws.fileSummary || '';
+      $('imageStatus').textContent = ws.imageName ? `Image: ${ws.imageName} | Note: ${ws.imageNote || '-'}` : 'No image loaded.';
+      $('imageNoteInput').value = ws.imageNote || '';
+    }
+
+    function setupEvents() {
+      $('registerForm').addEventListener('submit', e => { e.preventDefault(); register($('regName').value.trim(), $('regEmail').value.trim(), $('regPassword').value); e.target.reset(); });
+      $('loginForm').addEventListener('submit', e => { e.preventDefault(); login($('loginEmail').value.trim(), $('loginPassword').value); });
+      $('logoutBtn').addEventListener('click', logout);
+
+      $('tabs').addEventListener('click', e => {
+        const b = e.target.closest('button[data-tab]');
+        if (!b) return;
+        document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
+        $('panel-' + b.dataset.tab).classList.remove('hidden');
+        document.querySelectorAll('.tabBtn').forEach(t=>t.className='tabBtn bg-slate-800 rounded-lg px-3 py-2');
+        b.className='tabBtn bg-indigo-600 rounded-lg px-3 py-2';
+      });
+
+      $('languageSelect').addEventListener('change', e => { state.language = e.target.value; persist(); applyLanguage(); });
+
+      $('profileForm').addEventListener('submit', e => {
+        e.preventDefault();
+        state.profiles[uid()] = {
+          businessType: $('businessTypeInput').value.trim(),
+          audience: $('audienceInput').value.trim(),
+          preference: $('preferenceInput').value.trim()
+        };
+        persist();
+        renderDashboard();
+      });
+
+      $('memoryForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const type = $('memoryType').value.trim() || 'general';
+        const text = $('memoryInput').value.trim();
+        if (!text) return;
+        const mems = getBucket(state.memories, []);
+        mems.unshift({ type, text, createdAt: Date.now() });
+        state.memories[uid()] = mems.slice(0, 40);
+        persist();
+        e.target.reset();
+        renderMemory();
+      });
+
+      $('saveFinanceBtn').addEventListener('click', () => {
+        state.finance[uid()] = {
+          income: Number($('incomeInput').value || 0),
+          expense: Number($('expenseInput').value || 0)
+        };
+        persist();
+        renderDashboard();
+      });
+
+      $('chatForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const input = $('chatInput').value.trim();
+        if (!input) return;
+        const chat = getChat();
+        chat.push({ role: 'user', text: input, ts: Date.now() });
+
+        const { result } = generateResponse(input);
+        const out = formatResponseText(result);
+        chat.push({ role: 'ai', text: out, ts: Date.now() });
+        saveChat(chat);
+        updateFaq(input);
+        renderFaq();
+        renderChat();
+        renderDashboard();
+        speak(`${result.title}. ${result.variation}`);
+        $('chatInput').value = '';
+      });
+
+      $('clearChatBtn').addEventListener('click', () => { state.chats[uid()] = []; persist(); renderChat(); });
+      $('voiceInputBtn').addEventListener('click', startVoiceInput);
+
+      $('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        $('fileStatus').textContent = `Processing ${file.name}...`;
+        try {
+          const text = await readUploadedFile(file);
+          const summary = summarizeText(text);
+          state.workspace[uid()] = { ...getBucket(state.workspace, {}), fileName: file.name, fileText: text.slice(0, 15000), fileSummary: summary };
+          persist();
+          loadWorkspaceToUI();
+        } catch (err) {
+          $('fileStatus').textContent = `Error: ${err.message}`;
+        }
+      });
+
+      $('imageInput').addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const ws = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
+        ws.imageName = file.name;
+        state.workspace[uid()] = ws;
+        persist();
+        const reader = new FileReader();
+        reader.onload = () => {
+          $('imagePreview').src = reader.result;
+          $('imagePreview').classList.remove('hidden');
+          loadWorkspaceToUI();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      $('saveImageNoteBtn').addEventListener('click', () => {
+        const ws = getBucket(state.workspace, { fileName:'', fileText:'', fileSummary:'', imageName:'', imageNote:'' });
+        ws.imageNote = $('imageNoteInput').value.trim();
+        state.workspace[uid()] = ws;
+        persist();
+        loadWorkspaceToUI();
       });
     }
 
-    // =================
-    // Tabbed navigation
-    // =================
-    document.querySelectorAll('.tab-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach((b) => {
-          b.classList.remove('bg-indigo-600/80');
-          b.classList.add('bg-slate-800');
-        });
-        btn.classList.add('bg-indigo-600/80');
-
-        const target = btn.dataset.tab;
-        const panelMap = {
-          dashboard: 'dashboardPanel',
-          assistant: 'assistantPanel',
-          workspace: 'workspacePanel',
-          memory: 'memoryPanel'
-        };
-        document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
-        $(panelMap[target]).classList.remove('hidden');
-      });
-    });
-
-    // ====================
-    // Initial app bootstrap
-    // ====================
     function init() {
-      initLanguageSelector();
-      initAuthView();
-      $('incomeInput').value = state.finance.income || 0;
-      $('expenseInput').value = state.finance.expense || 0;
-      updateFinance();
-      renderMemories();
-      renderChat();
-      renderSuggestions();
-      if (state.workspaceContext.fileName) {
-        $('fileStatus').textContent = `Loaded: ${state.workspaceContext.fileName}`;
-        $('filePreview').value = state.workspaceContext.fileText || '';
-      }
-      if ((state.workspaceContext.images || []).length) {
-        $('imageStatus').textContent = `Saved image context: ${state.workspaceContext.images.join(', ')}`;
-      }
+      $('languageSelect').innerHTML = LANGS.map(l=>`<option value="${l}">${LANGUAGE_META[l].name}</option>`).join('');
+      $('languageSelect').value = state.language;
+      applyLanguage();
+      setupEvents();
+      refreshAuthUI();
     }
 
     init();
