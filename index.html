@@ -1,241 +1,611 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barya | Premium AI Finance Growth Platform</title>
-  <meta name="description" content="Barya helps beginners and small businesses track money, learn finance with AI, and grow with confidence.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya Business AI Assistant</title>
+  <meta name="description" content="Barya Business AI Assistant - premium AI business dashboard with multilingual assistant, memory, uploads, and finance insights." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            barya: {
+              bg: '#05060b',
+              card: '#0b1020',
+              card2: '#121a33',
+              indigo: '#6366f1',
+              accent: '#8b5cf6'
+            }
+          },
+          boxShadow: {
+            glow: '0 0 0 1px rgba(99,102,241,.35), 0 20px 40px rgba(2,6,23,.55)'
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <header class="site-header" id="home">
-    <nav class="container nav" aria-label="Main navigation">
-      <a href="#home" class="brand" aria-label="Barya home page">
-        <span class="brand-mark" aria-hidden="true">B</span>
-        <span>Barya</span>
-      </a>
-
-      <button class="menu-toggle" aria-expanded="false" aria-controls="menu" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-
-      <div class="nav-links" id="menu">
-        <a href="#home">Home</a>
-        <a href="#features">Features</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-        <a href="dashboard.html" class="btn btn-soft">Login</a>
-        <a href="#cta" class="btn btn-primary">Get Started</a>
-      </div>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero section">
-      <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
-      <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow">Premium finance + AI assistant</p>
-          <h1>Track money. Learn finance. Build growth with confidence.</h1>
-          <p class="lead">Barya is a premium, beginner-friendly platform that combines financial tracking, AI-powered guidance, and clear growth planning for people and small businesses.</p>
-          <div class="hero-actions">
-            <a href="#cta" class="btn btn-primary">Get Started</a>
-            <a href="dashboard.html" class="btn btn-soft">Login</a>
-          </div>
-          <div class="hero-trust">
-            <span>Beginner-first design</span>
-            <span>Smart AI guidance</span>
-            <span>Action-ready insights</span>
-          </div>
-        </div>
-
-        <aside class="hero-preview card" aria-label="Barya dashboard preview">
-          <div class="preview-top">
-            <div>
-              <p class="mini-label">Barya Workspace</p>
-              <h2>Business Snapshot</h2>
-            </div>
-            <span class="status">Live</span>
-          </div>
-          <div class="preview-stats">
-            <article>
-              <p>Net balance</p>
-              <h3>$42,780</h3>
-            </article>
-            <article>
-              <p>Savings target</p>
-              <h3>86%</h3>
-            </article>
-          </div>
-          <article class="preview-panel">
-            <p>Cash flow trend</p>
-            <div class="bars" aria-hidden="true">
-              <span style="--h: 30%"></span>
-              <span style="--h: 55%"></span>
-              <span style="--h: 48%"></span>
-              <span style="--h: 68%"></span>
-              <span style="--h: 85%"></span>
-            </div>
-          </article>
-          <article class="preview-panel preview-ai">
-            <p>AI guidance</p>
-            <small>“Reduce non-essential expenses by 9% to improve monthly growth margin.”</small>
-          </article>
-        </aside>
-      </div>
-    </section>
-
-    <section class="section surface" id="features">
-      <div class="container">
-        <div class="section-title">
-          <p class="eyebrow">Core features</p>
-          <h2>Everything you need to manage, understand, and grow</h2>
-        </div>
-        <div class="feature-grid">
-          <article class="card feature-card">
-            <div class="icon">📈</div>
-            <h3>Financial Tracking</h3>
-            <p>Track income, expenses, and savings in one clean view with helpful trend summaries.</p>
-          </article>
-          <article class="card feature-card">
-            <div class="icon">🤖</div>
-            <h3>AI Guidance</h3>
-            <p>Get simple, step-by-step recommendations tailored for beginners and growing businesses.</p>
-          </article>
-          <article class="card feature-card">
-            <div class="icon">✨</div>
-            <h3>Smart Insights</h3>
-            <p>Turn your data into practical weekly insights you can use to make better decisions.</p>
-          </article>
-          <article class="card feature-card">
-            <div class="icon">🧭</div>
-            <h3>Business Planning</h3>
-            <p>Set goals, organize priorities, and follow a clear roadmap for healthier growth.</p>
-          </article>
-          <article class="card feature-card">
-            <div class="icon">💡</div>
-            <h3>Idea Generator</h3>
-            <p>Discover practical business ideas aligned with your budget, skills, and long-term vision.</p>
-          </article>
-          <article class="card feature-card">
-            <div class="icon">🌱</div>
-            <h3>Beginner-Friendly Experience</h3>
-            <p>Designed to stay clear and supportive, so you can learn confidently without confusion.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="why-barya">
-      <div class="container why-layout">
+<body class="bg-gradient-to-br from-black via-slate-950 to-indigo-950 text-slate-100 min-h-screen">
+  <div class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+    <header class="bg-barya-card/90 border border-indigo-900/60 rounded-2xl p-4 md:p-6 shadow-glow backdrop-blur sticky top-3 z-30">
+      <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
         <div>
-          <p class="eyebrow">Why Barya</p>
-          <h2>A modern platform built for real beginners and real progress</h2>
-          <p class="why-intro">Barya combines finance + AI + growth into one clear product. It removes confusion, builds better habits, and helps you move step by step with confidence.</p>
+          <h1 data-i18n="appTitle" class="text-2xl md:text-3xl font-bold tracking-tight">Barya Business AI Assistant</h1>
+          <p data-i18n="appSubtitle" class="text-slate-300 text-sm md:text-base mt-1">Your premium AI co-pilot for startup planning, pricing, marketing, finance, and growth.</p>
         </div>
-        <div class="why-grid">
-          <article class="card why-card"><h3>Built for beginners</h3><p>No jargon-heavy workflows. Just guided actions that are easy to follow.</p></article>
-          <article class="card why-card"><h3>Simple, not confusing</h3><p>Focused interface, clear language, and recommendations that are easy to act on.</p></article>
-          <article class="card why-card"><h3>Finance + AI + growth</h3><p>Track money, understand insights, and build your next growth steps in one place.</p></article>
-          <article class="card why-card"><h3>Step-by-step momentum</h3><p>Build strong habits with milestones, progress signals, and consistent guidance.</p></article>
+        <div class="flex flex-wrap gap-2 items-center">
+          <label data-i18n="language" for="languageSelect" class="text-sm text-slate-300">Language</label>
+          <select id="languageSelect" class="bg-slate-900 border border-indigo-800 rounded-lg px-3 py-2 text-sm"></select>
+          <button id="logoutBtn" class="hidden px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm font-medium" data-i18n="logout">Logout</button>
         </div>
       </div>
-    </section>
+      <nav class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2" aria-label="Section Navigation">
+        <button class="tab-btn px-3 py-2 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-sm font-semibold" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</button>
+        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="assistant" data-i18n="tabAssistant">AI Assistant</button>
+        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="workspace" data-i18n="tabWorkspace">Workspace</button>
+        <button class="tab-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-semibold" data-tab="memory" data-i18n="tabMemory">Memory</button>
+      </nav>
+    </header>
 
-    <section class="section surface" id="product-preview">
-      <div class="container section-title">
-        <p class="eyebrow">Product preview</p>
-        <h2>A polished product experience from first click to daily workflow</h2>
+    <!-- Authentication Feature: localStorage based login/register -->
+    <section id="authSection" class="mt-6 grid md:grid-cols-2 gap-4">
+      <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+        <h2 class="text-xl font-semibold" data-i18n="register">Register</h2>
+        <form id="registerForm" class="mt-4 space-y-3">
+          <input id="regName" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Name" />
+          <input id="regEmail" type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Email" />
+          <input id="regPassword" type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Password" />
+          <button class="w-full bg-indigo-600 hover:bg-indigo-500 rounded-lg py-2 font-medium" data-i18n="createAccount">Create Account</button>
+        </form>
       </div>
-      <div class="container preview-grid">
-        <article class="card showcase-card">
-          <h3>Unified dashboard</h3>
-          <p>Monitor balances, goals, and growth metrics together in one premium workspace.</p>
-          <div class="showcase-lines" aria-hidden="true"><span></span><span></span><span></span></div>
-        </article>
-        <article class="card showcase-card">
-          <h3>AI co-pilot</h3>
-          <p>Ask questions and receive practical guidance for budgeting, planning, and scaling.</p>
-          <div class="showcase-rings" aria-hidden="true"><span></span><span></span></div>
-        </article>
-        <article class="card showcase-card">
-          <h3>Growth actions</h3>
-          <p>Convert insights into actionable tasks with clear deadlines and measurable outcomes.</p>
-          <div class="showcase-check" aria-hidden="true"><span></span><span></span><span></span></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="about">
-      <div class="container about-wrap card">
-        <p class="eyebrow">About Barya</p>
-        <h2>Mission-driven innovation for people and small businesses</h2>
-        <p><strong>Founder:</strong> Shruti Barya</p>
-        <p>Our mission is to help people, beginners, and small businesses grow with AI and better financial understanding so they can make smarter decisions and build a stronger future.</p>
-      </div>
-    </section>
-
-    <section class="section surface" id="contact">
-      <div class="container contact-layout">
-        <div>
-          <p class="eyebrow">Contact</p>
-          <h2>Let’s collaborate and build something meaningful</h2>
-          <p>We welcome feedback, collaboration, and ideas. Reach out anytime at <a href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a>.</p>
-        </div>
-        <form class="card contact-form" action="#" method="post" onsubmit="return false" aria-label="Contact form">
-          <label for="name">Name</label>
-          <input id="name" name="name" type="text" placeholder="Your full name">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="4" placeholder="Tell us about your project or feedback"></textarea>
-          <button type="submit" class="btn btn-primary">Send Message</button>
+      <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+        <h2 class="text-xl font-semibold" data-i18n="login">Login</h2>
+        <form id="loginForm" class="mt-4 space-y-3">
+          <input id="loginEmail" type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Email" />
+          <input id="loginPassword" type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="Password" />
+          <button class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium" data-i18n="login">Login</button>
         </form>
       </div>
     </section>
 
-    <section class="section" id="cta">
-      <div class="container cta card">
-        <p class="eyebrow">Ready to start with Barya?</p>
-        <h2>Track. Learn. Grow.</h2>
-        <p>Join Barya and build your financial confidence with a premium AI-guided experience.</p>
-        <a href="dashboard.html" class="btn btn-primary">Get Started</a>
-      </div>
-    </section>
-  </main>
+    <main id="appSection" class="hidden mt-6 space-y-6">
+      <!-- Dashboard Section -->
+      <section class="tab-panel" id="dashboardPanel">
+        <div class="grid lg:grid-cols-3 gap-4">
+          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow lg:col-span-2">
+            <h2 class="text-xl font-semibold" data-i18n="welcome">Welcome</h2>
+            <p class="text-slate-300 mt-2"><span data-i18n="loggedInAs">Logged in as</span>: <strong id="loggedInUser"></strong></p>
+            <p id="dashboardSummary" class="mt-4 text-slate-300"></p>
+          </article>
+          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+            <h3 class="font-semibold" data-i18n="quickActions">Quick Suggestions</h3>
+            <div id="quickSuggestions" class="mt-3 flex flex-wrap gap-2"></div>
+          </article>
+        </div>
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div>
-        <h3>Barya</h3>
-        <p>Premium SaaS platform helping beginners and small businesses track money, learn finance, and grow with AI confidence.</p>
-      </div>
-      <div>
-        <h4>Navigation</h4>
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Contact</h4>
-        <ul>
-          <li><a href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></li>
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Terms</a></li>
-          <li><a href="#">Legal</a></li>
-        </ul>
-      </div>
-    </div>
-    <p class="copyright">© <span id="year"></span> Barya. All rights reserved.</p>
-  </footer>
+        <!-- Finance Dashboard Feature -->
+        <div class="grid md:grid-cols-3 gap-4 mt-4">
+          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
+            <label class="text-sm text-slate-300" data-i18n="income">Income</label>
+            <input id="incomeInput" type="number" min="0" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          </article>
+          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
+            <label class="text-sm text-slate-300" data-i18n="expense">Expense</label>
+            <input id="expenseInput" type="number" min="0" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
+          </article>
+          <article class="bg-barya-card2 border border-indigo-900/60 rounded-2xl p-5">
+            <p class="text-sm text-slate-300" data-i18n="profit">Profit</p>
+            <p id="profitOutput" class="text-2xl font-bold mt-2">0</p>
+            <p id="financeInsight" class="text-sm text-slate-300 mt-2"></p>
+          </article>
+        </div>
+      </section>
 
-  <script src="landing.js"></script>
+      <!-- AI Assistant + Chat Section -->
+      <section class="tab-panel hidden" id="assistantPanel">
+        <div class="bg-barya-card border border-indigo-900/60 rounded-2xl p-4 md:p-5 shadow-glow">
+          <div class="flex flex-wrap justify-between gap-3 items-center">
+            <h2 class="text-xl font-semibold" data-i18n="assistantTitle">AI Assistant</h2>
+            <div class="flex gap-2">
+              <button id="voiceInputBtn" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm" data-i18n="voiceInput">Voice Input</button>
+              <button id="clearChatBtn" class="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm" data-i18n="clearChat">Clear Chat</button>
+            </div>
+          </div>
+          <div id="chatBox" class="mt-4 h-[380px] overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-3"></div>
+          <form id="chatForm" class="mt-3 flex flex-col md:flex-row gap-2">
+            <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Ask about startup, pricing, marketing, finance, or name ideas..." />
+            <button class="bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-lg font-semibold" data-i18n="send">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Workspace Section: File + Image Upload -->
+      <section class="tab-panel hidden" id="workspacePanel">
+        <div class="grid lg:grid-cols-2 gap-4">
+          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+            <h2 class="text-xl font-semibold" data-i18n="fileUpload">File Upload Context</h2>
+            <p class="text-slate-300 text-sm mt-2" data-i18n="fileHelp">Upload TXT, CSV, JSON, or PDF. Content will be used for AI context.</p>
+            <input id="fileInput" type="file" accept=".txt,.csv,.json,.pdf" class="mt-4 w-full text-sm" />
+            <p class="mt-3 text-sm text-slate-300" id="fileStatus"></p>
+            <textarea id="filePreview" class="mt-3 w-full min-h-[180px] bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm" readonly></textarea>
+          </article>
+          <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+            <h2 class="text-xl font-semibold" data-i18n="imageUpload">Image Upload Context</h2>
+            <p class="text-slate-300 text-sm mt-2" data-i18n="imageHelp">Upload an image for workspace context; image name is stored for AI.</p>
+            <input id="imageInput" type="file" accept="image/*" class="mt-4 w-full text-sm" />
+            <p id="imageStatus" class="mt-3 text-sm text-slate-300"></p>
+            <img id="imagePreview" class="mt-3 max-h-64 rounded-lg border border-slate-800 hidden" alt="Uploaded preview" />
+          </article>
+        </div>
+      </section>
+
+      <!-- Memory Section -->
+      <section class="tab-panel hidden" id="memoryPanel">
+        <article class="bg-barya-card border border-indigo-900/60 rounded-2xl p-5 shadow-glow">
+          <h2 class="text-xl font-semibold" data-i18n="memoryTitle">Memory Notes</h2>
+          <p class="text-slate-300 text-sm mt-2" data-i18n="memoryHelp">Save important business preferences, goals, and context for smarter AI replies.</p>
+          <form id="memoryForm" class="mt-4 flex flex-col md:flex-row gap-2">
+            <input id="memoryInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Add a memory note..." />
+            <button class="bg-indigo-600 hover:bg-indigo-500 px-4 py-3 rounded-lg" data-i18n="save">Save</button>
+          </form>
+          <ul id="memoryList" class="mt-4 space-y-2"></ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // =========================
+    // Storage & state constants
+    // =========================
+    const STORAGE_KEYS = {
+      users: 'barya_users',
+      currentUser: 'barya_current_user',
+      chats: 'barya_chat_history',
+      memories: 'barya_memories',
+      workspaceContext: 'barya_workspace_context',
+      finance: 'barya_finance',
+      language: 'barya_language'
+    };
+
+    const SUPPORTED_LANGS = ['en', 'hi', 'es', 'fr', 'ar', 'ko', 'ja'];
+
+    // ==================================================
+    // Internal dictionary for UI + AI phrase translation
+    // ==================================================
+    const I18N = {
+      en: { name: 'English', appTitle: 'Barya Business AI Assistant', appSubtitle: 'Your premium AI co-pilot for startup planning, pricing, marketing, finance, and growth.', language: 'Language', logout: 'Logout', tabDashboard: 'Dashboard', tabAssistant: 'AI Assistant', tabWorkspace: 'Workspace', tabMemory: 'Memory', register: 'Register', login: 'Login', createAccount: 'Create Account', welcome: 'Welcome', loggedInAs: 'Logged in as', quickActions: 'Quick Suggestions', income: 'Income', expense: 'Expense', profit: 'Profit', assistantTitle: 'AI Assistant', voiceInput: 'Voice Input', clearChat: 'Clear Chat', send: 'Send', fileUpload: 'File Upload Context', fileHelp: 'Upload TXT, CSV, JSON, or PDF. Content will be used for AI context.', imageUpload: 'Image Upload Context', imageHelp: 'Upload an image for workspace context; image name is stored for AI.', memoryTitle: 'Memory Notes', memoryHelp: 'Save important business preferences, goals, and context for smarter AI replies.', save: 'Save', askPlaceholder: 'Ask about startup, pricing, marketing, finance, or name ideas...' },
+      hi: { name: 'हिन्दी', appTitle: 'बार्या बिज़नेस एआई असिस्टेंट', appSubtitle: 'स्टार्टअप, प्राइसिंग, मार्केटिंग और फाइनेंस के लिए आपका एआई सहायक।', language: 'भाषा', logout: 'लॉगआउट', tabDashboard: 'डैशबोर्ड', tabAssistant: 'एआई असिस्टेंट', tabWorkspace: 'वर्कस्पेस', tabMemory: 'मेमोरी', register: 'रजिस्टर', login: 'लॉगिन', createAccount: 'अकाउंट बनाएं', welcome: 'स्वागत है', loggedInAs: 'लॉगिन यूज़र', quickActions: 'त्वरित सुझाव', income: 'आय', expense: 'खर्च', profit: 'लाभ', assistantTitle: 'एआई असिस्टेंट', voiceInput: 'वॉइस इनपुट', clearChat: 'चैट साफ करें', send: 'भेजें', fileUpload: 'फाइल अपलोड कॉन्टेक्स्ट', fileHelp: 'TXT, CSV, JSON या PDF अपलोड करें। AI इसे कॉन्टेक्स्ट में उपयोग करेगा।', imageUpload: 'इमेज अपलोड कॉन्टेक्स्ट', imageHelp: 'इमेज अपलोड करें; AI के लिए नाम सेव होगा।', memoryTitle: 'मेमोरी नोट्स', memoryHelp: 'बेहतर AI जवाबों के लिए अपनी जानकारी सेव करें।', save: 'सेव', askPlaceholder: 'स्टार्टअप, प्राइसिंग, मार्केटिंग, फाइनेंस या नाम आइडिया पूछें...' },
+      es: { name: 'Español', appTitle: 'Asistente IA Empresarial Barya', appSubtitle: 'Tu copiloto de IA para startup, precios, marketing y finanzas.', language: 'Idioma', logout: 'Cerrar sesión', tabDashboard: 'Panel', tabAssistant: 'Asistente IA', tabWorkspace: 'Espacio', tabMemory: 'Memoria', register: 'Registro', login: 'Iniciar sesión', createAccount: 'Crear cuenta', welcome: 'Bienvenido', loggedInAs: 'Conectado como', quickActions: 'Sugerencias rápidas', income: 'Ingresos', expense: 'Gastos', profit: 'Ganancia', assistantTitle: 'Asistente IA', voiceInput: 'Voz a texto', clearChat: 'Borrar chat', send: 'Enviar', fileUpload: 'Contexto de archivos', fileHelp: 'Sube TXT, CSV, JSON o PDF para contexto de IA.', imageUpload: 'Contexto de imagen', imageHelp: 'Sube una imagen; el nombre se guarda como contexto.', memoryTitle: 'Notas de memoria', memoryHelp: 'Guarda preferencias y datos para respuestas inteligentes.', save: 'Guardar', askPlaceholder: 'Pregunta sobre startup, precios, marketing, finanzas o nombres...' },
+      fr: { name: 'Français', appTitle: 'Assistant IA Business Barya', appSubtitle: 'Votre copilote IA pour startup, tarification, marketing et finance.', language: 'Langue', logout: 'Déconnexion', tabDashboard: 'Tableau de bord', tabAssistant: 'Assistant IA', tabWorkspace: 'Espace', tabMemory: 'Mémoire', register: 'Créer un compte', login: 'Connexion', createAccount: 'Créer', welcome: 'Bienvenue', loggedInAs: 'Connecté en tant que', quickActions: 'Suggestions rapides', income: 'Revenu', expense: 'Dépense', profit: 'Profit', assistantTitle: 'Assistant IA', voiceInput: 'Entrée vocale', clearChat: 'Effacer le chat', send: 'Envoyer', fileUpload: 'Contexte fichier', fileHelp: 'Téléchargez TXT, CSV, JSON ou PDF pour le contexte IA.', imageUpload: 'Contexte image', imageHelp: 'Téléchargez une image ; le nom sera mémorisé.', memoryTitle: 'Notes mémoire', memoryHelp: 'Sauvegardez des notes pour améliorer les réponses IA.', save: 'Enregistrer', askPlaceholder: 'Demandez startup, prix, marketing, finance ou idées de nom...' },
+      ar: { name: 'العربية', appTitle: 'مساعد باريا للأعمال بالذكاء الاصطناعي', appSubtitle: 'مساعدك الذكي للتخطيط والتسعير والتسويق والتمويل.', language: 'اللغة', logout: 'تسجيل خروج', tabDashboard: 'لوحة التحكم', tabAssistant: 'المساعد الذكي', tabWorkspace: 'مساحة العمل', tabMemory: 'الذاكرة', register: 'إنشاء حساب', login: 'تسجيل دخول', createAccount: 'إنشاء الحساب', welcome: 'مرحباً', loggedInAs: 'المستخدم الحالي', quickActions: 'اقتراحات سريعة', income: 'الدخل', expense: 'المصروف', profit: 'الربح', assistantTitle: 'المساعد الذكي', voiceInput: 'إدخال صوتي', clearChat: 'مسح المحادثة', send: 'إرسال', fileUpload: 'سياق الملفات', fileHelp: 'ارفع TXT أو CSV أو JSON أو PDF لاستخدامه كسياق.', imageUpload: 'سياق الصور', imageHelp: 'ارفع صورة وسيتم حفظ اسمها كسياق.', memoryTitle: 'ملاحظات الذاكرة', memoryHelp: 'احفظ معلومات مهمة لتحسين ردود الذكاء الاصطناعي.', save: 'حفظ', askPlaceholder: 'اسأل عن بدء مشروع أو التسعير أو التسويق أو التمويل أو الاسم...' },
+      ko: { name: '한국어', appTitle: '바르야 비즈니스 AI 어시스턴트', appSubtitle: '스타트업, 가격, 마케팅, 재무를 위한 AI 코파일럿.', language: '언어', logout: '로그아웃', tabDashboard: '대시보드', tabAssistant: 'AI 어시스턴트', tabWorkspace: '워크스페이스', tabMemory: '메모리', register: '회원가입', login: '로그인', createAccount: '계정 만들기', welcome: '환영합니다', loggedInAs: '로그인 사용자', quickActions: '빠른 제안', income: '수입', expense: '지출', profit: '이익', assistantTitle: 'AI 어시스턴트', voiceInput: '음성 입력', clearChat: '채팅 지우기', send: '보내기', fileUpload: '파일 컨텍스트', fileHelp: 'TXT, CSV, JSON, PDF를 업로드하여 AI 컨텍스트로 사용합니다.', imageUpload: '이미지 컨텍스트', imageHelp: '이미지를 업로드하면 파일명이 컨텍스트로 저장됩니다.', memoryTitle: '메모리 노트', memoryHelp: '더 똑똑한 답변을 위해 메모를 저장하세요.', save: '저장', askPlaceholder: '스타트업, 가격, 마케팅, 재무, 이름 아이디어를 물어보세요...' },
+      ja: { name: '日本語', appTitle: 'Barya ビジネスAIアシスタント', appSubtitle: 'スタートアップ、価格設定、マーケティング、財務のAI支援。', language: '言語', logout: 'ログアウト', tabDashboard: 'ダッシュボード', tabAssistant: 'AIアシスタント', tabWorkspace: 'ワークスペース', tabMemory: 'メモリー', register: '登録', login: 'ログイン', createAccount: 'アカウント作成', welcome: 'ようこそ', loggedInAs: 'ログイン中', quickActions: 'クイック提案', income: '収入', expense: '支出', profit: '利益', assistantTitle: 'AIアシスタント', voiceInput: '音声入力', clearChat: 'チャットクリア', send: '送信', fileUpload: 'ファイルコンテキスト', fileHelp: 'TXT/CSV/JSON/PDFをアップロードしてAI文脈に利用します。', imageUpload: '画像コンテキスト', imageHelp: '画像をアップロードすると名前が文脈に保存されます。', memoryTitle: 'メモリーノート', memoryHelp: 'AI回答向上のためメモを保存します。', save: '保存', askPlaceholder: 'スタートアップ、価格、マーケ、財務、名前案を質問...' }
+    };
+
+    // ==============================
+    // App state and utility helpers
+    // ==============================
+    const state = {
+      language: localStorage.getItem(STORAGE_KEYS.language) || 'en',
+      currentUser: JSON.parse(localStorage.getItem(STORAGE_KEYS.currentUser) || 'null'),
+      chats: JSON.parse(localStorage.getItem(STORAGE_KEYS.chats) || '[]'),
+      memories: JSON.parse(localStorage.getItem(STORAGE_KEYS.memories) || '[]'),
+      workspaceContext: JSON.parse(localStorage.getItem(STORAGE_KEYS.workspaceContext) || '{"fileText":"","fileName":"","images":[]}'),
+      finance: JSON.parse(localStorage.getItem(STORAGE_KEYS.finance) || '{"income":0,"expense":0}')
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(state.currentUser));
+      localStorage.setItem(STORAGE_KEYS.chats, JSON.stringify(state.chats));
+      localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(state.memories));
+      localStorage.setItem(STORAGE_KEYS.workspaceContext, JSON.stringify(state.workspaceContext));
+      localStorage.setItem(STORAGE_KEYS.finance, JSON.stringify(state.finance));
+      localStorage.setItem(STORAGE_KEYS.language, state.language);
+    }
+
+    function t(key) {
+      return (I18N[state.language] && I18N[state.language][key]) || I18N.en[key] || key;
+    }
+
+    // =======================
+    // Language implementation
+    // =======================
+    function initLanguageSelector() {
+      const select = $('languageSelect');
+      select.innerHTML = SUPPORTED_LANGS.map((code) => `<option value="${code}">${I18N[code].name}</option>`).join('');
+      select.value = state.language;
+      select.addEventListener('change', () => {
+        state.language = select.value;
+        persist();
+        applyTranslations();
+        renderChat();
+      });
+      applyTranslations();
+    }
+
+    function applyTranslations() {
+      document.documentElement.lang = state.language;
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+      $('chatInput').placeholder = t('askPlaceholder');
+      if (state.language === 'ar') {
+        document.body.dir = 'rtl';
+      } else {
+        document.body.dir = 'ltr';
+      }
+    }
+
+    // ========================================
+    // Authentication (localStorage user system)
+    // ========================================
+    function getUsers() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '[]');
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+    }
+
+    $('registerForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = $('regName').value.trim();
+      const email = $('regEmail').value.trim().toLowerCase();
+      const password = $('regPassword').value;
+      const users = getUsers();
+      if (users.some((u) => u.email === email)) {
+        alert('Email already registered. Please login.');
+        return;
+      }
+      users.push({ name, email, password });
+      saveUsers(users);
+      alert('Registration successful. Please login.');
+      $('registerForm').reset();
+    });
+
+    $('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = $('loginEmail').value.trim().toLowerCase();
+      const password = $('loginPassword').value;
+      const user = getUsers().find((u) => u.email === email && u.password === password);
+      if (!user) {
+        alert('Invalid email or password.');
+        return;
+      }
+      state.currentUser = { name: user.name, email: user.email };
+      persist();
+      initAuthView();
+    });
+
+    $('logoutBtn').addEventListener('click', () => {
+      state.currentUser = null;
+      persist();
+      initAuthView();
+    });
+
+    function initAuthView() {
+      const isLoggedIn = Boolean(state.currentUser);
+      $('authSection').classList.toggle('hidden', isLoggedIn);
+      $('appSection').classList.toggle('hidden', !isLoggedIn);
+      $('logoutBtn').classList.toggle('hidden', !isLoggedIn);
+      if (isLoggedIn) {
+        $('loggedInUser').textContent = `${state.currentUser.name} (${state.currentUser.email})`;
+        updateDashboardSummary();
+      }
+    }
+
+    // =============================
+    // Dashboard + finance functions
+    // =============================
+    function updateDashboardSummary() {
+      const { income, expense } = state.finance;
+      const profit = Number(income) - Number(expense);
+      const memoryCount = state.memories.length;
+      const contextInfo = [state.workspaceContext.fileName, ...(state.workspaceContext.images || [])].filter(Boolean).join(', ') || 'No workspace context yet';
+      $('dashboardSummary').textContent = `Profit snapshot: ${profit.toFixed(2)} | Saved memories: ${memoryCount} | Context: ${contextInfo}`;
+    }
+
+    function updateFinance() {
+      const income = Number($('incomeInput').value || 0);
+      const expense = Number($('expenseInput').value || 0);
+      const profit = income - expense;
+      state.finance = { income, expense };
+      $('profitOutput').textContent = profit.toFixed(2);
+      $('financeInsight').textContent = profit >= 0
+        ? `Healthy margin. Consider allocating ${(profit * 0.2).toFixed(2)} to growth experiments.`
+        : `Negative margin. Reduce discretionary spending and validate your pricing quickly.`;
+      persist();
+      updateDashboardSummary();
+    }
+
+    $('incomeInput').addEventListener('input', updateFinance);
+    $('expenseInput').addEventListener('input', updateFinance);
+
+    // ===================
+    // Memory note system
+    // ===================
+    function renderMemories() {
+      $('memoryList').innerHTML = state.memories.map((m, i) => `
+        <li class="bg-slate-900 border border-slate-800 rounded-lg p-3 flex justify-between items-start gap-2">
+          <span class="text-sm">${m}</span>
+          <button class="text-rose-400 text-xs" onclick="removeMemory(${i})">Delete</button>
+        </li>
+      `).join('');
+    }
+
+    window.removeMemory = function (index) {
+      state.memories.splice(index, 1);
+      persist();
+      renderMemories();
+      updateDashboardSummary();
+    };
+
+    $('memoryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = $('memoryInput').value.trim();
+      if (!text) return;
+      state.memories.unshift(text);
+      $('memoryInput').value = '';
+      persist();
+      renderMemories();
+      updateDashboardSummary();
+    });
+
+    // =================================
+    // Workspace upload + context system
+    // =================================
+    $('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      let text = '';
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      // File parsing feature: txt, csv, json, pdf
+      if (['txt', 'csv', 'json'].includes(ext)) {
+        text = await file.text();
+      } else if (ext === 'pdf') {
+        // Basic no-library PDF text extraction fallback.
+        const buffer = await file.arrayBuffer();
+        const raw = new TextDecoder('latin1').decode(buffer);
+        const matched = raw.match(/\(([^\)]{3,})\)/g) || [];
+        text = matched.slice(0, 200).map((m) => m.slice(1, -1)).join(' ').replace(/\\[rn]/g, ' ');
+        if (!text.trim()) text = 'PDF uploaded. Text extraction is limited in browser-only mode.';
+      }
+
+      state.workspaceContext.fileText = text.slice(0, 8000);
+      state.workspaceContext.fileName = file.name;
+      $('fileStatus').textContent = `Loaded: ${file.name}`;
+      $('filePreview').value = state.workspaceContext.fileText;
+      persist();
+      updateDashboardSummary();
+    });
+
+    $('imageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        $('imagePreview').src = reader.result;
+        $('imagePreview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+
+      state.workspaceContext.images = Array.from(new Set([...(state.workspaceContext.images || []), file.name]));
+      $('imageStatus').textContent = `Image context saved: ${file.name}`;
+      persist();
+      updateDashboardSummary();
+    });
+
+    // ==================================
+    // AI assistant rule engine (no APIs)
+    // ==================================
+    function detectIntent(text) {
+      const q = text.toLowerCase();
+      if (/(startup|start business|launch|idea validation)/.test(q)) return 'startup';
+      if (/(pricing|price|charge|plan tiers|subscription)/.test(q)) return 'pricing';
+      if (/(marketing|leads|seo|social|promotion|ads)/.test(q)) return 'marketing';
+      if (/(finance|cash flow|profit|expense|budget|runway)/.test(q)) return 'finance';
+      if (/(name|brand name|business name)/.test(q)) return 'business_name_ideas';
+      return 'general';
+    }
+
+    function buildBusinessNameIdeas(prompt) {
+      const topic = (prompt.match(/for\s+([a-zA-Z\s]+)/i)?.[1] || 'your business').trim();
+      const base = ['Nova', 'Pulse', 'Nest', 'Forge', 'Bloom', 'Grid', 'Spark', 'Bridge'];
+      return base.slice(0, 5).map((w, i) => `${w} ${topic.split(' ')[0] || 'Works'} ${i + 1}`);
+    }
+
+    function translateAi(text) {
+      // Lightweight response translation using phrase replacements.
+      const dict = {
+        hi: [['Intent', 'उद्देश्य'], ['Analysis', 'विश्लेषण'], ['Action Plan', 'कार्य योजना'], ['Next 7 Days', 'अगले 7 दिन'], ['Risks', 'जोखिम'], ['Use this immediately', 'इसे तुरंत उपयोग करें']],
+        es: [['Intent', 'Intención'], ['Analysis', 'Análisis'], ['Action Plan', 'Plan de acción'], ['Next 7 Days', 'Próximos 7 días'], ['Risks', 'Riesgos'], ['Use this immediately', 'Úsalo ahora']],
+        fr: [['Intent', 'Intention'], ['Analysis', 'Analyse'], ['Action Plan', 'Plan d’action'], ['Next 7 Days', '7 prochains jours'], ['Risks', 'Risques'], ['Use this immediately', 'À utiliser immédiatement']],
+        ar: [['Intent', 'النية'], ['Analysis', 'التحليل'], ['Action Plan', 'خطة العمل'], ['Next 7 Days', 'الأيام السبعة القادمة'], ['Risks', 'المخاطر'], ['Use this immediately', 'استخدم هذا فوراً']],
+        ko: [['Intent', '의도'], ['Analysis', '분석'], ['Action Plan', '실행 계획'], ['Next 7 Days', '다음 7일'], ['Risks', '리스크'], ['Use this immediately', '바로 실행하세요']],
+        ja: [['Intent', '意図'], ['Analysis', '分析'], ['Action Plan', '実行計画'], ['Next 7 Days', '次の7日'], ['Risks', 'リスク'], ['Use this immediately', '今すぐ使える提案']]
+      };
+      const pairs = dict[state.language] || [];
+      return pairs.reduce((acc, [en, tr]) => acc.replaceAll(en, tr), text);
+    }
+
+    function generateAIResponse(userInput) {
+      const intent = detectIntent(userInput);
+      const memoryBlock = state.memories.slice(0, 5).join(' | ') || 'No saved memory notes.';
+      const fileContext = state.workspaceContext.fileText ? state.workspaceContext.fileText.slice(0, 300) : 'No uploaded file context.';
+      const imageContext = (state.workspaceContext.images || []).join(', ') || 'No image context.';
+      const finance = state.finance;
+
+      const templates = {
+        startup: `Focus on rapid validation before scale. Build one clear offer and test demand in 2 channels.`,
+        pricing: `Use value-based tiers: Starter, Growth, Premium. Anchor the mid tier with strongest outcome promise.`,
+        marketing: `Prioritize one acquisition engine (content, outbound, or paid ads) and define weekly KPI targets.`,
+        finance: `Track runway, break-even point, and conversion-to-cash timing. Protect cash before expansion.`,
+        business_name_ideas: `Here are sample names: ${buildBusinessNameIdeas(userInput).join(', ')}.`,
+        general: `I can help with startup launch, pricing strategy, marketing systems, finance planning, and naming.`
+      };
+
+      let response = `Intent: ${intent}\n\n` +
+        `Analysis:\n` +
+        `- User request: ${userInput}\n` +
+        `- Memory signals: ${memoryBlock}\n` +
+        `- File context: ${fileContext}\n` +
+        `- Image context: ${imageContext}\n` +
+        `- Finance snapshot: Income ${finance.income}, Expense ${finance.expense}, Profit ${(finance.income - finance.expense).toFixed(2)}\n\n` +
+        `Action Plan:\n` +
+        `1) ${templates[intent]}\n` +
+        `2) Convert this into a measurable goal with a number and deadline.\n` +
+        `3) Create a weekly review ritual: what worked, what failed, what to change.\n\n` +
+        `Next 7 Days:\n` +
+        `- Day 1-2: Define offer + ideal customer profile.\n` +
+        `- Day 3-4: Launch one small experiment and gather responses.\n` +
+        `- Day 5-7: Improve messaging, tighten pricing, and track outcomes.\n\n` +
+        `Risks:\n` +
+        `- Spreading efforts across too many channels.\n` +
+        `- Pricing too low without proving value.\n` +
+        `- Ignoring cash flow trends.\n\n` +
+        `Use this immediately: share your exact niche and current monthly revenue; I will generate a custom step-by-step growth plan.`;
+
+      return state.language === 'en' ? response : translateAi(response);
+    }
+
+    // =====================
+    // Chat + TTS/STT system
+    // =====================
+    function addMessage(role, text) {
+      state.chats.push({ role, text, time: new Date().toISOString() });
+      persist();
+      renderChat();
+    }
+
+    function renderChat() {
+      const box = $('chatBox');
+      box.innerHTML = state.chats.map((m) => {
+        const mine = m.role === 'user';
+        return `<div class="${mine ? 'text-right' : 'text-left'}">
+          <div class="inline-block max-w-[92%] whitespace-pre-wrap rounded-xl px-3 py-2 ${mine ? 'bg-indigo-600/90' : 'bg-slate-800 border border-slate-700'}">${m.text.replace(/</g, '&lt;')}</div>
+        </div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function speak(text) {
+      if (!('speechSynthesis' in window)) return;
+      const utterance = new SpeechSynthesisUtterance(text.slice(0, 500));
+      utterance.lang = state.language === 'en' ? 'en-US' : `${state.language}`;
+      speechSynthesis.speak(utterance);
+    }
+
+    $('chatForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const prompt = $('chatInput').value.trim();
+      if (!prompt) return;
+      $('chatInput').value = '';
+      addMessage('user', prompt);
+      const answer = generateAIResponse(prompt);
+      addMessage('ai', answer);
+      speak(answer);
+    });
+
+    $('clearChatBtn').addEventListener('click', () => {
+      state.chats = [];
+      persist();
+      renderChat();
+    });
+
+    $('voiceInputBtn').addEventListener('click', () => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert('Speech recognition is not supported in this browser.');
+        return;
+      }
+      const recog = new SR();
+      recog.lang = state.language === 'en' ? 'en-US' : state.language;
+      recog.interimResults = false;
+      recog.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        $('chatInput').value = transcript;
+      };
+      recog.start();
+    });
+
+    // =================
+    // Quick suggestions
+    // =================
+    const SUGGESTIONS = [
+      'How do I validate my startup idea quickly?',
+      'Give me a pricing strategy for 3 plans.',
+      'How can I market with low budget?',
+      'Analyze my finance and suggest improvements.',
+      'Generate business name ideas for my niche.'
+    ];
+
+    function renderSuggestions() {
+      const container = $('quickSuggestions');
+      container.innerHTML = '';
+      SUGGESTIONS.forEach((text) => {
+        const button = document.createElement('button');
+        button.className = 'px-2 py-1.5 rounded-lg text-xs bg-indigo-600/70 hover:bg-indigo-500';
+        button.textContent = text;
+        button.addEventListener('click', () => {
+          $('chatInput').value = text;
+          document.querySelector('[data-tab=\"assistant\"]').click();
+        });
+        container.appendChild(button);
+      });
+    }
+
+    // =================
+    // Tabbed navigation
+    // =================
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach((b) => {
+          b.classList.remove('bg-indigo-600/80');
+          b.classList.add('bg-slate-800');
+        });
+        btn.classList.add('bg-indigo-600/80');
+
+        const target = btn.dataset.tab;
+        const panelMap = {
+          dashboard: 'dashboardPanel',
+          assistant: 'assistantPanel',
+          workspace: 'workspacePanel',
+          memory: 'memoryPanel'
+        };
+        document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
+        $(panelMap[target]).classList.remove('hidden');
+      });
+    });
+
+    // ====================
+    // Initial app bootstrap
+    // ====================
+    function init() {
+      initLanguageSelector();
+      initAuthView();
+      $('incomeInput').value = state.finance.income || 0;
+      $('expenseInput').value = state.finance.expense || 0;
+      updateFinance();
+      renderMemories();
+      renderChat();
+      renderSuggestions();
+      if (state.workspaceContext.fileName) {
+        $('fileStatus').textContent = `Loaded: ${state.workspaceContext.fileName}`;
+        $('filePreview').value = state.workspaceContext.fileText || '';
+      }
+      if ((state.workspaceContext.images || []).length) {
+        $('imageStatus').textContent = `Saved image context: ${state.workspaceContext.images.join(', ')}`;
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
