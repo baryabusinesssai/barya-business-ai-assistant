@@ -346,6 +346,7 @@
     const KEYS = {
       profiles: 'barya_profiles_v3',
       chats: 'barya_chats_v3',
+      aiChatHistory: 'barya_ai_chat_history',
       memories: 'barya_memories_v3',
       workspace: 'barya_workspace_v3',
       faq: 'barya_faq_v3',
@@ -393,6 +394,10 @@
       { name: 'Russian', speech: 'ru-RU', locale: 'ru-RU' },
       { name: 'Portuguese', speech: 'pt-BR', locale: 'pt-BR' }
     ];
+    const LANGUAGE_META = LANGUAGES.reduce((acc, language) => {
+      acc[language.name] = language;
+      return acc;
+    }, {});
 
     const TRANSLATIONS = {
       English: { dashboard:'Dashboard', aiAssistant:'AI Assistant', aiChat:'AI Chat', businessAdvisor:'Business Advisor', ideaGenerator:'Idea Generator', settings:'Settings', monthlyIncome:'Monthly Income', totalExpenses:'Total Expenses', netSavings:'Net Savings', monthlyOverview:'Monthly Overview', recentExpenses:'Recent Expenses', topCategory:'Top Category', savingsStatus:'Savings Status', save:'Save', addExpense:'Add Expense', addRecurringExpense:'Add Recurring Expense', currency:'Currency', language:'Language', goal:'Goal', chat:'AI Chat', memory:'Memory', fileIntelligence:'File Intelligence', profile:'Settings', recommendations:'Recommendations', send:'Send', voiceInput:'Voice input', clearChat:'Clear', title:'Barya Business AI', subtitle:'Professional local-first business intelligence without external AI APIs.', saveImageNote:'Save image context', saveProfile:'Save profile', adaptiveLearning:'Adaptive Learning FAQ' },
@@ -448,7 +453,7 @@
     }
 
     function persist() {
-      saveSettings();
+      localStorage.setItem(KEYS.settings, JSON.stringify(state.settings));
       localStorage.setItem(KEYS.profiles, JSON.stringify(state.profiles));
       localStorage.setItem(KEYS.chats, JSON.stringify(state.chats));
       localStorage.setItem(KEYS.memories, JSON.stringify(state.memories));
@@ -506,10 +511,10 @@
     function saveSettings() {
       localStorage.setItem('barya_settings', JSON.stringify(state.settings));
       state.language = state.settings.language;
-      $('languageSelect').value = state.settings.language;
-      $('settingsLanguageSelect').value = state.settings.language;
-      $('currencySelect').value = state.settings.currency;
-      persist();
+      if ($('languageSelect')) $('languageSelect').value = state.settings.language;
+      if ($('settingsLanguageSelect')) $('settingsLanguageSelect').value = state.settings.language;
+      if ($('currencySelect')) $('currencySelect').value = state.settings.currency;
+      localStorage.setItem(KEYS.settings, JSON.stringify(state.settings));
     }
 
     function loadSettings() {
@@ -794,12 +799,57 @@
     }
 
     function getChat() {
+      const localChat = JSON.parse(localStorage.getItem(KEYS.aiChatHistory) || '[]');
+      if (Array.isArray(localChat) && localChat.length) {
+        state.chats[uid()] = localChat;
+        return localChat;
+      }
       return getBucket(state.chats, []);
     }
 
     function saveChat(chat) {
       state.chats[uid()] = chat;
+      localStorage.setItem(KEYS.aiChatHistory, JSON.stringify(chat));
       persist();
+    }
+
+    function detectIntent(message) {
+      const intents = detectIntents(message);
+      return intents[0]?.intent || 'growthStrategy';
+    }
+
+    function getFallbackResponse() {
+      return [
+        'I can help with business ideas, startup planning, finance, marketing, productivity, or next steps.',
+        'Try sharing your goal, budget, target audience, and timeline so I can suggest a practical plan.',
+        'Example: "I have $500 and want to start a small online business in 30 days."'
+      ].join('\n');
+    }
+
+    function generateLocalAIResponse(message) {
+      const normalized = String(message || '').trim();
+      if (!normalized) return getFallbackResponse();
+
+      const primaryIntent = detectIntent(normalized);
+      const { result } = generateResponse(normalized);
+      let responseText = formatResponseText(result);
+
+      const intentBoosters = {
+        startup: '\n\nQuick Startup Path:\n1. Define one customer problem.\n2. Build a tiny MVP.\n3. Talk to 10 potential buyers.\n4. Launch and iterate weekly.',
+        finance: '\n\nFinance Focus:\n- Separate must-have vs optional costs.\n- Create a weekly cash-flow check.\n- Set a savings target before new spending.',
+        marketing: '\n\nMarketing Focus:\n- Pick one acquisition channel.\n- Publish one helpful piece of content weekly.\n- Track reach, leads, and conversion.',
+        growthStrategy: '\n\nExecution Focus:\n- Choose one metric.\n- Run 2 experiments this week.\n- Keep what works and stop what does not.'
+      };
+
+      if (intentBoosters[primaryIntent]) {
+        responseText += intentBoosters[primaryIntent];
+      }
+
+      if (!responseText.trim()) {
+        return getFallbackResponse();
+      }
+
+      return responseText;
     }
 
     function renderChat() {
@@ -1356,22 +1406,30 @@
 
         const chat = getChat();
         chat.push({ role: 'user', text: input, ts: Date.now() });
-
-        const { result } = generateResponse(input);
-        const out = formatResponseText(result);
-
-        chat.push({ role: 'ai', text: out, ts: Date.now() });
         saveChat(chat);
-        updateFaq(input);
-        renderFaq();
         renderChat();
-        renderDashboard();
-        speak(`${result.title}. ${result.variation}`);
         $('chatInput').value = '';
+
+        try {
+          const out = generateLocalAIResponse(input);
+          chat.push({ role: 'ai', text: out, ts: Date.now() });
+          saveChat(chat);
+          updateFaq(input);
+          renderFaq();
+          renderChat();
+          renderDashboard();
+          speak(out);
+        } catch (error) {
+          const message = `I hit a local processing error, but your chat is saved. Please try again.\nError: ${error.message}`;
+          chat.push({ role: 'ai', text: message, ts: Date.now() });
+          saveChat(chat);
+          renderChat();
+        }
       });
 
       $('clearChatBtn').addEventListener('click', () => {
         state.chats[uid()] = [];
+        localStorage.removeItem(KEYS.aiChatHistory);
         persist();
         renderChat();
       });
