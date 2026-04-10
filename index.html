@@ -299,10 +299,161 @@
       line-height: 1.45;
       color: #111827;
     }
+
+    * , *::before, *::after { box-sizing: border-box; }
+    .landing-hero {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+    }
+    .landing-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .landing-feature-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    }
+    .landing-step {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: .9rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+      }
+      .max-w-6xl {
+        width: 100%;
+        max-width: 100%;
+      }
+      .landing-hero,
+      .glass,
+      .planning-shell,
+      .editor-panel {
+        border-radius: 1rem;
+        padding: 1rem;
+      }
+      .landing-feature-grid,
+      .template-grid,
+      .editor-grid,
+      .learning-module-grid,
+      #whenNotToStartTemplateForm,
+      #monthlyOverviewCard .grid,
+      #panel-dashboard .grid,
+      #panel-workspace,
+      #panel-profile .grid,
+      #profileForm,
+      #memoryForm {
+        grid-template-columns: 1fr !important;
+      }
+      .editor-panel-header,
+      .editor-actions {
+        width: 100%;
+      }
+      .editor-actions .editor-btn {
+        width: 100%;
+      }
+      textarea,
+      .editor-textarea,
+      #filePreview {
+        width: 100% !important;
+        max-width: 100%;
+        padding: 0.8rem;
+        overflow-x: hidden;
+      }
+      #chatForm,
+      #businessAdvisorForm,
+      #ideaGeneratorForm {
+        flex-direction: column;
+      }
+      #chatForm button,
+      #businessAdvisorForm button,
+      #ideaGeneratorForm button,
+      #saveSettingsBtn,
+      #profileForm button,
+      #memoryForm button,
+      #startConversationBtn,
+      #startPlanningBtn,
+      #exploreFeaturesBtn {
+        width: 100%;
+      }
+      #tabs {
+        justify-content: stretch;
+      }
+      #tabs .tabBtn {
+        flex: 1 1 calc(50% - .5rem);
+      }
+    }
+
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
   <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+    <section id="landing" class="landing-hero">
+      <div class="max-w-4xl mx-auto text-center space-y-4">
+        <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Business Growth Platform</p>
+        <h1 class="text-4xl md:text-5xl font-semibold tracking-tight">Barya Business AI Assistant</h1>
+        <p class="text-slate-600 text-base md:text-lg">Build, plan, and grow your business with smart tools and practical guidance.</p>
+        <p class="text-slate-600 max-w-3xl mx-auto">Barya is a business planning and AI-powered assistant tool that helps founders turn ideas into clear plans, practical strategies, and trackable execution.</p>
+        <div class="flex flex-col md:flex-row gap-3 justify-center">
+          <button id="startPlanningBtn" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold">Start Planning</button>
+          <a id="exploreFeaturesBtn" href="#landing-features" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700">Explore Features</a>
+        </div>
+      </div>
+
+      <div class="mt-8 grid md:grid-cols-2 gap-4">
+        <article class="landing-feature-card">
+          <h2 class="text-xl font-semibold">What is this?</h2>
+          <p class="text-slate-600 mt-2">This is a business building platform designed for beginners and early-stage founders who need structure and clarity.</p>
+          <ul class="mt-3 space-y-1 text-slate-600 text-sm list-disc list-inside">
+            <li>Track finances and savings</li>
+            <li>Generate business ideas quickly</li>
+            <li>Create business plans with templates</li>
+            <li>Learn step-by-step with startup guides</li>
+          </ul>
+        </article>
+        <article class="landing-feature-card">
+          <h2 class="text-xl font-semibold">Why this tool?</h2>
+          <ul class="mt-3 space-y-2 text-slate-600 text-sm list-disc list-inside">
+            <li>Simple and beginner-friendly workflows</li>
+            <li>No login required with local-first storage</li>
+            <li>Works instantly in your browser</li>
+            <li>Focused on real execution, not theory</li>
+          </ul>
+        </article>
+      </div>
+
+      <section id="landing-features" class="mt-8">
+        <h2 class="text-2xl font-semibold">Key Features</h2>
+        <div class="landing-feature-grid mt-4">
+          <article class="landing-feature-card"><h3 class="font-semibold">Dashboard</h3><p class="text-slate-600 text-sm mt-2">Track income, expenses, and savings in one place.</p></article>
+          <article class="landing-feature-card"><h3 class="font-semibold">AI Assistant</h3><p class="text-slate-600 text-sm mt-2">Get practical business advice and next steps instantly.</p></article>
+          <article class="landing-feature-card"><h3 class="font-semibold">Business Planning</h3><p class="text-slate-600 text-sm mt-2">Use templates and guides to shape your strategy.</p></article>
+          <article class="landing-feature-card"><h3 class="font-semibold">Idea Generator</h3><p class="text-slate-600 text-sm mt-2">Generate startup concepts and test opportunities quickly.</p></article>
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-2xl font-semibold">How to Use</h2>
+        <div class="grid md:grid-cols-4 gap-3 mt-4">
+          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 1</p><p class="font-semibold mt-1">Choose a feature</p><p class="text-sm text-slate-600 mt-1">Open Dashboard, Planning, or another tool.</p></article>
+          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 2</p><p class="font-semibold mt-1">Fill templates or ask AI</p><p class="text-sm text-slate-600 mt-1">Input details in forms or ask specific questions.</p></article>
+          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 3</p><p class="font-semibold mt-1">Save your progress</p><p class="text-sm text-slate-600 mt-1">Keep plans and notes locally in your browser.</p></article>
+          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 4</p><p class="font-semibold mt-1">Improve your business</p><p class="text-sm text-slate-600 mt-1">Review results weekly and refine execution.</p></article>
+        </div>
+      </section>
+    </section>
+
     <header class="glass border border-indigo-900/40 rounded-3xl p-5 md:p-6 shadow-2xl">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-3">

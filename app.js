@@ -786,6 +786,15 @@
       });
     }
 
+    const startPlanningBtn = $('startPlanningBtn');
+    if (startPlanningBtn) {
+      startPlanningBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        document.querySelector('[data-tab="planning"]')?.click();
+        document.getElementById('appSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
     const languageSelect = $('languageSelect');
     if (languageSelect) {
       languageSelect.addEventListener('change', () => {
