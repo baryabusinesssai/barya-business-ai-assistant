@@ -6,11 +6,106 @@
     settings: 'barya_settings',
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
-    ideaGeneratorHistory: 'barya_idea_generator_history'
+    ideaGeneratorHistory: 'barya_idea_generator_history',
+    businessPlanLeanCanvas: 'barya_business_plan_lean_canvas',
+    businessPlanFullPlan: 'barya_business_plan_full_business_plan',
+    businessPlanPitchDeck: 'barya_business_plan_pitch_deck_outline',
+    businessPlanFinancial: 'barya_business_plan_financial_plan',
+    businessPlanMarketing: 'barya_business_plan_marketing_plan'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
+  const BUSINESS_PLAN_TEMPLATES = [
+    {
+      id: 'leanCanvas',
+      storageKey: STORAGE_KEYS.businessPlanLeanCanvas,
+      title: 'Lean Canvas',
+      description: 'One-page startup model to validate demand, risks, and core growth logic.',
+      helper: 'Use concise statements and clear assumptions to keep your canvas investor-ready.',
+      sections: [
+        { key: 'problem', label: 'Problem', helper: 'List top 3 urgent customer pains.', placeholder: 'What high-value problem are you solving?' },
+        { key: 'customerSegments', label: 'Customer Segments', helper: 'Define primary and secondary target users.', placeholder: 'Who needs this solution most right now?' },
+        { key: 'uniqueValueProposition', label: 'Unique Value Proposition', helper: 'Your concise positioning statement.', placeholder: 'Why are you different and better?' },
+        { key: 'solution', label: 'Solution', helper: 'Top features that address each problem.', placeholder: 'How exactly will the product solve these pains?' },
+        { key: 'channels', label: 'Channels', helper: 'Acquisition and distribution routes.', placeholder: 'Where will users discover and buy from you?' },
+        { key: 'revenueStreams', label: 'Revenue Streams', helper: 'How money enters the business.', placeholder: 'Pricing model, packaging, and monetization.' },
+        { key: 'costStructure', label: 'Cost Structure', helper: 'Main fixed and variable costs.', placeholder: 'Team, tools, operations, marketing, and overhead.' },
+        { key: 'keyMetrics', label: 'Key Metrics', helper: 'Numbers used to track traction.', placeholder: 'Activation, retention, CAC, LTV, conversion, etc.' },
+        { key: 'unfairAdvantage', label: 'Unfair Advantage', helper: 'Hard-to-copy edge over competitors.', placeholder: 'Data, partnerships, brand trust, or proprietary tech.' }
+      ]
+    },
+    {
+      id: 'fullBusinessPlan',
+      storageKey: STORAGE_KEYS.businessPlanFullPlan,
+      title: 'Full Business Plan',
+      description: 'Comprehensive business planning document for operations, strategy, and execution.',
+      helper: 'Treat this as your core operating document with clear decisions and milestones.',
+      sections: [
+        { key: 'executiveSummary', label: 'Executive Summary', helper: 'Quick overview of business purpose and model.', placeholder: 'Summarize business concept, target market, and objectives.' },
+        { key: 'companyOverview', label: 'Company Overview', helper: 'Mission, legal structure, and vision.', placeholder: 'Describe company background and long-term ambition.' },
+        { key: 'marketAnalysis', label: 'Market Analysis', helper: 'Industry context, trends, and customer demand.', placeholder: 'Market size, growth signals, and audience behaviors.' },
+        { key: 'productsServices', label: 'Products & Services', helper: 'Core offerings and delivery model.', placeholder: 'Explain products, value delivered, and roadmap focus.' },
+        { key: 'operationsPlan', label: 'Operations Plan', helper: 'How work gets done day-to-day.', placeholder: 'Team roles, workflow, supply chain, and tooling.' },
+        { key: 'managementTeam', label: 'Management Team', helper: 'Leadership structure and ownership.', placeholder: 'Who leads strategy, sales, operations, and finance?' },
+        { key: 'salesStrategy', label: 'Sales Strategy', helper: 'Pipeline design and conversion approach.', placeholder: 'Lead generation, qualification, demos, and closing flow.' },
+        { key: 'riskManagement', label: 'Risk Management', helper: 'Key business risks and mitigation plan.', placeholder: 'Operational, market, legal, and financial risks.' },
+        { key: 'milestones', label: 'Milestones', helper: 'Quarterly goals and timeline.', placeholder: 'What outcomes must be achieved by each phase?' }
+      ]
+    },
+    {
+      id: 'pitchDeckOutline',
+      storageKey: STORAGE_KEYS.businessPlanPitchDeck,
+      title: 'Pitch Deck Outline',
+      description: 'Narrative slide flow that communicates vision, traction, and investor potential.',
+      helper: 'Keep each section brief and data-backed to translate easily into slides.',
+      sections: [
+        { key: 'openingHook', label: 'Opening Hook', helper: 'Memorable context in one short paragraph.', placeholder: 'Start with the pain, opportunity, or market shift.' },
+        { key: 'problemSlide', label: 'Problem Slide', helper: 'Describe who is affected and why it matters.', placeholder: 'What urgent friction exists today?' },
+        { key: 'solutionSlide', label: 'Solution Slide', helper: 'Clear product story and outcome.', placeholder: 'What is your product and core value?' },
+        { key: 'marketOpportunity', label: 'Market Opportunity', helper: 'TAM/SAM/SOM and growth trend.', placeholder: 'How large is the addressable opportunity?' },
+        { key: 'businessModel', label: 'Business Model', helper: 'How you make money and scale margin.', placeholder: 'Pricing, monetization, and expansion model.' },
+        { key: 'traction', label: 'Traction', helper: 'Early proof from customers or revenue.', placeholder: 'Key metrics, growth, customer logos, retention data.' },
+        { key: 'goToMarket', label: 'Go-To-Market', helper: 'How you acquire and retain users.', placeholder: 'Channels, partnerships, and demand generation plan.' },
+        { key: 'competition', label: 'Competition', helper: 'Positioning against alternatives.', placeholder: 'Competitor map and your strategic edge.' },
+        { key: 'financialAsk', label: 'Financial Ask', helper: 'Funding need and use of funds.', placeholder: 'Amount raising, runway, and milestone outcomes.' }
+      ]
+    },
+    {
+      id: 'financialPlan',
+      storageKey: STORAGE_KEYS.businessPlanFinancial,
+      title: 'Financial Plan Template',
+      description: 'Plan revenue, costs, runway, and scenario assumptions with practical clarity.',
+      helper: 'Use realistic assumptions and keep formulas easy to verify over time.',
+      sections: [
+        { key: 'revenueAssumptions', label: 'Revenue Assumptions', helper: 'Units, pricing, conversion, and growth expectations.', placeholder: 'Document key assumptions for revenue modeling.' },
+        { key: 'expenseForecast', label: 'Expense Forecast', helper: 'Fixed vs variable costs by month.', placeholder: 'Team, software, marketing, operations, and overhead.' },
+        { key: 'cashFlowPlan', label: 'Cash Flow Plan', helper: 'Expected inflows and outflows timeline.', placeholder: 'How cash moves month-by-month and where pressure appears.' },
+        { key: 'breakEven', label: 'Break-even Analysis', helper: 'Threshold to profitability.', placeholder: 'At what revenue level do you break even?' },
+        { key: 'capitalNeeds', label: 'Capital Needs', helper: 'Funding required and timing.', placeholder: 'What capital is needed to hit the next milestones?' },
+        { key: 'pricingStrategy', label: 'Pricing Strategy', helper: 'Price architecture and rationale.', placeholder: 'Plans, packaging, discounting, and willingness-to-pay.' },
+        { key: 'profitabilityTargets', label: 'Profitability Targets', helper: 'Margin and net income goals.', placeholder: 'Gross margin and net margin targets per quarter.' },
+        { key: 'financialRisks', label: 'Financial Risks', helper: 'Risks that impact stability.', placeholder: 'Revenue volatility, churn, cost inflation, cash shortages.' }
+      ]
+    },
+    {
+      id: 'marketingPlan',
+      storageKey: STORAGE_KEYS.businessPlanMarketing,
+      title: 'Marketing Plan Template',
+      description: 'Strategic marketing blueprint with clear positioning, channels, and campaign rhythm.',
+      helper: 'Focus on one primary audience and measurable outcomes per campaign.',
+      sections: [
+        { key: 'brandPositioning', label: 'Brand Positioning', helper: 'How you want to be perceived.', placeholder: 'Positioning statement, tone, and messaging pillars.' },
+        { key: 'targetAudience', label: 'Target Audience', helper: 'Primary buyer segments and jobs-to-be-done.', placeholder: 'Demographics, psychographics, and buying behavior.' },
+        { key: 'marketingGoals', label: 'Marketing Goals', helper: 'Goals tied to business outcomes.', placeholder: 'Lead, CAC, conversion, retention, or awareness targets.' },
+        { key: 'channelStrategy', label: 'Channel Strategy', helper: 'Owned, earned, and paid channels.', placeholder: 'Where you will invest and why.' },
+        { key: 'contentPlan', label: 'Content Plan', helper: 'Editorial direction and cadence.', placeholder: 'Core themes, content formats, and publishing schedule.' },
+        { key: 'campaignCalendar', label: 'Campaign Calendar', helper: 'Quarterly campaign timeline.', placeholder: 'Major campaigns, launch dates, and owners.' },
+        { key: 'budgetAllocation', label: 'Budget Allocation', helper: 'Planned spend by channel.', placeholder: 'Budget split and expected ROI by activity.' },
+        { key: 'measurementPlan', label: 'Measurement Plan', helper: 'Reporting metrics and cadence.', placeholder: 'Dashboard metrics, review cycle, and optimization loop.' }
+      ]
+    }
+  ];
 
   let appState = {
     monthlyIncome: 0,
@@ -19,10 +114,21 @@
     settings: { currency: 'USD', language: 'English', goal: '' },
     aiChatHistory: [],
     businessAdvisorHistory: [],
-    ideaGeneratorHistory: []
+    ideaGeneratorHistory: [],
+    businessPlanTemplates: {},
+    activeBusinessPlanTemplateId: ''
   };
 
   const $ = (id) => document.getElementById(id);
+
+  function escapeHTML(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function loadFromStorage(key, fallback) {
     const raw = localStorage.getItem(key);
@@ -211,6 +317,135 @@
       `${seed}: low-cost audit service + premium implementation upsell`,
       `${seed}: local community workshop + digital toolkit bundle`
     ];
+  }
+
+
+  function getBusinessTemplateById(templateId) {
+    return BUSINESS_PLAN_TEMPLATES.find((template) => template.id === templateId) || null;
+  }
+
+  function loadBusinessTemplateState() {
+    const nextState = {};
+    BUSINESS_PLAN_TEMPLATES.forEach((template) => {
+      const saved = loadFromStorage(template.storageKey, {});
+      nextState[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
+    });
+    appState.businessPlanTemplates = nextState;
+  }
+
+  function renderBusinessPlanTemplateCards() {
+    const cardsContainer = $('businessPlanTemplateCards');
+    if (!cardsContainer) return;
+
+    cardsContainer.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
+      const isActive = template.id === appState.activeBusinessPlanTemplateId;
+      const savedSections = Object.values(appState.businessPlanTemplates[template.id] || {}).filter(Boolean).length;
+      const completion = `${savedSections}/${template.sections.length} sections saved`;
+      return `
+        <button class="template-card ${isActive ? 'active' : ''}" type="button" data-template-id="${template.id}">
+          <p class="template-card-title">${escapeHTML(template.title)}</p>
+          <p class="template-card-text">${escapeHTML(template.description)}</p>
+          <p class="template-card-meta">${escapeHTML(completion)}</p>
+        </button>
+      `;
+    }).join('');
+
+    cardsContainer.querySelectorAll('[data-template-id]').forEach((btn) => {
+      btn.addEventListener('click', () => openBusinessPlanTemplate(btn.getAttribute('data-template-id') || ''));
+    });
+  }
+
+  function renderBusinessPlanEditor() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    const form = $('businessPlanEditorForm');
+    const header = $('businessPlanEditorHeader');
+    const helper = $('businessPlanTemplateHelper');
+    if (!form || !header || !helper) return;
+
+    if (!template) {
+      header.textContent = 'Select a template';
+      helper.textContent = 'Pick one of the five planning templates to start building your document.';
+      form.innerHTML = '';
+      return;
+    }
+
+    const data = appState.businessPlanTemplates[template.id] || {};
+    header.textContent = template.title;
+    helper.textContent = template.helper;
+    form.innerHTML = template.sections.map((section) => `
+      <article class="editor-field-card">
+        <label class="editor-field-label" for="${template.id}_${section.key}">${escapeHTML(section.label)}</label>
+        <p class="editor-field-helper">${escapeHTML(section.helper)}</p>
+        <textarea
+          class="editor-textarea"
+          id="${template.id}_${section.key}"
+          name="${section.key}"
+          placeholder="${escapeHTML(section.placeholder)}"
+        >${escapeHTML(data[section.key] || '')}</textarea>
+      </article>
+    `).join('');
+
+    form.querySelectorAll('textarea').forEach((textarea) => {
+      textarea.addEventListener('input', (event) => {
+        const current = appState.businessPlanTemplates[template.id] || {};
+        current[event.target.name] = event.target.value;
+        appState.businessPlanTemplates[template.id] = current;
+      });
+    });
+  }
+
+  function setBusinessPlanStatus(message) {
+    const status = $('businessPlanStatus');
+    if (status) status.textContent = message;
+  }
+
+  function openBusinessPlanTemplate(templateId) {
+    const template = getBusinessTemplateById(templateId);
+    if (!template) return;
+    appState.activeBusinessPlanTemplateId = templateId;
+    renderBusinessPlanTemplateCards();
+    renderBusinessPlanEditor();
+    setBusinessPlanStatus(`Editing ${template.title}. Changes are local until you click Save Template.`);
+  }
+
+  function saveActiveBusinessPlanTemplate() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    if (!template) {
+      setBusinessPlanStatus('Select a template before saving.');
+      return;
+    }
+    saveToStorage(template.storageKey, appState.businessPlanTemplates[template.id] || {});
+    renderBusinessPlanTemplateCards();
+    setBusinessPlanStatus(`${template.title} saved to local storage.`);
+  }
+
+  function resetActiveBusinessPlanTemplate() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    if (!template) {
+      setBusinessPlanStatus('Select a template before resetting.');
+      return;
+    }
+    appState.businessPlanTemplates[template.id] = {};
+    localStorage.removeItem(template.storageKey);
+    renderBusinessPlanEditor();
+    renderBusinessPlanTemplateCards();
+    setBusinessPlanStatus(`${template.title} reset. You can start fresh.`);
+  }
+
+  function initBusinessPlanning() {
+    loadBusinessTemplateState();
+    renderBusinessPlanTemplateCards();
+    renderBusinessPlanEditor();
+
+    const saveBtn = $('businessPlanSaveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveActiveBusinessPlanTemplate);
+    }
+
+    const resetBtn = $('businessPlanResetBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetActiveBusinessPlanTemplate);
+    }
   }
 
   function applySettings() {
@@ -408,6 +643,7 @@
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
+    loadBusinessTemplateState();
   }
 
   function initSelects() {
@@ -436,6 +672,7 @@
     renderAIChat();
     renderBusinessAdvisor();
     renderIdeaGenerator();
+    initBusinessPlanning();
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');

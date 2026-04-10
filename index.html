@@ -131,6 +131,126 @@
       border-color: #9ca3af !important;
       box-shadow: 0 0 0 4px var(--focus-ring);
     }
+
+    .planning-shell {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 1.5rem;
+      padding: 1rem;
+    }
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.75rem;
+    }
+    .template-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+      transition: all .2s ease;
+      text-align: left;
+      cursor: pointer;
+    }
+    .template-card:hover {
+      border-color: #d1d5db;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+    .template-card.active {
+      border-color: #111827;
+      box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08), 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+    .template-card-title {
+      font-size: .95rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .template-card-text {
+      margin-top: .35rem;
+      color: #6b7280;
+      font-size: .82rem;
+      line-height: 1.4;
+    }
+    .template-card-meta {
+      margin-top: .7rem;
+      font-size: .73rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .editor-panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1.25rem;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+      padding: 1rem;
+    }
+    .editor-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .editor-actions {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .editor-btn {
+      border-radius: .8rem;
+      padding: .62rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      border: 1px solid #d1d5db;
+    }
+    .editor-btn-primary {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+    }
+    .editor-btn-secondary {
+      background: #fff;
+      color: #374151;
+    }
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: .85rem;
+    }
+    .editor-field-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: .9rem;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+    }
+    .editor-field-label {
+      font-size: .86rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .editor-field-helper {
+      margin-top: .3rem;
+      font-size: .77rem;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+    .editor-textarea {
+      margin-top: .6rem;
+      width: 100%;
+      min-height: 120px;
+      border-radius: .8rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      padding: .75rem .8rem;
+      resize: vertical;
+      font-size: .9rem;
+      line-height: 1.45;
+      color: #111827;
+    }
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
@@ -339,23 +459,26 @@
             </div>
           </div>
 
-          <div id="businessPlanTemplateCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+          <div class="planning-shell mt-6">
+            <div id="businessPlanTemplateCards" class="template-grid"></div>
 
-          <div class="soft-card rounded-2xl p-4 mt-5">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
-                <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
+            <div class="editor-panel mt-6">
+              <div class="editor-panel-header">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
+                  <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
+                  <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Pick one of the five planning templates to start building your document.</p>
+                </div>
+                <div class="editor-actions">
+                  <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
+                  <button id="businessPlanResetBtn" class="editor-btn editor-btn-secondary" type="button">Reset</button>
+                </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button id="businessPlanSaveBtn" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Save Template</button>
-                <button id="businessPlanResetBtn" class="rounded-xl bg-rose-700/90 hover:bg-rose-600 px-4 py-2.5 text-sm font-medium">Clear Template</button>
-              </div>
+
+              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Open a template card to start editing.</p>
+
+              <form id="businessPlanEditorForm" class="editor-grid mt-5"></form>
             </div>
-
-            <p id="businessPlanStatus" class="text-sm text-slate-300 mt-3">Open a template card to start editing.</p>
-
-            <form id="businessPlanEditorForm" class="mt-4 grid lg:grid-cols-2 gap-3"></form>
           </div>
         </article>
       </section>
