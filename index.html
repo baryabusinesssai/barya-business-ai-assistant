@@ -299,6 +299,12 @@
       line-height: 1.45;
       color: #111827;
     }
+    .planning-section {
+      display: none;
+    }
+    .planning-section.active {
+      display: block;
+    }
 
     * , *::before, *::after { box-sizing: border-box; }
 
@@ -355,7 +361,6 @@
       .template-grid,
       .editor-grid,
       .learning-module-grid,
-      #whenNotToStartTemplateForm,
       #monthlyOverviewCard .grid,
       #panel-dashboard .grid,
       #panel-workspace,
@@ -395,10 +400,12 @@
       #getStartedBtn {
         width: 100%;
       }
-      #tabs {
+      #tabs,
+      #planningSectionTabs {
         justify-content: stretch;
       }
-      #tabs .tabBtn {
+      #tabs .tabBtn,
+      #planningSectionTabs .tabBtn {
         flex: 1 1 calc(50% - .5rem);
       }
     }
@@ -693,31 +700,41 @@
 
       <section id="panel-planning" class="panel hidden">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+          <div id="planningSectionTabs" class="flex flex-wrap gap-2 mb-5">
+            <button type="button" class="tabBtn active rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="guides">Startup Guides</button>
+            <button type="button" class="tabBtn rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="templates">Business Plan Templates</button>
+          </div>
+
+          <section id="planningGuidesSection" class="planning-section active">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
+                <h2 class="font-semibold text-2xl mt-2">Startup Guides</h2>
+                <p class="text-slate-300 mt-2 max-w-3xl">A beginner-friendly business learning toolkit with practical guidance for better founder decisions.</p>
+              </div>
+              <div class="soft-card rounded-2xl px-4 py-3">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
+                <p class="font-semibold mt-1">4 Core Guides</p>
+              </div>
+            </div>
+
+            <div id="whenNotToStartGuide" class="mt-6 learning-module-grid"></div>
+          </section>
+
+          <section id="planningTemplatesSection" class="planning-section">
           <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
-              <h2 class="font-semibold text-2xl mt-2">Startup Guides</h2>
-              <p class="text-slate-300 mt-2 max-w-3xl">A beginner-friendly business learning toolkit with practical templates and detailed guidance.</p>
+              <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
+              <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
             </div>
-            <div class="soft-card rounded-2xl px-4 py-3">
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
-              <p class="font-semibold mt-1">4 Core Guides</p>
-            </div>
-          </div>
-
-          <div id="businessPlanning" class="planning-shell mt-6">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
-                <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
-                <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
-              </div>
               <div class="soft-card rounded-2xl px-4 py-3">
                 <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Storage</p>
                 <p class="font-semibold mt-1">Local First</p>
               </div>
             </div>
 
+            <div id="businessPlanning" class="planning-shell mt-6">
             <p id="businessPlanFallback" class="mt-4 text-sm text-rose-600"></p>
             <div id="businessPlanTemplateCards" class="template-grid mt-4"></div>
 
@@ -726,7 +743,7 @@
                 <div>
                   <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
                   <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
-                  <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Pick one of the five planning templates to start building your document.</p>
+                  <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Select a template</p>
                 </div>
                 <div class="editor-actions">
                   <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
@@ -734,12 +751,11 @@
                 </div>
               </div>
 
-              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Open a template card to start editing.</p>
+              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Pick one of the planning templates to start building your document.</p>
               <form id="businessPlanEditorForm" class="editor-grid mt-5"></form>
             </div>
           </div>
-
-          <div id="whenNotToStartGuide" class="mt-6 learning-module-grid"></div>
+          </section>
         </article>
       </section>
 

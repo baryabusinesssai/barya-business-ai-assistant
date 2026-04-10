@@ -7,8 +7,9 @@
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
     ideaGeneratorHistory: 'barya_idea_generator_history',
-    businessPlan: 'barya_business_plan',
-    whenNotStartTemplate: 'barya_when_not_start_template',
+    templateLean: 'barya_template_lean',
+    templateMarketing: 'barya_template_marketing',
+    templateOperations: 'barya_template_operations',
     userStarted: 'barya_user_started'
   };
 
@@ -72,68 +73,45 @@
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
   const BUSINESS_PLAN_TEMPLATES = [
     {
-      id: 'lean-canvas',
-      title: 'Lean Canvas',
-      description: 'Map the core startup blocks for a quick validation plan.',
+      id: 'lean',
+      storageKey: STORAGE_KEYS.templateLean,
+      title: 'Lean Launch Canvas',
+      description: 'Map the core blocks for a fast, testable startup launch.',
       sections: [
-        { id: 'problem', title: 'Problem', placeholder: 'List the top 3 customer pain points.' },
-        { id: 'solution', title: 'Solution', placeholder: 'Describe your product/service solution in practical terms.' },
-        { id: 'value-proposition', title: 'Unique Value Proposition', placeholder: 'What makes this offer clearly different and desirable?' },
-        { id: 'channels', title: 'Channels', placeholder: 'Where will customers discover and buy from you?' },
-        { id: 'revenue-streams', title: 'Revenue Streams', placeholder: 'How will money come in? Pricing model, upsells, subscriptions, etc.' },
-        { id: 'cost-structure', title: 'Cost Structure', placeholder: 'List major recurring and one-time costs.' }
+        { id: 'problem', title: 'Problem', placeholder: 'Define the main customer problem you are solving.' },
+        { id: 'solution', title: 'Solution', placeholder: 'Describe the core solution and experience you will provide.' },
+        { id: 'target-customers', title: 'Target Customers', placeholder: 'Who is the primary customer segment?' },
+        { id: 'value-proposition', title: 'Value Proposition', placeholder: 'What makes your offer compelling and different?' },
+        { id: 'channels', title: 'Channels', placeholder: 'How will customers discover and buy from you?' },
+        { id: 'revenue-model', title: 'Revenue Model', placeholder: 'How will the business generate revenue?' }
       ]
     },
     {
-      id: 'full-business-plan',
-      title: 'Full Business Plan',
-      description: 'Build a complete strategic plan from vision to execution.',
+      id: 'marketing',
+      storageKey: STORAGE_KEYS.templateMarketing,
+      title: 'Marketing Campaign Block',
+      description: 'Structure your campaign strategy, content, and KPIs in one view.',
       sections: [
-        { id: 'executive-summary', title: 'Executive Summary', placeholder: 'Summarize your business, target market, and growth objective.' },
-        { id: 'market-analysis', title: 'Market Analysis', placeholder: 'Describe your market size, trends, and competitor insights.' },
-        { id: 'business-model', title: 'Business Model', placeholder: 'Explain your pricing, offer structure, and delivery model.' },
-        { id: 'operations-plan', title: 'Operations Plan', placeholder: 'Outline roles, workflows, and operational milestones.' },
-        { id: 'go-to-market', title: 'Go-to-Market Strategy', placeholder: 'Describe launch channels, partnerships, and acquisition strategy.' },
-        { id: 'risk-plan', title: 'Risk & Mitigation', placeholder: 'List key business risks and your mitigation plan.' }
+        { id: 'campaign-goal', title: 'Campaign Goal', placeholder: 'State the measurable goal for this campaign.' },
+        { id: 'target-audience', title: 'Target Audience', placeholder: 'Define who this campaign is built for.' },
+        { id: 'channels', title: 'Channels', placeholder: 'Select and justify the channels you will use.' },
+        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline core messages and publishing cadence.' },
+        { id: 'budget', title: 'Budget', placeholder: 'List spend allocation and expected return.' },
+        { id: 'kpis', title: 'KPIs', placeholder: 'Define success metrics and reporting cadence.' }
       ]
     },
     {
-      id: 'pitch-deck',
-      title: 'Pitch Deck',
-      description: 'Prepare investor-ready pitch points for fundraising and storytelling.',
+      id: 'operations',
+      storageKey: STORAGE_KEYS.templateOperations,
+      title: 'Operations Roadmap',
+      description: 'Plan people, tools, and execution systems for stable operations.',
       sections: [
-        { id: 'problem-opportunity', title: 'Problem & Opportunity', placeholder: 'Describe the pain point and why now is the right timing.' },
-        { id: 'product', title: 'Product', placeholder: 'What are you building and why is it compelling?' },
-        { id: 'market-size', title: 'Market Size', placeholder: 'Estimate TAM/SAM/SOM and explain assumptions.' },
-        { id: 'traction', title: 'Traction', placeholder: 'Share growth metrics, pilots, revenue, or customer validation.' },
-        { id: 'business-model-slide', title: 'Business Model', placeholder: 'How does the company make money?' },
-        { id: 'funding-ask', title: 'Funding Ask', placeholder: 'State how much you are raising and where it will be used.' }
-      ]
-    },
-    {
-      id: 'financial-plan',
-      title: 'Financial Plan',
-      description: 'Plan revenue, expenses, projections, and cash runway.',
-      sections: [
-        { id: 'revenue-forecast', title: 'Revenue Forecast', placeholder: 'Project monthly/quarterly revenue for the next 12 months.' },
-        { id: 'expense-plan', title: 'Expense Plan', placeholder: 'List fixed and variable costs across operations, marketing, and team.' },
-        { id: 'break-even', title: 'Break-Even Analysis', placeholder: 'Estimate when revenue will cover total operating costs.' },
-        { id: 'cash-runway', title: 'Cash Runway', placeholder: 'How many months can you operate with current cash and burn rate?' },
-        { id: 'funding-strategy', title: 'Funding Strategy', placeholder: 'Will you bootstrap, borrow, or raise capital?' },
-        { id: 'financial-risks', title: 'Financial Risks', placeholder: 'Identify top financial risks and contingency plans.' }
-      ]
-    },
-    {
-      id: 'marketing-plan',
-      title: 'Marketing Plan',
-      description: 'Structure your audience, messaging, channels, and KPIs.',
-      sections: [
-        { id: 'target-audience', title: 'Target Audience', placeholder: 'Who exactly are you trying to reach?' },
-        { id: 'positioning', title: 'Positioning & Messaging', placeholder: 'What core message should your audience remember?' },
-        { id: 'channel-strategy', title: 'Channel Strategy', placeholder: 'Which channels will you prioritize and why?' },
-        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline the weekly content and campaign rhythm.' },
-        { id: 'budget-allocation', title: 'Budget Allocation', placeholder: 'How will budget be split across channels and production?' },
-        { id: 'kpis', title: 'Success Metrics (KPIs)', placeholder: 'Define measurable outcomes: leads, CAC, conversions, revenue.' }
+        { id: 'team-roles', title: 'Team Roles', placeholder: 'Define core roles and responsibilities.' },
+        { id: 'tools', title: 'Tools', placeholder: 'List systems and tools needed for execution.' },
+        { id: 'workflow', title: 'Workflow', placeholder: 'Document the workflow from input to delivery.' },
+        { id: 'timeline', title: 'Timeline', placeholder: 'Set milestones and implementation phases.' },
+        { id: 'risks', title: 'Risks', placeholder: 'Identify operational risks and mitigation plans.' },
+        { id: 'execution-plan', title: 'Execution Plan', placeholder: 'Summarize the action plan for consistent execution.' }
       ]
     }
   ];
@@ -176,15 +154,6 @@
     ]
   };
 
-  const WHEN_NOT_TO_START_TEMPLATE_FIELDS = [
-    { id: 'businessIdea', label: 'Business Idea', placeholder: 'Describe the idea you want to launch.' },
-    { id: 'problemEvidence', label: 'Problem Evidence', placeholder: 'What proof do you have that this is a real customer problem?' },
-    { id: 'validationPlan', label: 'Validation Plan', placeholder: 'What test will you run in the next 7 days?' },
-    { id: 'financialRunway', label: 'Financial Runway Check', placeholder: 'How many months of runway do you currently have?' },
-    { id: 'currentRisks', label: 'Top Risks', placeholder: 'List your top 3 risks before launch.' },
-    { id: 'nextAction', label: 'Decision & Next Action', placeholder: 'Should you start now, delay, or pivot? What is your immediate next step?' }
-  ];
-
   let appState = {
     monthlyIncome: 0,
     expenses: [],
@@ -193,8 +162,7 @@
     aiChatHistory: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
-    businessPlan: { selectedTemplateId: '', drafts: {} },
-    whenNotStartTemplate: {}
+    businessPlan: { selectedTemplateId: '', drafts: {} }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -460,7 +428,10 @@
   }
 
   function saveBusinessPlanState() {
-    saveToStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
+    const selectedTemplate = getSelectedBusinessTemplate();
+    if (!selectedTemplate) return;
+    ensureBusinessPlanDraft(selectedTemplate.id);
+    saveToStorage(selectedTemplate.storageKey, appState.businessPlan.drafts[selectedTemplate.id]);
   }
 
   function renderBusinessPlanTemplates() {
@@ -483,7 +454,7 @@
           <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
           <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
           <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
-          <p class="text-xs text-slate-400 mt-3">${template.sections.length} editable blocks</p>
+          <p class="text-xs text-slate-400 mt-3">Fields: ${template.sections.length} editable blocks</p>
         </button>
       `;
     }).join('');
@@ -499,8 +470,8 @@
     const selectedTemplate = getSelectedBusinessTemplate();
     if (!selectedTemplate) {
       header.textContent = 'Select a template';
-      if (helper) helper.textContent = 'Pick one of the five planning templates to start building your document.';
-      status.textContent = 'Open a template card to start editing.';
+      if (helper) helper.textContent = 'Select a template';
+      status.textContent = 'Pick one of the planning templates to start building your document.';
       form.innerHTML = '';
       return;
     }
@@ -529,11 +500,8 @@
     if (!templateExists) return;
     appState.businessPlan.selectedTemplateId = templateId;
     ensureBusinessPlanDraft(templateId);
-    saveBusinessPlanState();
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
-    renderWhenNotToStartGuide();
-    initWhenNotToStartTemplate();
   }
 
   function generateIdeas(topic) {
@@ -549,16 +517,6 @@
   function renderWhenNotToStartGuide() {
     const container = $('whenNotToStartGuide');
     if (!container) return;
-
-    const templateFields = WHEN_NOT_TO_START_TEMPLATE_FIELDS.map((field) => {
-      const value = appState.whenNotStartTemplate[field.id] || '';
-      return `
-        <label class="learning-card flex flex-col gap-2" for="template_${field.id}">
-          <span class="text-sm font-semibold">${escapeHTML(field.label)}</span>
-          <textarea id="template_${field.id}" data-template-input="${field.id}" class="w-full rounded-xl p-3 text-sm" placeholder="${escapeHTML(field.placeholder)}">${escapeHTML(value)}</textarea>
-        </label>
-      `;
-    }).join('');
 
     const redFlagCards = WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => `
       <article class="learning-card">
@@ -596,29 +554,7 @@
         <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(WHEN_NOT_TO_START_MODULE.finalTakeaway)}</p>
       </article>
 
-      <section class="learning-template">
-        <article class="learning-card">
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template</p>
-          <h3 class="text-xl font-semibold mt-1">Launch Readiness Reflection</h3>
-          <p class="text-sm text-slate-600 mt-2">Complete each textarea to evaluate whether to start now or wait.</p>
-          <form id="whenNotToStartTemplateForm" class="mt-4 grid md:grid-cols-2 gap-3">${templateFields}</form>
-          <p class="text-xs text-slate-500 mt-4">Your template responses are auto-saved in local storage.</p>
-        </article>
-      </section>
     `;
-  }
-
-  function initWhenNotToStartTemplate() {
-    const form = $('whenNotToStartTemplateForm');
-    if (!form) return;
-    form.addEventListener('input', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLTextAreaElement)) return;
-      const key = target.getAttribute('data-template-input');
-      if (!key) return;
-      appState.whenNotStartTemplate[key] = target.value;
-      saveToStorage(STORAGE_KEYS.whenNotStartTemplate, appState.whenNotStartTemplate);
-    });
   }
 
   function applySettings() {
@@ -653,8 +589,32 @@
       renderBusinessPlanTemplates();
       renderBusinessPlanEditor();
       renderWhenNotToStartGuide();
-      initWhenNotToStartTemplate();
     }
+  }
+
+  function setPlanningSection(sectionName) {
+    const sections = {
+      guides: $('planningGuidesSection'),
+      templates: $('planningTemplatesSection')
+    };
+    Object.entries(sections).forEach(([key, node]) => {
+      if (!node) return;
+      node.classList.toggle('active', key === sectionName);
+    });
+
+    document.querySelectorAll('[data-planning-section]').forEach((button) => {
+      button.classList.toggle('active', button.getAttribute('data-planning-section') === sectionName);
+    });
+  }
+
+  function initPlanningSections() {
+    document.querySelectorAll('[data-planning-section]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sectionName = button.getAttribute('data-planning-section');
+        if (!sectionName) return;
+        setPlanningSection(sectionName);
+      });
+    });
   }
 
   function showMainApp(options = {}) {
@@ -880,6 +840,7 @@
       businessPlanTemplateCards.addEventListener('click', (event) => {
         const button = event.target.closest('[data-template-id]');
         if (!button) return;
+        setPlanningSection('templates');
         selectBusinessTemplate(button.getAttribute('data-template-id'));
       });
     }
@@ -932,8 +893,10 @@
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
-    appState.businessPlan = loadFromStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
-    appState.whenNotStartTemplate = loadFromStorage(STORAGE_KEYS.whenNotStartTemplate, {});
+    BUSINESS_PLAN_TEMPLATES.forEach((template) => {
+      const saved = loadFromStorage(template.storageKey, {});
+      appState.businessPlan.drafts[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
+    });
   }
 
   function initSelects() {
@@ -956,6 +919,7 @@
     hydrateState();
     initSelects();
     initTabs();
+    initPlanningSections();
     initControls();
     applySettings();
     renderDashboard();
@@ -965,7 +929,7 @@
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
     renderWhenNotToStartGuide();
-    initWhenNotToStartTemplate();
+    setPlanningSection('guides');
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
