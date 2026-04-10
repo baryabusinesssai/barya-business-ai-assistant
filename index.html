@@ -301,6 +301,15 @@
     }
 
     * , *::before, *::after { box-sizing: border-box; }
+
+    #landingPageContainer {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    #landingPage {
+      width: 100%;
+    }
     .landing-hero {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -383,7 +392,7 @@
       #memoryForm button,
       #startConversationBtn,
       #startPlanningBtn,
-      #exploreFeaturesBtn {
+      #getStartedBtn {
         width: 100%;
       }
       #tabs {
@@ -397,9 +406,9 @@
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
-  <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+  <div id="landingPageContainer" class="max-w-6xl mx-auto px-4 py-6">
 
-    <section id="landing" class="landing-hero">
+    <section id="landingPage" class="landing-hero">
       <div class="max-w-4xl mx-auto text-center space-y-4">
         <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Business Growth Platform</p>
         <h1 class="text-4xl md:text-5xl font-semibold tracking-tight">Barya Business AI Assistant</h1>
@@ -407,7 +416,7 @@
         <p class="text-slate-600 max-w-3xl mx-auto">Barya is a business planning and AI-powered assistant tool that helps founders turn ideas into clear plans, practical strategies, and trackable execution.</p>
         <div class="flex flex-col md:flex-row gap-3 justify-center">
           <button id="startPlanningBtn" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold">Start Planning</button>
-          <a id="exploreFeaturesBtn" href="#landing-features" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700">Explore Features</a>
+          <button id="getStartedBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700">Get Started</button>
         </div>
       </div>
 
@@ -453,6 +462,9 @@
         </div>
       </section>
     </section>
+  </div>
+
+  <div id="appContainer" class="max-w-6xl mx-auto px-4 py-6 space-y-6" style="display:none;">
 
     <header class="glass border border-indigo-900/40 rounded-3xl p-5 md:p-6 shadow-2xl">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
