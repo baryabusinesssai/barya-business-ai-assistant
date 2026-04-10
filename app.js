@@ -73,41 +73,67 @@
   const BUSINESS_PLAN_TEMPLATES = [
     {
       id: 'lean-canvas',
-      title: 'Lean Launch Canvas',
-      description: 'Map the core blocks for a fast, testable startup launch.',
+      title: 'Lean Canvas',
+      description: 'Map the core startup blocks for a quick validation plan.',
       sections: [
         { id: 'problem', title: 'Problem', placeholder: 'List the top 3 customer pain points.' },
         { id: 'solution', title: 'Solution', placeholder: 'Describe your product/service solution in practical terms.' },
-        { id: 'value-prop', title: 'Unique Value Proposition', placeholder: 'What makes this offer clearly different and desirable?' },
+        { id: 'value-proposition', title: 'Unique Value Proposition', placeholder: 'What makes this offer clearly different and desirable?' },
         { id: 'channels', title: 'Channels', placeholder: 'Where will customers discover and buy from you?' },
-        { id: 'revenue', title: 'Revenue Streams', placeholder: 'How will money come in? Pricing model, upsells, subscriptions, etc.' },
-        { id: 'cost', title: 'Cost Structure', placeholder: 'List major recurring and one-time costs.' }
+        { id: 'revenue-streams', title: 'Revenue Streams', placeholder: 'How will money come in? Pricing model, upsells, subscriptions, etc.' },
+        { id: 'cost-structure', title: 'Cost Structure', placeholder: 'List major recurring and one-time costs.' }
       ]
     },
     {
-      id: 'marketing-campaign',
-      title: 'Marketing Campaign Block',
-      description: 'Structure your campaign strategy, content, and KPIs in one view.',
+      id: 'full-business-plan',
+      title: 'Full Business Plan',
+      description: 'Build a complete strategic plan from vision to execution.',
       sections: [
-        { id: 'audience', title: 'Target Audience', placeholder: 'Who exactly are you trying to reach?' },
-        { id: 'message', title: 'Core Message', placeholder: 'What single message should this audience remember?' },
-        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline 3–5 campaign assets: reels, posts, landing page, email, etc.' },
-        { id: 'timeline', title: 'Timeline & Milestones', placeholder: 'Week-by-week milestones and launch checkpoints.' },
-        { id: 'budget', title: 'Budget Allocation', placeholder: 'How will budget be split across channels and production?' },
+        { id: 'executive-summary', title: 'Executive Summary', placeholder: 'Summarize your business, target market, and growth objective.' },
+        { id: 'market-analysis', title: 'Market Analysis', placeholder: 'Describe your market size, trends, and competitor insights.' },
+        { id: 'business-model', title: 'Business Model', placeholder: 'Explain your pricing, offer structure, and delivery model.' },
+        { id: 'operations-plan', title: 'Operations Plan', placeholder: 'Outline roles, workflows, and operational milestones.' },
+        { id: 'go-to-market', title: 'Go-to-Market Strategy', placeholder: 'Describe launch channels, partnerships, and acquisition strategy.' },
+        { id: 'risk-plan', title: 'Risk & Mitigation', placeholder: 'List key business risks and your mitigation plan.' }
+      ]
+    },
+    {
+      id: 'pitch-deck',
+      title: 'Pitch Deck',
+      description: 'Prepare investor-ready pitch points for fundraising and storytelling.',
+      sections: [
+        { id: 'problem-opportunity', title: 'Problem & Opportunity', placeholder: 'Describe the pain point and why now is the right timing.' },
+        { id: 'product', title: 'Product', placeholder: 'What are you building and why is it compelling?' },
+        { id: 'market-size', title: 'Market Size', placeholder: 'Estimate TAM/SAM/SOM and explain assumptions.' },
+        { id: 'traction', title: 'Traction', placeholder: 'Share growth metrics, pilots, revenue, or customer validation.' },
+        { id: 'business-model-slide', title: 'Business Model', placeholder: 'How does the company make money?' },
+        { id: 'funding-ask', title: 'Funding Ask', placeholder: 'State how much you are raising and where it will be used.' }
+      ]
+    },
+    {
+      id: 'financial-plan',
+      title: 'Financial Plan',
+      description: 'Plan revenue, expenses, projections, and cash runway.',
+      sections: [
+        { id: 'revenue-forecast', title: 'Revenue Forecast', placeholder: 'Project monthly/quarterly revenue for the next 12 months.' },
+        { id: 'expense-plan', title: 'Expense Plan', placeholder: 'List fixed and variable costs across operations, marketing, and team.' },
+        { id: 'break-even', title: 'Break-Even Analysis', placeholder: 'Estimate when revenue will cover total operating costs.' },
+        { id: 'cash-runway', title: 'Cash Runway', placeholder: 'How many months can you operate with current cash and burn rate?' },
+        { id: 'funding-strategy', title: 'Funding Strategy', placeholder: 'Will you bootstrap, borrow, or raise capital?' },
+        { id: 'financial-risks', title: 'Financial Risks', placeholder: 'Identify top financial risks and contingency plans.' }
+      ]
+    },
+    {
+      id: 'marketing-plan',
+      title: 'Marketing Plan',
+      description: 'Structure your audience, messaging, channels, and KPIs.',
+      sections: [
+        { id: 'target-audience', title: 'Target Audience', placeholder: 'Who exactly are you trying to reach?' },
+        { id: 'positioning', title: 'Positioning & Messaging', placeholder: 'What core message should your audience remember?' },
+        { id: 'channel-strategy', title: 'Channel Strategy', placeholder: 'Which channels will you prioritize and why?' },
+        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline the weekly content and campaign rhythm.' },
+        { id: 'budget-allocation', title: 'Budget Allocation', placeholder: 'How will budget be split across channels and production?' },
         { id: 'kpis', title: 'Success Metrics (KPIs)', placeholder: 'Define measurable outcomes: leads, CAC, conversions, revenue.' }
-      ]
-    },
-    {
-      id: 'ops-roadmap',
-      title: 'Operations Roadmap',
-      description: 'Plan people, tools, and execution systems for stable operations.',
-      sections: [
-        { id: 'workflow', title: 'Workflow Design', placeholder: 'Describe your operational workflow from lead to delivery.' },
-        { id: 'team', title: 'Team & Roles', placeholder: 'Who owns what? Define responsibilities and decision owners.' },
-        { id: 'tools', title: 'Tools & Automation', placeholder: 'What software/tools support each stage of operations?' },
-        { id: 'risks', title: 'Risk Management', placeholder: 'What can fail, and what backup plans are in place?' },
-        { id: 'quality', title: 'Quality Standards', placeholder: 'Define measurable standards for quality and consistency.' },
-        { id: 'review', title: 'Review Cadence', placeholder: 'When and how will you review metrics and process health?' }
       ]
     }
   ];
@@ -439,7 +465,17 @@
 
   function renderBusinessPlanTemplates() {
     const cards = $('businessPlanTemplateCards');
-    if (!cards) return;
+    const fallback = $('businessPlanFallback');
+    if (!cards) {
+      if (fallback) fallback.textContent = 'Templates failed to load. Please refresh.';
+      return;
+    }
+    if (!Array.isArray(BUSINESS_PLAN_TEMPLATES) || BUSINESS_PLAN_TEMPLATES.length === 0) {
+      cards.innerHTML = '';
+      if (fallback) fallback.textContent = 'Templates failed to load. Please refresh.';
+      return;
+    }
+    if (fallback) fallback.textContent = '';
     cards.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
       const isActive = template.id === appState.businessPlan.selectedTemplateId;
       return `
@@ -457,11 +493,13 @@
     const header = $('businessPlanEditorHeader');
     const status = $('businessPlanStatus');
     const form = $('businessPlanEditorForm');
+    const helper = $('businessPlanTemplateHelper');
     if (!header || !status || !form) return;
 
     const selectedTemplate = getSelectedBusinessTemplate();
     if (!selectedTemplate) {
       header.textContent = 'Select a template';
+      if (helper) helper.textContent = 'Pick one of the five planning templates to start building your document.';
       status.textContent = 'Open a template card to start editing.';
       form.innerHTML = '';
       return;
@@ -471,6 +509,7 @@
     const draft = appState.businessPlan.drafts[selectedTemplate.id];
 
     header.textContent = `${selectedTemplate.title} — Editable Blocks`;
+    if (helper) helper.textContent = selectedTemplate.description;
     status.textContent = 'Edit any box below. Your inputs stay editable and save locally.';
     form.innerHTML = selectedTemplate.sections.map((section) => `
       <label class="template-editor-block rounded-2xl p-4 flex flex-col gap-2">
@@ -506,134 +545,6 @@
     ];
   }
 
-
-  function getBusinessTemplateById(templateId) {
-    return BUSINESS_PLAN_TEMPLATES.find((template) => template.id === templateId) || null;
-  }
-
-  function loadBusinessTemplateState() {
-    const nextState = {};
-    BUSINESS_PLAN_TEMPLATES.forEach((template) => {
-      const saved = loadFromStorage(template.storageKey, {});
-      nextState[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
-    });
-    appState.businessPlanTemplates = nextState;
-  }
-
-  function renderBusinessPlanTemplateCards() {
-    const cardsContainer = $('businessPlanTemplateCards');
-    if (!cardsContainer) return;
-
-    cardsContainer.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
-      const isActive = template.id === appState.activeBusinessPlanTemplateId;
-      const savedSections = Object.values(appState.businessPlanTemplates[template.id] || {}).filter(Boolean).length;
-      const completion = `${savedSections}/${template.sections.length} sections saved`;
-      return `
-        <button class="template-card ${isActive ? 'active' : ''}" type="button" data-template-id="${template.id}">
-          <p class="template-card-title">${escapeHTML(template.title)}</p>
-          <p class="template-card-text">${escapeHTML(template.description)}</p>
-          <p class="template-card-meta">${escapeHTML(completion)}</p>
-        </button>
-      `;
-    }).join('');
-
-    cardsContainer.querySelectorAll('[data-template-id]').forEach((btn) => {
-      btn.addEventListener('click', () => openBusinessPlanTemplate(btn.getAttribute('data-template-id') || ''));
-    });
-  }
-
-  function renderBusinessPlanEditor() {
-    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
-    const form = $('businessPlanEditorForm');
-    const header = $('businessPlanEditorHeader');
-    const helper = $('businessPlanTemplateHelper');
-    if (!form || !header || !helper) return;
-
-    if (!template) {
-      header.textContent = 'Select a template';
-      helper.textContent = 'Pick one of the five planning templates to start building your document.';
-      form.innerHTML = '';
-      return;
-    }
-
-    const data = appState.businessPlanTemplates[template.id] || {};
-    header.textContent = template.title;
-    helper.textContent = template.helper;
-    form.innerHTML = template.sections.map((section) => `
-      <article class="editor-field-card">
-        <label class="editor-field-label" for="${template.id}_${section.key}">${escapeHTML(section.label)}</label>
-        <p class="editor-field-helper">${escapeHTML(section.helper)}</p>
-        <textarea
-          class="editor-textarea"
-          id="${template.id}_${section.key}"
-          name="${section.key}"
-          placeholder="${escapeHTML(section.placeholder)}"
-        >${escapeHTML(data[section.key] || '')}</textarea>
-      </article>
-    `).join('');
-
-    form.querySelectorAll('textarea').forEach((textarea) => {
-      textarea.addEventListener('input', (event) => {
-        const current = appState.businessPlanTemplates[template.id] || {};
-        current[event.target.name] = event.target.value;
-        appState.businessPlanTemplates[template.id] = current;
-      });
-    });
-  }
-
-  function setBusinessPlanStatus(message) {
-    const status = $('businessPlanStatus');
-    if (status) status.textContent = message;
-  }
-
-  function openBusinessPlanTemplate(templateId) {
-    const template = getBusinessTemplateById(templateId);
-    if (!template) return;
-    appState.activeBusinessPlanTemplateId = templateId;
-    renderBusinessPlanTemplateCards();
-    renderBusinessPlanEditor();
-    setBusinessPlanStatus(`Editing ${template.title}. Changes are local until you click Save Template.`);
-  }
-
-  function saveActiveBusinessPlanTemplate() {
-    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
-    if (!template) {
-      setBusinessPlanStatus('Select a template before saving.');
-      return;
-    }
-    saveToStorage(template.storageKey, appState.businessPlanTemplates[template.id] || {});
-    renderBusinessPlanTemplateCards();
-    setBusinessPlanStatus(`${template.title} saved to local storage.`);
-  }
-
-  function resetActiveBusinessPlanTemplate() {
-    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
-    if (!template) {
-      setBusinessPlanStatus('Select a template before resetting.');
-      return;
-    }
-    appState.businessPlanTemplates[template.id] = {};
-    localStorage.removeItem(template.storageKey);
-    renderBusinessPlanEditor();
-    renderBusinessPlanTemplateCards();
-    setBusinessPlanStatus(`${template.title} reset. You can start fresh.`);
-  }
-
-  function initBusinessPlanning() {
-    loadBusinessTemplateState();
-    renderBusinessPlanTemplateCards();
-    renderBusinessPlanEditor();
-
-    const saveBtn = $('businessPlanSaveBtn');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', saveActiveBusinessPlanTemplate);
-    }
-
-    const resetBtn = $('businessPlanResetBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', resetActiveBusinessPlanTemplate);
-    }
-  }
 
   function renderWhenNotToStartGuide() {
     const container = $('whenNotToStartGuide');
@@ -737,6 +648,13 @@
     if (target) target.classList.remove('hidden');
     const activeBtn = document.querySelector(`#tabs [data-tab="${tabName}"]`);
     if (activeBtn) activeBtn.classList.add('active');
+
+    if (tabName === 'planning') {
+      renderBusinessPlanTemplates();
+      renderBusinessPlanEditor();
+      renderWhenNotToStartGuide();
+      initWhenNotToStartTemplate();
+    }
   }
 
   function showMainApp(options = {}) {
