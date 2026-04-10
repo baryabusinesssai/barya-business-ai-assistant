@@ -6,11 +6,53 @@
     settings: 'barya_settings',
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
-    ideaGeneratorHistory: 'barya_idea_generator_history'
+    ideaGeneratorHistory: 'barya_idea_generator_history',
+    businessPlan: 'barya_business_plan'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
+  const BUSINESS_PLAN_TEMPLATES = [
+    {
+      id: 'lean-canvas',
+      title: 'Lean Launch Canvas',
+      description: 'Map the core blocks for a fast, testable startup launch.',
+      sections: [
+        { id: 'problem', title: 'Problem', placeholder: 'List the top 3 customer pain points.' },
+        { id: 'solution', title: 'Solution', placeholder: 'Describe your product/service solution in practical terms.' },
+        { id: 'value-prop', title: 'Unique Value Proposition', placeholder: 'What makes this offer clearly different and desirable?' },
+        { id: 'channels', title: 'Channels', placeholder: 'Where will customers discover and buy from you?' },
+        { id: 'revenue', title: 'Revenue Streams', placeholder: 'How will money come in? Pricing model, upsells, subscriptions, etc.' },
+        { id: 'cost', title: 'Cost Structure', placeholder: 'List major recurring and one-time costs.' }
+      ]
+    },
+    {
+      id: 'marketing-campaign',
+      title: 'Marketing Campaign Block',
+      description: 'Structure your campaign strategy, content, and KPIs in one view.',
+      sections: [
+        { id: 'audience', title: 'Target Audience', placeholder: 'Who exactly are you trying to reach?' },
+        { id: 'message', title: 'Core Message', placeholder: 'What single message should this audience remember?' },
+        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline 3–5 campaign assets: reels, posts, landing page, email, etc.' },
+        { id: 'timeline', title: 'Timeline & Milestones', placeholder: 'Week-by-week milestones and launch checkpoints.' },
+        { id: 'budget', title: 'Budget Allocation', placeholder: 'How will budget be split across channels and production?' },
+        { id: 'kpis', title: 'Success Metrics (KPIs)', placeholder: 'Define measurable outcomes: leads, CAC, conversions, revenue.' }
+      ]
+    },
+    {
+      id: 'ops-roadmap',
+      title: 'Operations Roadmap',
+      description: 'Plan people, tools, and execution systems for stable operations.',
+      sections: [
+        { id: 'workflow', title: 'Workflow Design', placeholder: 'Describe your operational workflow from lead to delivery.' },
+        { id: 'team', title: 'Team & Roles', placeholder: 'Who owns what? Define responsibilities and decision owners.' },
+        { id: 'tools', title: 'Tools & Automation', placeholder: 'What software/tools support each stage of operations?' },
+        { id: 'risks', title: 'Risk Management', placeholder: 'What can fail, and what backup plans are in place?' },
+        { id: 'quality', title: 'Quality Standards', placeholder: 'Define measurable standards for quality and consistency.' },
+        { id: 'review', title: 'Review Cadence', placeholder: 'When and how will you review metrics and process health?' }
+      ]
+    }
+  ];
 
   let appState = {
     monthlyIncome: 0,
@@ -19,7 +61,8 @@
     settings: { currency: 'USD', language: 'English', goal: '' },
     aiChatHistory: [],
     businessAdvisorHistory: [],
-    ideaGeneratorHistory: []
+    ideaGeneratorHistory: [],
+    businessPlan: { selectedTemplateId: '', drafts: {} }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -202,6 +245,95 @@
     results.innerHTML = latest.length
       ? latest.flatMap((item) => item.ideas.map((idea) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl p-2">${idea}</li>`)).join('')
       : '<li class="text-slate-400">No ideas generated yet.</li>';
+  }
+
+  function escapeHtml(text) {
+    return String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getSelectedBusinessTemplate() {
+    return BUSINESS_PLAN_TEMPLATES.find((item) => item.id === appState.businessPlan.selectedTemplateId) || null;
+  }
+
+  function ensureBusinessPlanDraft(templateId) {
+    if (!templateId) return;
+    const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === templateId);
+    if (!template) return;
+    if (!appState.businessPlan.drafts[templateId]) {
+      appState.businessPlan.drafts[templateId] = {};
+    }
+    template.sections.forEach((section) => {
+      if (typeof appState.businessPlan.drafts[templateId][section.id] !== 'string') {
+        appState.businessPlan.drafts[templateId][section.id] = '';
+      }
+    });
+  }
+
+  function saveBusinessPlanState() {
+    saveToStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
+  }
+
+  function renderBusinessPlanTemplates() {
+    const cards = $('businessPlanTemplateCards');
+    if (!cards) return;
+    cards.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
+      const isActive = template.id === appState.businessPlan.selectedTemplateId;
+      return `
+        <button type="button" class="template-card ${isActive ? 'active' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
+          <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
+          <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
+          <p class="text-xs text-slate-400 mt-3">${template.sections.length} editable blocks</p>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function renderBusinessPlanEditor() {
+    const header = $('businessPlanEditorHeader');
+    const status = $('businessPlanStatus');
+    const form = $('businessPlanEditorForm');
+    if (!header || !status || !form) return;
+
+    const selectedTemplate = getSelectedBusinessTemplate();
+    if (!selectedTemplate) {
+      header.textContent = 'Select a template';
+      status.textContent = 'Open a template card to start editing.';
+      form.innerHTML = '';
+      return;
+    }
+
+    ensureBusinessPlanDraft(selectedTemplate.id);
+    const draft = appState.businessPlan.drafts[selectedTemplate.id];
+
+    header.textContent = `${selectedTemplate.title} — Editable Blocks`;
+    status.textContent = 'Edit any box below. Your inputs stay editable and save locally.';
+    form.innerHTML = selectedTemplate.sections.map((section) => `
+      <label class="template-editor-block rounded-2xl p-4 flex flex-col gap-2">
+        <span class="text-xs uppercase tracking-[0.18em] text-slate-400">${section.title}</span>
+        <textarea
+          data-template-field="${section.id}"
+          rows="6"
+          class="w-full rounded-xl p-3 text-sm leading-relaxed resize-y"
+          placeholder="${escapeHtml(section.placeholder)}"
+        >${escapeHtml(draft[section.id] || '')}</textarea>
+      </label>
+    `).join('');
+  }
+
+  function selectBusinessTemplate(templateId) {
+    const templateExists = BUSINESS_PLAN_TEMPLATES.some((item) => item.id === templateId);
+    if (!templateExists) return;
+    appState.businessPlan.selectedTemplateId = templateId;
+    ensureBusinessPlanDraft(templateId);
+    saveBusinessPlanState();
+    renderBusinessPlanTemplates();
+    renderBusinessPlanEditor();
   }
 
   function generateIdeas(topic) {
@@ -398,6 +530,54 @@
         applySettings();
       });
     }
+
+    const businessPlanTemplateCards = $('businessPlanTemplateCards');
+    if (businessPlanTemplateCards) {
+      businessPlanTemplateCards.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-template-id]');
+        if (!button) return;
+        selectBusinessTemplate(button.getAttribute('data-template-id'));
+      });
+    }
+
+    const businessPlanEditorForm = $('businessPlanEditorForm');
+    if (businessPlanEditorForm) {
+      businessPlanEditorForm.addEventListener('input', (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLTextAreaElement)) return;
+        const sectionId = input.getAttribute('data-template-field');
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!sectionId || !selectedTemplate) return;
+        ensureBusinessPlanDraft(selectedTemplate.id);
+        appState.businessPlan.drafts[selectedTemplate.id][sectionId] = input.value;
+      });
+    }
+
+    const businessPlanSaveBtn = $('businessPlanSaveBtn');
+    if (businessPlanSaveBtn) {
+      businessPlanSaveBtn.addEventListener('click', () => {
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!selectedTemplate) return;
+        saveBusinessPlanState();
+        const status = $('businessPlanStatus');
+        if (status) status.textContent = `${selectedTemplate.title} saved locally.`;
+      });
+    }
+
+    const businessPlanResetBtn = $('businessPlanResetBtn');
+    if (businessPlanResetBtn) {
+      businessPlanResetBtn.addEventListener('click', () => {
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!selectedTemplate) return;
+        appState.businessPlan.drafts[selectedTemplate.id] = Object.fromEntries(
+          selectedTemplate.sections.map((section) => [section.id, ''])
+        );
+        saveBusinessPlanState();
+        renderBusinessPlanEditor();
+        const status = $('businessPlanStatus');
+        if (status) status.textContent = `${selectedTemplate.title} cleared.`;
+      });
+    }
   }
 
   function hydrateState() {
@@ -408,6 +588,7 @@
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
+    appState.businessPlan = loadFromStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
   }
 
   function initSelects() {
@@ -436,6 +617,8 @@
     renderAIChat();
     renderBusinessAdvisor();
     renderIdeaGenerator();
+    renderBusinessPlanTemplates();
+    renderBusinessPlanEditor();
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
