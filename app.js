@@ -8,7 +8,8 @@
     businessAdvisorHistory: 'barya_business_advisor_history',
     ideaGeneratorHistory: 'barya_idea_generator_history',
     businessPlan: 'barya_business_plan',
-    whenNotStartTemplate: 'barya_when_not_start_template'
+    whenNotStartTemplate: 'barya_when_not_start_template',
+    userStarted: 'barya_user_started'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -626,16 +627,48 @@
     renderAIChat();
   }
 
+
+  function setActiveTab(tabName) {
+    if (!tabName) return;
+    const tabButtons = document.querySelectorAll('#tabs [data-tab]');
+    document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
+    tabButtons.forEach((btn) => btn.classList.remove('active'));
+
+    const target = document.getElementById(`panel-${tabName}`);
+    if (target) target.classList.remove('hidden');
+    const activeBtn = document.querySelector(`#tabs [data-tab="${tabName}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
+
+  function showMainApp(options = {}) {
+    const { tab = 'dashboard', rememberStart = false } = options;
+    const landingPageContainer = $('landingPageContainer');
+    const appContainer = $('appContainer');
+
+    if (landingPageContainer) landingPageContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
+
+    if (rememberStart) {
+      localStorage.setItem(STORAGE_KEYS.userStarted, 'true');
+    }
+
+    setActiveTab(tab);
+  }
+
+  function showLandingPage() {
+    const landingPageContainer = $('landingPageContainer');
+    const appContainer = $('appContainer');
+
+    if (landingPageContainer) landingPageContainer.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
+  }
+
   function initTabs() {
     const tabButtons = document.querySelectorAll('#tabs [data-tab]');
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
-        document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
-        tabButtons.forEach((b) => b.classList.remove('active'));
-        const target = document.getElementById(`panel-${tab}`);
-        if (target) target.classList.remove('hidden');
-        btn.classList.add('active');
+        setActiveTab(tab);
       });
     });
   }
@@ -790,8 +823,16 @@
     if (startPlanningBtn) {
       startPlanningBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        document.querySelector('[data-tab="planning"]')?.click();
+        showMainApp({ tab: 'planning', rememberStart: true });
         document.getElementById('appSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    const getStartedBtn = $('getStartedBtn');
+    if (getStartedBtn) {
+      getStartedBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        showMainApp({ tab: 'dashboard', rememberStart: true });
       });
     }
 
@@ -898,6 +939,13 @@
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
+
+    const hasStarted = localStorage.getItem(STORAGE_KEYS.userStarted) === 'true';
+    if (hasStarted) {
+      showMainApp({ tab: 'dashboard' });
+    } else {
+      showLandingPage();
+    }
   }
 
   document.addEventListener('DOMContentLoaded', initApp);
