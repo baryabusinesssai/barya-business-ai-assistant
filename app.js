@@ -67,6 +67,15 @@
 
   const $ = (id) => document.getElementById(id);
 
+  function escapeHTML(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function loadFromStorage(key, fallback) {
     const raw = localStorage.getItem(key);
     if (raw === null) return fallback;
@@ -343,6 +352,135 @@
       `${seed}: low-cost audit service + premium implementation upsell`,
       `${seed}: local community workshop + digital toolkit bundle`
     ];
+  }
+
+
+  function getBusinessTemplateById(templateId) {
+    return BUSINESS_PLAN_TEMPLATES.find((template) => template.id === templateId) || null;
+  }
+
+  function loadBusinessTemplateState() {
+    const nextState = {};
+    BUSINESS_PLAN_TEMPLATES.forEach((template) => {
+      const saved = loadFromStorage(template.storageKey, {});
+      nextState[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
+    });
+    appState.businessPlanTemplates = nextState;
+  }
+
+  function renderBusinessPlanTemplateCards() {
+    const cardsContainer = $('businessPlanTemplateCards');
+    if (!cardsContainer) return;
+
+    cardsContainer.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
+      const isActive = template.id === appState.activeBusinessPlanTemplateId;
+      const savedSections = Object.values(appState.businessPlanTemplates[template.id] || {}).filter(Boolean).length;
+      const completion = `${savedSections}/${template.sections.length} sections saved`;
+      return `
+        <button class="template-card ${isActive ? 'active' : ''}" type="button" data-template-id="${template.id}">
+          <p class="template-card-title">${escapeHTML(template.title)}</p>
+          <p class="template-card-text">${escapeHTML(template.description)}</p>
+          <p class="template-card-meta">${escapeHTML(completion)}</p>
+        </button>
+      `;
+    }).join('');
+
+    cardsContainer.querySelectorAll('[data-template-id]').forEach((btn) => {
+      btn.addEventListener('click', () => openBusinessPlanTemplate(btn.getAttribute('data-template-id') || ''));
+    });
+  }
+
+  function renderBusinessPlanEditor() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    const form = $('businessPlanEditorForm');
+    const header = $('businessPlanEditorHeader');
+    const helper = $('businessPlanTemplateHelper');
+    if (!form || !header || !helper) return;
+
+    if (!template) {
+      header.textContent = 'Select a template';
+      helper.textContent = 'Pick one of the five planning templates to start building your document.';
+      form.innerHTML = '';
+      return;
+    }
+
+    const data = appState.businessPlanTemplates[template.id] || {};
+    header.textContent = template.title;
+    helper.textContent = template.helper;
+    form.innerHTML = template.sections.map((section) => `
+      <article class="editor-field-card">
+        <label class="editor-field-label" for="${template.id}_${section.key}">${escapeHTML(section.label)}</label>
+        <p class="editor-field-helper">${escapeHTML(section.helper)}</p>
+        <textarea
+          class="editor-textarea"
+          id="${template.id}_${section.key}"
+          name="${section.key}"
+          placeholder="${escapeHTML(section.placeholder)}"
+        >${escapeHTML(data[section.key] || '')}</textarea>
+      </article>
+    `).join('');
+
+    form.querySelectorAll('textarea').forEach((textarea) => {
+      textarea.addEventListener('input', (event) => {
+        const current = appState.businessPlanTemplates[template.id] || {};
+        current[event.target.name] = event.target.value;
+        appState.businessPlanTemplates[template.id] = current;
+      });
+    });
+  }
+
+  function setBusinessPlanStatus(message) {
+    const status = $('businessPlanStatus');
+    if (status) status.textContent = message;
+  }
+
+  function openBusinessPlanTemplate(templateId) {
+    const template = getBusinessTemplateById(templateId);
+    if (!template) return;
+    appState.activeBusinessPlanTemplateId = templateId;
+    renderBusinessPlanTemplateCards();
+    renderBusinessPlanEditor();
+    setBusinessPlanStatus(`Editing ${template.title}. Changes are local until you click Save Template.`);
+  }
+
+  function saveActiveBusinessPlanTemplate() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    if (!template) {
+      setBusinessPlanStatus('Select a template before saving.');
+      return;
+    }
+    saveToStorage(template.storageKey, appState.businessPlanTemplates[template.id] || {});
+    renderBusinessPlanTemplateCards();
+    setBusinessPlanStatus(`${template.title} saved to local storage.`);
+  }
+
+  function resetActiveBusinessPlanTemplate() {
+    const template = getBusinessTemplateById(appState.activeBusinessPlanTemplateId);
+    if (!template) {
+      setBusinessPlanStatus('Select a template before resetting.');
+      return;
+    }
+    appState.businessPlanTemplates[template.id] = {};
+    localStorage.removeItem(template.storageKey);
+    renderBusinessPlanEditor();
+    renderBusinessPlanTemplateCards();
+    setBusinessPlanStatus(`${template.title} reset. You can start fresh.`);
+  }
+
+  function initBusinessPlanning() {
+    loadBusinessTemplateState();
+    renderBusinessPlanTemplateCards();
+    renderBusinessPlanEditor();
+
+    const saveBtn = $('businessPlanSaveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveActiveBusinessPlanTemplate);
+    }
+
+    const resetBtn = $('businessPlanResetBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetActiveBusinessPlanTemplate);
+    }
   }
 
   function applySettings() {
