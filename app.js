@@ -7,7 +7,8 @@
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
     ideaGeneratorHistory: 'barya_idea_generator_history',
-    businessPlan: 'barya_business_plan'
+    businessPlan: 'barya_business_plan',
+    whenNotStartTemplate: 'barya_when_not_start_template'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -54,6 +55,53 @@
     }
   ];
 
+  const WHEN_NOT_TO_START_MODULE = {
+    title: 'When Not to Start a Business',
+    introduction: 'Use this module before launching a new venture. It helps you identify high-risk situations where delaying the start can protect your money, time, and reputation.',
+    finalTakeaway: 'A strong founder does not just know when to start. A strong founder also knows when to pause, validate, and prepare before committing fully.',
+    redFlags: [
+      {
+        title: 'No Real Customer Problem',
+        explanation: 'If your idea is interesting but does not solve a clear, painful problem, people will not pay consistently.',
+        warningSign: 'You cannot explain the customer pain in one clear sentence.',
+        whatToDo: 'Interview at least 10 target users and rewrite your offer around their exact language and urgent needs.'
+      },
+      {
+        title: 'Starting From Emotion, Not Evidence',
+        explanation: 'Excitement is useful, but business decisions need proof. Launching with assumptions increases failure risk.',
+        warningSign: 'Your confidence is high, but you have no test data, no pre-orders, and no pilot users.',
+        whatToDo: 'Run a low-cost validation sprint: landing page, outreach, and one paid test offer before building more.'
+      },
+      {
+        title: 'No Financial Runway',
+        explanation: 'Without a cushion, short-term pressure can force bad decisions and early shutdown.',
+        warningSign: 'You cannot cover personal and business essentials for the next 6 months.',
+        whatToDo: 'Create a runway plan: reduce fixed costs, keep income stability, and launch part-time until revenue is predictable.'
+      },
+      {
+        title: 'Lack of Execution Capacity',
+        explanation: 'A business needs consistent execution. If you do not have enough time, systems, or support, momentum breaks quickly.',
+        warningSign: 'Important tasks are repeatedly delayed and nothing reaches completion.',
+        whatToDo: 'Simplify scope to one core offer, set weekly execution blocks, and define a minimum operating workflow.'
+      },
+      {
+        title: 'Avoiding Market Reality',
+        explanation: 'Ignoring competition, pricing pressure, or legal requirements creates avoidable risk.',
+        warningSign: 'You have not reviewed competitors, customer alternatives, and compliance obligations.',
+        whatToDo: 'Do a structured market check: compare three competitors, map pricing, and verify basic legal/tax requirements.'
+      }
+    ]
+  };
+
+  const WHEN_NOT_TO_START_TEMPLATE_FIELDS = [
+    { id: 'businessIdea', label: 'Business Idea', placeholder: 'Describe the idea you want to launch.' },
+    { id: 'problemEvidence', label: 'Problem Evidence', placeholder: 'What proof do you have that this is a real customer problem?' },
+    { id: 'validationPlan', label: 'Validation Plan', placeholder: 'What test will you run in the next 7 days?' },
+    { id: 'financialRunway', label: 'Financial Runway Check', placeholder: 'How many months of runway do you currently have?' },
+    { id: 'currentRisks', label: 'Top Risks', placeholder: 'List your top 3 risks before launch.' },
+    { id: 'nextAction', label: 'Decision & Next Action', placeholder: 'Should you start now, delay, or pivot? What is your immediate next step?' }
+  ];
+
   let appState = {
     monthlyIncome: 0,
     expenses: [],
@@ -62,7 +110,8 @@
     aiChatHistory: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
-    businessPlan: { selectedTemplateId: '', drafts: {} }
+    businessPlan: { selectedTemplateId: '', drafts: {} },
+    whenNotStartTemplate: {}
   };
 
   const $ = (id) => document.getElementById(id);
@@ -343,6 +392,8 @@
     saveBusinessPlanState();
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
+    renderWhenNotToStartGuide();
+    initWhenNotToStartTemplate();
   }
 
   function generateIdeas(topic) {
@@ -481,6 +532,81 @@
     if (resetBtn) {
       resetBtn.addEventListener('click', resetActiveBusinessPlanTemplate);
     }
+  }
+
+  function renderWhenNotToStartGuide() {
+    const container = $('whenNotToStartGuide');
+    if (!container) return;
+
+    const templateFields = WHEN_NOT_TO_START_TEMPLATE_FIELDS.map((field) => {
+      const value = appState.whenNotStartTemplate[field.id] || '';
+      return `
+        <label class="learning-card flex flex-col gap-2" for="template_${field.id}">
+          <span class="text-sm font-semibold">${escapeHTML(field.label)}</span>
+          <textarea id="template_${field.id}" data-template-input="${field.id}" class="w-full rounded-xl p-3 text-sm" placeholder="${escapeHTML(field.placeholder)}">${escapeHTML(value)}</textarea>
+        </label>
+      `;
+    }).join('');
+
+    const redFlagCards = WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => `
+      <article class="learning-card">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Red Flag ${index + 1}</p>
+        <h3 class="text-lg font-semibold mt-1">${escapeHTML(item.title)}</h3>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(item.explanation)}</p>
+        <div class="warning-box mt-3">
+          <p class="text-xs uppercase tracking-[0.16em] text-amber-700 font-semibold">Warning Sign</p>
+          <p class="text-sm text-amber-900 mt-1">${escapeHTML(item.warningSign)}</p>
+        </div>
+        <div class="action-box mt-3">
+          <p class="text-xs uppercase tracking-[0.16em] text-sky-700 font-semibold">What to Do</p>
+          <p class="text-sm text-sky-900 mt-1">${escapeHTML(item.whatToDo)}</p>
+        </div>
+      </article>
+    `).join('');
+
+    container.innerHTML = `
+      <article class="learning-card">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Title</p>
+        <h2 class="text-2xl font-semibold mt-1">${escapeHTML(WHEN_NOT_TO_START_MODULE.title)}</h2>
+      </article>
+
+      <article class="learning-card">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Introduction</p>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(WHEN_NOT_TO_START_MODULE.introduction)}</p>
+      </article>
+
+      <section class="learning-module-grid">
+        ${redFlagCards}
+      </section>
+
+      <article class="learning-card">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Final Takeaway</p>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(WHEN_NOT_TO_START_MODULE.finalTakeaway)}</p>
+      </article>
+
+      <section class="learning-template">
+        <article class="learning-card">
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template</p>
+          <h3 class="text-xl font-semibold mt-1">Launch Readiness Reflection</h3>
+          <p class="text-sm text-slate-600 mt-2">Complete each textarea to evaluate whether to start now or wait.</p>
+          <form id="whenNotToStartTemplateForm" class="mt-4 grid md:grid-cols-2 gap-3">${templateFields}</form>
+          <p class="text-xs text-slate-500 mt-4">Your template responses are auto-saved in local storage.</p>
+        </article>
+      </section>
+    `;
+  }
+
+  function initWhenNotToStartTemplate() {
+    const form = $('whenNotToStartTemplateForm');
+    if (!form) return;
+    form.addEventListener('input', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLTextAreaElement)) return;
+      const key = target.getAttribute('data-template-input');
+      if (!key) return;
+      appState.whenNotStartTemplate[key] = target.value;
+      saveToStorage(STORAGE_KEYS.whenNotStartTemplate, appState.whenNotStartTemplate);
+    });
   }
 
   function applySettings() {
@@ -727,6 +853,7 @@
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
     appState.businessPlan = loadFromStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
+    appState.whenNotStartTemplate = loadFromStorage(STORAGE_KEYS.whenNotStartTemplate, {});
   }
 
   function initSelects() {
@@ -757,6 +884,8 @@
     renderIdeaGenerator();
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
+    renderWhenNotToStartGuide();
+    initWhenNotToStartTemplate();
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
