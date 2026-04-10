@@ -7,102 +7,49 @@
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
     ideaGeneratorHistory: 'barya_idea_generator_history',
-    businessPlanLeanCanvas: 'barya_business_plan_lean_canvas',
-    businessPlanFullPlan: 'barya_business_plan_full_business_plan',
-    businessPlanPitchDeck: 'barya_business_plan_pitch_deck_outline',
-    businessPlanFinancial: 'barya_business_plan_financial_plan',
-    businessPlanMarketing: 'barya_business_plan_marketing_plan'
+    businessPlan: 'barya_business_plan'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
   const BUSINESS_PLAN_TEMPLATES = [
     {
-      id: 'leanCanvas',
-      storageKey: STORAGE_KEYS.businessPlanLeanCanvas,
-      title: 'Lean Canvas',
-      description: 'One-page startup model to validate demand, risks, and core growth logic.',
-      helper: 'Use concise statements and clear assumptions to keep your canvas investor-ready.',
+      id: 'lean-canvas',
+      title: 'Lean Launch Canvas',
+      description: 'Map the core blocks for a fast, testable startup launch.',
       sections: [
-        { key: 'problem', label: 'Problem', helper: 'List top 3 urgent customer pains.', placeholder: 'What high-value problem are you solving?' },
-        { key: 'customerSegments', label: 'Customer Segments', helper: 'Define primary and secondary target users.', placeholder: 'Who needs this solution most right now?' },
-        { key: 'uniqueValueProposition', label: 'Unique Value Proposition', helper: 'Your concise positioning statement.', placeholder: 'Why are you different and better?' },
-        { key: 'solution', label: 'Solution', helper: 'Top features that address each problem.', placeholder: 'How exactly will the product solve these pains?' },
-        { key: 'channels', label: 'Channels', helper: 'Acquisition and distribution routes.', placeholder: 'Where will users discover and buy from you?' },
-        { key: 'revenueStreams', label: 'Revenue Streams', helper: 'How money enters the business.', placeholder: 'Pricing model, packaging, and monetization.' },
-        { key: 'costStructure', label: 'Cost Structure', helper: 'Main fixed and variable costs.', placeholder: 'Team, tools, operations, marketing, and overhead.' },
-        { key: 'keyMetrics', label: 'Key Metrics', helper: 'Numbers used to track traction.', placeholder: 'Activation, retention, CAC, LTV, conversion, etc.' },
-        { key: 'unfairAdvantage', label: 'Unfair Advantage', helper: 'Hard-to-copy edge over competitors.', placeholder: 'Data, partnerships, brand trust, or proprietary tech.' }
+        { id: 'problem', title: 'Problem', placeholder: 'List the top 3 customer pain points.' },
+        { id: 'solution', title: 'Solution', placeholder: 'Describe your product/service solution in practical terms.' },
+        { id: 'value-prop', title: 'Unique Value Proposition', placeholder: 'What makes this offer clearly different and desirable?' },
+        { id: 'channels', title: 'Channels', placeholder: 'Where will customers discover and buy from you?' },
+        { id: 'revenue', title: 'Revenue Streams', placeholder: 'How will money come in? Pricing model, upsells, subscriptions, etc.' },
+        { id: 'cost', title: 'Cost Structure', placeholder: 'List major recurring and one-time costs.' }
       ]
     },
     {
-      id: 'fullBusinessPlan',
-      storageKey: STORAGE_KEYS.businessPlanFullPlan,
-      title: 'Full Business Plan',
-      description: 'Comprehensive business planning document for operations, strategy, and execution.',
-      helper: 'Treat this as your core operating document with clear decisions and milestones.',
+      id: 'marketing-campaign',
+      title: 'Marketing Campaign Block',
+      description: 'Structure your campaign strategy, content, and KPIs in one view.',
       sections: [
-        { key: 'executiveSummary', label: 'Executive Summary', helper: 'Quick overview of business purpose and model.', placeholder: 'Summarize business concept, target market, and objectives.' },
-        { key: 'companyOverview', label: 'Company Overview', helper: 'Mission, legal structure, and vision.', placeholder: 'Describe company background and long-term ambition.' },
-        { key: 'marketAnalysis', label: 'Market Analysis', helper: 'Industry context, trends, and customer demand.', placeholder: 'Market size, growth signals, and audience behaviors.' },
-        { key: 'productsServices', label: 'Products & Services', helper: 'Core offerings and delivery model.', placeholder: 'Explain products, value delivered, and roadmap focus.' },
-        { key: 'operationsPlan', label: 'Operations Plan', helper: 'How work gets done day-to-day.', placeholder: 'Team roles, workflow, supply chain, and tooling.' },
-        { key: 'managementTeam', label: 'Management Team', helper: 'Leadership structure and ownership.', placeholder: 'Who leads strategy, sales, operations, and finance?' },
-        { key: 'salesStrategy', label: 'Sales Strategy', helper: 'Pipeline design and conversion approach.', placeholder: 'Lead generation, qualification, demos, and closing flow.' },
-        { key: 'riskManagement', label: 'Risk Management', helper: 'Key business risks and mitigation plan.', placeholder: 'Operational, market, legal, and financial risks.' },
-        { key: 'milestones', label: 'Milestones', helper: 'Quarterly goals and timeline.', placeholder: 'What outcomes must be achieved by each phase?' }
+        { id: 'audience', title: 'Target Audience', placeholder: 'Who exactly are you trying to reach?' },
+        { id: 'message', title: 'Core Message', placeholder: 'What single message should this audience remember?' },
+        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline 3–5 campaign assets: reels, posts, landing page, email, etc.' },
+        { id: 'timeline', title: 'Timeline & Milestones', placeholder: 'Week-by-week milestones and launch checkpoints.' },
+        { id: 'budget', title: 'Budget Allocation', placeholder: 'How will budget be split across channels and production?' },
+        { id: 'kpis', title: 'Success Metrics (KPIs)', placeholder: 'Define measurable outcomes: leads, CAC, conversions, revenue.' }
       ]
     },
     {
-      id: 'pitchDeckOutline',
-      storageKey: STORAGE_KEYS.businessPlanPitchDeck,
-      title: 'Pitch Deck Outline',
-      description: 'Narrative slide flow that communicates vision, traction, and investor potential.',
-      helper: 'Keep each section brief and data-backed to translate easily into slides.',
+      id: 'ops-roadmap',
+      title: 'Operations Roadmap',
+      description: 'Plan people, tools, and execution systems for stable operations.',
       sections: [
-        { key: 'openingHook', label: 'Opening Hook', helper: 'Memorable context in one short paragraph.', placeholder: 'Start with the pain, opportunity, or market shift.' },
-        { key: 'problemSlide', label: 'Problem Slide', helper: 'Describe who is affected and why it matters.', placeholder: 'What urgent friction exists today?' },
-        { key: 'solutionSlide', label: 'Solution Slide', helper: 'Clear product story and outcome.', placeholder: 'What is your product and core value?' },
-        { key: 'marketOpportunity', label: 'Market Opportunity', helper: 'TAM/SAM/SOM and growth trend.', placeholder: 'How large is the addressable opportunity?' },
-        { key: 'businessModel', label: 'Business Model', helper: 'How you make money and scale margin.', placeholder: 'Pricing, monetization, and expansion model.' },
-        { key: 'traction', label: 'Traction', helper: 'Early proof from customers or revenue.', placeholder: 'Key metrics, growth, customer logos, retention data.' },
-        { key: 'goToMarket', label: 'Go-To-Market', helper: 'How you acquire and retain users.', placeholder: 'Channels, partnerships, and demand generation plan.' },
-        { key: 'competition', label: 'Competition', helper: 'Positioning against alternatives.', placeholder: 'Competitor map and your strategic edge.' },
-        { key: 'financialAsk', label: 'Financial Ask', helper: 'Funding need and use of funds.', placeholder: 'Amount raising, runway, and milestone outcomes.' }
-      ]
-    },
-    {
-      id: 'financialPlan',
-      storageKey: STORAGE_KEYS.businessPlanFinancial,
-      title: 'Financial Plan Template',
-      description: 'Plan revenue, costs, runway, and scenario assumptions with practical clarity.',
-      helper: 'Use realistic assumptions and keep formulas easy to verify over time.',
-      sections: [
-        { key: 'revenueAssumptions', label: 'Revenue Assumptions', helper: 'Units, pricing, conversion, and growth expectations.', placeholder: 'Document key assumptions for revenue modeling.' },
-        { key: 'expenseForecast', label: 'Expense Forecast', helper: 'Fixed vs variable costs by month.', placeholder: 'Team, software, marketing, operations, and overhead.' },
-        { key: 'cashFlowPlan', label: 'Cash Flow Plan', helper: 'Expected inflows and outflows timeline.', placeholder: 'How cash moves month-by-month and where pressure appears.' },
-        { key: 'breakEven', label: 'Break-even Analysis', helper: 'Threshold to profitability.', placeholder: 'At what revenue level do you break even?' },
-        { key: 'capitalNeeds', label: 'Capital Needs', helper: 'Funding required and timing.', placeholder: 'What capital is needed to hit the next milestones?' },
-        { key: 'pricingStrategy', label: 'Pricing Strategy', helper: 'Price architecture and rationale.', placeholder: 'Plans, packaging, discounting, and willingness-to-pay.' },
-        { key: 'profitabilityTargets', label: 'Profitability Targets', helper: 'Margin and net income goals.', placeholder: 'Gross margin and net margin targets per quarter.' },
-        { key: 'financialRisks', label: 'Financial Risks', helper: 'Risks that impact stability.', placeholder: 'Revenue volatility, churn, cost inflation, cash shortages.' }
-      ]
-    },
-    {
-      id: 'marketingPlan',
-      storageKey: STORAGE_KEYS.businessPlanMarketing,
-      title: 'Marketing Plan Template',
-      description: 'Strategic marketing blueprint with clear positioning, channels, and campaign rhythm.',
-      helper: 'Focus on one primary audience and measurable outcomes per campaign.',
-      sections: [
-        { key: 'brandPositioning', label: 'Brand Positioning', helper: 'How you want to be perceived.', placeholder: 'Positioning statement, tone, and messaging pillars.' },
-        { key: 'targetAudience', label: 'Target Audience', helper: 'Primary buyer segments and jobs-to-be-done.', placeholder: 'Demographics, psychographics, and buying behavior.' },
-        { key: 'marketingGoals', label: 'Marketing Goals', helper: 'Goals tied to business outcomes.', placeholder: 'Lead, CAC, conversion, retention, or awareness targets.' },
-        { key: 'channelStrategy', label: 'Channel Strategy', helper: 'Owned, earned, and paid channels.', placeholder: 'Where you will invest and why.' },
-        { key: 'contentPlan', label: 'Content Plan', helper: 'Editorial direction and cadence.', placeholder: 'Core themes, content formats, and publishing schedule.' },
-        { key: 'campaignCalendar', label: 'Campaign Calendar', helper: 'Quarterly campaign timeline.', placeholder: 'Major campaigns, launch dates, and owners.' },
-        { key: 'budgetAllocation', label: 'Budget Allocation', helper: 'Planned spend by channel.', placeholder: 'Budget split and expected ROI by activity.' },
-        { key: 'measurementPlan', label: 'Measurement Plan', helper: 'Reporting metrics and cadence.', placeholder: 'Dashboard metrics, review cycle, and optimization loop.' }
+        { id: 'workflow', title: 'Workflow Design', placeholder: 'Describe your operational workflow from lead to delivery.' },
+        { id: 'team', title: 'Team & Roles', placeholder: 'Who owns what? Define responsibilities and decision owners.' },
+        { id: 'tools', title: 'Tools & Automation', placeholder: 'What software/tools support each stage of operations?' },
+        { id: 'risks', title: 'Risk Management', placeholder: 'What can fail, and what backup plans are in place?' },
+        { id: 'quality', title: 'Quality Standards', placeholder: 'Define measurable standards for quality and consistency.' },
+        { id: 'review', title: 'Review Cadence', placeholder: 'When and how will you review metrics and process health?' }
       ]
     }
   ];
@@ -115,8 +62,7 @@
     aiChatHistory: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
-    businessPlanTemplates: {},
-    activeBusinessPlanTemplateId: ''
+    businessPlan: { selectedTemplateId: '', drafts: {} }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -308,6 +254,95 @@
     results.innerHTML = latest.length
       ? latest.flatMap((item) => item.ideas.map((idea) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl p-2">${idea}</li>`)).join('')
       : '<li class="text-slate-400">No ideas generated yet.</li>';
+  }
+
+  function escapeHtml(text) {
+    return String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getSelectedBusinessTemplate() {
+    return BUSINESS_PLAN_TEMPLATES.find((item) => item.id === appState.businessPlan.selectedTemplateId) || null;
+  }
+
+  function ensureBusinessPlanDraft(templateId) {
+    if (!templateId) return;
+    const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === templateId);
+    if (!template) return;
+    if (!appState.businessPlan.drafts[templateId]) {
+      appState.businessPlan.drafts[templateId] = {};
+    }
+    template.sections.forEach((section) => {
+      if (typeof appState.businessPlan.drafts[templateId][section.id] !== 'string') {
+        appState.businessPlan.drafts[templateId][section.id] = '';
+      }
+    });
+  }
+
+  function saveBusinessPlanState() {
+    saveToStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
+  }
+
+  function renderBusinessPlanTemplates() {
+    const cards = $('businessPlanTemplateCards');
+    if (!cards) return;
+    cards.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
+      const isActive = template.id === appState.businessPlan.selectedTemplateId;
+      return `
+        <button type="button" class="template-card ${isActive ? 'active' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
+          <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
+          <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
+          <p class="text-xs text-slate-400 mt-3">${template.sections.length} editable blocks</p>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function renderBusinessPlanEditor() {
+    const header = $('businessPlanEditorHeader');
+    const status = $('businessPlanStatus');
+    const form = $('businessPlanEditorForm');
+    if (!header || !status || !form) return;
+
+    const selectedTemplate = getSelectedBusinessTemplate();
+    if (!selectedTemplate) {
+      header.textContent = 'Select a template';
+      status.textContent = 'Open a template card to start editing.';
+      form.innerHTML = '';
+      return;
+    }
+
+    ensureBusinessPlanDraft(selectedTemplate.id);
+    const draft = appState.businessPlan.drafts[selectedTemplate.id];
+
+    header.textContent = `${selectedTemplate.title} — Editable Blocks`;
+    status.textContent = 'Edit any box below. Your inputs stay editable and save locally.';
+    form.innerHTML = selectedTemplate.sections.map((section) => `
+      <label class="template-editor-block rounded-2xl p-4 flex flex-col gap-2">
+        <span class="text-xs uppercase tracking-[0.18em] text-slate-400">${section.title}</span>
+        <textarea
+          data-template-field="${section.id}"
+          rows="6"
+          class="w-full rounded-xl p-3 text-sm leading-relaxed resize-y"
+          placeholder="${escapeHtml(section.placeholder)}"
+        >${escapeHtml(draft[section.id] || '')}</textarea>
+      </label>
+    `).join('');
+  }
+
+  function selectBusinessTemplate(templateId) {
+    const templateExists = BUSINESS_PLAN_TEMPLATES.some((item) => item.id === templateId);
+    if (!templateExists) return;
+    appState.businessPlan.selectedTemplateId = templateId;
+    ensureBusinessPlanDraft(templateId);
+    saveBusinessPlanState();
+    renderBusinessPlanTemplates();
+    renderBusinessPlanEditor();
   }
 
   function generateIdeas(topic) {
@@ -633,6 +668,54 @@
         applySettings();
       });
     }
+
+    const businessPlanTemplateCards = $('businessPlanTemplateCards');
+    if (businessPlanTemplateCards) {
+      businessPlanTemplateCards.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-template-id]');
+        if (!button) return;
+        selectBusinessTemplate(button.getAttribute('data-template-id'));
+      });
+    }
+
+    const businessPlanEditorForm = $('businessPlanEditorForm');
+    if (businessPlanEditorForm) {
+      businessPlanEditorForm.addEventListener('input', (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLTextAreaElement)) return;
+        const sectionId = input.getAttribute('data-template-field');
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!sectionId || !selectedTemplate) return;
+        ensureBusinessPlanDraft(selectedTemplate.id);
+        appState.businessPlan.drafts[selectedTemplate.id][sectionId] = input.value;
+      });
+    }
+
+    const businessPlanSaveBtn = $('businessPlanSaveBtn');
+    if (businessPlanSaveBtn) {
+      businessPlanSaveBtn.addEventListener('click', () => {
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!selectedTemplate) return;
+        saveBusinessPlanState();
+        const status = $('businessPlanStatus');
+        if (status) status.textContent = `${selectedTemplate.title} saved locally.`;
+      });
+    }
+
+    const businessPlanResetBtn = $('businessPlanResetBtn');
+    if (businessPlanResetBtn) {
+      businessPlanResetBtn.addEventListener('click', () => {
+        const selectedTemplate = getSelectedBusinessTemplate();
+        if (!selectedTemplate) return;
+        appState.businessPlan.drafts[selectedTemplate.id] = Object.fromEntries(
+          selectedTemplate.sections.map((section) => [section.id, ''])
+        );
+        saveBusinessPlanState();
+        renderBusinessPlanEditor();
+        const status = $('businessPlanStatus');
+        if (status) status.textContent = `${selectedTemplate.title} cleared.`;
+      });
+    }
   }
 
   function hydrateState() {
@@ -643,7 +726,7 @@
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
-    loadBusinessTemplateState();
+    appState.businessPlan = loadFromStorage(STORAGE_KEYS.businessPlan, appState.businessPlan);
   }
 
   function initSelects() {
@@ -672,7 +755,8 @@
     renderAIChat();
     renderBusinessAdvisor();
     renderIdeaGenerator();
-    initBusinessPlanning();
+    renderBusinessPlanTemplates();
+    renderBusinessPlanEditor();
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
