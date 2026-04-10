@@ -151,6 +151,35 @@
       box-shadow: 0 0 0 4px var(--focus-ring);
     }
 
+
+    .learning-module-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .learning-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    }
+    .warning-box {
+      border-left: 4px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+    }
+    .action-box {
+      border-left: 4px solid #0ea5e9;
+      background: #f0f9ff;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+    }
+    .learning-template textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
     .planning-shell {
       background: #f8fafc;
       border: 1px solid #e5e7eb;
@@ -547,12 +576,7 @@
             </div>
           </div>
 
-          <div id="startupGuideCards" class="mt-6 grid md:grid-cols-2 gap-4"></div>
-
-          <div class="mt-6 border border-slate-800/80 rounded-2xl p-4 md:p-5 bg-slate-950/40">
-            <div class="flex flex-wrap items-center gap-2" id="guideSwitcher"></div>
-            <div id="guideDetail" class="mt-5 space-y-5"></div>
-          </div>
+          <div id="whenNotToStartGuide" class="mt-6 learning-module-grid"></div>
         </article>
       </section>
 
