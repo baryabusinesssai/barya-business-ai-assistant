@@ -75,6 +75,25 @@
       border-color: #111827;
       color: #fff;
     }
+    .template-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    }
+    .template-card:hover {
+      transform: translateY(-1px);
+      border-color: #cbd5e1;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    }
+    .template-card.active {
+      border-color: #111827;
+      box-shadow: 0 0 0 1px #111827, 0 12px 26px rgba(15, 23, 42, 0.1);
+    }
+    .template-editor-block {
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
     .bg-indigo-600,
     .bg-emerald-600,
     .bg-slate-700,
