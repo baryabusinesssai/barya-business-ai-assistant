@@ -658,41 +658,6 @@
           <img id="imagePreview" class="hidden mt-4 max-h-72 rounded-2xl border border-slate-700" alt="preview" />
         </article>
 
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
-              <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
-              <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
-            </div>
-            <div class="soft-card rounded-2xl px-4 py-3">
-              <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Storage</p>
-              <p class="font-semibold mt-1">Local First</p>
-            </div>
-          </div>
-
-          <div class="planning-shell mt-6">
-            <div id="businessPlanTemplateCards" class="template-grid"></div>
-
-            <div class="editor-panel mt-6">
-              <div class="editor-panel-header">
-                <div>
-                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
-                  <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
-                  <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Pick one of the five planning templates to start building your document.</p>
-                </div>
-                <div class="editor-actions">
-                  <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
-                  <button id="businessPlanResetBtn" class="editor-btn editor-btn-secondary" type="button">Reset</button>
-                </div>
-              </div>
-
-              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Open a template card to start editing.</p>
-
-              <form id="businessPlanEditorForm" class="editor-grid mt-5"></form>
-            </div>
-          </div>
-        </article>
       </section>
 
       <section id="panel-memory" class="panel hidden">
@@ -737,6 +702,40 @@
             <div class="soft-card rounded-2xl px-4 py-3">
               <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
               <p class="font-semibold mt-1">4 Core Guides</p>
+            </div>
+          </div>
+
+          <div id="businessPlanning" class="planning-shell mt-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
+                <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
+                <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
+              </div>
+              <div class="soft-card rounded-2xl px-4 py-3">
+                <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Storage</p>
+                <p class="font-semibold mt-1">Local First</p>
+              </div>
+            </div>
+
+            <p id="businessPlanFallback" class="mt-4 text-sm text-rose-600"></p>
+            <div id="businessPlanTemplateCards" class="template-grid mt-4"></div>
+
+            <div class="editor-panel mt-6">
+              <div class="editor-panel-header">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Template Editor</p>
+                  <h3 id="businessPlanEditorHeader" class="font-semibold text-xl mt-1">Select a template</h3>
+                  <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Pick one of the five planning templates to start building your document.</p>
+                </div>
+                <div class="editor-actions">
+                  <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
+                  <button id="businessPlanResetBtn" class="editor-btn editor-btn-secondary" type="button">Reset</button>
+                </div>
+              </div>
+
+              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Open a template card to start editing.</p>
+              <form id="businessPlanEditorForm" class="editor-grid mt-5"></form>
             </div>
           </div>
 
