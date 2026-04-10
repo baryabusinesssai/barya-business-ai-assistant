@@ -12,7 +12,63 @@
     userStarted: 'barya_user_started'
   };
 
-  const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Korean', 'Japanese', 'Chinese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
+  const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
+  const LANGUAGE_CODES = {
+    English: 'en',
+    Hindi: 'hi',
+    Korean: 'ko',
+    Japanese: 'ja',
+    Arabic: 'ar',
+    French: 'fr',
+    Spanish: 'es',
+    German: 'de',
+    Russian: 'ru',
+    Portuguese: 'pt'
+  };
+  const TRANSLATIONS = {
+    English: {
+      dashboard: 'Dashboard',
+      aiAssistant: 'AI Chat',
+      workspace: 'Workspace',
+      memory: 'Memory',
+      profile: 'Profile',
+      settings: 'Settings',
+      save: 'Save',
+      saveProfile: 'Save profile',
+      saveImageNote: 'Save image context',
+      financeIntelligence: 'Finance Intelligence',
+      recommendations: 'Recommendations',
+      businessGrowth: 'Business Growth',
+      localFirstAI: 'Local-first AI',
+      founderWorkspace: 'Founder Workspace',
+      language: 'Language',
+      title: 'Barya Business AI',
+      subtitle: 'Professional local-first business intelligence without external AI APIs.',
+      businessAdvisor: 'Workspace',
+      ideaGenerator: 'Idea Generator',
+      fileIntelligence: 'File Intelligence',
+      imageContext: 'Image Context',
+      monthlyOverview: 'Monthly Overview',
+      monthlyIncome: 'Monthly Income',
+      totalExpenses: 'Total Expenses',
+      netSavings: 'Net Savings',
+      recentExpenses: 'Recent Expenses',
+      currency: 'Currency',
+      goal: 'Goal',
+      startConversation: 'Start conversation',
+      saveSettings: 'Save',
+      chatPlaceholder: 'Ask anything about your business...'
+    },
+    Hindi: { dashboard: 'डैशबोर्ड', aiAssistant: 'एआई चैट', workspace: 'वर्कस्पेस', memory: 'मेमोरी', profile: 'प्रोफ़ाइल', save: 'सेव करें', saveProfile: 'प्रोफ़ाइल सेव करें', saveImageNote: 'इमेज कॉन्टेक्स्ट सेव करें', financeIntelligence: 'फाइनेंस इंटेलिजेंस', recommendations: 'सिफारिशें', businessGrowth: 'बिजनेस ग्रोथ', localFirstAI: 'लोकल-फर्स्ट एआई', founderWorkspace: 'फाउंडर वर्कस्पेस' },
+    Korean: { dashboard: '대시보드', aiAssistant: 'AI 채팅', workspace: '워크스페이스', memory: '메모리', profile: '프로필', save: '저장', saveProfile: '프로필 저장', saveImageNote: '이미지 컨텍스트 저장', financeIntelligence: '재무 인텔리전스', recommendations: '추천', businessGrowth: '비즈니스 성장', localFirstAI: '로컬 우선 AI', founderWorkspace: '창업자 워크스페이스' },
+    Japanese: { dashboard: 'ダッシュボード', aiAssistant: 'AIチャット', workspace: 'ワークスペース', memory: 'メモリー', profile: 'プロフィール', save: '保存', saveProfile: 'プロフィールを保存', saveImageNote: '画像コンテキストを保存', financeIntelligence: '財務インテリジェンス', recommendations: 'おすすめ', businessGrowth: 'ビジネス成長', localFirstAI: 'ローカルファーストAI', founderWorkspace: '創業者ワークスペース' },
+    Arabic: { dashboard: 'لوحة التحكم', aiAssistant: 'دردشة الذكاء الاصطناعي', workspace: 'مساحة العمل', memory: 'الذاكرة', profile: 'الملف الشخصي', save: 'حفظ', saveProfile: 'حفظ الملف الشخصي', saveImageNote: 'حفظ سياق الصورة', financeIntelligence: 'ذكاء مالي', recommendations: 'التوصيات', businessGrowth: 'نمو الأعمال', localFirstAI: 'ذكاء اصطناعي محلي أولاً', founderWorkspace: 'مساحة المؤسس' },
+    French: { dashboard: 'Tableau de bord', aiAssistant: 'Chat IA', workspace: 'Espace de travail', memory: 'Mémoire', profile: 'Profil', save: 'Enregistrer', saveProfile: 'Enregistrer le profil', saveImageNote: "Enregistrer le contexte d'image", financeIntelligence: 'Intelligence financière', recommendations: 'Recommandations', businessGrowth: "Croissance de l'entreprise", localFirstAI: "IA locale d'abord", founderWorkspace: 'Espace Fondateur' },
+    Spanish: { dashboard: 'Panel', aiAssistant: 'Chat IA', workspace: 'Espacio de trabajo', memory: 'Memoria', profile: 'Perfil', save: 'Guardar', saveProfile: 'Guardar perfil', saveImageNote: 'Guardar contexto de imagen', financeIntelligence: 'Inteligencia financiera', recommendations: 'Recomendaciones', businessGrowth: 'Crecimiento empresarial', localFirstAI: 'IA local', founderWorkspace: 'Espacio del fundador' },
+    German: { dashboard: 'Dashboard', aiAssistant: 'KI-Chat', workspace: 'Arbeitsbereich', memory: 'Speicher', profile: 'Profil', save: 'Speichern', saveProfile: 'Profil speichern', saveImageNote: 'Bildkontext speichern', financeIntelligence: 'Finanzintelligenz', recommendations: 'Empfehlungen', businessGrowth: 'Geschäftswachstum', localFirstAI: 'Lokale KI', founderWorkspace: 'Gründer-Arbeitsbereich' },
+    Russian: { dashboard: 'Панель управления', aiAssistant: 'AI-чат', workspace: 'Рабочая область', memory: 'Память', profile: 'Профиль', save: 'Сохранить', saveProfile: 'Сохранить профиль', saveImageNote: 'Сохранить контекст изображения', financeIntelligence: 'Финансовая аналитика', recommendations: 'Рекомендации', businessGrowth: 'Рост бизнеса', localFirstAI: 'Локальный ИИ', founderWorkspace: 'Рабочее место основателя' },
+    Portuguese: { dashboard: 'Painel', aiAssistant: 'Chat IA', workspace: 'Espaço de trabalho', memory: 'Memória', profile: 'Perfil', save: 'Salvar', saveProfile: 'Salvar perfil', saveImageNote: 'Salvar contexto da imagem', financeIntelligence: 'Inteligência financeira', recommendations: 'Recomendações', businessGrowth: 'Crescimento do negócio', localFirstAI: 'IA local', founderWorkspace: 'Espaço do fundador' }
+  };
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
   const BUSINESS_PLAN_TEMPLATES = [
     {
@@ -140,6 +196,50 @@
   function saveToStorage(key, value) {
     const serializable = typeof value === 'string' || typeof value === 'number' ? value : JSON.stringify(value);
     localStorage.setItem(key, serializable);
+  }
+
+  function getTranslations(language) {
+    const selected = TRANSLATIONS[language] || TRANSLATIONS.English;
+    return { ...TRANSLATIONS.English, ...selected };
+  }
+
+  function saveSettings() {
+    saveToStorage(STORAGE_KEYS.settings, appState.settings);
+  }
+
+  function loadSettings() {
+    const loaded = loadFromStorage(STORAGE_KEYS.settings, {});
+    const language = LANGUAGES.includes(loaded?.language) ? loaded.language : 'English';
+    return {
+      currency: loaded?.currency || 'USD',
+      language,
+      goal: loaded?.goal || ''
+    };
+  }
+
+  function applyLanguage(language) {
+    const nextLanguage = LANGUAGES.includes(language) ? language : 'English';
+    const t = getTranslations(nextLanguage);
+    document.documentElement.lang = LANGUAGE_CODES[nextLanguage] || 'en';
+    document.documentElement.dir = nextLanguage === 'Arabic' ? 'rtl' : 'ltr';
+
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+      const key = node.getAttribute('data-i18n');
+      if (!key || !t[key]) return;
+      node.textContent = t[key];
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+      const key = node.getAttribute('data-i18n-placeholder');
+      if (!key || !t[key]) return;
+      node.setAttribute('placeholder', t[key]);
+    });
+
+    document.querySelectorAll('[data-i18n-aria-label]').forEach((node) => {
+      const key = node.getAttribute('data-i18n-aria-label');
+      if (!key || !t[key]) return;
+      node.setAttribute('aria-label', t[key]);
+    });
   }
 
   function toMonthlyRecurringAmount(item) {
@@ -611,8 +711,6 @@
   }
 
   function applySettings() {
-    document.documentElement.lang = appState.settings.language === 'English' ? 'en' : 'en';
-
     const languageSelect = $('languageSelect');
     const settingsLanguageSelect = $('settingsLanguageSelect');
     const currencySelect = $('currencySelect');
@@ -622,6 +720,7 @@
     if (settingsLanguageSelect) settingsLanguageSelect.value = appState.settings.language;
     if (currencySelect) currencySelect.value = appState.settings.currency;
     if (goalInput) goalInput.value = appState.settings.goal || '';
+    applyLanguage(appState.settings.language);
 
     renderDashboard();
     renderAIChat();
@@ -793,7 +892,7 @@
           language: settingsLanguageSelect?.value || appState.settings.language,
           goal: goalInput?.value?.trim() || ''
         };
-        saveToStorage(STORAGE_KEYS.settings, appState.settings);
+        saveSettings();
         applySettings();
       });
     }
@@ -840,7 +939,20 @@
     if (languageSelect) {
       languageSelect.addEventListener('change', () => {
         appState.settings.language = languageSelect.value;
-        saveToStorage(STORAGE_KEYS.settings, appState.settings);
+        const settingsLanguageSelect = $('settingsLanguageSelect');
+        if (settingsLanguageSelect) settingsLanguageSelect.value = languageSelect.value;
+        saveSettings();
+        applySettings();
+      });
+    }
+
+    const settingsLanguageSelect = $('settingsLanguageSelect');
+    if (settingsLanguageSelect) {
+      settingsLanguageSelect.addEventListener('change', () => {
+        appState.settings.language = settingsLanguageSelect.value;
+        const headerLanguageSelect = $('languageSelect');
+        if (headerLanguageSelect) headerLanguageSelect.value = settingsLanguageSelect.value;
+        saveSettings();
         applySettings();
       });
     }
@@ -898,7 +1010,7 @@
     appState.monthlyIncome = Number(localStorage.getItem(STORAGE_KEYS.monthlyIncome) || 0);
     appState.expenses = loadFromStorage(STORAGE_KEYS.expenses, []);
     appState.recurringExpenses = loadFromStorage(STORAGE_KEYS.recurringExpenses, []);
-    appState.settings = loadFromStorage(STORAGE_KEYS.settings, appState.settings);
+    appState.settings = loadSettings();
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);

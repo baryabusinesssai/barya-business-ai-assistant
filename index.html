@@ -470,27 +470,27 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-3">
           <span class="h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]"></span>
-          <p class="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Barya Workspace</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold" data-i18n="founderWorkspace">Founder Workspace</p>
         </div>
         <div class="flex items-center gap-2">
           <span class="px-3 py-2 rounded-xl text-[11px] font-medium uppercase tracking-[0.2em] text-indigo-200 bg-indigo-500/10 border border-indigo-400/30">Local Mode</span>
-          <select id="languageSelect" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm" aria-label="Language"></select>
+          <select id="languageSelect" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm" aria-label="Language" data-i18n-aria-label="language"></select>
         </div>
       </div>
 
       <div class="max-w-3xl mx-auto text-center mt-8 md:mt-10 space-y-4">
         <h1 data-i18n="title" class="text-4xl md:text-5xl font-semibold tracking-tight">Barya Business AI</h1>
         <p data-i18n="subtitle" class="text-slate-300 text-base md:text-lg">Professional local-first business intelligence without external AI APIs.</p>
-        <button id="startConversationBtn" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold">Start conversation</button>
+        <button id="startConversationBtn" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold" data-i18n="startConversation">Start conversation</button>
       </div>
 
       <nav id="tabs" class="mt-8 border-t border-slate-800/80 pt-4 flex flex-wrap items-center justify-center gap-2">
         <button data-tab="chat" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="aiAssistant">AI Chat</button>
         <button data-tab="dashboard" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="dashboard">Dashboard</button>
-        <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="businessAdvisor">Business Advisor</button>
-        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="ideaGenerator">Idea Generator</button>
+        <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="workspace">Workspace</button>
+        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="memory">Memory</button>
         <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Business Planning</button>
-        <button data-tab="profile" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="settings">Settings</button>
+        <button data-tab="profile" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="profile">Profile</button>
       </nav>
     </header>
 
@@ -542,7 +542,7 @@
           <div class="grid md:grid-cols-3 gap-3 mt-5">
             <div class="soft-card rounded-2xl p-4">
               <p class="text-sm text-slate-400">System Type</p>
-              <p class="text-lg font-semibold mt-2">Local-first AI</p>
+              <p class="text-lg font-semibold mt-2" data-i18n="localFirstAI">Local-first AI</p>
             </div>
             <div class="soft-card rounded-2xl p-4">
               <p class="text-sm text-slate-400">Memory Engine</p>
@@ -550,7 +550,7 @@
             </div>
             <div class="soft-card rounded-2xl p-4">
               <p class="text-sm text-slate-400">Decision Focus</p>
-              <p class="text-lg font-semibold mt-2">Business Growth</p>
+              <p class="text-lg font-semibold mt-2" data-i18n="businessGrowth">Business Growth</p>
             </div>
           </div>
 
@@ -565,7 +565,7 @@
           <h3 class="font-semibold text-xl mt-2" data-i18n="businessAdvisor">Business Advisor</h3>
 
           <div class="space-y-3 mt-5">
-            <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+          <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" data-i18n-placeholder="monthlyIncome" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
             <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium" data-i18n="save">Save</button>
 
             <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
@@ -592,6 +592,7 @@
               <p class="text-3xl font-bold mt-1"><span id="profitOutput">$0.00</span></p>
             </div>
 
+            <p class="text-sm text-slate-400" data-i18n="financeIntelligence">Finance Intelligence</p>
             <p id="financeInsight" class="text-slate-300 text-sm leading-relaxed"></p>
           </div>
         </article>
@@ -616,7 +617,7 @@
           <div id="chatBox" class="scrollbar-thin mt-5 h-[480px] overflow-y-auto bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3"></div>
 
           <form id="chatForm" class="mt-4 flex gap-2">
-            <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" placeholder="Ask anything about your business..." />
+            <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" placeholder="Ask anything about your business..." data-i18n-placeholder="chatPlaceholder" />
             <button class="bg-emerald-600 hover:bg-emerald-500 rounded-xl px-5 font-medium" data-i18n="send">Send</button>
           </form>
         </article>
