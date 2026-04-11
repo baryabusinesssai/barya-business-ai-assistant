@@ -1653,20 +1653,20 @@
     appContainer.classList.add('guided-focus-mode');
 
     const configs = {
-      idea: {
-        tab: 'dashboard',
-        tabSelector: '#tabs [data-tab=\"dashboard\"]',
-        panelSelector: '#ideaGeneratorToolCard'
-      },
-      planning: {
+      build: {
         tab: 'planning',
         tabSelector: '#tabs [data-tab=\"planning\"]',
         panelSelector: '#panel-planning article'
       },
-      finances: {
+      track: {
         tab: 'dashboard',
         tabSelector: '#tabs [data-tab=\"dashboard\"]',
         panelSelector: '#dashboardExpensesTool'
+      },
+      grow: {
+        tab: 'chat',
+        tabSelector: '#tabs [data-tab=\"chat\"]',
+        panelSelector: '#aiAssistantTourTarget'
       }
     };
 

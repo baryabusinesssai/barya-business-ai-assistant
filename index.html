@@ -192,35 +192,35 @@
       border-color: #111827;
       color: #fff;
     }
-    .guided-entry-wrap {
-      background: linear-gradient(145deg, #ffffff, #f8fafc);
-      border: 1px solid #dbeafe;
-      box-shadow: 0 18px 32px rgba(30, 41, 59, 0.1);
+    .get-started-hero {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
     }
-    .guided-entry-card {
+    .get-started-card {
       text-align: left;
-      border-radius: 1.15rem;
-      padding: 1.2rem;
-      border: 1px solid #c7d2fe;
-      background: linear-gradient(180deg, #ffffff, #f8fafc);
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+      border-radius: 1.2rem;
+      padding: 1.5rem;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.06);
       transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
-    .guided-entry-card:hover {
+    .get-started-card:hover {
       transform: translateY(-2px);
-      border-color: #818cf8;
-      box-shadow: 0 16px 28px rgba(99, 102, 241, 0.18);
+      border-color: #cbd5e1;
+      box-shadow: 0 18px 28px rgba(15, 23, 42, 0.12);
     }
-    .guided-entry-icon {
+    .get-started-icon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 2.3rem;
-      height: 2.3rem;
-      border-radius: 0.8rem;
-      background: #eef2ff;
-      border: 1px solid #c7d2fe;
-      font-size: 1.15rem;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.9rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 1.25rem;
     }
     #appContainer.guided-focus-mode header,
     #appContainer.guided-focus-mode #appSection > .panel:not(.hidden) > * {
@@ -977,29 +977,29 @@
 
     <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel hidden grid xl:grid-cols-3 gap-4">
-        <article id="guidedEntrySection" class="guided-entry-wrap rounded-3xl p-6 xl:col-span-3">
+        <article id="guidedEntrySection" class="get-started-hero rounded-3xl p-7 md:p-8 xl:col-span-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-indigo-500 font-semibold">Quick Start</p>
-              <h2 class="font-semibold text-2xl mt-2">Guided Entry</h2>
-              <p class="text-slate-500 mt-2">New here? Pick your next move and we will focus the right tool for you.</p>
+              <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Get Started</p>
+              <h2 class="font-semibold text-2xl mt-2 text-slate-900">Choose your next business move</h2>
+              <p class="text-slate-500 mt-2">Focus on execution with the core tools built for planning, tracking, and growth.</p>
             </div>
           </div>
-          <div class="grid md:grid-cols-3 gap-4 mt-5">
-            <button type="button" class="guided-entry-card" data-guided-entry="idea">
-              <span class="guided-entry-icon" aria-hidden="true">💡</span>
-              <p class="text-lg font-semibold mt-3">I have a New Idea</p>
-              <p class="text-sm text-slate-500 mt-1">Open Idea Generator</p>
+          <div class="grid md:grid-cols-3 gap-5 mt-7">
+            <button type="button" class="get-started-card" data-guided-entry="build">
+              <span class="get-started-icon" aria-hidden="true">🧱</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Build: Plan your business</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Templates</p>
             </button>
-            <button type="button" class="guided-entry-card" data-guided-entry="planning">
-              <span class="guided-entry-icon" aria-hidden="true">🧭</span>
-              <p class="text-lg font-semibold mt-3">I want to Plan my Strategy</p>
-              <p class="text-sm text-slate-500 mt-1">Open Business Plan</p>
+            <button type="button" class="get-started-card" data-guided-entry="track">
+              <span class="get-started-icon" aria-hidden="true">📊</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Track: Manage finances</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Expenses</p>
             </button>
-            <button type="button" class="guided-entry-card" data-guided-entry="finances">
-              <span class="guided-entry-icon" aria-hidden="true">💰</span>
-              <p class="text-lg font-semibold mt-3">I need to Track my Finances</p>
-              <p class="text-sm text-slate-500 mt-1">Open Dashboard Expenses</p>
+            <button type="button" class="get-started-card" data-guided-entry="grow">
+              <span class="get-started-icon" aria-hidden="true">✨</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Grow: Ask AI for strategy</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Assistant</p>
             </button>
           </div>
         </article>
@@ -1456,9 +1456,6 @@
   </div>
   <aside class="trust-badges" aria-label="Trust badges">
     <div class="trust-badge">🔒 100% Local-First: Your data never leaves your device.</div>
-    <a class="trust-badge trust-badge-link" href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="Open source GitHub repository">
-      🧩 Open Source · View on GitHub
-    </a>
   </aside>
 
   <section class="founder-note-section" aria-labelledby="founder-note-title">
@@ -1482,7 +1479,6 @@
     <div class="footer-links">
       <a href="#how-it-works">How it Works</a>
       <a href="#privacy-policy">Privacy Policy</a>
-      <a href="https://github.com" target="_blank" rel="noopener noreferrer">Support / GitHub</a>
     </div>
     <p class="text-xs text-slate-500 mt-3">Built with ❤️ for Founders</p>
   </footer>
