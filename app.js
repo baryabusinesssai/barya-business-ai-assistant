@@ -10,7 +10,9 @@
     templateLean: 'barya_template_lean',
     templateMarketing: 'barya_template_marketing',
     templateOperations: 'barya_template_operations',
-    userStarted: 'barya_user_started'
+    userStarted: 'barya_user_started',
+    theme: 'barya_theme',
+    onboardingSeen: 'barya_onboarding_seen'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -249,6 +251,88 @@
     saveToStorage(STORAGE_KEYS.settings, appState.settings);
   }
 
+  function applyTheme(themeName) {
+    const isDark = themeName === 'dark';
+    document.body.classList.toggle('dark-theme', isDark);
+    const themeToggle = $('themeToggle');
+    if (themeToggle) themeToggle.checked = isDark;
+  }
+
+  function startTour() {
+    const steps = [
+      {
+        selector: '#dashboardTourTarget',
+        tab: 'dashboard',
+        title: 'Dashboard (Finance)',
+        description: 'Track monthly income, expenses, and savings health here.'
+      },
+      {
+        selector: '#aiAssistantTourTarget',
+        tab: 'chat',
+        title: 'AI Assistant',
+        description: 'Ask business strategy questions and get action-oriented suggestions.'
+      },
+      {
+        selector: '#businessPlanningTourTarget',
+        tab: 'planning',
+        description: 'Use guides and templates to build your business plan.',
+        title: 'Business Planning'
+      }
+    ];
+
+    let current = 0;
+    let popup = document.getElementById('tourPopup');
+
+    const cleanup = () => {
+      document.querySelectorAll('.tour-highlight').forEach((node) => node.classList.remove('tour-highlight'));
+      if (popup) popup.remove();
+      popup = null;
+    };
+
+    const renderStep = () => {
+      cleanup();
+      const step = steps[current];
+      if (!step) {
+        localStorage.setItem(STORAGE_KEYS.onboardingSeen, 'true');
+        return;
+      }
+
+      setActiveTab(step.tab);
+      const target = document.querySelector(step.selector);
+      if (!target) return;
+      target.classList.add('tour-highlight');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const rect = target.getBoundingClientRect();
+      popup = document.createElement('div');
+      popup.id = 'tourPopup';
+      popup.className = 'tour-popup';
+      popup.innerHTML = `
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Onboarding Tour</p>
+        <h3 class="font-semibold mt-1">${escapeHTML(step.title)}</h3>
+        <p class="text-sm mt-2">${escapeHTML(step.description)}</p>
+        <div class="mt-3 flex justify-end gap-2">
+          <button id="tourSkipBtn" class="px-3 py-1.5 rounded border">Skip</button>
+          <button id="tourNextBtn" class="px-3 py-1.5 rounded bg-slate-900 text-white">${current === steps.length - 1 ? 'Finish' : 'Next'}</button>
+        </div>
+      `;
+      document.body.appendChild(popup);
+      popup.style.top = `${Math.max(12, window.scrollY + rect.top - 8)}px`;
+      popup.style.left = `${Math.min(window.innerWidth - 340, Math.max(12, rect.right - 330))}px`;
+
+      document.getElementById('tourSkipBtn')?.addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEYS.onboardingSeen, 'true');
+        cleanup();
+      });
+      document.getElementById('tourNextBtn')?.addEventListener('click', () => {
+        current += 1;
+        renderStep();
+      });
+    };
+
+    renderStep();
+  }
+
   function loadSettings() {
     const loaded = loadFromStorage(STORAGE_KEYS.settings, {});
     const language = LANGUAGES.includes(loaded?.language) ? loaded.language : 'English';
@@ -373,8 +457,13 @@
     const pieValues = Object.values(categoryTotals);
     const pieColors = ['#1D4ED8', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6'];
 
+    const hasExpenseData = pieValues.length > 0;
+    const expenseChartEmptyState = $('expenseChartEmptyState');
+    expenseCanvas.style.display = hasExpenseData ? 'block' : 'none';
+    if (expenseChartEmptyState) expenseChartEmptyState.style.display = hasExpenseData ? 'none' : 'flex';
+
     if (expenseChartInstance) expenseChartInstance.destroy();
-    expenseChartInstance = new Chart(expenseCanvas, {
+    if (hasExpenseData) expenseChartInstance = new Chart(expenseCanvas, {
       type: 'pie',
       data: {
         labels: pieLabels.length ? pieLabels : ['No Expenses'],
@@ -392,8 +481,13 @@
       }
     });
 
+    const hasComparisonData = totals.monthlyIncome > 0 || totals.totalExpenses > 0;
+    const comparisonChartEmptyState = $('comparisonChartEmptyState');
+    comparisonCanvas.style.display = hasComparisonData ? 'block' : 'none';
+    if (comparisonChartEmptyState) comparisonChartEmptyState.style.display = hasComparisonData ? 'none' : 'flex';
+
     if (comparisonChartInstance) comparisonChartInstance.destroy();
-    comparisonChartInstance = new Chart(comparisonCanvas, {
+    if (hasComparisonData) comparisonChartInstance = new Chart(comparisonCanvas, {
       type: 'bar',
       data: {
         labels: ['Monthly Totals'],
@@ -445,7 +539,12 @@
     if ($('recentExpensesList')) {
       $('recentExpensesList').innerHTML = mergedRecent.length
         ? mergedRecent.map((e) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">${e.category} (${e.kind}) — ${formatCurrency(e.monthlyAmount)}</li>`).join('')
-        : '<li class="text-slate-400">No expenses yet.</li>';
+        : '<li class="text-slate-400">No expenses yet! Click "Add Expense" to start tracking.</li>';
+    }
+
+    const financeEmptyState = $('financeEmptyState');
+    if (financeEmptyState) {
+      financeEmptyState.classList.toggle('hidden', appState.expenses.length > 0);
     }
 
     if ($('autoRecommendations')) {
@@ -985,6 +1084,23 @@
       });
     }
 
+    const themeToggle = $('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('change', () => {
+        const theme = themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem(STORAGE_KEYS.theme, theme);
+        applyTheme(theme);
+      });
+    }
+
+    const tourHelpBtn = $('tourHelpBtn');
+    if (tourHelpBtn) {
+      tourHelpBtn.addEventListener('click', () => {
+        showMainApp({ tab: 'dashboard', rememberStart: true });
+        startTour();
+      });
+    }
+
     const businessPlanTemplateCards = $('businessPlanTemplateCards');
     if (businessPlanTemplateCards) {
       businessPlanTemplateCards.addEventListener('click', (event) => {
@@ -1080,15 +1196,23 @@
     renderBusinessPlanEditor();
     renderWhenNotToStartGuide();
     setPlanningSection('guides');
+    applyTheme(localStorage.getItem(STORAGE_KEYS.theme) || 'light');
+    window.startTour = startTour;
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
 
     const hasStarted = localStorage.getItem(STORAGE_KEYS.userStarted) === 'true';
+    const isFirstVisit = localStorage.getItem(STORAGE_KEYS.onboardingSeen) !== 'true';
     if (hasStarted) {
       showMainApp({ tab: 'dashboard' });
     } else {
       showLandingPage();
+    }
+
+    if (isFirstVisit) {
+      showMainApp({ tab: 'dashboard', rememberStart: true });
+      setTimeout(() => startTour(), 300);
     }
   }
 
