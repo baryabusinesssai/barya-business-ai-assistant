@@ -209,6 +209,79 @@
     .backup-file-input {
       display: none;
     }
+    .dark-theme {
+      background: #0b1120;
+      color: #e2e8f0;
+    }
+    .dark-theme .glass,
+    .dark-theme .soft-card,
+    .dark-theme .learning-card,
+    .dark-theme .backup-restore-section,
+    .dark-theme .template-editor-block,
+    .dark-theme .template-card {
+      background: #111827 !important;
+      border-color: #334155 !important;
+      color: #e2e8f0 !important;
+    }
+    .dark-theme p,
+    .dark-theme h1,
+    .dark-theme h2,
+    .dark-theme h3,
+    .dark-theme h4,
+    .dark-theme label,
+    .dark-theme span,
+    .dark-theme li {
+      color: #dbeafe !important;
+    }
+    .dark-theme input,
+    .dark-theme textarea,
+    .dark-theme select {
+      background: #0f172a !important;
+      border-color: #334155 !important;
+      color: #e2e8f0 !important;
+    }
+    .tour-highlight {
+      position: relative;
+      z-index: 1001;
+      box-shadow: 0 0 0 4px #38bdf8, 0 0 0 9999px rgba(2, 6, 23, 0.72);
+      border-radius: 1rem;
+    }
+    .chart-empty-state {
+      display: none;
+      min-height: 160px;
+      border: 1px dashed #94a3b8;
+      border-radius: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #94a3b8;
+      padding: 1rem;
+    }
+    .tour-help-btn {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      background: #111827;
+      color: #f8fafc;
+      font-size: 1.25rem;
+      font-weight: 700;
+      z-index: 1000;
+    }
+    .tour-popup {
+      position: fixed;
+      z-index: 1002;
+      max-width: 320px;
+      border-radius: 0.9rem;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      padding: 0.9rem;
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.2);
+    }
     @media (max-width: 640px) {
       .backup-restore-actions {
         grid-template-columns: 1fr;
@@ -556,7 +629,7 @@
       </div>
 
       <nav id="tabs" class="mt-8 border-t border-slate-800/80 pt-4 flex flex-wrap items-center justify-center gap-2">
-        <button data-tab="chat" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="aiAssistant">AI Chat</button>
+        <button data-tab="chat" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="aiAssistant" title="Ask me anything about your business strategy">AI Chat</button>
         <button data-tab="dashboard" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="dashboard">Dashboard</button>
         <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="workspace">Workspace</button>
         <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="memory">Memory</button>
@@ -567,7 +640,7 @@
 
     <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel hidden grid xl:grid-cols-3 gap-4">
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
+        <article id="dashboardTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Overview</p>
@@ -617,10 +690,12 @@
               <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
                 <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Expense Categories</p>
                 <canvas id="expenseChart"></canvas>
+                <div id="expenseChartEmptyState" class="chart-empty-state">No chart data yet. Add expenses to see category insights.</div>
               </div>
               <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
                 <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Income vs Expenses</p>
                 <canvas id="comparisonChart"></canvas>
+                <div id="comparisonChartEmptyState" class="chart-empty-state">No totals available yet. Save income or add expenses to visualize this chart.</div>
               </div>
             </div>
           </div>
@@ -663,7 +738,8 @@
                 <option value="Others">Others</option>
               </select>
               <input id="expenseAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              <button id="addExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium" data-i18n="addExpense">Add Expense</button>
+              <button id="addExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium" data-i18n="addExpense" title="Add a new expense entry to your finance tracker">Add Expense</button>
+              <p id="financeEmptyState" class="text-xs text-slate-400 hidden">No expenses yet! Click "Add Expense" to start tracking.</p>
             </div>
 
             <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
@@ -690,7 +766,7 @@
       </section>
 
       <section id="panel-chat" class="panel">
-        <article class="glass rounded-3xl border border-indigo-800/30 p-5 md:p-6">
+        <article id="aiAssistantTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-5 md:p-6">
           <div class="max-w-2xl mx-auto text-center">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Assistant</p>
             <h2 class="font-semibold text-2xl md:text-3xl mt-2" data-i18n="aiAssistant">AI Assistant</h2>
@@ -775,7 +851,7 @@
             <h3 class="font-semibold text-lg">Idea Generator</h3>
             <form id="ideaGeneratorForm" class="mt-3 flex flex-col md:flex-row gap-2">
               <input id="ideaGeneratorInput" placeholder="Enter niche or problem to generate ideas" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              <button id="ideaGeneratorBtn" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-3 font-medium">Generate Ideas</button>
+            <button id="ideaGeneratorBtn" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-3 font-medium" title="Generate creative business ideas from your niche">Generate Ideas</button>
             </form>
             <ul id="ideaGeneratorResults" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
           </div>
@@ -783,7 +859,7 @@
       </section>
 
       <section id="panel-planning" class="panel hidden">
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article id="businessPlanningTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div id="planningSectionTabs" class="flex flex-wrap gap-2 mb-5">
             <button type="button" class="tabBtn active rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="guides">Startup Guides</button>
             <button type="button" class="tabBtn rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="templates">Business Plan Templates</button>
@@ -864,6 +940,18 @@
               <input id="goalInput" placeholder="Set your goal" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" />
             </div>
             <button id="saveSettingsBtn" class="bg-indigo-600 hover:bg-indigo-500 rounded-xl py-3 font-medium md:col-span-2" data-i18n="save">Save</button>
+            <div class="md:col-span-2 flex items-center justify-between border border-slate-700 rounded-xl p-3">
+              <div>
+                <p class="text-sm font-medium">Dark Mode</p>
+                <p class="text-xs text-slate-400">Use a darker interface for low-light use.</p>
+              </div>
+              <label for="themeToggle" class="inline-flex items-center cursor-pointer">
+                <input id="themeToggle" type="checkbox" class="sr-only peer" />
+                <span class="w-11 h-6 bg-slate-400 rounded-full peer peer-checked:bg-indigo-600 relative transition">
+                  <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5"></span>
+                </span>
+              </label>
+            </div>
           </div>
 
           <form id="profileForm" class="mt-5 grid md:grid-cols-2 gap-3">
@@ -879,13 +967,13 @@
             <p class="text-sm text-slate-400 mt-1">Export and import your local workspace data as a JSON backup file.</p>
 
             <div class="backup-restore-actions">
-              <button id="exportDataBtn" type="button" class="backup-btn backup-btn-primary">
+              <button id="exportDataBtn" type="button" class="backup-btn backup-btn-primary" title="Download your data for safety">
                 <span aria-hidden="true">⬇️</span>
                 <span>Export Backup</span>
               </button>
 
               <input id="importDataInput" class="backup-file-input" type="file" accept=".json,application/json" />
-              <label for="importDataInput" class="backup-btn backup-btn-secondary" role="button" tabindex="0">
+              <label for="importDataInput" class="backup-btn backup-btn-secondary" role="button" tabindex="0" title="Upload a saved backup file to restore your data">
                 <span aria-hidden="true">⬆️</span>
                 <span>Import Backup</span>
               </label>
@@ -896,6 +984,7 @@
       </section>
     </main>
   </div>
+  <button id="tourHelpBtn" class="tour-help-btn" type="button" title="Start onboarding tour">?</button>
 
     <script src="app.js"></script>
 
