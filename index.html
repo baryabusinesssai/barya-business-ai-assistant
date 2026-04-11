@@ -30,6 +30,86 @@
     body {
       background: var(--bg-page);
       color: var(--text-primary);
+      padding-top: 88px;
+    }
+    .global-search-shell {
+      position: fixed;
+      top: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(960px, calc(100% - 1.5rem));
+      z-index: 1200;
+    }
+    .global-search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border-soft);
+      border-radius: 0.95rem;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(8px);
+      padding: 0.78rem 0.9rem;
+    }
+    .global-search-input {
+      flex: 1;
+      border: none !important;
+      background: transparent !important;
+      font-size: 0.95rem;
+      padding: 0 !important;
+    }
+    .global-search-input:focus {
+      box-shadow: none !important;
+    }
+    .global-search-results {
+      margin-top: 0.45rem;
+      border-radius: 0.85rem;
+      border: 1px solid var(--border-soft);
+      background: #ffffff;
+      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.14);
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .global-search-result {
+      width: 100%;
+      text-align: left;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .global-search-result:last-child {
+      border-bottom: 0;
+    }
+    .global-search-result:hover {
+      background: #f8fafc;
+    }
+    .business-term {
+      position: relative;
+      border-bottom: 1px dotted #1f2937;
+      cursor: help;
+    }
+    .business-term::after {
+      content: attr(data-definition);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%);
+      background: #111827;
+      color: #ffffff;
+      font-size: 0.76rem;
+      line-height: 1.25;
+      padding: 0.45rem 0.55rem;
+      border-radius: 0.5rem;
+      width: 220px;
+      max-width: 42vw;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease;
+      z-index: 60;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.28);
+    }
+    .business-term:hover::after {
+      opacity: 1;
     }
     .glass {
       background: var(--bg-surface);
@@ -601,6 +681,13 @@
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
+  <div class="global-search-shell">
+    <div class="global-search-box">
+      <span aria-hidden="true">🔍</span>
+      <input id="globalSearchInput" class="global-search-input" type="text" placeholder="Search tools, guides, or your saved data..." autocomplete="off" />
+    </div>
+    <div id="globalSearchResults" class="global-search-results hidden"></div>
+  </div>
   <div id="landingPageContainer" class="max-w-6xl mx-auto px-4 py-6">
 
     <section id="landingPage" class="landing-hero">
@@ -705,6 +792,16 @@
           </div>
 
           <div id="dashboardSummary" class="mt-5 text-slate-300"></div>
+          <div id="startupReadinessCard" class="soft-card rounded-2xl p-4 mt-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold">Startup Readiness Score</h3>
+              <span id="startupReadinessValue" class="text-sm font-semibold">0%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3 mt-3 overflow-hidden">
+              <div id="startupReadinessProgress" class="h-3 bg-emerald-600 transition-all duration-300" style="width: 0%;"></div>
+            </div>
+            <p id="startupReadinessMessage" class="text-sm text-slate-500 mt-2">Complete key tasks to build launch readiness.</p>
+          </div>
           <div class="mt-4 flex flex-wrap items-center gap-3">
             <button id="downloadPdfBtn" type="button" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Download PDF Report</button>
             <p id="downloadPdfStatus" class="text-xs text-slate-400"></p>
