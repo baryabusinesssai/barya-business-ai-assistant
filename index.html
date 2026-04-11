@@ -20,7 +20,7 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script defer src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -47,7 +47,7 @@
       background: var(--bg-page);
       color: var(--text-primary);
       padding-top: 88px;
-      font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background-image: radial-gradient(circle at 12% 12%, rgba(99, 102, 241, 0.12), transparent 42%), radial-gradient(circle at 85% 0%, rgba(56, 189, 248, 0.08), transparent 36%);
     }
     button {
@@ -414,6 +414,52 @@
       text-align: center;
       color: #94a3b8;
       padding: 1rem;
+    }
+    .premium-hover {
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .premium-hover:hover {
+      transform: scale(1.02) translateY(-1px);
+    }
+    .prompt-chip {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .prompt-chip:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+    }
+    .dashboard-empty-state {
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .dashboard-empty-card {
+      max-width: 540px;
+      padding: 2rem 1.5rem;
+      border-radius: 1.25rem;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.09);
+    }
+    .template-hero-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .template-hero-card.recommended {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.5), 0 0 22px rgba(99, 102, 241, 0.24);
     }
     @media (max-width: 640px) {
       .backup-restore-actions {
@@ -1001,8 +1047,42 @@
     </header>
 
     <main id="appSection" class="space-y-5">
-      <section id="panel-dashboard" class="panel hidden grid xl:grid-cols-3 gap-4">
-        <article id="dashboardTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
+      <section id="panel-dashboard" class="panel hidden app-view grid xl:grid-cols-3 gap-4">
+        <article id="dashboardEmptyState" class="dashboard-empty-state hidden xl:col-span-3">
+          <div class="dashboard-empty-card">
+            <div class="text-5xl" aria-hidden="true">✨</div>
+            <h3 class="text-2xl font-semibold mt-3">Your Workspace is Ready!</h3>
+            <p class="text-slate-500 mt-2">Start by tracking an expense or creating a business plan.</p>
+            <button id="viewSampleDashboardBtn" type="button" class="premium-hover mt-5 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 font-semibold text-white">View Sample Dashboard</button>
+          </div>
+        </article>
+        <article id="guidedEntrySection" class="dashboard-data-block get-started-hero rounded-3xl p-7 md:p-8 xl:col-span-3 premium-hover">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Get Started</p>
+              <h2 class="font-semibold text-2xl mt-2 text-slate-900">Choose your next business move</h2>
+              <p class="text-slate-500 mt-2">Focus on execution with the core tools built for planning, tracking, and growth.</p>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-3 gap-5 mt-7">
+            <button type="button" class="get-started-card" data-guided-entry="build">
+              <span class="get-started-icon" aria-hidden="true">🧱</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Build: Plan your business</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Templates</p>
+            </button>
+            <button type="button" class="get-started-card" data-guided-entry="track">
+              <span class="get-started-icon" aria-hidden="true">📊</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Track: Manage finances</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Expenses</p>
+            </button>
+            <button type="button" class="get-started-card" data-guided-entry="grow">
+              <span class="get-started-icon" aria-hidden="true">✨</span>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Grow: Ask AI for strategy</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Assistant</p>
+            </button>
+          </div>
+        </article>
+        <article id="dashboardTourTarget" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2 premium-hover">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Overview</p>
@@ -1094,7 +1174,7 @@
           </div>
         </article>
 
-        <article id="ideaGeneratorToolCard" class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article id="ideaGeneratorToolCard" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 premium-hover">
           <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
           <h3 class="font-semibold text-xl mt-2">Finance Workspace</h3>
 
@@ -1147,7 +1227,7 @@
         </article>
       </section>
 
-      <section id="panel-strategy" class="panel hidden">
+      <section id="panel-strategy" class="panel hidden app-view">
         <article id="aiAssistantTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-5 md:p-6">
           <div class="max-w-2xl mx-auto text-center">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Assistant</p>
@@ -1165,6 +1245,12 @@
 
           <div id="chatBox" class="scrollbar-thin mt-5 h-[480px] overflow-y-auto bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3"></div>
 
+          <div id="promptChipsRow" class="mt-4 flex flex-wrap gap-2">
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="💡 Idea for a $500 startup">💡 Idea for a $500 startup</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="📈 How to get my first 10 customers?">📈 How to get my first 10 customers?</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="📝 Write a marketing tagline">📝 Write a marketing tagline</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="🚀 30-day launch plan for my idea">🚀 30-day launch plan for my idea</button>
+          </div>
           <form id="chatForm" class="mt-4 flex gap-2">
             <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" placeholder="Ask anything about your business..." data-i18n-placeholder="chatPlaceholder" />
             <button class="bg-emerald-600 hover:bg-emerald-500 rounded-xl px-5 font-medium" data-i18n="send">Send</button>
@@ -1209,7 +1295,7 @@
 
       </section>
 
-      <section id="panel-memory" class="panel hidden">
+      <section id="panel-memory" class="panel hidden app-view">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Knowledge Retention</p>
@@ -1240,7 +1326,7 @@
         </article>
       </section>
 
-      <section id="panel-planning" class="panel hidden">
+      <section id="panel-planning" class="panel hidden app-view">
         <article id="businessPlanningTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div id="planningSectionTabs" class="flex flex-wrap gap-2 mb-5">
             <button type="button" class="tabBtn active rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="guides">Startup Guides</button>
@@ -1277,20 +1363,26 @@
             </div>
 
             <div id="businessPlanning" class="planning-shell mt-6">
-            <div id="templatesDropdownTourTarget" class="grid md:grid-cols-2 gap-3 mt-2">
-              <div>
-                <label for="templatesCategorySelect" class="text-xs uppercase tracking-[0.2em] text-slate-400">Templates Gallery</label>
-                <select id="templatesCategorySelect" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
-                  <option value="">Select an industry template</option>
-                  <option value="coffee-shop">Coffee Shop</option>
-                  <option value="saas-startup">SaaS Startup</option>
-                  <option value="ecommerce-store">E-commerce Store</option>
-                </select>
-              </div>
-              <div>
-                <label for="templateSearchInput" class="text-xs uppercase tracking-[0.2em] text-slate-400">Search Industries</label>
-                <input id="templateSearchInput" type="text" placeholder="Search template industries..." class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              </div>
+            <div class="template-hero-grid mt-2">
+              <button type="button" class="template-card template-hero-card premium-hover" data-template-id="coffee-shop">
+                <p class="text-3xl">☕</p>
+                <h3 class="font-bold text-xl mt-3">Coffee Shop</h3>
+                <p class="text-sm text-slate-500 mt-2">Perfect for local café launches, pricing, and daily operations.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+              </button>
+              <button type="button" class="template-card template-hero-card recommended premium-hover" data-template-id="saas-startup">
+                <p class="text-xs uppercase tracking-[0.2em] text-indigo-500 font-semibold">Recommended</p>
+                <p class="text-3xl mt-2">💻</p>
+                <h3 class="font-bold text-xl mt-3">SaaS</h3>
+                <p class="text-sm text-slate-500 mt-2">Great for product strategy, acquisition funnels, and recurring revenue.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+              </button>
+              <button type="button" class="template-card template-hero-card premium-hover" data-template-id="ecommerce-store">
+                <p class="text-3xl">🛍️</p>
+                <h3 class="font-bold text-xl mt-3">E-commerce</h3>
+                <p class="text-sm text-slate-500 mt-2">Built for store setup, logistics, conversion flow, and repeat sales.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+              </button>
             </div>
             <p id="businessPlanFallback" class="mt-4 text-sm text-rose-600"></p>
             <div id="businessPlanTemplateCards" class="template-grid mt-4"></div>
@@ -1318,7 +1410,7 @@
         </article>
       </section>
 
-      <section id="panel-founder" class="panel hidden">
+      <section id="panel-founder" class="panel hidden app-view">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Identity</p>

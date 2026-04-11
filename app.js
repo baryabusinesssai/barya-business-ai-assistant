@@ -388,6 +388,7 @@
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
+    sampleDashboardMode: false,
     readinessTasks: loadReadinessTasks(),
     activityLog: loadActivityLog(),
     taskManagerTasks: loadTaskManagerTasks()
@@ -589,17 +590,45 @@
     }
   }
 
-  function calculateTotals() {
-    const oneTimeTotal = appState.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const recurringMonthlyTotal = appState.recurringExpenses.reduce((sum, e) => sum + toMonthlyRecurringAmount(e), 0);
+  function calculateTotals(source = appState) {
+    const oneTimeTotal = (source.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const recurringMonthlyTotal = (source.recurringExpenses || []).reduce((sum, e) => sum + toMonthlyRecurringAmount(e), 0);
     const totalExpenses = oneTimeTotal + recurringMonthlyTotal;
-    const monthlyIncome = Number(appState.monthlyIncome) || 0;
+    const monthlyIncome = Number(source.monthlyIncome) || 0;
     return {
       monthlyIncome,
       totalExpenses,
       netSavings: monthlyIncome - totalExpenses,
       oneTimeTotal,
       recurringMonthlyTotal
+    };
+  }
+
+  function hasAnyPlanDraft() {
+    const drafts = appState.businessPlan?.drafts || {};
+    return Object.values(drafts).some((draft) =>
+      Object.values(draft || {}).some((value) => String(value || '').trim().length > 0)
+    );
+  }
+
+  function shouldShowDashboardEmptyState() {
+    const hasFinanceData = Number(appState.monthlyIncome) > 0 || appState.expenses.length > 0 || appState.recurringExpenses.length > 0;
+    return !appState.sampleDashboardMode && !hasFinanceData && !hasAnyPlanDraft();
+  }
+
+  function getDashboardRenderState() {
+    if (!appState.sampleDashboardMode) return appState;
+    return {
+      monthlyIncome: 7500,
+      expenses: [
+        { category: 'Marketing', amount: 1100, ts: Date.now() - 5400000 },
+        { category: 'Operations', amount: 860, ts: Date.now() - 3400000 },
+        { category: 'Salary', amount: 2200, ts: Date.now() - 1900000 }
+      ],
+      recurringExpenses: [
+        { category: 'Subscriptions', amount: 320, frequency: 'monthly', ts: Date.now() - 4900000 },
+        { category: 'Rent', amount: 1400, frequency: 'monthly', ts: Date.now() - 8900000 }
+      ]
     };
   }
 
@@ -846,11 +875,11 @@
     return list;
   }
 
-  function renderExpenses() {
+  function renderExpenses(state = appState) {
     const financeInsight = $('financeInsight');
     if (!financeInsight) return;
 
-    const recent = [...appState.expenses]
+    const recent = [...(state.expenses || [])]
       .sort((a, b) => (b.ts || 0) - (a.ts || 0))
       .slice(0, 3)
       .map((e) => `${e.category}: ${formatCurrency(e.amount)}`)
@@ -859,34 +888,34 @@
     financeInsight.textContent = recent ? `Recent one-time expenses: ${recent}` : 'No one-time expenses added yet.';
   }
 
-  function renderRecurringExpenses() {
+  function renderRecurringExpenses(state = appState) {
     const topCategoryOutput = $('topCategoryOutput');
     if (!topCategoryOutput) return;
-    if (!appState.recurringExpenses.length) {
+    if (!(state.recurringExpenses || []).length) {
       topCategoryOutput.textContent = 'No recurring expenses yet.';
       return;
     }
 
-    const top = [...appState.recurringExpenses].sort((a, b) => toMonthlyRecurringAmount(b) - toMonthlyRecurringAmount(a))[0];
+    const top = [...(state.recurringExpenses || [])].sort((a, b) => toMonthlyRecurringAmount(b) - toMonthlyRecurringAmount(a))[0];
     topCategoryOutput.textContent = `Top recurring category: ${top.category} (${formatCurrency(toMonthlyRecurringAmount(top))}/month)`;
   }
 
-  function renderCharts() {
+  function renderCharts(state = appState) {
     if (typeof Chart === 'undefined') return;
 
     const expenseCanvas = $('expenseChart');
     const comparisonCanvas = $('comparisonChart');
     if (!expenseCanvas || !comparisonCanvas) return;
 
-    const totals = calculateTotals();
+    const totals = calculateTotals(state);
     const categoryTotals = {};
 
-    appState.expenses.forEach((expense) => {
+    (state.expenses || []).forEach((expense) => {
       const category = expense?.category || 'Others';
       categoryTotals[category] = (categoryTotals[category] || 0) + (Number(expense?.amount) || 0);
     });
 
-    appState.recurringExpenses.forEach((expense) => {
+    (state.recurringExpenses || []).forEach((expense) => {
       const category = expense?.category || 'Others';
       categoryTotals[category] = (categoryTotals[category] || 0) + toMonthlyRecurringAmount(expense);
     });
@@ -954,7 +983,11 @@
   }
 
   function renderDashboard() {
-    const totals = calculateTotals();
+    const dashboardState = getDashboardRenderState();
+    const totals = calculateTotals(dashboardState);
+    const showEmpty = shouldShowDashboardEmptyState();
+    $('dashboardEmptyState')?.classList.toggle('hidden', !showEmpty);
+    document.querySelectorAll('.dashboard-data-block').forEach((node) => node.classList.toggle('hidden', showEmpty));
 
     if ($('overviewIncome')) $('overviewIncome').textContent = formatCurrency(totals.monthlyIncome);
     if ($('overviewExpenses')) $('overviewExpenses').textContent = formatCurrency(totals.totalExpenses);
@@ -962,7 +995,8 @@
     if ($('profitOutput')) $('profitOutput').textContent = formatCurrency(totals.netSavings);
 
     if ($('dashboardSummary')) {
-      $('dashboardSummary').textContent = `Income: ${formatCurrency(totals.monthlyIncome)} | Expenses: ${formatCurrency(totals.totalExpenses)} | Net: ${formatCurrency(totals.netSavings)}`;
+      const samplePrefix = appState.sampleDashboardMode ? 'Sample View • ' : '';
+      $('dashboardSummary').textContent = `${samplePrefix}Income: ${formatCurrency(totals.monthlyIncome)} | Expenses: ${formatCurrency(totals.totalExpenses)} | Net: ${formatCurrency(totals.netSavings)}`;
     }
 
     if ($('savingsStatus')) {
@@ -970,8 +1004,8 @@
     }
 
     const mergedRecent = [
-      ...appState.expenses.map((e) => ({ ...e, kind: 'one-time', monthlyAmount: Number(e.amount) || 0 })),
-      ...appState.recurringExpenses.map((e) => ({ ...e, kind: 'recurring', monthlyAmount: toMonthlyRecurringAmount(e) }))
+      ...(dashboardState.expenses || []).map((e) => ({ ...e, kind: 'one-time', monthlyAmount: Number(e.amount) || 0 })),
+      ...(dashboardState.recurringExpenses || []).map((e) => ({ ...e, kind: 'recurring', monthlyAmount: toMonthlyRecurringAmount(e) }))
     ].sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 5);
 
     if ($('recentExpensesList')) {
@@ -982,7 +1016,7 @@
 
     const financeEmptyState = $('financeEmptyState');
     if (financeEmptyState) {
-      financeEmptyState.classList.toggle('hidden', appState.expenses.length > 0);
+      financeEmptyState.classList.toggle('hidden', (dashboardState.expenses || []).length > 0);
     }
 
     if ($('autoRecommendations')) {
@@ -996,9 +1030,9 @@
     renderActivityLog();
     renderTaskManager();
 
-    renderExpenses();
-    renderRecurringExpenses();
-    renderCharts();
+    renderExpenses(dashboardState);
+    renderRecurringExpenses(dashboardState);
+    renderCharts(dashboardState);
   }
 
   function renderResources() {
@@ -1315,6 +1349,16 @@
     return 'Use a 30-day sprint: define one measurable goal, assign weekly actions, and review results every Sunday.';
   }
 
+  function submitAIMessage(message) {
+    const cleanMessage = String(message || '').trim();
+    if (!cleanMessage) return;
+    appState.aiChatHistory.push({ role: 'user', text: cleanMessage, ts: Date.now() });
+    const promptWithContext = `${buildSystemInfoLine()} User message: ${cleanMessage}`;
+    appState.aiChatHistory.push({ role: 'ai', text: generateResponse(promptWithContext), ts: Date.now() });
+    saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
+    renderAIChat();
+  }
+
   function renderIdeaGenerator() {
     const results = $('ideaGeneratorResults');
     if (!results) return;
@@ -1394,12 +1438,10 @@
       return;
     }
     if (fallback) fallback.textContent = '';
-    const templateSearch = normalizeSearchText($('templateSearchInput')?.value || '');
     cards.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
       const isActive = template.id === appState.businessPlan.selectedTemplateId;
-      const isHidden = templateSearch && !normalizeSearchText(`${template.title} ${template.description}`).includes(templateSearch);
       return `
-        <button type="button" class="template-card ${isActive ? 'active' : ''} ${isHidden ? 'hidden' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
+        <button type="button" class="template-card ${isActive ? 'active' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
           <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
           <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
           <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
@@ -1407,7 +1449,6 @@
         </button>
       `;
     }).join('');
-    syncTemplateSelector(appState.businessPlan.selectedTemplateId);
   }
 
   function renderBusinessPlanEditor() {
@@ -1457,12 +1498,6 @@
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
     applyIndustryPrefill(templateId);
-    syncTemplateSelector(templateId);
-  }
-
-  function syncTemplateSelector(templateId) {
-    const selector = $('templatesCategorySelect');
-    if (selector) selector.value = templateId || '';
   }
 
   function applyIndustryPrefill(templateId) {
@@ -1564,7 +1599,11 @@
     tabButtons.forEach((btn) => btn.classList.remove('active'));
 
     const target = document.getElementById(`panel-${tabName}`);
-    if (target) target.classList.remove('hidden');
+    if (target) {
+      target.classList.remove('hidden');
+      target.classList.remove('fade-in');
+      requestAnimationFrame(() => target.classList.add('fade-in'));
+    }
     const activeBtn = document.querySelector(`#tabs [data-tab="${tabName}"]`);
     if (activeBtn) activeBtn.classList.add('active');
 
@@ -1710,6 +1749,7 @@
     if (saveIncomeBtn && incomeInput) {
       saveIncomeBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        appState.sampleDashboardMode = false;
         const value = Number(incomeInput.value);
         appState.monthlyIncome = Number.isFinite(value) && value >= 0 ? value : 0;
         saveToStorage(STORAGE_KEYS.monthlyIncome, String(appState.monthlyIncome));
@@ -1723,6 +1763,7 @@
     if (addExpenseBtn && expenseCategoryInput && expenseAmountInput) {
       addExpenseBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        appState.sampleDashboardMode = false;
         const category = expenseCategoryInput.value || 'Others';
         const amount = Number(expenseAmountInput.value);
         if (!Number.isFinite(amount) || amount <= 0) return;
@@ -1743,6 +1784,7 @@
     if (addRecurringExpenseBtn && recurringCategoryInput && recurringAmountInput && recurringFrequencyInput) {
       addRecurringExpenseBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        appState.sampleDashboardMode = false;
         const category = recurringCategoryInput.value.trim() || 'Recurring';
         const amount = Number(recurringAmountInput.value);
         if (!Number.isFinite(amount) || amount <= 0) return;
@@ -1760,16 +1802,19 @@
     if (chatForm && chatInput) {
       chatForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        const message = chatInput.value.trim();
-        if (!message) return;
-        appState.aiChatHistory.push({ role: 'user', text: message, ts: Date.now() });
-        const promptWithContext = `${buildSystemInfoLine()} User message: ${message}`;
-        appState.aiChatHistory.push({ role: 'ai', text: generateResponse(promptWithContext), ts: Date.now() });
-        saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
+        submitAIMessage(chatInput.value);
         chatInput.value = '';
-        renderAIChat();
       });
     }
+    document.querySelectorAll('[data-prompt-chip]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        if (!chatInput) return;
+        const prompt = chip.getAttribute('data-prompt-chip') || '';
+        chatInput.value = prompt;
+        submitAIMessage(prompt);
+        chatInput.value = '';
+      });
+    });
 
     const clearChatBtn = $('clearChatBtn');
     if (clearChatBtn) {
@@ -1910,6 +1955,13 @@
         showMainApp({ tab: 'dashboard', rememberStart: true });
       });
     }
+    const viewSampleDashboardBtn = $('viewSampleDashboardBtn');
+    if (viewSampleDashboardBtn) {
+      viewSampleDashboardBtn.addEventListener('click', () => {
+        appState.sampleDashboardMode = true;
+        renderDashboard();
+      });
+    }
     const backToLandingBtn = $('backToLandingBtn');
     if (backToLandingBtn) {
       backToLandingBtn.addEventListener('click', (event) => {
@@ -1983,25 +2035,15 @@
         selectBusinessTemplate(button.getAttribute('data-template-id'));
       });
     }
-    const templatesCategorySelect = $('templatesCategorySelect');
-    if (templatesCategorySelect) {
-      templatesCategorySelect.addEventListener('change', () => {
-        if (!templatesCategorySelect.value) return;
+    const businessPlanning = $('businessPlanning');
+    if (businessPlanning) {
+      businessPlanning.addEventListener('click', (event) => {
+        const button = event.target.closest('.template-hero-card[data-template-id]');
+        if (!button) return;
         setPlanningSection('templates');
-        selectBusinessTemplate(templatesCategorySelect.value);
+        selectBusinessTemplate(button.getAttribute('data-template-id'));
       });
     }
-    const templateSearchInput = $('templateSearchInput');
-    if (templateSearchInput) {
-      templateSearchInput.addEventListener('input', () => {
-        const term = normalizeSearchText(templateSearchInput.value);
-        document.querySelectorAll('[data-template-id]').forEach((card) => {
-          const text = normalizeSearchText(card.textContent || '');
-          card.classList.toggle('hidden', Boolean(term) && !text.includes(term));
-        });
-      });
-    }
-
     const businessPlanEditorForm = $('businessPlanEditorForm');
     if (businessPlanEditorForm) {
       businessPlanEditorForm.addEventListener('input', (event) => {
