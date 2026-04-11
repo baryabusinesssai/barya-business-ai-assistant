@@ -783,65 +783,68 @@
     .founder-note-section {
       margin: 2.5rem auto 1rem;
       width: min(1100px, calc(100% - 1.5rem));
-      background: linear-gradient(145deg, #fffdf8 0%, #f8f4ec 100%);
-      border: 1px solid #ece3d4;
-      border-radius: 1.25rem;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-      padding: 1.35rem;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef2ff 100%);
+      border: 1px solid #dbe6ff;
+      border-radius: 1.4rem;
+      box-shadow: 0 14px 30px rgba(30, 41, 59, 0.09);
+      padding: clamp(1.2rem, 2vw, 2rem);
     }
-    .founder-note-quote {
+    .founder-note-grid {
       display: grid;
-      grid-template-columns: 190px 1fr;
-      gap: 1.2rem;
-      align-items: start;
-      position: relative;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 1.8rem;
+      align-items: center;
     }
-    .founder-note-quote::before {
-      content: "“";
-      position: absolute;
-      top: -0.85rem;
-      left: 0;
-      font-size: 3.6rem;
-      color: #b08968;
-      line-height: 1;
-      opacity: 0.35;
-      font-family: Georgia, 'Times New Roman', serif;
+    .founder-story {
+      color: #1e293b;
     }
-    .founder-photo-placeholder {
-      height: 220px;
-      border-radius: 1rem;
-      border: 1px dashed #c3b39f;
-      background: repeating-linear-gradient(
-        -45deg,
-        #f1e9dc,
-        #f1e9dc 10px,
-        #ece0d0 10px,
-        #ece0d0 20px
-      );
+    .founder-image-wrap {
       display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .founder-image {
+      width: 100%;
+      max-width: 300px;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+    }
+    .founder-connect-btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      color: #7c654e;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      margin-top: 1rem;
+      padding: 0.72rem 1.1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #1d4ed8;
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: #ffffff;
+      font-size: 0.9rem;
       font-weight: 600;
-      padding: 1rem;
+      text-decoration: none;
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
     }
-    .signature-name {
-      font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive;
-      font-size: 1.8rem;
-      color: #5b4230;
-      margin-top: 0.75rem;
-      line-height: 1;
+    .founder-connect-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(29, 78, 216, 0.3);
+      filter: brightness(1.04);
+    }
+    .founder-connect-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
     }
     @media (max-width: 768px) {
-      .founder-note-quote {
+      .founder-note-grid {
         grid-template-columns: 1fr;
       }
-      .founder-photo-placeholder {
-        height: 170px;
+      .founder-image-wrap {
+        order: 1;
+      }
+      .founder-story {
+        order: 2;
       }
     }
 
@@ -1490,19 +1493,17 @@
   </aside>
 
   <section class="founder-note-section" aria-labelledby="founder-note-title">
-    <div class="founder-note-quote">
-      <div class="founder-photo-placeholder" role="img" aria-label="Founder photo placeholder">
-        Founder Portrait<br/>Professional Photo Placeholder
-      </div>
-      <div>
-        <p class="text-xs uppercase tracking-[0.22em] text-amber-800 font-semibold">Meet the Founder</p>
-        <h2 id="founder-note-title" class="text-2xl md:text-3xl font-semibold text-amber-950 mt-2">Why I Built Barya</h2>
-        <p class="text-amber-900 mt-4 leading-relaxed">
-          As a founder, I lived through the overwhelm of juggling too many disconnected tools while trying to make clear business decisions.
-          I also worried constantly about where my sensitive business data was going and who could access it. I built Barya to create a simpler,
-          trusted workspace where founders can plan, execute, and grow with confidence—without sacrificing privacy.
+    <div class="founder-note-grid">
+      <div class="founder-story">
+        <p class="text-xs uppercase tracking-[0.22em] text-indigo-700 font-semibold">Meet the Founder</p>
+        <h2 id="founder-note-title" class="text-2xl md:text-3xl font-semibold text-slate-900 mt-2">Why I Built Barya</h2>
+        <p class="text-slate-700 mt-4 leading-relaxed">
+          I built Barya after seeing how many founders struggle to stay focused while switching between scattered tools and unclear next steps. My goal was to create one trusted workspace where ideas become practical plans, progress stays measurable, and sensitive business information remains private. Barya is designed to help entrepreneurs move from uncertainty to confident execution.
         </p>
-        <p class="signature-name">— Shruti</p>
+        <a class="founder-connect-btn" href="https://www.linkedin.com/in/shruti-barya-18a2a23a4" target="_blank" rel="noopener noreferrer" aria-label="Connect with Shruti on LinkedIn">Connect with me</a>
+      </div>
+      <div class="founder-image-wrap">
+        <img class="founder-image" src="assets/shruti-founder.jpg" alt="Shruti, founder of Barya" loading="lazy" />
       </div>
     </div>
   </section>
