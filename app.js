@@ -12,7 +12,9 @@
     templateOperations: 'barya_template_operations',
     userStarted: 'barya_user_started',
     theme: 'barya_theme',
-    onboardingSeen: 'barya_onboarding_seen'
+    onboardingSeen: 'barya_onboarding_seen',
+    businessCategory: 'barya_business_category',
+    netSavingsTrend: 'barya_net_savings_trend'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -398,6 +400,26 @@
     };
   }
 
+  function getBusinessCategoryFromStorage() {
+    const knownCategoryKeys = [
+      STORAGE_KEYS.businessCategory,
+      'barya_businessType',
+      'businessCategory',
+      'businessType'
+    ];
+    const keyWithValue = knownCategoryKeys.find((key) => {
+      const raw = localStorage.getItem(key);
+      return typeof raw === 'string' && raw.trim().length > 0;
+    });
+    return keyWithValue ? localStorage.getItem(keyWithValue).trim() : 'general';
+  }
+
+  function buildSystemInfoLine() {
+    const totals = calculateTotals();
+    const businessCategory = getBusinessCategoryFromStorage();
+    return `[System Info: User has ${formatCurrency(totals.netSavings)} savings and is working on a ${businessCategory} business]`;
+  }
+
   function buildRecommendations(totals) {
     const list = [];
     if (totals.monthlyIncome <= 0) list.push('Set a monthly income target to unlock better guidance.');
@@ -552,6 +574,8 @@
       $('autoRecommendations').innerHTML = items.map((item) => `<li>${item}</li>`).join('');
     }
 
+    generateAIInsights();
+
     renderExpenses();
     renderRecurringExpenses();
     renderCharts();
@@ -591,6 +615,126 @@
     }
 
     return 'I can help with business ideas, startup planning, finance, and marketing. Ask a clear question.';
+  }
+
+  function generateBusinessPlanSummaries(businessIdea) {
+    const idea = businessIdea || 'business idea';
+    const totals = calculateTotals();
+    return {
+      valueProposition: `${idea} should solve one urgent customer pain with a clear and measurable outcome. Position it as the fastest, simplest option compared to alternatives in your market. Make the offer easy to try so customers can see value quickly before committing long term.`,
+      marketing: `Focus marketing for ${idea} on one primary channel where your ideal customer already spends time. Publish practical educational content with one clear call to action and track conversion each week. Keep campaigns lean and optimize spend based on response quality, especially with current expenses near ${formatCurrency(totals.totalExpenses)}.`,
+      operations: `Build operations for ${idea} using a weekly execution rhythm across delivery, feedback, and process improvement. Assign clear owners to each step so quality stays consistent as demand grows. Keep systems and tooling lightweight until repeatable revenue justifies scaling.`
+    };
+  }
+
+  function applySummaryToField(fieldIds, summaryText) {
+    const selectedTemplate = getSelectedBusinessTemplate();
+    if (!selectedTemplate) return false;
+    const targetField = fieldIds.find((fieldId) => selectedTemplate.sections.some((section) => section.id === fieldId));
+    if (!targetField) return false;
+    ensureBusinessPlanDraft(selectedTemplate.id);
+    appState.businessPlan.drafts[selectedTemplate.id][targetField] = summaryText;
+    return true;
+  }
+
+  function fillBusinessPlanFromAI() {
+    const selectedTemplate = getSelectedBusinessTemplate();
+    const status = $('businessPlanStatus');
+    if (!selectedTemplate) {
+      if (status) status.textContent = 'Select a template before using Generate with AI.';
+      return;
+    }
+
+    const businessIdea = appState.ideaGeneratorHistory[0]?.topic || $('ideaGeneratorInput')?.value?.trim() || '';
+    if (!businessIdea) {
+      if (status) status.textContent = 'Add a business idea in Idea Generator first.';
+      return;
+    }
+
+    const summaries = generateBusinessPlanSummaries(businessIdea);
+    const applied = [
+      applySummaryToField(['value-proposition', 'problem', 'solution'], summaries.valueProposition),
+      applySummaryToField(['marketing', 'campaign-goal', 'channels', 'content-plan'], summaries.marketing),
+      applySummaryToField(['operations', 'workflow', 'execution-plan', 'timeline'], summaries.operations)
+    ].filter(Boolean).length;
+
+    saveBusinessPlanState();
+    renderBusinessPlanEditor();
+    if (status) {
+      status.textContent = applied
+        ? `${selectedTemplate.title} populated with AI summaries from your business idea.`
+        : 'No matching fields were found for Value Proposition, Marketing, or Operations.';
+    }
+  }
+
+  function generateAIInsights() {
+    const insightContainer = $('aiInsights');
+    if (!insightContainer) return;
+
+    const totals = calculateTotals();
+    const insights = [];
+    const expenseRatio = totals.monthlyIncome > 0 ? totals.totalExpenses / totals.monthlyIncome : 0;
+    if (expenseRatio > 0.7) {
+      insights.push('<p class="rounded-xl border border-rose-300 bg-rose-50 text-rose-700 px-3 py-2 text-sm">AI Warning: Your burn rate is high. Consider cutting Marketing costs.</p>');
+    }
+
+    const trend = loadFromStorage(STORAGE_KEYS.netSavingsTrend, []);
+    const previous = Array.isArray(trend) && trend.length ? Number(trend[trend.length - 1]) : null;
+    if (previous !== null && Number.isFinite(previous) && totals.netSavings > previous) {
+      insights.push('<p class="rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">AI Suggestion: You have enough to reinvest in a new tool!</p>');
+    }
+
+    insightContainer.innerHTML = insights.join('');
+    const nextTrend = Array.isArray(trend) ? [...trend, totals.netSavings].slice(-12) : [totals.netSavings];
+    saveToStorage(STORAGE_KEYS.netSavingsTrend, nextTrend);
+  }
+
+  async function downloadDashboardPdfReport() {
+    const status = $('downloadPdfStatus');
+    const dashboardPanel = $('panel-dashboard');
+    if (!dashboardPanel) return;
+    if (status) status.textContent = 'Preparing report...';
+
+    try {
+      if (typeof html2canvas === 'undefined' || !window.jspdf?.jsPDF) {
+        throw new Error('Missing PDF libraries');
+      }
+
+      const canvas = await html2canvas(dashboardPanel, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 10;
+      const contentWidth = pageWidth - (margin * 2);
+      const contentHeight = (canvas.height * contentWidth) / canvas.width;
+      let remainingHeight = contentHeight;
+      let y = margin;
+
+      pdf.setFontSize(14);
+      pdf.text('Monthly Business Health Report', margin, 8);
+      pdf.addImage(imgData, 'PNG', margin, y, contentWidth, contentHeight);
+      remainingHeight -= (pageHeight - (margin * 2));
+
+      while (remainingHeight > 0) {
+        y = remainingHeight - contentHeight + margin;
+        pdf.addPage('a4', 'p');
+        pdf.addImage(imgData, 'PNG', margin, y, contentWidth, contentHeight);
+        remainingHeight -= (pageHeight - (margin * 2));
+      }
+
+      pdf.save('Monthly Business Health Report.pdf');
+      if (status) status.textContent = 'PDF report downloaded.';
+    } catch (error) {
+      if (status) status.textContent = 'Could not generate PDF report.';
+      console.error(error);
+    }
   }
 
   function renderAIChat() {
@@ -946,7 +1090,8 @@
         const message = chatInput.value.trim();
         if (!message) return;
         appState.aiChatHistory.push({ role: 'user', text: message, ts: Date.now() });
-        appState.aiChatHistory.push({ role: 'ai', text: generateResponse(message), ts: Date.now() });
+        const promptWithContext = `${buildSystemInfoLine()} User message: ${message}`;
+        appState.aiChatHistory.push({ role: 'ai', text: generateResponse(promptWithContext), ts: Date.now() });
         saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
         chatInput.value = '';
         renderAIChat();
@@ -1018,6 +1163,10 @@
     if (profileForm) {
       profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
+        const businessTypeInput = $('businessTypeInput');
+        if (businessTypeInput?.value?.trim()) {
+          saveToStorage(STORAGE_KEYS.businessCategory, businessTypeInput.value.trim());
+        }
       });
     }
 
@@ -1147,6 +1296,18 @@
         renderBusinessPlanEditor();
         const status = $('businessPlanStatus');
         if (status) status.textContent = `${selectedTemplate.title} cleared.`;
+      });
+    }
+
+    const businessPlanGenerateAIBtn = $('businessPlanGenerateAIBtn');
+    if (businessPlanGenerateAIBtn) {
+      businessPlanGenerateAIBtn.addEventListener('click', fillBusinessPlanFromAI);
+    }
+
+    const downloadPdfBtn = $('downloadPdfBtn');
+    if (downloadPdfBtn) {
+      downloadPdfBtn.addEventListener('click', () => {
+        downloadDashboardPdfReport();
       });
     }
   }
