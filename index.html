@@ -1122,6 +1122,21 @@
             </div>
 
             <div id="businessPlanning" class="planning-shell mt-6">
+            <div id="templatesDropdownTourTarget" class="grid md:grid-cols-2 gap-3 mt-2">
+              <div>
+                <label for="templatesCategorySelect" class="text-xs uppercase tracking-[0.2em] text-slate-400">Templates Gallery</label>
+                <select id="templatesCategorySelect" class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
+                  <option value="">Select an industry template</option>
+                  <option value="coffee-shop">Coffee Shop</option>
+                  <option value="saas-startup">SaaS Startup</option>
+                  <option value="ecommerce-store">E-commerce Store</option>
+                </select>
+              </div>
+              <div>
+                <label for="templateSearchInput" class="text-xs uppercase tracking-[0.2em] text-slate-400">Search Industries</label>
+                <input id="templateSearchInput" type="text" placeholder="Search template industries..." class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              </div>
+            </div>
             <p id="businessPlanFallback" class="mt-4 text-sm text-rose-600"></p>
             <div id="businessPlanTemplateCards" class="template-grid mt-4"></div>
 
@@ -1196,7 +1211,7 @@
             <h3 class="font-semibold text-lg mt-1">Backup &amp; Restore</h3>
             <p class="text-sm text-slate-400 mt-1">Export and import your local workspace data as a JSON backup file.</p>
 
-            <div class="backup-restore-actions">
+            <div id="exportBackupTourTarget" class="backup-restore-actions">
               <button id="exportDataBtn" type="button" class="backup-btn backup-btn-primary" title="Download your data for safety">
                 <span aria-hidden="true">⬇️</span>
                 <span>Export Backup</span>
@@ -1207,6 +1222,22 @@
                 <span aria-hidden="true">⬆️</span>
                 <span>Import Backup</span>
               </label>
+            </div>
+            <div class="mt-4 flex flex-col gap-3">
+              <div class="flex items-center justify-between border border-slate-700 rounded-xl p-3">
+                <div>
+                  <p class="text-sm font-medium">Auto-Sync to Cloud</p>
+                  <p class="text-xs text-slate-400">Keep cloud backup synced when you export manually.</p>
+                </div>
+                <label for="autoSyncToggle" class="inline-flex items-center cursor-pointer">
+                  <input id="autoSyncToggle" type="checkbox" class="sr-only peer" />
+                  <span class="w-11 h-6 bg-slate-400 rounded-full peer peer-checked:bg-indigo-600 relative transition">
+                    <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5"></span>
+                  </span>
+                </label>
+              </div>
+              <button id="exportToCloudBtn" type="button" class="backup-btn backup-btn-secondary">☁️ Export to Cloud (Google Drive compatible JSON)</button>
+              <p id="cloudSyncStatus" class="text-xs text-slate-400"></p>
             </div>
           </section>
 

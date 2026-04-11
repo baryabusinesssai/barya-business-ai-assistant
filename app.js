@@ -7,6 +7,7 @@
     aiChatHistory: 'barya_ai_chat_history',
     businessAdvisorHistory: 'barya_business_advisor_history',
     ideaGeneratorHistory: 'barya_idea_generator_history',
+    aiMemory: 'barya_ai_memory_entries',
     templateLean: 'barya_template_lean',
     templateMarketing: 'barya_template_marketing',
     templateOperations: 'barya_template_operations',
@@ -171,51 +172,77 @@
       chatPlaceholder: 'Apne business ke bare mein kuch bhi poochain...'
     }
   };
-  const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
+  const CURRENCIES = ['USD', 'PKR', 'INR', 'EUR'];
   const BUSINESS_PLAN_TEMPLATES = [
     {
-      id: 'lean',
-      storageKey: STORAGE_KEYS.templateLean,
-      title: 'Lean Launch Canvas',
-      description: 'Map the core blocks for a fast, testable startup launch.',
+      id: 'coffee-shop',
+      storageKey: 'barya_template_coffee_shop',
+      title: 'Coffee Shop',
+      description: 'Local café planning structure focused on menu, footfall, and neighborhood retention.',
       sections: [
-        { id: 'problem', title: 'Problem', placeholder: 'Define the main customer problem you are solving.' },
-        { id: 'solution', title: 'Solution', placeholder: 'Describe the core solution and experience you will provide.' },
-        { id: 'target-customers', title: 'Target Customers', placeholder: 'Who is the primary customer segment?' },
-        { id: 'value-proposition', title: 'Value Proposition', placeholder: 'What makes your offer compelling and different?' },
-        { id: 'channels', title: 'Channels', placeholder: 'How will customers discover and buy from you?' },
-        { id: 'revenue-model', title: 'Revenue Model', placeholder: 'How will the business generate revenue?' }
+        { id: 'concept', title: 'Concept', placeholder: 'Define your café concept and ambiance.' },
+        { id: 'target-market', title: 'Target Market', placeholder: 'Describe your main customer segments and location behavior.' },
+        { id: 'menu-pricing', title: 'Menu & Pricing', placeholder: 'Outline your hero products, pricing strategy, and margins.' },
+        { id: 'operations', title: 'Operations', placeholder: 'Describe staffing, suppliers, and opening-hour workflow.' },
+        { id: 'marketing', title: 'Marketing Plan', placeholder: 'List launch and retention marketing actions.' },
+        { id: 'financials', title: 'Financial Plan', placeholder: 'Capture startup costs, monthly expenses, and break-even assumptions.' }
       ]
     },
     {
-      id: 'marketing',
-      storageKey: STORAGE_KEYS.templateMarketing,
-      title: 'Marketing Campaign Block',
-      description: 'Structure your campaign strategy, content, and KPIs in one view.',
+      id: 'saas-startup',
+      storageKey: 'barya_template_saas_startup',
+      title: 'SaaS Startup',
+      description: 'Software planning template for product, acquisition, retention, and recurring revenue.',
       sections: [
-        { id: 'campaign-goal', title: 'Campaign Goal', placeholder: 'State the measurable goal for this campaign.' },
-        { id: 'target-audience', title: 'Target Audience', placeholder: 'Define who this campaign is built for.' },
-        { id: 'channels', title: 'Channels', placeholder: 'Select and justify the channels you will use.' },
-        { id: 'content-plan', title: 'Content Plan', placeholder: 'Outline core messages and publishing cadence.' },
-        { id: 'budget', title: 'Budget', placeholder: 'List spend allocation and expected return.' },
-        { id: 'kpis', title: 'KPIs', placeholder: 'Define success metrics and reporting cadence.' }
+        { id: 'problem', title: 'Problem', placeholder: 'Define the customer workflow pain your SaaS solves.' },
+        { id: 'product', title: 'Product Scope', placeholder: 'Describe MVP features and roadmap priorities.' },
+        { id: 'pricing', title: 'Pricing & Packaging', placeholder: 'Define tiers, trial model, and upgrade path.' },
+        { id: 'go-to-market', title: 'Go-To-Market', placeholder: 'Explain channels, funnel, and sales motion.' },
+        { id: 'retention', title: 'Retention Strategy', placeholder: 'Outline onboarding, support, and churn prevention systems.' },
+        { id: 'metrics', title: 'Metrics', placeholder: 'Track MRR, CAC, churn, and expansion revenue goals.' }
       ]
     },
     {
-      id: 'operations',
-      storageKey: STORAGE_KEYS.templateOperations,
-      title: 'Operations Roadmap',
-      description: 'Plan people, tools, and execution systems for stable operations.',
+      id: 'ecommerce-store',
+      storageKey: 'barya_template_ecommerce_store',
+      title: 'E-commerce Store',
+      description: 'Commerce template focused on niche, catalog strategy, logistics, and repeat sales.',
       sections: [
-        { id: 'team-roles', title: 'Team Roles', placeholder: 'Define core roles and responsibilities.' },
-        { id: 'tools', title: 'Tools', placeholder: 'List systems and tools needed for execution.' },
-        { id: 'workflow', title: 'Workflow', placeholder: 'Document the workflow from input to delivery.' },
-        { id: 'timeline', title: 'Timeline', placeholder: 'Set milestones and implementation phases.' },
-        { id: 'risks', title: 'Risks', placeholder: 'Identify operational risks and mitigation plans.' },
-        { id: 'execution-plan', title: 'Execution Plan', placeholder: 'Summarize the action plan for consistent execution.' }
+        { id: 'niche', title: 'Niche & Audience', placeholder: 'Define store niche and buyer profile.' },
+        { id: 'catalog', title: 'Product Catalog', placeholder: 'Describe winning SKUs and margin priorities.' },
+        { id: 'storefront', title: 'Storefront & UX', placeholder: 'Plan site structure, conversion path, and trust signals.' },
+        { id: 'fulfillment', title: 'Fulfillment', placeholder: 'Define sourcing, inventory, shipping, and returns process.' },
+        { id: 'growth', title: 'Growth Channels', placeholder: 'List paid, organic, and partnership channels.' },
+        { id: 'forecast', title: 'Sales Forecast', placeholder: 'Estimate traffic, conversion, AOV, and 90-day targets.' }
       ]
     }
   ];
+  const INDUSTRY_PREFILLS = {
+    'coffee-shop': {
+      concept: 'Neighborhood specialty coffee shop with morning commuter service and evening community events.',
+      'target-market': 'Primary audience: office commuters, students, and nearby residents within a 2 km radius.',
+      'menu-pricing': 'Core menu: espresso, pour-over, bakery combos. Pricing set at premium-local level with 62-68% gross margin on beverages.',
+      operations: 'Open 7AM-9PM, two-shift staffing model, weekly local supplier ordering, and daily quality checklist.',
+      marketing: 'Launch with geo-targeted social ads, loyalty card program, and local influencer tasting week.',
+      financials: 'Startup budget includes rent deposit, espresso machine, interior setup, and 6-month runway with break-even target by month 7.'
+    },
+    'saas-startup': {
+      problem: 'SMB teams lose time due to fragmented task and reporting tools with no unified workflow.',
+      product: 'MVP includes workflow automation, reporting dashboard, and team collaboration with role-based access.',
+      pricing: 'Three tiers (Starter, Growth, Scale), free 14-day trial, annual plan discount to improve cash flow.',
+      'go-to-market': 'Content-led inbound plus founder-led outbound to 100 ICP accounts per month.',
+      retention: 'Structured onboarding emails, in-app product tours, and quarterly success reviews for active accounts.',
+      metrics: 'Track MRR growth, CAC payback, activation rate, churn under 4%, and expansion revenue ratio.'
+    },
+    'ecommerce-store': {
+      niche: 'D2C store for eco-friendly lifestyle products targeting urban millennial households.',
+      catalog: 'Hero SKUs with repeat purchase potential, bundle strategy, and seasonal limited drops.',
+      storefront: 'Mobile-first storefront, high-trust PDPs, one-page checkout, and post-purchase upsell.',
+      fulfillment: 'Hybrid model with local 3PL, 48-hour dispatch SLA, and clear return/refund policy.',
+      growth: 'Meta/TikTok creatives, creator partnerships, email automation, and referral incentives.',
+      forecast: 'Quarter-one forecast: 35k visits, 2.2% conversion, $38 AOV, and month-three profitability target.'
+    }
+  };
 
   const WHEN_NOT_TO_START_MODULE = {
     title: 'When Not to Start a Business',
@@ -358,6 +385,7 @@
     recurringExpenses: [],
     settings: { currency: 'USD', language: 'English', goal: '' },
     aiChatHistory: [],
+    aiMemoryEntries: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
@@ -508,35 +536,29 @@
   function startTour() {
     const steps = [
       {
-        selector: '#dashboardTourTarget',
+        selector: '#monthlyOverviewCard',
         tab: 'dashboard',
-        title: 'Dashboard (Finance Overview)',
-        description: 'Start here to track income, expenses, and net savings so you always know where your money is going.'
+        title: 'Step 1: Financial Overview',
+        description: 'Review Financial Overview to monitor income, expenses, and net savings.'
       },
       {
-        selector: '#tabs',
-        tab: 'dashboard',
-        title: 'Navigation',
-        description: 'Use this navigation area to move between tools like AI Assistant, Dashboard, Memory, and Business Plan.'
-      },
-      {
-        selector: '#aiAssistantTourTarget',
+        selector: '#chatInput',
         tab: 'chat',
-        title: 'AI Assistant',
-        description: 'Ask for strategy advice, next-step recommendations, and quick decisions tailored to your business.'
+        title: 'Step 2: AI Assistant',
+        description: 'You are now in AI Assistant. Use this chat input for strategy and planning support.'
       },
       {
-        selector: '#ideaGeneratorForm',
-        tab: 'memory',
-        title: 'Idea Generator',
-        description: 'Use Idea Generator to kick off a plan with concrete business ideas before building the full strategy.'
-      },
-      {
-        selector: '#planningTemplatesSection',
+        selector: '#templatesDropdownTourTarget',
         tab: 'planning',
         planningSection: 'templates',
-        description: 'Finish here: choose a template, complete your plan, then use Export Plan PDF to generate your final document.',
-        title: 'Business Planning (Templates)'
+        description: 'Switched to Business Planning. Choose an industry from the Templates Gallery dropdown.',
+        title: 'Step 3: Templates Gallery'
+      },
+      {
+        selector: '#exportBackupTourTarget',
+        tab: 'profile',
+        title: 'Step 4: Export & Backup',
+        description: 'Use Export/Import buttons to keep your data safe with backups.'
       }
     ];
 
@@ -575,6 +597,7 @@
         <h3 class="font-semibold mt-1">${escapeHTML(step.title)}</h3>
         <p class="text-sm mt-2">${escapeHTML(step.description)}</p>
         <div class="mt-3 flex justify-end gap-2">
+          <button id="tourBackBtn" class="px-3 py-1.5 rounded border" ${current === 0 ? 'disabled' : ''}>Back</button>
           <button id="tourSkipBtn" class="px-3 py-1.5 rounded border">Skip</button>
           <button id="tourNextBtn" class="px-3 py-1.5 rounded bg-slate-900 text-white">${current === steps.length - 1 ? 'Finish' : 'Next'}</button>
         </div>
@@ -583,6 +606,11 @@
       popup.style.top = `${Math.max(12, window.scrollY + rect.top - 8)}px`;
       popup.style.left = `${Math.min(window.innerWidth - 340, Math.max(12, rect.right - 330))}px`;
 
+      document.getElementById('tourBackBtn')?.addEventListener('click', () => {
+        if (current === 0) return;
+        current -= 1;
+        renderStep();
+      });
       document.getElementById('tourSkipBtn')?.addEventListener('click', () => {
         StorageService.setItem(STORAGE_KEYS.onboardingSeen, 'true');
         cleanup();
@@ -604,7 +632,8 @@
     return {
       currency: loaded?.currency || 'USD',
       language,
-      goal: loaded?.goal || ''
+      goal: loaded?.goal || '',
+      autoSyncCloud: Boolean(loaded?.autoSyncCloud)
     };
   }
 
@@ -804,6 +833,18 @@
         results.push({ type: 'Expense Category', title: category, description: 'Saved in expense tracker', tab: 'dashboard' });
       }
     });
+    appState.aiMemoryEntries.forEach((entry, index) => {
+      const haystack = normalizeSearchText(`${entry.type || ''} ${entry.note || ''}`);
+      if (haystack.includes(term)) {
+        results.push({
+          type: 'AI Memory',
+          title: entry.type || `Memory ${index + 1}`,
+          description: entry.note,
+          tab: 'memory',
+          memoryId: entry.id
+        });
+      }
+    });
 
     return results.slice(0, 14);
   }
@@ -824,7 +865,11 @@
       return;
     }
     showMainApp({ tab: result.tab || 'dashboard', rememberStart: true });
-    document.getElementById('panel-dashboard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (result.memoryId) {
+      setTimeout(() => document.querySelector(`[data-memory-id="${result.memoryId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+      return;
+    }
+    document.getElementById(`panel-${result.tab || 'dashboard'}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function renderGlobalSearchResults(results) {
@@ -1371,6 +1416,20 @@
       : '<li class="text-slate-400">No ideas generated yet.</li>';
   }
 
+  function renderMemoryEntries() {
+    const memoryList = $('memoryList');
+    if (!memoryList) return;
+    const entries = appState.aiMemoryEntries || [];
+    memoryList.innerHTML = entries.length
+      ? entries.slice().reverse().map((item) => `
+        <li data-memory-id="${escapeHTML(item.id)}" class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+          <p class="text-xs uppercase tracking-[0.16em] text-slate-400">${escapeHTML(item.type || 'General')}</p>
+          <p class="text-sm text-slate-200 mt-1">${escapeHTML(item.note || '')}</p>
+        </li>
+      `).join('')
+      : '<li class="text-slate-400">No AI memory entries yet.</li>';
+  }
+
   function escapeHtml(text) {
     return String(text || '')
       .replace(/&/g, '&amp;')
@@ -1427,10 +1486,12 @@
       return;
     }
     if (fallback) fallback.textContent = '';
+    const templateSearch = normalizeSearchText($('templateSearchInput')?.value || '');
     cards.innerHTML = BUSINESS_PLAN_TEMPLATES.map((template) => {
       const isActive = template.id === appState.businessPlan.selectedTemplateId;
+      const isHidden = templateSearch && !normalizeSearchText(`${template.title} ${template.description}`).includes(templateSearch);
       return `
-        <button type="button" class="template-card ${isActive ? 'active' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
+        <button type="button" class="template-card ${isActive ? 'active' : ''} ${isHidden ? 'hidden' : ''} rounded-2xl p-4 text-left transition" data-template-id="${template.id}">
           <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
           <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
           <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
@@ -1438,6 +1499,7 @@
         </button>
       `;
     }).join('');
+    syncTemplateSelector(appState.businessPlan.selectedTemplateId);
   }
 
   function renderBusinessPlanEditor() {
@@ -1486,6 +1548,32 @@
     ensureBusinessPlanDraft(templateId);
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
+    applyIndustryPrefill(templateId);
+    syncTemplateSelector(templateId);
+  }
+
+  function syncTemplateSelector(templateId) {
+    const selector = $('templatesCategorySelect');
+    if (selector) selector.value = templateId || '';
+  }
+
+  function applyIndustryPrefill(templateId) {
+    const prefill = INDUSTRY_PREFILLS[templateId];
+    if (!prefill) return;
+    const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === templateId);
+    if (!template) return;
+    ensureBusinessPlanDraft(templateId);
+    const draft = appState.businessPlan.drafts[templateId];
+    template.sections.forEach((section) => {
+      draft[section.id] = prefill[section.id] || draft[section.id] || '';
+    });
+    saveBusinessPlanState();
+    renderBusinessPlanEditor();
+
+    const chatInput = $('chatInput');
+    if (chatInput) {
+      chatInput.value = `Create an industry-specific ${template.title} business plan with milestones, risks, and a 90-day execution roadmap.`;
+    }
   }
 
   function generateIdeas(topic) {
@@ -1546,11 +1634,13 @@
     const settingsLanguageSelect = $('settingsLanguageSelect');
     const currencySelect = $('currencySelect');
     const goalInput = $('goalInput');
+    const autoSyncToggle = $('autoSyncToggle');
 
     if (languageSelect) languageSelect.value = appState.settings.language;
     if (settingsLanguageSelect) settingsLanguageSelect.value = appState.settings.language;
     if (currencySelect) currencySelect.value = appState.settings.currency;
     if (goalInput) goalInput.value = appState.settings.goal || '';
+    if (autoSyncToggle) autoSyncToggle.checked = Boolean(appState.settings.autoSyncCloud);
     setLanguage(appState.settings.language);
 
     renderDashboard();
@@ -1577,6 +1667,9 @@
     }
     if (tabName === 'resources') {
       renderResources();
+    }
+    if (tabName === 'memory') {
+      renderMemoryEntries();
     }
   }
 
@@ -1761,7 +1854,8 @@
         appState.settings = {
           currency: currencySelect?.value || appState.settings.currency,
           language: settingsLanguageSelect?.value || appState.settings.language,
-          goal: goalInput?.value?.trim() || ''
+          goal: goalInput?.value?.trim() || '',
+          autoSyncCloud: Boolean(appState.settings.autoSyncCloud)
         };
         saveSettings();
         applySettings();
@@ -1788,10 +1882,41 @@
     if (importDataInput) {
       importDataInput.addEventListener('change', importData);
     }
+    const autoSyncToggle = $('autoSyncToggle');
+    if (autoSyncToggle) {
+      autoSyncToggle.checked = Boolean(appState.settings.autoSyncCloud);
+      autoSyncToggle.addEventListener('change', () => {
+        appState.settings.autoSyncCloud = autoSyncToggle.checked;
+        saveSettings();
+      });
+    }
+    const exportToCloudBtn = $('exportToCloudBtn');
+    if (exportToCloudBtn) {
+      exportToCloudBtn.addEventListener('click', () => {
+        const status = $('cloudSyncStatus');
+        exportData();
+        if (status) {
+          status.textContent = 'Backup exported. Upload this JSON file to your Google Drive for cloud storage.';
+        }
+      });
+    }
 
     const memoryForm = $('memoryForm');
     if (memoryForm) {
-      memoryForm.addEventListener('submit', (event) => event.preventDefault());
+      memoryForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const typeInput = $('memoryType');
+        const noteInput = $('memoryInput');
+        const type = typeInput?.value?.trim() || 'General';
+        const note = noteInput?.value?.trim();
+        if (!note) return;
+        appState.aiMemoryEntries.push({ id: crypto.randomUUID(), type, note, ts: Date.now() });
+        appState.aiMemoryEntries = appState.aiMemoryEntries.slice(-120);
+        saveToStorage(STORAGE_KEYS.aiMemory, appState.aiMemoryEntries);
+        if (typeInput) typeInput.value = '';
+        if (noteInput) noteInput.value = '';
+        renderMemoryEntries();
+      });
     }
 
     const startConversationBtn = $('startConversationBtn');
@@ -1883,6 +2008,24 @@
         if (!button) return;
         setPlanningSection('templates');
         selectBusinessTemplate(button.getAttribute('data-template-id'));
+      });
+    }
+    const templatesCategorySelect = $('templatesCategorySelect');
+    if (templatesCategorySelect) {
+      templatesCategorySelect.addEventListener('change', () => {
+        if (!templatesCategorySelect.value) return;
+        setPlanningSection('templates');
+        selectBusinessTemplate(templatesCategorySelect.value);
+      });
+    }
+    const templateSearchInput = $('templateSearchInput');
+    if (templateSearchInput) {
+      templateSearchInput.addEventListener('input', () => {
+        const term = normalizeSearchText(templateSearchInput.value);
+        document.querySelectorAll('[data-template-id]').forEach((card) => {
+          const text = normalizeSearchText(card.textContent || '');
+          card.classList.toggle('hidden', Boolean(term) && !text.includes(term));
+        });
       });
     }
 
@@ -2032,6 +2175,7 @@
     appState.recurringExpenses = loadFromStorage(STORAGE_KEYS.recurringExpenses, []);
     appState.settings = loadSettings();
     appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
+    appState.aiMemoryEntries = loadFromStorage(STORAGE_KEYS.aiMemory, []);
     appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
     appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
     BUSINESS_PLAN_TEMPLATES.forEach((template) => {
@@ -2072,6 +2216,7 @@
     renderAIChat();
     renderBusinessAdvisor();
     renderIdeaGenerator();
+    renderMemoryEntries();
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
     renderWhenNotToStartGuide();

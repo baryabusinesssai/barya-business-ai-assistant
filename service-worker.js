@@ -1,11 +1,12 @@
-const CACHE_NAME = 'barya-cache-v1';
+const CACHE_NAME = 'barya-cache-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
   './styles.css',
   './script.js',
-  './manifest.json'
+  './manifest.json',
+  './pwa-icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,14 +29,15 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const { request } = event;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
-      return fetch(event.request)
+      return fetch(request)
         .then((networkResponse) => {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           return networkResponse;
         })
         .catch(() => caches.match('./index.html'));
