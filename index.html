@@ -849,6 +849,31 @@
           </div>
 
           <div class="soft-card rounded-2xl p-4 mt-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold">Activity Log</h3>
+              <span class="text-xs text-slate-400">Last 5 actions</span>
+            </div>
+            <ul id="activityLogList" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
+          </div>
+
+          <div class="soft-card rounded-2xl p-4 mt-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold">Startup Checklist</h3>
+              <span id="taskManagerProgressValue" class="text-xs text-slate-400">0% completed</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3 mt-3 overflow-hidden">
+              <div id="taskManagerProgress" class="h-3 bg-indigo-600 transition-all duration-300" style="width: 0%;"></div>
+            </div>
+            <ul id="taskManagerList" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
+            <div class="mt-3 flex flex-col md:flex-row gap-2">
+              <input id="taskInput" placeholder="Add a custom task" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
+              <button id="addTaskBtn" type="button" class="rounded-xl bg-slate-700 hover:bg-slate-600 px-4 py-2.5 font-medium">Add Task</button>
+            </div>
+            <button id="generateRoadmapBtn" type="button" class="w-full mt-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 py-2.5 font-medium">Generate Roadmap with AI</button>
+            <p id="taskRoadmapStatus" class="text-xs text-slate-400 mt-2"></p>
+          </div>
+
+          <div class="soft-card rounded-2xl p-4 mt-4">
             <h3 class="font-semibold">Financial Charts</h3>
             <p class="text-xs text-slate-400 mt-1">Expense category split and monthly comparison</p>
             <div class="grid md:grid-cols-2 gap-4 mt-4">
