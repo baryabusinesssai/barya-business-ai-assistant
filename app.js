@@ -192,6 +192,52 @@
     localStorage.setItem(key, serializable);
   }
 
+  function exportData() {
+    const exportedData = {};
+    Object.keys(localStorage).forEach((key) => {
+      exportedData[key] = localStorage.getItem(key);
+    });
+
+    const jsonData = JSON.stringify(exportedData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const dateStamp = new Date().toISOString().slice(0, 10);
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `barya-backup-${dateStamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  }
+
+  function importData(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      try {
+        const parsedData = JSON.parse(readerEvent?.target?.result || '{}');
+        Object.keys(parsedData).forEach((key) => {
+          localStorage.setItem(key, parsedData[key]);
+        });
+        alert('Backup imported successfully. The app will now reload.');
+        window.location.reload();
+      } catch {
+        alert('Invalid backup file. Please import a valid JSON backup.');
+      } finally {
+        if (event.target) event.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      alert('Could not read the selected file. Please try again.');
+      if (event.target) event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
   function getTranslations(language) {
     const selected = TRANSLATIONS[language] || TRANSLATIONS.English;
     return { ...TRANSLATIONS.English, ...selected };
@@ -799,6 +845,16 @@
       profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
       });
+    }
+
+    const exportDataBtn = $('exportDataBtn');
+    if (exportDataBtn) {
+      exportDataBtn.addEventListener('click', exportData);
+    }
+
+    const importDataInput = $('importDataInput');
+    if (importDataInput) {
+      importDataInput.addEventListener('change', importData);
     }
 
     const memoryForm = $('memoryForm');

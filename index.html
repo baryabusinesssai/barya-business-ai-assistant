@@ -151,6 +151,69 @@
       box-shadow: 0 0 0 4px var(--focus-ring);
     }
 
+    .backup-restore-section {
+      margin-top: 1.25rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 1rem;
+      background: #ffffff;
+      padding: 1rem;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    }
+    .backup-restore-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .backup-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      width: 100%;
+      border-radius: 0.75rem;
+      padding: 0.7rem 0.95rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all .18s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .backup-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+    }
+    .backup-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px var(--focus-ring);
+    }
+    .backup-btn-primary {
+      background: #111827;
+      color: #ffffff;
+      border-color: #111827;
+    }
+    .backup-btn-primary:hover {
+      background: #1f2937;
+      border-color: #1f2937;
+    }
+    .backup-btn-secondary {
+      background: #ffffff;
+      color: #111827;
+      border-color: #d1d5db;
+    }
+    .backup-btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #9ca3af;
+    }
+    .backup-file-input {
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .backup-restore-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
 
     .learning-module-grid {
       display: grid;
@@ -788,6 +851,25 @@
             <input id="preferenceInput" placeholder="Communication preference" class="bg-slate-900 border border-slate-700 rounded-xl p-3 md:col-span-2 outline-none focus:border-emerald-400" />
             <button class="bg-emerald-600 hover:bg-emerald-500 rounded-xl py-3 font-medium md:col-span-2" data-i18n="saveProfile">Save profile</button>
           </form>
+
+          <section class="backup-restore-section">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Data Management</p>
+            <h3 class="font-semibold text-lg mt-1">Backup &amp; Restore</h3>
+            <p class="text-sm text-slate-400 mt-1">Export and import your local workspace data as a JSON backup file.</p>
+
+            <div class="backup-restore-actions">
+              <button id="exportDataBtn" type="button" class="backup-btn backup-btn-primary">
+                <span aria-hidden="true">⬇️</span>
+                <span>Export Backup</span>
+              </button>
+
+              <input id="importDataInput" class="backup-file-input" type="file" accept=".json,application/json" />
+              <label for="importDataInput" class="backup-btn backup-btn-secondary" role="button" tabindex="0">
+                <span aria-hidden="true">⬆️</span>
+                <span>Import Backup</span>
+              </label>
+            </div>
+          </section>
 
         </article>
       </section>
