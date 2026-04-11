@@ -1725,10 +1725,55 @@
     const tabButtons = document.querySelectorAll('#tabs [data-tab]');
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
+        clearGuidedFocus();
         const tab = btn.getAttribute('data-tab');
         setActiveTab(tab);
       });
     });
+  }
+
+  function clearGuidedFocus() {
+    $('appContainer')?.classList.remove('guided-focus-mode');
+    document.querySelectorAll('.guided-highlight').forEach((node) => node.classList.remove('guided-highlight'));
+  }
+
+  function applyGuidedFocus(entryType) {
+    const appContainer = $('appContainer');
+    if (!appContainer) return;
+
+    clearGuidedFocus();
+    appContainer.classList.add('guided-focus-mode');
+
+    const configs = {
+      idea: {
+        tab: 'dashboard',
+        tabSelector: '#tabs [data-tab=\"dashboard\"]',
+        panelSelector: '#ideaGeneratorToolCard'
+      },
+      planning: {
+        tab: 'planning',
+        tabSelector: '#tabs [data-tab=\"planning\"]',
+        panelSelector: '#panel-planning article'
+      },
+      finances: {
+        tab: 'dashboard',
+        tabSelector: '#tabs [data-tab=\"dashboard\"]',
+        panelSelector: '#dashboardExpensesTool'
+      }
+    };
+
+    const selectedConfig = configs[entryType];
+    if (!selectedConfig) return;
+
+    showMainApp({ tab: selectedConfig.tab, rememberStart: true });
+    if (selectedConfig.tab === 'planning') setPlanningSection('templates');
+
+    document.querySelector(selectedConfig.tabSelector)?.classList.add('guided-highlight');
+    const targetPanel = document.querySelector(selectedConfig.panelSelector);
+    if (targetPanel) {
+      targetPanel.classList.add('guided-highlight');
+      targetPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   function initControls() {
@@ -1923,6 +1968,7 @@
     if (startConversationBtn) {
       startConversationBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        clearGuidedFocus();
         document.querySelector('[data-tab="chat"]')?.click();
         $('chatInput')?.focus();
       });
@@ -1932,6 +1978,7 @@
     if (startPlanningBtn) {
       startPlanningBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        clearGuidedFocus();
         showMainApp({ tab: 'planning', rememberStart: true });
         document.getElementById('appSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -1941,9 +1988,18 @@
     if (getStartedBtn) {
       getStartedBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        clearGuidedFocus();
         showMainApp({ tab: 'dashboard', rememberStart: true });
       });
     }
+
+    document.querySelectorAll('[data-guided-entry]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const entryType = button.getAttribute('data-guided-entry');
+        if (!entryType) return;
+        applyGuidedFocus(entryType);
+      });
+    });
 
     const shareProgressBtn = $('shareProgressBtn');
     const shareSnippetOutput = $('shareSnippetOutput');
@@ -1996,6 +2052,7 @@
     const tourHelpBtn = $('tourHelpBtn');
     if (tourHelpBtn) {
       tourHelpBtn.addEventListener('click', () => {
+        clearGuidedFocus();
         showMainApp({ tab: 'dashboard', rememberStart: true });
         startTour();
       });
@@ -2241,6 +2298,7 @@
     const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
     const isFirstVisit = StorageService.getItem(STORAGE_KEYS.onboardingSeen, 'false') !== 'true';
     if (hasStarted) {
+      clearGuidedFocus();
       showMainApp({ tab: 'dashboard' });
     } else {
       showLandingPage();
