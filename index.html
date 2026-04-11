@@ -857,6 +857,48 @@
     .footer-links { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .5rem; }
     .footer-links a { color: #334155; font-size: .9rem; text-decoration: none; }
     .footer-links a:hover { text-decoration: underline; }
+    .trust-badges {
+      position: fixed;
+      left: 1rem;
+      bottom: 1rem;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: min(360px, calc(100vw - 6rem));
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+      font-size: 0.76rem;
+      font-weight: 600;
+      line-height: 1.25;
+      color: #0f172a;
+      backdrop-filter: blur(6px);
+    }
+    .trust-badge-link {
+      color: #0f172a;
+      text-decoration: none;
+    }
+    .trust-badge-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 640px) {
+      .trust-badges {
+        left: 0.75rem;
+        bottom: 0.75rem;
+        max-width: calc(100vw - 1.5rem);
+      }
+      .trust-badge {
+        border-radius: 0.8rem;
+      }
+    }
 
   </style>
 </head>
@@ -1440,6 +1482,12 @@
       </section>
     </main>
   </div>
+  <aside class="trust-badges" aria-label="Trust badges">
+    <div class="trust-badge">🔒 100% Local-First: Your data never leaves your device.</div>
+    <a class="trust-badge trust-badge-link" href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="Open source GitHub repository">
+      🧩 Open Source · View on GitHub
+    </a>
+  </aside>
 
   <section class="founder-note-section" aria-labelledby="founder-note-title">
     <div class="founder-note-quote">
