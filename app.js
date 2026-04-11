@@ -16,7 +16,9 @@
     businessCategory: 'barya_business_category',
     netSavingsTrend: 'barya_net_savings_trend',
     businessPlanAiGenerated: 'barya_business_plan_ai_generated',
-    startupReadinessTasks: 'barya_startup_readiness_tasks'
+    startupReadinessTasks: 'barya_startup_readiness_tasks',
+    activityLog: 'barya_activity_log',
+    taskManagerTasks: 'barya_task_manager_tasks'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -187,6 +189,41 @@
     completedPlanTemplate: 50
   };
 
+  const TASK_MANAGER_DEFAULTS = [
+    { id: 'define-target-audience', label: 'Define your Target Audience', completed: false, source: 'default' },
+    { id: 'set-monthly-budget', label: 'Set a Monthly Budget', completed: false, source: 'default' },
+    { id: 'draft-first-business-plan', label: 'Draft 1st Business Plan', completed: false, source: 'default' }
+  ];
+
+  const StorageService = {
+    getItem(key, fallback = null) {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value;
+      } catch (error) {
+        console.warn(`Storage read failed for key: ${key}`, error);
+        return fallback;
+      }
+    },
+    setItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        console.warn(`Storage write failed for key: ${key}`, error);
+        return false;
+      }
+    },
+    keys() {
+      try {
+        return Object.keys(localStorage);
+      } catch (error) {
+        console.warn('Storage keys read failed.', error);
+        return [];
+      }
+    }
+  };
+
   let appState = {
     monthlyIncome: 0,
     expenses: [],
@@ -196,7 +233,9 @@
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
-    readinessTasks: loadReadinessTasks()
+    readinessTasks: loadReadinessTasks(),
+    activityLog: loadActivityLog(),
+    taskManagerTasks: loadTaskManagerTasks()
   };
   let expenseChartInstance = null;
   let comparisonChartInstance = null;
@@ -213,7 +252,7 @@
   }
 
   function loadFromStorage(key, fallback) {
-    const raw = localStorage.getItem(key);
+    const raw = StorageService.getItem(key, null);
     if (raw === null) return fallback;
     try {
       return JSON.parse(raw);
@@ -225,7 +264,31 @@
 
   function saveToStorage(key, value) {
     const serializable = typeof value === 'string' || typeof value === 'number' ? value : JSON.stringify(value);
-    localStorage.setItem(key, serializable);
+    StorageService.setItem(key, serializable);
+  }
+
+  function loadActivityLog() {
+    const saved = loadFromStorage(STORAGE_KEYS.activityLog, []);
+    return Array.isArray(saved) ? saved : [];
+  }
+
+  function logActivity(action) {
+    if (!action) return;
+    appState.activityLog.unshift({ action, ts: Date.now() });
+    appState.activityLog = appState.activityLog.slice(0, 80);
+    saveToStorage(STORAGE_KEYS.activityLog, appState.activityLog);
+    renderActivityLog();
+  }
+
+  function loadTaskManagerTasks() {
+    const saved = loadFromStorage(STORAGE_KEYS.taskManagerTasks, []);
+    const safeSaved = Array.isArray(saved) ? saved : [];
+    const withDefaults = TASK_MANAGER_DEFAULTS.map((task) => {
+      const existing = safeSaved.find((item) => item.id === task.id);
+      return existing ? { ...task, ...existing } : { ...task };
+    });
+    const customTasks = safeSaved.filter((task) => task?.source === 'custom' || task?.source === 'roadmap');
+    return [...withDefaults, ...customTasks];
   }
 
   function normalizeSearchText(value) {
@@ -254,8 +317,8 @@
 
   function exportData() {
     const exportedData = {};
-    Object.keys(localStorage).forEach((key) => {
-      exportedData[key] = localStorage.getItem(key);
+    StorageService.keys().forEach((key) => {
+      exportedData[key] = StorageService.getItem(key, '');
     });
 
     const jsonData = JSON.stringify(exportedData, null, 2);
@@ -281,7 +344,7 @@
       try {
         const parsedData = JSON.parse(readerEvent?.target?.result || '{}');
         Object.keys(parsedData).forEach((key) => {
-          localStorage.setItem(key, parsedData[key]);
+          StorageService.setItem(key, parsedData[key]);
         });
         alert('Backup imported successfully. The app will now reload.');
         window.location.reload();
@@ -349,7 +412,7 @@
       cleanup();
       const step = steps[current];
       if (!step) {
-        localStorage.setItem(STORAGE_KEYS.onboardingSeen, 'true');
+        StorageService.setItem(STORAGE_KEYS.onboardingSeen, 'true');
         return;
       }
 
@@ -377,7 +440,7 @@
       popup.style.left = `${Math.min(window.innerWidth - 340, Math.max(12, rect.right - 330))}px`;
 
       document.getElementById('tourSkipBtn')?.addEventListener('click', () => {
-        localStorage.setItem(STORAGE_KEYS.onboardingSeen, 'true');
+        StorageService.setItem(STORAGE_KEYS.onboardingSeen, 'true');
         cleanup();
       });
       document.getElementById('tourNextBtn')?.addEventListener('click', () => {
@@ -480,6 +543,78 @@
         ? 'You are almost ready to launch!'
         : 'Complete key tasks to build launch readiness.';
     }
+  }
+
+  function formatRelativeTime(timestamp) {
+    const diffMs = Math.max(0, Date.now() - (Number(timestamp) || 0));
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    if (diffMs < minute) return 'just now';
+    if (diffMs < hour) return `${Math.floor(diffMs / minute)} mins ago`;
+    if (diffMs < day) return `${Math.floor(diffMs / hour)} hours ago`;
+    return `${Math.floor(diffMs / day)} days ago`;
+  }
+
+  function renderActivityLog() {
+    const activityList = $('activityLogList');
+    if (!activityList) return;
+    const recent = appState.activityLog.slice(0, 5);
+    activityList.innerHTML = recent.length
+      ? recent.map((item) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">${escapeHTML(item.action)} - ${formatRelativeTime(item.ts)}</li>`).join('')
+      : '<li class="text-slate-400">No activities yet.</li>';
+  }
+
+  function saveTaskManagerTasks() {
+    saveToStorage(STORAGE_KEYS.taskManagerTasks, appState.taskManagerTasks);
+  }
+
+  function taskCompletionRate() {
+    const total = appState.taskManagerTasks.length;
+    if (!total) return 0;
+    const completed = appState.taskManagerTasks.filter((task) => task.completed).length;
+    return Math.round((completed / total) * 100);
+  }
+
+  function renderTaskManager() {
+    const list = $('taskManagerList');
+    const progress = $('taskManagerProgress');
+    const value = $('taskManagerProgressValue');
+    if (!list) return;
+    list.innerHTML = appState.taskManagerTasks.map((task) => `
+      <li class="flex items-center gap-3 bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">
+        <input type="checkbox" data-task-id="${escapeHTML(task.id)}" ${task.completed ? 'checked' : ''} class="h-4 w-4" />
+        <span class="${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${escapeHTML(task.label)}</span>
+      </li>
+    `).join('');
+
+    const completion = taskCompletionRate();
+    if (progress) progress.style.width = `${completion}%`;
+    if (value) value.textContent = `${completion}% completed`;
+  }
+
+  function addTask(label, source = 'custom') {
+    const cleanLabel = String(label || '').trim();
+    if (!cleanLabel) return;
+    appState.taskManagerTasks.push({
+      id: `${source}-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+      label: cleanLabel,
+      completed: false,
+      source
+    });
+    saveTaskManagerTasks();
+    renderTaskManager();
+  }
+
+  function generateRoadmapSteps(idea) {
+    const focus = idea || 'your business idea';
+    return [
+      `Validate demand for ${focus} with 10 customer interviews this week.`,
+      `Build a one-page offer and landing page for ${focus}.`,
+      `Run a small pilot with 3 paying users and collect feedback.`,
+      `Define your monthly KPI dashboard (revenue, leads, retention).`,
+      `Create a 30-day execution plan with weekly review checkpoints.`
+    ];
   }
 
   function collectGlobalSearchResults(queryText) {
@@ -587,10 +722,10 @@
       'businessType'
     ];
     const keyWithValue = knownCategoryKeys.find((key) => {
-      const raw = localStorage.getItem(key);
+      const raw = StorageService.getItem(key, '');
       return typeof raw === 'string' && raw.trim().length > 0;
     });
-    return keyWithValue ? localStorage.getItem(keyWithValue).trim() : 'general';
+    return keyWithValue ? StorageService.getItem(keyWithValue, 'general').trim() : 'general';
   }
 
   function buildSystemInfoLine() {
@@ -756,6 +891,8 @@
     generateAIInsights();
     renderExecutiveSummary(totals);
     renderReadinessScore();
+    renderActivityLog();
+    renderTaskManager();
 
     renderExpenses();
     renderRecurringExpenses();
@@ -1279,7 +1416,7 @@
     if (appContainer) appContainer.style.display = 'block';
 
     if (rememberStart) {
-      localStorage.setItem(STORAGE_KEYS.userStarted, 'true');
+      StorageService.setItem(STORAGE_KEYS.userStarted, 'true');
     }
 
     setActiveTab(tab);
@@ -1327,6 +1464,7 @@
         if (!Number.isFinite(amount) || amount <= 0) return;
         appState.expenses.unshift({ id: crypto.randomUUID(), category, amount, ts: Date.now() });
         saveToStorage(STORAGE_KEYS.expenses, appState.expenses);
+        logActivity(`Added a new expense (${category})`);
         markReadinessTaskCompleted('addedExpense');
         expenseCategoryInput.value = 'Marketing';
         expenseAmountInput.value = '';
@@ -1408,6 +1546,7 @@
         appState.ideaGeneratorHistory.unshift({ topic, ideas, ts: Date.now() });
         appState.ideaGeneratorHistory = appState.ideaGeneratorHistory.slice(0, 20);
         saveToStorage(STORAGE_KEYS.ideaGeneratorHistory, appState.ideaGeneratorHistory);
+        logActivity('Generated a new business idea');
         markReadinessTaskCompleted('generatedIdea');
         ideaGeneratorInput.value = '';
         renderIdeaGenerator();
@@ -1509,7 +1648,7 @@
     if (themeToggle) {
       themeToggle.addEventListener('change', () => {
         const theme = themeToggle.checked ? 'dark' : 'light';
-        localStorage.setItem(STORAGE_KEYS.theme, theme);
+        StorageService.setItem(STORAGE_KEYS.theme, theme);
         applyTheme(theme);
       });
     }
@@ -1562,6 +1701,7 @@
         const selectedTemplate = getSelectedBusinessTemplate();
         if (!selectedTemplate) return;
         saveBusinessPlanState();
+        logActivity('Saved a business plan');
         const status = $('businessPlanStatus');
         if (status) status.textContent = `${selectedTemplate.title} saved locally.`;
         if (isBusinessPlanTemplateComplete(selectedTemplate.id)) {
@@ -1588,6 +1728,46 @@
     const businessPlanGenerateAIBtn = $('businessPlanGenerateAIBtn');
     if (businessPlanGenerateAIBtn) {
       businessPlanGenerateAIBtn.addEventListener('click', fillBusinessPlanFromAI);
+    }
+
+    const taskManagerList = $('taskManagerList');
+    if (taskManagerList) {
+      taskManagerList.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') return;
+        const taskId = target.getAttribute('data-task-id');
+        if (!taskId) return;
+        const task = appState.taskManagerTasks.find((item) => item.id === taskId);
+        if (!task) return;
+        task.completed = target.checked;
+        saveTaskManagerTasks();
+        renderTaskManager();
+      });
+    }
+
+    const addTaskBtn = $('addTaskBtn');
+    const taskInput = $('taskInput');
+    if (addTaskBtn && taskInput) {
+      addTaskBtn.addEventListener('click', () => {
+        addTask(taskInput.value, 'custom');
+        taskInput.value = '';
+      });
+    }
+
+    const generateRoadmapBtn = $('generateRoadmapBtn');
+    if (generateRoadmapBtn) {
+      generateRoadmapBtn.addEventListener('click', () => {
+        const businessIdea = appState.ideaGeneratorHistory[0]?.topic || $('ideaGeneratorInput')?.value?.trim() || '';
+        const roadmapStatus = $('taskRoadmapStatus');
+        if (!businessIdea) {
+          if (roadmapStatus) roadmapStatus.textContent = 'Please add a business idea first.';
+          return;
+        }
+        const steps = generateRoadmapSteps(businessIdea);
+        steps.forEach((step) => addTask(step, 'roadmap'));
+        logActivity('Generated AI roadmap tasks');
+        if (roadmapStatus) roadmapStatus.textContent = `Added 5 roadmap tasks for "${businessIdea}".`;
+      });
     }
 
     const downloadPdfBtn = $('downloadPdfBtn');
@@ -1632,7 +1812,7 @@
   }
 
   function hydrateState() {
-    appState.monthlyIncome = Number(localStorage.getItem(STORAGE_KEYS.monthlyIncome) || 0);
+    appState.monthlyIncome = Number(StorageService.getItem(STORAGE_KEYS.monthlyIncome, 0) || 0);
     appState.expenses = loadFromStorage(STORAGE_KEYS.expenses, []);
     appState.recurringExpenses = loadFromStorage(STORAGE_KEYS.recurringExpenses, []);
     appState.settings = loadSettings();
@@ -1646,6 +1826,8 @@
     const savedAiMap = loadFromStorage(STORAGE_KEYS.businessPlanAiGenerated, {});
     appState.businessPlan.aiGenerated = typeof savedAiMap === 'object' && savedAiMap !== null ? savedAiMap : {};
     appState.readinessTasks = loadReadinessTasks();
+    appState.activityLog = loadActivityLog();
+    appState.taskManagerTasks = loadTaskManagerTasks();
   }
 
   function initSelects() {
@@ -1679,7 +1861,7 @@
     renderBusinessPlanEditor();
     renderWhenNotToStartGuide();
     setPlanningSection('guides');
-    applyTheme(localStorage.getItem(STORAGE_KEYS.theme) || 'light');
+    applyTheme(StorageService.getItem(STORAGE_KEYS.theme, 'light') || 'light');
     window.startTour = startTour;
     window.exportToPDF = exportToPDF;
     window.globalSearch = globalSearch;
@@ -1687,8 +1869,8 @@
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
 
-    const hasStarted = localStorage.getItem(STORAGE_KEYS.userStarted) === 'true';
-    const isFirstVisit = localStorage.getItem(STORAGE_KEYS.onboardingSeen) !== 'true';
+    const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
+    const isFirstVisit = StorageService.getItem(STORAGE_KEYS.onboardingSeen, 'false') !== 'true';
     if (hasStarted) {
       showMainApp({ tab: 'dashboard' });
     } else {
