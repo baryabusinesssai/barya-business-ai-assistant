@@ -13,7 +13,6 @@
     templateOperations: 'barya_template_operations',
     userStarted: 'barya_user_started',
     theme: 'barya_theme',
-    onboardingSeen: 'barya_onboarding_seen',
     businessCategory: 'barya_business_category',
     netSavingsTrend: 'barya_net_savings_trend',
     businessPlanAiGenerated: 'barya_business_plan_ai_generated',
@@ -531,97 +530,6 @@
     document.body.classList.toggle('dark-theme', isDark);
     const themeToggle = $('themeToggle');
     if (themeToggle) themeToggle.checked = isDark;
-  }
-
-  function startTour() {
-    const steps = [
-      {
-        selector: '#monthlyOverviewCard',
-        tab: 'dashboard',
-        title: 'Step 1: Financial Overview',
-        description: 'Review Financial Overview to monitor income, expenses, and net savings.'
-      },
-      {
-        selector: '#chatInput',
-        tab: 'chat',
-        title: 'Step 2: AI Assistant',
-        description: 'You are now in AI Assistant. Use this chat input for strategy and planning support.'
-      },
-      {
-        selector: '#templatesDropdownTourTarget',
-        tab: 'planning',
-        planningSection: 'templates',
-        description: 'Switched to Business Planning. Choose an industry from the Templates Gallery dropdown.',
-        title: 'Step 3: Templates Gallery'
-      },
-      {
-        selector: '#exportBackupTourTarget',
-        tab: 'profile',
-        title: 'Step 4: Export & Backup',
-        description: 'Use Export/Import buttons to keep your data safe with backups.'
-      }
-    ];
-
-    let current = 0;
-    let popup = document.getElementById('tourPopup');
-
-    const cleanup = () => {
-      document.querySelectorAll('.tour-highlight').forEach((node) => node.classList.remove('tour-highlight'));
-      if (popup) popup.remove();
-      popup = null;
-    };
-
-    const renderStep = () => {
-      cleanup();
-      const step = steps[current];
-      if (!step) {
-        StorageService.setItem(STORAGE_KEYS.onboardingSeen, 'true');
-        return;
-      }
-
-      setActiveTab(step.tab);
-      if (step.planningSection && step.tab === 'planning') {
-        setPlanningSection(step.planningSection);
-      }
-      const target = document.querySelector(step.selector);
-      if (!target) return;
-      target.classList.add('tour-highlight');
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      const rect = target.getBoundingClientRect();
-      popup = document.createElement('div');
-      popup.id = 'tourPopup';
-      popup.className = 'tour-popup';
-      popup.innerHTML = `
-        <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Onboarding Tour</p>
-        <h3 class="font-semibold mt-1">${escapeHTML(step.title)}</h3>
-        <p class="text-sm mt-2">${escapeHTML(step.description)}</p>
-        <div class="mt-3 flex justify-end gap-2">
-          <button id="tourBackBtn" class="px-3 py-1.5 rounded border" ${current === 0 ? 'disabled' : ''}>Back</button>
-          <button id="tourSkipBtn" class="px-3 py-1.5 rounded border">Skip</button>
-          <button id="tourNextBtn" class="px-3 py-1.5 rounded bg-slate-900 text-white">${current === steps.length - 1 ? 'Finish' : 'Next'}</button>
-        </div>
-      `;
-      document.body.appendChild(popup);
-      popup.style.top = `${Math.max(12, window.scrollY + rect.top - 8)}px`;
-      popup.style.left = `${Math.min(window.innerWidth - 340, Math.max(12, rect.right - 330))}px`;
-
-      document.getElementById('tourBackBtn')?.addEventListener('click', () => {
-        if (current === 0) return;
-        current -= 1;
-        renderStep();
-      });
-      document.getElementById('tourSkipBtn')?.addEventListener('click', () => {
-        StorageService.setItem(STORAGE_KEYS.onboardingSeen, 'true');
-        cleanup();
-      });
-      document.getElementById('tourNextBtn')?.addEventListener('click', () => {
-        current += 1;
-        renderStep();
-      });
-    };
-
-    renderStep();
   }
 
   function loadSettings() {
@@ -2049,15 +1957,6 @@
       });
     }
 
-    const tourHelpBtn = $('tourHelpBtn');
-    if (tourHelpBtn) {
-      tourHelpBtn.addEventListener('click', () => {
-        clearGuidedFocus();
-        showMainApp({ tab: 'dashboard', rememberStart: true });
-        startTour();
-      });
-    }
-
     const businessPlanTemplateCards = $('businessPlanTemplateCards');
     if (businessPlanTemplateCards) {
       businessPlanTemplateCards.addEventListener('click', (event) => {
@@ -2279,7 +2178,6 @@
     renderWhenNotToStartGuide();
     setPlanningSection('guides');
     applyTheme(StorageService.getItem(STORAGE_KEYS.theme, 'light') || 'light');
-    window.startTour = startTour;
     window.exportToPDF = exportToPDF;
     window.globalSearch = globalSearch;
     window.setLanguage = setLanguage;
@@ -2296,17 +2194,11 @@
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
 
     const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
-    const isFirstVisit = StorageService.getItem(STORAGE_KEYS.onboardingSeen, 'false') !== 'true';
     if (hasStarted) {
       clearGuidedFocus();
       showMainApp({ tab: 'dashboard' });
     } else {
       showLandingPage();
-    }
-
-    if (isFirstVisit) {
-      showMainApp({ tab: 'dashboard', rememberStart: true });
-      setTimeout(() => startTour(), 300);
     }
   }
 
