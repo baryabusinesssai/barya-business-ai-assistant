@@ -1641,26 +1641,17 @@
   }
 
   function clearGuidedFocus() {
-    $('appContainer')?.classList.remove('guided-focus-mode');
-    document.querySelectorAll('.guided-highlight').forEach((node) => node.classList.remove('guided-highlight'));
+    // Tour/popup focus mode removed; keep as no-op for compatibility with existing handlers.
   }
 
-  function applyGuidedFocus(entryType) {
-    const appContainer = $('appContainer');
-    if (!appContainer) return;
-
-    clearGuidedFocus();
-    appContainer.classList.add('guided-focus-mode');
-
+  function handleQuickNavigation(entryType) {
     const configs = {
       build: {
         tab: 'planning',
-        tabSelector: '#tabs [data-tab=\"planning\"]',
-        panelSelector: '#panel-planning article'
+        panelSelector: '#panel-planning'
       },
       track: {
         tab: 'dashboard',
-        tabSelector: '#tabs [data-tab=\"dashboard\"]',
         panelSelector: '#dashboardExpensesTool'
       },
       grow: {
@@ -1676,10 +1667,8 @@
     showMainApp({ tab: selectedConfig.tab, rememberStart: true });
     if (selectedConfig.tab === 'planning') setPlanningSection('templates');
 
-    document.querySelector(selectedConfig.tabSelector)?.classList.add('guided-highlight');
     const targetPanel = document.querySelector(selectedConfig.panelSelector);
     if (targetPanel) {
-      targetPanel.classList.add('guided-highlight');
       targetPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
@@ -1901,11 +1890,11 @@
       });
     }
 
-    document.querySelectorAll('[data-guided-entry]').forEach((button) => {
+    document.querySelectorAll('[data-quick-nav]').forEach((button) => {
       button.addEventListener('click', () => {
-        const entryType = button.getAttribute('data-guided-entry');
+        const entryType = button.getAttribute('data-quick-nav');
         if (!entryType) return;
-        applyGuidedFocus(entryType);
+        handleQuickNavigation(entryType);
       });
     });
 
