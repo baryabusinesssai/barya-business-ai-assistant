@@ -1573,9 +1573,6 @@
       renderBusinessPlanEditor();
       renderWhenNotToStartGuide();
     }
-    if (tabName === 'resources') {
-      renderResources();
-    }
     if (tabName === 'memory') {
       renderMemoryEntries();
     }
@@ -1610,9 +1607,26 @@
     const { tab = 'dashboard', rememberStart = false } = options;
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
+    const globalSearchShell = $('globalSearchShell');
 
-    if (landingPageContainer) landingPageContainer.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
+    if (landingPageContainer) {
+      landingPageContainer.classList.remove('is-visible');
+      landingPageContainer.classList.add('is-hidden');
+      setTimeout(() => {
+        landingPageContainer.style.display = 'none';
+      }, 280);
+    }
+    document.querySelectorAll('.landing-only').forEach((node) => {
+      node.style.display = 'none';
+    });
+    if (appContainer) {
+      appContainer.style.display = 'block';
+      requestAnimationFrame(() => {
+        appContainer.classList.remove('is-hidden');
+        appContainer.classList.add('is-visible');
+      });
+    }
+    if (globalSearchShell) globalSearchShell.style.display = 'block';
 
     if (rememberStart) {
       StorageService.setItem(STORAGE_KEYS.userStarted, 'true');
@@ -1624,9 +1638,26 @@
   function showLandingPage() {
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
+    const globalSearchShell = $('globalSearchShell');
 
-    if (landingPageContainer) landingPageContainer.style.display = 'flex';
-    if (appContainer) appContainer.style.display = 'none';
+    if (appContainer) {
+      appContainer.classList.remove('is-visible');
+      appContainer.classList.add('is-hidden');
+      setTimeout(() => {
+        appContainer.style.display = 'none';
+      }, 260);
+    }
+    if (landingPageContainer) {
+      landingPageContainer.style.display = 'block';
+      requestAnimationFrame(() => {
+        landingPageContainer.classList.remove('is-hidden');
+        landingPageContainer.classList.add('is-visible');
+      });
+    }
+    document.querySelectorAll('.landing-only').forEach((node) => {
+      node.style.display = '';
+    });
+    if (globalSearchShell) globalSearchShell.style.display = 'none';
   }
 
   function initTabs() {
@@ -1655,8 +1686,8 @@
         panelSelector: '#dashboardExpensesTool'
       },
       grow: {
-        tab: 'chat',
-        tabSelector: '#tabs [data-tab=\"chat\"]',
+        tab: 'strategy',
+        tabSelector: '#tabs [data-tab=\"strategy\"]',
         panelSelector: '#aiAssistantTourTarget'
       }
     };
@@ -1866,27 +1897,24 @@
       startConversationBtn.addEventListener('click', (event) => {
         event.preventDefault();
         clearGuidedFocus();
-        document.querySelector('[data-tab="chat"]')?.click();
+        document.querySelector('[data-tab="strategy"]')?.click();
         $('chatInput')?.focus();
       });
     }
 
-    const startPlanningBtn = $('startPlanningBtn');
-    if (startPlanningBtn) {
-      startPlanningBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        clearGuidedFocus();
-        showMainApp({ tab: 'planning', rememberStart: true });
-        document.getElementById('appSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
-
-    const getStartedBtn = $('getStartedBtn');
-    if (getStartedBtn) {
-      getStartedBtn.addEventListener('click', (event) => {
+    const enterWorkspaceBtn = $('enterWorkspaceBtn');
+    if (enterWorkspaceBtn) {
+      enterWorkspaceBtn.addEventListener('click', (event) => {
         event.preventDefault();
         clearGuidedFocus();
         showMainApp({ tab: 'dashboard', rememberStart: true });
+      });
+    }
+    const backToLandingBtn = $('backToLandingBtn');
+    if (backToLandingBtn) {
+      backToLandingBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        showLandingPage();
       });
     }
 

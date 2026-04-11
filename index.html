@@ -192,6 +192,24 @@
       border-color: #111827;
       color: #fff;
     }
+    .workspace-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+    }
+    .app-view {
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .app-view.is-hidden {
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+    }
+    .app-view.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .get-started-hero {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -654,7 +672,7 @@
       #monthlyOverviewCard .grid,
       #panel-dashboard .grid,
       #panel-workspace,
-      #panel-profile .grid,
+      #panel-founder .grid,
       #profileForm,
       #memoryForm {
         grid-template-columns: 1fr !important;
@@ -686,8 +704,7 @@
       #profileForm button,
       #memoryForm button,
       #startConversationBtn,
-      #startPlanningBtn,
-      #getStartedBtn {
+      #enterWorkspaceBtn {
         width: 100%;
       }
       #tabs,
@@ -697,6 +714,16 @@
       #tabs .tabBtn,
       #planningSectionTabs .tabBtn {
         flex: 1 1 calc(50% - .5rem);
+      }
+      .workspace-nav {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: 0.35rem;
+      }
+      .workspace-nav .tabBtn {
+        white-space: nowrap;
+        flex: 0 0 auto;
       }
     }
 
@@ -875,14 +902,14 @@
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
-  <div class="global-search-shell">
+  <div id="globalSearchShell" class="global-search-shell">
     <div class="global-search-box">
       <span aria-hidden="true">🔍</span>
       <input id="globalSearchInput" class="global-search-input" type="text" placeholder="Search tools, guides, or your saved data..." autocomplete="off" />
     </div>
     <div id="globalSearchResults" class="global-search-results hidden"></div>
   </div>
-  <div id="landingPageContainer" class="max-w-6xl mx-auto px-4 py-6">
+  <div id="landingPageContainer" class="app-view is-visible max-w-6xl mx-auto px-4 py-6">
 
     <section id="landingPage" class="landing-hero">
       <div class="max-w-4xl mx-auto text-center space-y-4">
@@ -890,9 +917,8 @@
         <h1 class="text-4xl md:text-5xl font-semibold tracking-tight">Barya Business AI Assistant</h1>
         <p class="text-slate-600 text-base md:text-lg">Build, plan, and grow your business with smart tools and practical guidance.</p>
         <p class="text-slate-600 max-w-3xl mx-auto">Barya is a business planning and AI-powered assistant tool that helps founders turn ideas into clear plans, practical strategies, and trackable execution.</p>
-        <div class="flex flex-col md:flex-row gap-3 justify-center">
-          <button id="startPlanningBtn" class="primary-action-glow inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold">Start Planning</button>
-          <button id="getStartedBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700">Get Started</button>
+        <div class="flex justify-center pt-3">
+          <button id="enterWorkspaceBtn" class="primary-action-glow inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-8 py-4 text-base font-semibold">Enter Workspace</button>
         </div>
       </div>
 
@@ -944,7 +970,7 @@
     </section>
   </div>
 
-  <div id="appContainer" class="max-w-6xl mx-auto px-4 py-6 space-y-6" style="display:none;">
+  <div id="appContainer" class="app-view is-hidden max-w-6xl mx-auto px-4 py-8 space-y-8" style="display:none;">
 
     <header class="glass border border-indigo-900/40 rounded-3xl p-5 md:p-6 shadow-2xl">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -952,7 +978,8 @@
           <span class="h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]"></span>
           <p class="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold" data-i18n="founderWorkspace">Founder Workspace</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="backToLandingBtn" class="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800/70">← Back to Landing Page</button>
           <span class="px-3 py-2 rounded-xl text-[11px] font-medium uppercase tracking-[0.2em] text-indigo-200 bg-indigo-500/10 border border-indigo-400/30">Local Mode</span>
           <select id="languageSelect" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm" aria-label="Language" data-i18n-aria-label="language"></select>
         </div>
@@ -964,14 +991,12 @@
         <button id="startConversationBtn" class="primary-action-glow inline-flex items-center justify-center rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-semibold" data-i18n="startConversation">Start conversation</button>
       </div>
 
-      <nav id="tabs" class="mt-8 border-t border-slate-800/80 pt-4 flex flex-wrap items-center justify-center gap-2">
-        <button data-tab="chat" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="aiAssistant" title="Ask me anything about your business strategy">AI Chat</button>
-        <button data-tab="dashboard" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="dashboard">Dashboard</button>
-        <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="workspace">Workspace</button>
-        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="memory">Memory</button>
-        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="businessPlan">Business Plan</button>
-        <button data-tab="resources" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="resources">Resources</button>
-        <button data-tab="profile" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="profile">Profile</button>
+      <nav id="tabs" class="workspace-nav mt-8 border-t border-slate-800/80 pt-4">
+        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium">Dashboard</button>
+        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">AI Strategy</button>
+        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Business Planning</button>
+        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Knowledge Memory</button>
+        <button data-tab="founder" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Founder’s Corner</button>
       </nav>
     </header>
 
@@ -1201,11 +1226,11 @@
         </article>
       </section>
 
-      <section id="panel-chat" class="panel">
+      <section id="panel-strategy" class="panel hidden">
         <article id="aiAssistantTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-5 md:p-6">
           <div class="max-w-2xl mx-auto text-center">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Assistant</p>
-            <h2 class="font-semibold text-2xl md:text-3xl mt-2" data-i18n="aiAssistant">AI Assistant</h2>
+            <h2 class="font-semibold text-2xl md:text-3xl mt-2">AI Strategy</h2>
             <p class="text-slate-300 mt-2">Ask one clear question to plan, decide, or unblock your next move.</p>
           </div>
 
@@ -1306,7 +1331,7 @@
               <div>
                 <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
                 <h2 class="font-semibold text-2xl mt-2">Startup Guides</h2>
-                <p class="text-slate-300 mt-2 max-w-3xl">A beginner-friendly business learning toolkit with practical guidance for better founder decisions.</p>
+                <p class="text-slate-300 mt-2 max-w-3xl">Learn the foundations of business with structured, beginner-friendly guides.</p>
               </div>
               <div class="soft-card rounded-2xl px-4 py-3">
                 <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
@@ -1322,7 +1347,7 @@
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
               <h2 class="font-semibold text-2xl mt-2">Business Plan Templates</h2>
-              <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly in your workspace.</p>
+              <p class="text-slate-300 mt-2 text-sm">Choose a template, fill sections, and build a complete plan directly.</p>
             </div>
               <div class="soft-card rounded-2xl px-4 py-3">
                 <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Storage</p>
@@ -1372,7 +1397,7 @@
         </article>
       </section>
 
-      <section id="panel-profile" class="panel hidden">
+      <section id="panel-founder" class="panel hidden">
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Identity</p>
@@ -1450,15 +1475,23 @@
             </div>
           </section>
 
+          <section class="mt-8 pt-6 border-t border-slate-700/70">
+            <p class="text-xs uppercase tracking-[0.22em] text-indigo-300 font-semibold">Meet the Founder</p>
+            <h3 class="text-2xl font-semibold mt-2">Why I Built Barya</h3>
+            <p class="text-slate-300 mt-3 leading-relaxed">
+              I built Barya after seeing how many founders struggle to stay focused while switching between scattered tools and unclear next steps. My goal was to create one trusted workspace where ideas become practical plans, progress stays measurable, and sensitive business information remains private.
+            </p>
+          </section>
+
         </article>
       </section>
     </main>
   </div>
-  <aside class="trust-badges" aria-label="Trust badges">
+  <aside id="landingTrustBadges" class="trust-badges landing-only" aria-label="Trust badges">
     <div class="trust-badge">🔒 100% Local-First: Your data never leaves your device.</div>
   </aside>
 
-  <section class="founder-note-section" aria-labelledby="founder-note-title">
+  <section id="landingFounderSection" class="founder-note-section landing-only" aria-labelledby="founder-note-title">
     <div class="founder-note-grid">
       <div class="founder-story">
         <p class="text-xs uppercase tracking-[0.22em] text-indigo-700 font-semibold">Meet the Founder</p>
@@ -1474,7 +1507,7 @@
     </div>
   </section>
 
-  <footer class="site-footer">
+  <footer id="landingFooter" class="site-footer landing-only">
     <p class="text-sm font-semibold">Barya Business AI</p>
     <div class="footer-links">
       <a href="#how-it-works">How it Works</a>
