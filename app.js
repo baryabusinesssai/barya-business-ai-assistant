@@ -164,6 +164,8 @@
     ideaGeneratorHistory: [],
     businessPlan: { selectedTemplateId: '', drafts: {} }
   };
+  let expenseChartInstance = null;
+  let comparisonChartInstance = null;
 
   const $ = (id) => document.getElementById(id);
 
@@ -347,6 +349,78 @@
     topCategoryOutput.textContent = `Top recurring category: ${top.category} (${formatCurrency(toMonthlyRecurringAmount(top))}/month)`;
   }
 
+  function renderCharts() {
+    if (typeof Chart === 'undefined') return;
+
+    const expenseCanvas = $('expenseChart');
+    const comparisonCanvas = $('comparisonChart');
+    if (!expenseCanvas || !comparisonCanvas) return;
+
+    const totals = calculateTotals();
+    const categoryTotals = {};
+
+    appState.expenses.forEach((expense) => {
+      const category = expense?.category || 'Others';
+      categoryTotals[category] = (categoryTotals[category] || 0) + (Number(expense?.amount) || 0);
+    });
+
+    appState.recurringExpenses.forEach((expense) => {
+      const category = expense?.category || 'Others';
+      categoryTotals[category] = (categoryTotals[category] || 0) + toMonthlyRecurringAmount(expense);
+    });
+
+    const pieLabels = Object.keys(categoryTotals);
+    const pieValues = Object.values(categoryTotals);
+    const pieColors = ['#1D4ED8', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6'];
+
+    if (expenseChartInstance) expenseChartInstance.destroy();
+    expenseChartInstance = new Chart(expenseCanvas, {
+      type: 'pie',
+      data: {
+        labels: pieLabels.length ? pieLabels : ['No Expenses'],
+        datasets: [{
+          data: pieValues.length ? pieValues : [1],
+          backgroundColor: pieLabels.length ? pieColors.slice(0, pieLabels.length) : ['#CBD5E1'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    if (comparisonChartInstance) comparisonChartInstance.destroy();
+    comparisonChartInstance = new Chart(comparisonCanvas, {
+      type: 'bar',
+      data: {
+        labels: ['Monthly Totals'],
+        datasets: [
+          {
+            label: 'Income',
+            data: [totals.monthlyIncome],
+            backgroundColor: '#1D4ED8'
+          },
+          {
+            label: 'Expenses',
+            data: [totals.totalExpenses],
+            backgroundColor: '#EF4444'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
   function renderDashboard() {
     const totals = calculateTotals();
 
@@ -381,6 +455,7 @@
 
     renderExpenses();
     renderRecurringExpenses();
+    renderCharts();
   }
 
   function detectIntent(message) {
@@ -734,12 +809,12 @@
     if (addExpenseBtn && expenseCategoryInput && expenseAmountInput) {
       addExpenseBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        const category = expenseCategoryInput.value.trim() || 'General';
+        const category = expenseCategoryInput.value || 'Others';
         const amount = Number(expenseAmountInput.value);
         if (!Number.isFinite(amount) || amount <= 0) return;
         appState.expenses.unshift({ id: crypto.randomUUID(), category, amount, ts: Date.now() });
         saveToStorage(STORAGE_KEYS.expenses, appState.expenses);
-        expenseCategoryInput.value = '';
+        expenseCategoryInput.value = 'Marketing';
         expenseAmountInput.value = '';
         renderDashboard();
       });
