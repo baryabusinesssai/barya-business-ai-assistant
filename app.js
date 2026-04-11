@@ -18,23 +18,17 @@
     businessPlanAiGenerated: 'barya_business_plan_ai_generated',
     startupReadinessTasks: 'barya_startup_readiness_tasks',
     activityLog: 'barya_activity_log',
-    taskManagerTasks: 'barya_task_manager_tasks'
+    taskManagerTasks: 'barya_task_manager_tasks',
+    languagePreference: 'barya_language_preference'
   };
 
-  const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
+  const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
   const LANGUAGE_CODES = {
     English: 'en',
-    Hindi: 'hi',
-    Korean: 'ko',
-    Japanese: 'ja',
-    Arabic: 'ar',
-    French: 'fr',
-    Spanish: 'es',
-    German: 'de',
-    Russian: 'ru',
-    Portuguese: 'pt'
+    Urdu: 'ur',
+    'Roman Urdu': 'en'
   };
-  const TRANSLATIONS = {
+  const translations = {
     English: {
       dashboard: 'Dashboard',
       aiAssistant: 'AI Chat',
@@ -42,6 +36,7 @@
       memory: 'Memory',
       profile: 'Profile',
       settings: 'Settings',
+      resources: 'Resources',
       save: 'Save',
       saveProfile: 'Save profile',
       saveImageNote: 'Save image context',
@@ -62,21 +57,119 @@
       totalExpenses: 'Total Expenses',
       netSavings: 'Net Savings',
       recentExpenses: 'Recent Expenses',
+      addExpense: 'Add Expense',
+      addRecurringExpense: 'Add Recurring Expense',
+      businessPlan: 'Business Plan',
       currency: 'Currency',
       goal: 'Goal',
+      languageSwitcher: 'Language Switcher',
+      languageHint: 'Choose your preferred app language.',
+      resourcesTitle: 'Resources Directory',
+      resourcesSubtitle: 'Helpful tools and communities for founders.',
+      visitSite: 'Visit Site',
+      shareProgress: 'Share my Progress',
+      shareText: 'I just finished my business plan for [Business Name] using Barya Business AI! 🚀',
+      shareOnX: 'Share on X',
+      shareOnLinkedIn: 'Share on LinkedIn',
+      shareOnWhatsApp: 'Share on WhatsApp',
       startConversation: 'Start conversation',
       saveSettings: 'Save',
       chatPlaceholder: 'Ask anything about your business...'
     },
-    Hindi: { dashboard: 'डैशबोर्ड', aiAssistant: 'एआई चैट', workspace: 'वर्कस्पेस', memory: 'मेमोरी', profile: 'प्रोफ़ाइल', save: 'सेव करें', saveProfile: 'प्रोफ़ाइल सेव करें', saveImageNote: 'इमेज कॉन्टेक्स्ट सेव करें', financeIntelligence: 'फाइनेंस इंटेलिजेंस', recommendations: 'सिफारिशें', businessGrowth: 'बिजनेस ग्रोथ', localFirstAI: 'लोकल-फर्स्ट एआई', founderWorkspace: 'फाउंडर वर्कस्पेस' },
-    Korean: { dashboard: '대시보드', aiAssistant: 'AI 채팅', workspace: '워크스페이스', memory: '메모리', profile: '프로필', save: '저장', saveProfile: '프로필 저장', saveImageNote: '이미지 컨텍스트 저장', financeIntelligence: '재무 인텔리전스', recommendations: '추천', businessGrowth: '비즈니스 성장', localFirstAI: '로컬 우선 AI', founderWorkspace: '창업자 워크스페이스' },
-    Japanese: { dashboard: 'ダッシュボード', aiAssistant: 'AIチャット', workspace: 'ワークスペース', memory: 'メモリー', profile: 'プロフィール', save: '保存', saveProfile: 'プロフィールを保存', saveImageNote: '画像コンテキストを保存', financeIntelligence: '財務インテリジェンス', recommendations: 'おすすめ', businessGrowth: 'ビジネス成長', localFirstAI: 'ローカルファーストAI', founderWorkspace: '創業者ワークスペース' },
-    Arabic: { dashboard: 'لوحة التحكم', aiAssistant: 'دردشة الذكاء الاصطناعي', workspace: 'مساحة العمل', memory: 'الذاكرة', profile: 'الملف الشخصي', save: 'حفظ', saveProfile: 'حفظ الملف الشخصي', saveImageNote: 'حفظ سياق الصورة', financeIntelligence: 'ذكاء مالي', recommendations: 'التوصيات', businessGrowth: 'نمو الأعمال', localFirstAI: 'ذكاء اصطناعي محلي أولاً', founderWorkspace: 'مساحة المؤسس' },
-    French: { dashboard: 'Tableau de bord', aiAssistant: 'Chat IA', workspace: 'Espace de travail', memory: 'Mémoire', profile: 'Profil', save: 'Enregistrer', saveProfile: 'Enregistrer le profil', saveImageNote: "Enregistrer le contexte d'image", financeIntelligence: 'Intelligence financière', recommendations: 'Recommandations', businessGrowth: "Croissance de l'entreprise", localFirstAI: "IA locale d'abord", founderWorkspace: 'Espace Fondateur' },
-    Spanish: { dashboard: 'Panel', aiAssistant: 'Chat IA', workspace: 'Espacio de trabajo', memory: 'Memoria', profile: 'Perfil', save: 'Guardar', saveProfile: 'Guardar perfil', saveImageNote: 'Guardar contexto de imagen', financeIntelligence: 'Inteligencia financiera', recommendations: 'Recomendaciones', businessGrowth: 'Crecimiento empresarial', localFirstAI: 'IA local', founderWorkspace: 'Espacio del fundador' },
-    German: { dashboard: 'Dashboard', aiAssistant: 'KI-Chat', workspace: 'Arbeitsbereich', memory: 'Speicher', profile: 'Profil', save: 'Speichern', saveProfile: 'Profil speichern', saveImageNote: 'Bildkontext speichern', financeIntelligence: 'Finanzintelligenz', recommendations: 'Empfehlungen', businessGrowth: 'Geschäftswachstum', localFirstAI: 'Lokale KI', founderWorkspace: 'Gründer-Arbeitsbereich' },
-    Russian: { dashboard: 'Панель управления', aiAssistant: 'AI-чат', workspace: 'Рабочая область', memory: 'Память', profile: 'Профиль', save: 'Сохранить', saveProfile: 'Сохранить профиль', saveImageNote: 'Сохранить контекст изображения', financeIntelligence: 'Финансовая аналитика', recommendations: 'Рекомендации', businessGrowth: 'Рост бизнеса', localFirstAI: 'Локальный ИИ', founderWorkspace: 'Рабочее место основателя' },
-    Portuguese: { dashboard: 'Painel', aiAssistant: 'Chat IA', workspace: 'Espaço de trabalho', memory: 'Memória', profile: 'Perfil', save: 'Salvar', saveProfile: 'Salvar perfil', saveImageNote: 'Salvar contexto da imagem', financeIntelligence: 'Inteligência financeira', recommendations: 'Recomendações', businessGrowth: 'Crescimento do negócio', localFirstAI: 'IA local', founderWorkspace: 'Espaço do fundador' }
+    Urdu: {
+      dashboard: 'ڈیش بورڈ',
+      aiAssistant: 'اے آئی چیٹ',
+      workspace: 'ورک اسپیس',
+      memory: 'یادداشت',
+      profile: 'پروفائل',
+      settings: 'سیٹنگز',
+      resources: 'وسائل',
+      save: 'محفوظ کریں',
+      saveProfile: 'پروفائل محفوظ کریں',
+      saveImageNote: 'تصویری نوٹ محفوظ کریں',
+      financeIntelligence: 'مالی ذہانت',
+      recommendations: 'تجاویز',
+      businessGrowth: 'کاروباری ترقی',
+      localFirstAI: 'لوکل فرسٹ اے آئی',
+      founderWorkspace: 'بانی ورک اسپیس',
+      language: 'زبان',
+      title: 'باریا بزنس اے آئی',
+      subtitle: 'بغیر بیرونی AI APIs کے پیشہ ورانہ لوکل فرسٹ بزنس انٹیلیجنس۔',
+      businessAdvisor: 'بزنس ایڈوائزر',
+      ideaGenerator: 'آئیڈیا جنریٹر',
+      fileIntelligence: 'فائل انٹیلیجنس',
+      imageContext: 'امیج کانٹیکسٹ',
+      monthlyOverview: 'ماہانہ جائزہ',
+      monthlyIncome: 'ماہانہ آمدنی',
+      totalExpenses: 'کل اخراجات',
+      netSavings: 'خالص بچت',
+      recentExpenses: 'حالیہ اخراجات',
+      addExpense: 'خرچ شامل کریں',
+      addRecurringExpense: 'دہرایا جانے والا خرچ شامل کریں',
+      businessPlan: 'بزنس پلان',
+      currency: 'کرنسی',
+      goal: 'ہدف',
+      languageSwitcher: 'زبان تبدیل کریں',
+      languageHint: 'ایپ کی پسندیدہ زبان منتخب کریں۔',
+      resourcesTitle: 'وسائل ڈائریکٹری',
+      resourcesSubtitle: 'بانیوں کے لیے مفید ٹولز اور کمیونٹیز۔',
+      visitSite: 'سائٹ کھولیں',
+      shareProgress: 'میری پیش رفت شیئر کریں',
+      shareText: 'میں نے [Business Name] کے لیے اپنا بزنس پلان باریا بزنس اے آئی سے مکمل کر لیا! 🚀',
+      shareOnX: 'X پر شیئر کریں',
+      shareOnLinkedIn: 'لنکڈاِن پر شیئر کریں',
+      shareOnWhatsApp: 'واٹس ایپ پر شیئر کریں',
+      startConversation: 'گفتگو شروع کریں',
+      saveSettings: 'محفوظ کریں',
+      chatPlaceholder: 'اپنے کاروبار کے بارے میں سوال پوچھیں...'
+    },
+    'Roman Urdu': {
+      dashboard: 'Dashboard',
+      aiAssistant: 'AI Chat',
+      workspace: 'Workspace',
+      memory: 'Memory',
+      profile: 'Profile',
+      settings: 'Settings',
+      resources: 'Resources',
+      save: 'Save',
+      saveProfile: 'Profile Save karein',
+      saveImageNote: 'Image context save karein',
+      financeIntelligence: 'Finance Intelligence',
+      recommendations: 'Recommendations',
+      businessGrowth: 'Business Growth',
+      localFirstAI: 'Local-first AI',
+      founderWorkspace: 'Founder Workspace',
+      language: 'Zabaan',
+      title: 'Barya Business AI',
+      subtitle: 'Professional local-first business intelligence bina external AI APIs ke.',
+      businessAdvisor: 'Business Advisor',
+      ideaGenerator: 'Idea Generator',
+      fileIntelligence: 'File Intelligence',
+      imageContext: 'Image Context',
+      monthlyOverview: 'Monthly Overview',
+      monthlyIncome: 'Monthly Income',
+      totalExpenses: 'Total Expenses',
+      netSavings: 'Net Savings',
+      recentExpenses: 'Recent Expenses',
+      addExpense: 'Expense Add karein',
+      addRecurringExpense: 'Recurring Expense Add karein',
+      businessPlan: 'Business Plan',
+      currency: 'Currency',
+      goal: 'Goal',
+      languageSwitcher: 'Language Switcher',
+      languageHint: 'Apni preferred app language choose karein.',
+      resourcesTitle: 'Resources Directory',
+      resourcesSubtitle: 'Founders ke liye useful tools aur communities.',
+      visitSite: 'Visit Site',
+      shareProgress: 'Share my Progress',
+      shareText: 'Maine [Business Name] ka business plan Barya Business AI se complete kar liya! 🚀',
+      shareOnX: 'X par Share karein',
+      shareOnLinkedIn: 'LinkedIn par Share karein',
+      shareOnWhatsApp: 'WhatsApp par Share karein',
+      startConversation: 'Conversation start karein',
+      saveSettings: 'Save',
+      chatPlaceholder: 'Apne business ke bare mein kuch bhi poochain...'
+    }
   };
   const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD'];
   const BUSINESS_PLAN_TEMPLATES = [
@@ -193,6 +286,41 @@
     { id: 'define-target-audience', label: 'Define your Target Audience', completed: false, source: 'default' },
     { id: 'set-monthly-budget', label: 'Set a Monthly Budget', completed: false, source: 'default' },
     { id: 'draft-first-business-plan', label: 'Draft 1st Business Plan', completed: false, source: 'default' }
+  ];
+
+  const RESOURCES_DIRECTORY = [
+    {
+      category: 'Free Logo Makers',
+      icon: '🎨',
+      items: [
+        { title: 'Canva Logo Maker', url: 'https://www.canva.com/create/logos/' },
+        { title: 'Looka', url: 'https://looka.com/logo-maker/' }
+      ]
+    },
+    {
+      category: 'Domain Registration',
+      icon: '🌐',
+      items: [
+        { title: 'Namecheap Domains', url: 'https://www.namecheap.com/domains/' },
+        { title: 'Cloudflare Registrar', url: 'https://www.cloudflare.com/products/registrar/' }
+      ]
+    },
+    {
+      category: 'Legal Templates',
+      icon: '⚖️',
+      items: [
+        { title: 'SBA Business Forms', url: 'https://www.sba.gov/business-guide/launch-your-business/register-your-business' },
+        { title: 'DocuSign Template Library', url: 'https://www.docusign.com/resources/templates' }
+      ]
+    },
+    {
+      category: 'Networking Groups',
+      icon: '🤝',
+      items: [
+        { title: 'Meetup Entrepreneurship', url: 'https://www.meetup.com/topics/entrepreneurship/' },
+        { title: 'LinkedIn Startup Groups', url: 'https://www.linkedin.com/groups/' }
+      ]
+    }
   ];
 
   const StorageService = {
@@ -362,8 +490,8 @@
   }
 
   function getTranslations(language) {
-    const selected = TRANSLATIONS[language] || TRANSLATIONS.English;
-    return { ...TRANSLATIONS.English, ...selected };
+    const selected = translations[language] || translations.English;
+    return { ...translations.English, ...selected };
   }
 
   function saveSettings() {
@@ -454,7 +582,9 @@
 
   function loadSettings() {
     const loaded = loadFromStorage(STORAGE_KEYS.settings, {});
-    const language = LANGUAGES.includes(loaded?.language) ? loaded.language : 'English';
+    const storedLanguage = StorageService.getItem(STORAGE_KEYS.languagePreference, '');
+    const candidateLanguage = storedLanguage || loaded?.language;
+    const language = LANGUAGES.includes(candidateLanguage) ? candidateLanguage : 'English';
     return {
       currency: loaded?.currency || 'USD',
       language,
@@ -462,11 +592,11 @@
     };
   }
 
-  function applyLanguage(language) {
+  function setLanguage(language) {
     const nextLanguage = LANGUAGES.includes(language) ? language : 'English';
     const t = getTranslations(nextLanguage);
     document.documentElement.lang = LANGUAGE_CODES[nextLanguage] || 'en';
-    document.documentElement.dir = nextLanguage === 'Arabic' ? 'rtl' : 'ltr';
+    document.documentElement.dir = nextLanguage === 'Urdu' ? 'rtl' : 'ltr';
 
     document.querySelectorAll('[data-i18n]').forEach((node) => {
       const key = node.getAttribute('data-i18n');
@@ -485,6 +615,9 @@
       if (!key || !t[key]) return;
       node.setAttribute('aria-label', t[key]);
     });
+
+    appState.settings.language = nextLanguage;
+    StorageService.setItem(STORAGE_KEYS.languagePreference, nextLanguage);
   }
 
   function toMonthlyRecurringAmount(item) {
@@ -897,6 +1030,51 @@
     renderExpenses();
     renderRecurringExpenses();
     renderCharts();
+  }
+
+  function renderResources() {
+    const resourcesList = $('resourcesList');
+    if (!resourcesList) return;
+    const t = getTranslations(appState.settings.language);
+    resourcesList.innerHTML = RESOURCES_DIRECTORY.map((group) => `
+      <div class="soft-card rounded-2xl p-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl" aria-hidden="true">${group.icon}</span>
+          <h3 class="font-semibold text-lg">${group.category}</h3>
+        </div>
+        <div class="mt-3 space-y-3">
+          ${group.items.map((resource) => `
+            <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3 flex items-center justify-between gap-3">
+              <p class="text-sm font-medium">${resource.title}</p>
+              <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3 py-2 text-xs font-semibold whitespace-nowrap">${t.visitSite}</a>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function getBusinessNameForShare() {
+    const inputValue = $('businessTypeInput')?.value?.trim();
+    if (inputValue) return inputValue;
+    return 'My Business';
+  }
+
+  function buildShareSnippet() {
+    const businessName = getBusinessNameForShare();
+    const t = getTranslations(appState.settings.language);
+    return (t.shareText || translations.English.shareText).replace('[Business Name]', businessName);
+  }
+
+  function shareProgress(network) {
+    const snippet = buildShareSnippet();
+    const encoded = encodeURIComponent(snippet);
+    const urls = {
+      x: `https://twitter.com/intent/tweet?text=${encoded}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&summary=${encoded}`,
+      whatsapp: `https://wa.me/?text=${encoded}`
+    };
+    if (urls[network]) window.open(urls[network], '_blank', 'noopener');
   }
 
   function getBiggestExpenseCategory() {
@@ -1357,10 +1535,11 @@
     if (settingsLanguageSelect) settingsLanguageSelect.value = appState.settings.language;
     if (currencySelect) currencySelect.value = appState.settings.currency;
     if (goalInput) goalInput.value = appState.settings.goal || '';
-    applyLanguage(appState.settings.language);
+    setLanguage(appState.settings.language);
 
     renderDashboard();
     renderAIChat();
+    renderResources();
   }
 
 
@@ -1379,6 +1558,9 @@
       renderBusinessPlanTemplates();
       renderBusinessPlanEditor();
       renderWhenNotToStartGuide();
+    }
+    if (tabName === 'resources') {
+      renderResources();
     }
   }
 
@@ -1621,6 +1803,23 @@
         showMainApp({ tab: 'dashboard', rememberStart: true });
       });
     }
+
+    const shareProgressBtn = $('shareProgressBtn');
+    const shareSnippetOutput = $('shareSnippetOutput');
+    if (shareProgressBtn && shareSnippetOutput) {
+      shareProgressBtn.addEventListener('click', () => {
+        const snippet = buildShareSnippet();
+        shareSnippetOutput.textContent = snippet;
+        $('shareActions')?.classList.remove('hidden');
+      });
+    }
+
+    const shareXBtn = $('shareXBtn');
+    const shareLinkedInBtn = $('shareLinkedInBtn');
+    const shareWhatsAppBtn = $('shareWhatsAppBtn');
+    if (shareXBtn) shareXBtn.addEventListener('click', () => shareProgress('x'));
+    if (shareLinkedInBtn) shareLinkedInBtn.addEventListener('click', () => shareProgress('linkedin'));
+    if (shareWhatsAppBtn) shareWhatsAppBtn.addEventListener('click', () => shareProgress('whatsapp'));
 
     const languageSelect = $('languageSelect');
     if (languageSelect) {
@@ -1865,6 +2064,15 @@
     window.startTour = startTour;
     window.exportToPDF = exportToPDF;
     window.globalSearch = globalSearch;
+    window.setLanguage = setLanguage;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch((error) => {
+          console.warn('Service worker registration failed:', error);
+        });
+      });
+    }
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');

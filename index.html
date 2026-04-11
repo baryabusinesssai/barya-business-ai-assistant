@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Barya Business AI</title>
   <meta name="description" content="Barya Business AI - a professional local-first business intelligence workspace without external AI APIs." />
+  <meta name="theme-color" content="#111827" />
+  <link rel="manifest" href="./manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -771,7 +773,8 @@
         <button data-tab="dashboard" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="dashboard">Dashboard</button>
         <button data-tab="workspace" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="workspace">Workspace</button>
         <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="memory">Memory</button>
-        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Business Planning</button>
+        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="businessPlan">Business Plan</button>
+        <button data-tab="resources" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="resources">Resources</button>
         <button data-tab="profile" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium" data-i18n="profile">Profile</button>
       </nav>
     </header>
@@ -805,6 +808,18 @@
           <div class="mt-4 flex flex-wrap items-center gap-3">
             <button id="downloadPdfBtn" type="button" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Download PDF Report</button>
             <p id="downloadPdfStatus" class="text-xs text-slate-400"></p>
+          </div>
+          <div class="soft-card rounded-2xl p-4 mt-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h3 class="font-semibold" data-i18n="shareProgress">Share my Progress</h3>
+              <button id="shareProgressBtn" type="button" class="rounded-xl bg-slate-700 hover:bg-slate-600 px-4 py-2 text-sm font-medium" data-i18n="shareProgress">Share my Progress</button>
+            </div>
+            <p id="shareSnippetOutput" class="text-sm text-slate-300 mt-3" data-i18n="shareText">I just finished my business plan for [Business Name] using Barya Business AI! 🚀</p>
+            <div id="shareActions" class="hidden mt-3 flex flex-wrap gap-2">
+              <button id="shareXBtn" type="button" class="rounded-lg bg-black px-3 py-2 text-xs font-semibold" data-i18n="shareOnX">Share on X</button>
+              <button id="shareLinkedInBtn" type="button" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold" data-i18n="shareOnLinkedIn">Share on LinkedIn</button>
+              <button id="shareWhatsAppBtn" type="button" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold" data-i18n="shareOnWhatsApp">Share on WhatsApp</button>
+            </div>
           </div>
 
           <div id="aiInsights" class="mt-4 space-y-2"></div>
@@ -952,6 +967,15 @@
             <p class="text-sm text-slate-400" data-i18n="financeIntelligence">Finance Intelligence</p>
             <p id="financeInsight" class="text-slate-300 text-sm leading-relaxed"></p>
           </div>
+        </article>
+      </section>
+
+      <section id="panel-resources" class="panel hidden">
+        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+          <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="resources">Resources</p>
+          <h2 class="font-semibold text-2xl mt-2" data-i18n="resourcesTitle">Resources Directory</h2>
+          <p class="text-slate-300 mt-2" data-i18n="resourcesSubtitle">Helpful tools and communities for founders.</p>
+          <div id="resourcesList" class="mt-5 grid md:grid-cols-2 gap-4"></div>
         </article>
       </section>
 
@@ -1124,7 +1148,8 @@
               <select id="currencySelect" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400"></select>
             </div>
             <div>
-              <label for="settingsLanguageSelect" class="text-sm text-slate-300" data-i18n="language">Language</label>
+              <label for="settingsLanguageSelect" class="text-sm text-slate-300" data-i18n="languageSwitcher">Language Switcher</label>
+              <p class="text-xs text-slate-400 mt-1" data-i18n="languageHint">Choose your preferred app language.</p>
               <select id="settingsLanguageSelect" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400"></select>
             </div>
             <div class="md:col-span-2">
