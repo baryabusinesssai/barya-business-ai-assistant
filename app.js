@@ -14,7 +14,8 @@
     theme: 'barya_theme',
     onboardingSeen: 'barya_onboarding_seen',
     businessCategory: 'barya_business_category',
-    netSavingsTrend: 'barya_net_savings_trend'
+    netSavingsTrend: 'barya_net_savings_trend',
+    businessPlanAiGenerated: 'barya_business_plan_ai_generated'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -166,7 +167,7 @@
     aiChatHistory: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
-    businessPlan: { selectedTemplateId: '', drafts: {} }
+    businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} }
   };
   let expenseChartInstance = null;
   let comparisonChartInstance = null;
@@ -575,10 +576,34 @@
     }
 
     generateAIInsights();
+    renderExecutiveSummary(totals);
 
     renderExpenses();
     renderRecurringExpenses();
     renderCharts();
+  }
+
+  function getBiggestExpenseCategory() {
+    const allExpenses = [
+      ...appState.expenses.map((entry) => ({ category: entry.category, monthlyAmount: Number(entry.amount) || 0 })),
+      ...appState.recurringExpenses.map((entry) => ({ category: entry.category, monthlyAmount: toMonthlyRecurringAmount(entry) }))
+    ];
+    const grouped = allExpenses.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + item.monthlyAmount;
+      return acc;
+    }, {});
+    const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+    return sorted.length ? { name: sorted[0][0], amount: sorted[0][1] } : { name: 'N/A', amount: 0 };
+  }
+
+  function renderExecutiveSummary(totals) {
+    const output = $('executiveSummaryText');
+    if (!output) return;
+    const biggest = getBiggestExpenseCategory();
+    const profitability = totals.netSavings >= 0 ? 'Profitable' : 'At Loss';
+    const savingsBuffer = Math.max(0, totals.netSavings);
+    const months = totals.totalExpenses > 0 ? (savingsBuffer / totals.totalExpenses) : 0;
+    output.textContent = `Your business is currently ${profitability}. Your biggest expense is ${biggest.name}. Based on your ${formatCurrency(savingsBuffer)} savings, you can sustain for ${months.toFixed(1)} months.`;
   }
 
   function detectIntent(message) {
@@ -634,7 +659,50 @@
     if (!targetField) return false;
     ensureBusinessPlanDraft(selectedTemplate.id);
     appState.businessPlan.drafts[selectedTemplate.id][targetField] = summaryText;
+    if (!appState.businessPlan.aiGenerated[selectedTemplate.id]) appState.businessPlan.aiGenerated[selectedTemplate.id] = {};
+    appState.businessPlan.aiGenerated[selectedTemplate.id][targetField] = true;
     return true;
+  }
+
+  function createSectionAIText(sectionName, idea) {
+    const cleanIdea = idea || 'business concept';
+    return `Based on the idea ${cleanIdea}, write a professional 2-sentence ${sectionName} for a business plan.`;
+  }
+
+  function generateSectionPlanText(sectionName, idea) {
+    const lower = sectionName.toLowerCase();
+    if (lower.includes('value proposition')) {
+      return `${idea} delivers a clear and measurable customer outcome by solving one urgent problem faster than traditional options. This value proposition positions the offer as practical, easy to adopt, and directly tied to customer ROI.`;
+    }
+    if (lower.includes('marketing')) {
+      return `The marketing strategy for ${idea} should prioritize one high-intent channel and publish focused proof-driven content for consistent lead flow. Campaign execution should combine clear calls-to-action with weekly conversion tracking to optimize budget performance.`;
+    }
+    return `${idea} should define ${sectionName.toLowerCase()} with clear priorities, measurable milestones, and accountable execution owners. This section should communicate professional clarity and demonstrate how the plan will drive sustainable growth.`;
+  }
+
+  function fillSectionWithAIMagic(sectionId) {
+    const selectedTemplate = getSelectedBusinessTemplate();
+    const status = $('businessPlanStatus');
+    if (!selectedTemplate) {
+      if (status) status.textContent = 'Select a template before using AI Magic.';
+      return;
+    }
+    const section = selectedTemplate.sections.find((item) => item.id === sectionId);
+    if (!section) return;
+    const idea = appState.ideaGeneratorHistory[0]?.topic || $('ideaGeneratorInput')?.value?.trim();
+    if (!idea) {
+      if (status) status.textContent = 'Please add a Business Idea in Idea Generator first.';
+      return;
+    }
+    ensureBusinessPlanDraft(selectedTemplate.id);
+    if (!appState.businessPlan.aiGenerated[selectedTemplate.id]) appState.businessPlan.aiGenerated[selectedTemplate.id] = {};
+    const aiPrompt = createSectionAIText(section.title, idea);
+    appState.businessPlan.drafts[selectedTemplate.id][section.id] = generateSectionPlanText(section.title, idea);
+    appState.businessPlan.aiGenerated[selectedTemplate.id][section.id] = true;
+    saveBusinessPlanState();
+    saveToStorage(STORAGE_KEYS.businessPlanAiGenerated, appState.businessPlan.aiGenerated);
+    renderBusinessPlanEditor();
+    if (status) status.textContent = `AI Magic completed for ${section.title}. Prompt used: ${aiPrompt}`;
   }
 
   function fillBusinessPlanFromAI() {
@@ -689,10 +757,12 @@
     saveToStorage(STORAGE_KEYS.netSavingsTrend, nextTrend);
   }
 
-  async function downloadDashboardPdfReport() {
+  async function exportToPDF(target = 'dashboard') {
     const status = $('downloadPdfStatus');
+    const planSection = $('planningTemplatesSection');
     const dashboardPanel = $('panel-dashboard');
-    if (!dashboardPanel) return;
+    const sourceElement = target === 'planning' ? planSection : dashboardPanel;
+    if (!sourceElement) return;
     if (status) status.textContent = 'Preparing report...';
 
     try {
@@ -700,7 +770,7 @@
         throw new Error('Missing PDF libraries');
       }
 
-      const canvas = await html2canvas(dashboardPanel, {
+      const canvas = await html2canvas(sourceElement, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true
@@ -714,22 +784,30 @@
       const margin = 10;
       const contentWidth = pageWidth - (margin * 2);
       const contentHeight = (canvas.height * contentWidth) / canvas.width;
+      const headerBlockHeight = 22;
       let remainingHeight = contentHeight;
-      let y = margin;
+      let y = margin + headerBlockHeight;
+      const reportDate = new Date().toLocaleDateString();
 
-      pdf.setFontSize(14);
-      pdf.text('Monthly Business Health Report', margin, 8);
+      pdf.setFontSize(16);
+      pdf.text('Barya Business Report', margin, margin + 2);
+      pdf.setFontSize(10);
+      pdf.text(`Date: ${reportDate}`, margin, margin + 8);
       pdf.addImage(imgData, 'PNG', margin, y, contentWidth, contentHeight);
-      remainingHeight -= (pageHeight - (margin * 2));
+      remainingHeight -= (pageHeight - (margin * 2) - headerBlockHeight);
 
       while (remainingHeight > 0) {
-        y = remainingHeight - contentHeight + margin;
+        y = remainingHeight - contentHeight + margin + headerBlockHeight;
         pdf.addPage('a4', 'p');
+        pdf.setFontSize(16);
+        pdf.text('Barya Business Report', margin, margin + 2);
+        pdf.setFontSize(10);
+        pdf.text(`Date: ${reportDate}`, margin, margin + 8);
         pdf.addImage(imgData, 'PNG', margin, y, contentWidth, contentHeight);
-        remainingHeight -= (pageHeight - (margin * 2));
+        remainingHeight -= (pageHeight - (margin * 2) - headerBlockHeight);
       }
 
-      pdf.save('Monthly Business Health Report.pdf');
+      pdf.save(`barya-${target}-report.pdf`);
       if (status) status.textContent = 'PDF report downloaded.';
     } catch (error) {
       if (status) status.textContent = 'Could not generate PDF report.';
@@ -815,6 +893,7 @@
     if (!selectedTemplate) return;
     ensureBusinessPlanDraft(selectedTemplate.id);
     saveToStorage(selectedTemplate.storageKey, appState.businessPlan.drafts[selectedTemplate.id]);
+    saveToStorage(STORAGE_KEYS.businessPlanAiGenerated, appState.businessPlan.aiGenerated);
   }
 
   function renderBusinessPlanTemplates() {
@@ -865,13 +944,17 @@
     header.textContent = `${selectedTemplate.title} — Editable Blocks`;
     if (helper) helper.textContent = selectedTemplate.description;
     status.textContent = 'Edit any box below. Your inputs stay editable and save locally.';
+    const aiMap = appState.businessPlan.aiGenerated[selectedTemplate.id] || {};
     form.innerHTML = selectedTemplate.sections.map((section) => `
       <label class="template-editor-block rounded-2xl p-4 flex flex-col gap-2">
-        <span class="text-xs uppercase tracking-[0.18em] text-slate-400">${section.title}</span>
+        <span class="flex items-center justify-between gap-2">
+          <span class="text-xs uppercase tracking-[0.18em] text-slate-400">${section.title}</span>
+          <button type="button" class="founder-btn ai-magic-btn" data-ai-section="${section.id}">✨ AI Magic</button>
+        </span>
         <textarea
           data-template-field="${section.id}"
           rows="6"
-          class="w-full rounded-xl p-3 text-sm leading-relaxed resize-y"
+          class="w-full rounded-xl p-3 text-sm leading-relaxed resize-y ${aiMap[section.id] ? 'ai-generated-field' : ''}"
           placeholder="${escapeHtml(section.placeholder)}"
         >${escapeHtml(draft[section.id] || '')}</textarea>
       </label>
@@ -1270,6 +1353,17 @@
         if (!sectionId || !selectedTemplate) return;
         ensureBusinessPlanDraft(selectedTemplate.id);
         appState.businessPlan.drafts[selectedTemplate.id][sectionId] = input.value;
+        if (!appState.businessPlan.aiGenerated[selectedTemplate.id]) appState.businessPlan.aiGenerated[selectedTemplate.id] = {};
+        appState.businessPlan.aiGenerated[selectedTemplate.id][sectionId] = false;
+        input.classList.remove('ai-generated-field');
+      });
+
+      businessPlanEditorForm.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-ai-section]');
+        if (!btn) return;
+        const sectionId = btn.getAttribute('data-ai-section');
+        if (!sectionId) return;
+        fillSectionWithAIMagic(sectionId);
       });
     }
 
@@ -1307,7 +1401,15 @@
     const downloadPdfBtn = $('downloadPdfBtn');
     if (downloadPdfBtn) {
       downloadPdfBtn.addEventListener('click', () => {
-        downloadDashboardPdfReport();
+        exportToPDF('dashboard');
+      });
+    }
+
+    const planningPdfBtn = $('planningPdfBtn');
+    if (planningPdfBtn) {
+      planningPdfBtn.addEventListener('click', () => {
+        setPlanningSection('templates');
+        exportToPDF('planning');
       });
     }
   }
@@ -1324,6 +1426,8 @@
       const saved = loadFromStorage(template.storageKey, {});
       appState.businessPlan.drafts[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
     });
+    const savedAiMap = loadFromStorage(STORAGE_KEYS.businessPlanAiGenerated, {});
+    appState.businessPlan.aiGenerated = typeof savedAiMap === 'object' && savedAiMap !== null ? savedAiMap : {};
   }
 
   function initSelects() {
@@ -1359,6 +1463,7 @@
     setPlanningSection('guides');
     applyTheme(localStorage.getItem(STORAGE_KEYS.theme) || 'light');
     window.startTour = startTour;
+    window.exportToPDF = exportToPDF;
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
