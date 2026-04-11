@@ -337,21 +337,40 @@
     renderRecurringExpenses();
   }
 
-  function buildLocalAIResponse(message) {
-    const text = message.toLowerCase();
-    const totals = calculateTotals();
+  function detectIntent(message) {
+    const text = String(message || '').toLowerCase();
+    const intentRules = [
+      { intent: 'idea', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start'] },
+      { intent: 'startup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture'] },
+      { intent: 'finance', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings'] },
+      { intent: 'marketing', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding'] },
+      { intent: 'planning', keywords: ['plan', 'planning', 'roadmap', 'strategy', 'goals', 'milestone', 'steps'] }
+    ];
 
-    if (text.includes('expense') || text.includes('budget')) {
-      return `Your current total monthly expenses are ${formatCurrency(totals.totalExpenses)}. Focus first on recurring costs for faster savings improvement.`;
+    const matched = intentRules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
+    return matched ? matched.intent : 'general';
+  }
+
+  function generateResponse(message) {
+    const intent = detectIntent(message);
+
+    if (intent === 'startup') {
+      return 'To start a business, first identify a real problem, define your target audience, create a simple solution, and test it with real users.';
     }
-    if (text.includes('income') || text.includes('sales')) {
-      return `Current monthly income is ${formatCurrency(totals.monthlyIncome)}. Try setting a weekly revenue target aligned to your monthly goal.`;
+    if (intent === 'idea') {
+      return 'You can start with a small service, digital product, or local solution. Focus on solving one clear problem.';
     }
-    if (text.includes('save') || text.includes('profit')) {
-      return `Net savings are ${formatCurrency(totals.netSavings)}. ${totals.netSavings < 0 ? 'Reduce non-essential spending and raise income in one channel this week.' : 'Great momentum—allocate part of savings to growth and part to reserve.'}`;
+    if (intent === 'finance') {
+      return 'Track your income and expenses, reduce unnecessary costs, and review your savings regularly.';
+    }
+    if (intent === 'marketing') {
+      return 'Start with one target audience, one message, and one platform like Instagram or WhatsApp.';
+    }
+    if (intent === 'planning') {
+      return 'Break your goal into small steps. Focus on one task at a time and track progress weekly.';
     }
 
-    return 'Action plan: 1) Track expenses daily, 2) Review recurring costs weekly, 3) Run one focused growth experiment each week.';
+    return 'I can help with business ideas, startup planning, finance, and marketing. Ask a clear question.';
   }
 
   function renderAIChat() {
@@ -707,7 +726,7 @@
         const message = chatInput.value.trim();
         if (!message) return;
         appState.aiChatHistory.push({ role: 'user', text: message, ts: Date.now() });
-        appState.aiChatHistory.push({ role: 'ai', text: buildLocalAIResponse(message), ts: Date.now() });
+        appState.aiChatHistory.push({ role: 'ai', text: generateResponse(message), ts: Date.now() });
         saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
         chatInput.value = '';
         renderAIChat();
