@@ -15,7 +15,8 @@
     onboardingSeen: 'barya_onboarding_seen',
     businessCategory: 'barya_business_category',
     netSavingsTrend: 'barya_net_savings_trend',
-    businessPlanAiGenerated: 'barya_business_plan_ai_generated'
+    businessPlanAiGenerated: 'barya_business_plan_ai_generated',
+    startupReadinessTasks: 'barya_startup_readiness_tasks'
   };
 
   const LANGUAGES = ['English', 'Hindi', 'Korean', 'Japanese', 'Arabic', 'French', 'Spanish', 'German', 'Russian', 'Portuguese'];
@@ -158,6 +159,33 @@
       }
     ]
   };
+  const BUSINESS_DICTIONARY = {
+    MVP: 'A basic version of a product built to test demand quickly.',
+    Scalability: 'How well a business can grow without breaking operations.',
+    Equity: 'Ownership percentage in a business.',
+    BurnRate: 'How quickly a startup spends cash each month.',
+    Runway: 'How many months a startup can operate before money runs out.',
+    CAC: 'Customer Acquisition Cost, or what you spend to get one customer.',
+    LTV: 'Lifetime Value, or total expected revenue from one customer.',
+    Pivot: 'A meaningful change in strategy based on market feedback.',
+    Bootstrapping: 'Building the company using your own revenue or savings.',
+    Churn: 'The rate at which customers stop using your product.',
+    Traction: 'Proof that the business is gaining users, revenue, or momentum.',
+    RevenueModel: 'The method the company uses to earn money.',
+    ProductMarketFit: 'When your product strongly matches a real market need.',
+    ValueProposition: 'The clear reason customers should choose your offer.',
+    ConversionRate: 'The percentage of visitors who take a desired action.',
+    GrossMargin: 'Revenue left after direct costs are removed.',
+    CashFlow: 'Money moving in and out of the business.',
+    Benchmark: 'A reference metric used to compare performance.',
+    KPI: 'Key Performance Indicator used to track important goals.',
+    SeedFunding: 'Early-stage investment used to start and grow a company.'
+  };
+  const STARTUP_READINESS_WEIGHTS = {
+    addedExpense: 20,
+    generatedIdea: 30,
+    completedPlanTemplate: 50
+  };
 
   let appState = {
     monthlyIncome: 0,
@@ -167,7 +195,8 @@
     aiChatHistory: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
-    businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} }
+    businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
+    readinessTasks: loadReadinessTasks()
   };
   let expenseChartInstance = null;
   let comparisonChartInstance = null;
@@ -197,6 +226,30 @@
   function saveToStorage(key, value) {
     const serializable = typeof value === 'string' || typeof value === 'number' ? value : JSON.stringify(value);
     localStorage.setItem(key, serializable);
+  }
+
+  function normalizeSearchText(value) {
+    return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  function highlightBusinessTerms(text) {
+    const escaped = escapeHTML(text);
+    const sortedTerms = Object.keys(BUSINESS_DICTIONARY).sort((a, b) => b.length - a.length);
+    return sortedTerms.reduce((output, term) => {
+      const definition = escapeHTML(BUSINESS_DICTIONARY[term]);
+      const prettyTerm = term.replace(/([a-z])([A-Z])/g, '$1 $2');
+      const termRegex = new RegExp(`\\b${prettyTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      return output.replace(termRegex, (match) => `<span class="business-term" data-definition="${definition}">${match}</span>`);
+    }, escaped);
+  }
+
+  function loadReadinessTasks() {
+    const saved = loadFromStorage(STORAGE_KEYS.startupReadinessTasks, {});
+    return {
+      addedExpense: Boolean(saved?.addedExpense),
+      generatedIdea: Boolean(saved?.generatedIdea),
+      completedPlanTemplate: Boolean(saved?.completedPlanTemplate)
+    };
   }
 
   function exportData() {
@@ -401,6 +454,131 @@
     };
   }
 
+  function calculateReadinessScore() {
+    return Object.entries(STARTUP_READINESS_WEIGHTS).reduce((sum, [task, points]) => {
+      return sum + (appState.readinessTasks?.[task] ? points : 0);
+    }, 0);
+  }
+
+  function markReadinessTaskCompleted(taskName) {
+    if (!Object.prototype.hasOwnProperty.call(STARTUP_READINESS_WEIGHTS, taskName)) return;
+    if (appState.readinessTasks[taskName]) return;
+    appState.readinessTasks[taskName] = true;
+    saveToStorage(STORAGE_KEYS.startupReadinessTasks, appState.readinessTasks);
+    renderReadinessScore();
+  }
+
+  function renderReadinessScore() {
+    const score = Math.min(100, calculateReadinessScore());
+    const progress = $('startupReadinessProgress');
+    const scoreText = $('startupReadinessValue');
+    const message = $('startupReadinessMessage');
+    if (progress) progress.style.width = `${score}%`;
+    if (scoreText) scoreText.textContent = `${score}%`;
+    if (message) {
+      message.textContent = score >= 100
+        ? 'You are almost ready to launch!'
+        : 'Complete key tasks to build launch readiness.';
+    }
+  }
+
+  function collectGlobalSearchResults(queryText) {
+    const term = normalizeSearchText(queryText);
+    if (!term) return [];
+    const results = [];
+
+    const guideEntries = [
+      { label: WHEN_NOT_TO_START_MODULE.title, content: `${WHEN_NOT_TO_START_MODULE.introduction} ${WHEN_NOT_TO_START_MODULE.finalTakeaway}`, anchorId: 'planningGuidesSection' },
+      ...WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => ({
+        label: item.title,
+        content: `${item.explanation} ${item.warningSign} ${item.whatToDo}`,
+        anchorId: `guide-flag-${index + 1}`
+      }))
+    ];
+    guideEntries.forEach((guide) => {
+      const haystack = normalizeSearchText(`${guide.label} ${guide.content}`);
+      if (haystack.includes(term)) {
+        results.push({ type: 'Startup Guide', title: guide.label, description: guide.content.slice(0, 120), anchorId: guide.anchorId });
+      }
+    });
+
+    BUSINESS_PLAN_TEMPLATES.forEach((template) => {
+      const draft = appState.businessPlan.drafts?.[template.id] || {};
+      const compiled = `${template.title} ${Object.values(draft).join(' ')}`;
+      if (normalizeSearchText(compiled).includes(term)) {
+        results.push({ type: 'Business Plan', title: template.title, description: 'Saved template draft', templateId: template.id });
+      }
+    });
+
+    const expenseCategories = new Set([
+      ...appState.expenses.map((entry) => entry.category),
+      ...appState.recurringExpenses.map((entry) => entry.category),
+      ...Array.from(document.querySelectorAll('#expenseCategoryInput option')).map((option) => option.value)
+    ]);
+    expenseCategories.forEach((category) => {
+      if (normalizeSearchText(category).includes(term)) {
+        results.push({ type: 'Expense Category', title: category, description: 'Saved in expense tracker', tab: 'dashboard' });
+      }
+    });
+
+    return results.slice(0, 14);
+  }
+
+  function openSearchResult(result) {
+    if (!result) return;
+    if (result.type === 'Startup Guide') {
+      showMainApp({ tab: 'planning', rememberStart: true });
+      setPlanningSection('guides');
+      setTimeout(() => document.getElementById(result.anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+      return;
+    }
+    if (result.type === 'Business Plan') {
+      showMainApp({ tab: 'planning', rememberStart: true });
+      setPlanningSection('templates');
+      if (result.templateId) selectBusinessTemplate(result.templateId);
+      document.getElementById('businessPlanning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    showMainApp({ tab: result.tab || 'dashboard', rememberStart: true });
+    document.getElementById('panel-dashboard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderGlobalSearchResults(results) {
+    const resultsBox = $('globalSearchResults');
+    if (!resultsBox) return;
+    if (!results.length) {
+      resultsBox.innerHTML = '<p class="px-3 py-2 text-sm text-slate-500">No matches found.</p>';
+      resultsBox.classList.remove('hidden');
+      return;
+    }
+    resultsBox.innerHTML = results.map((result, index) => `
+      <button type="button" class="global-search-result" data-search-index="${index}">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">${escapeHTML(result.type)}</p>
+        <p class="font-medium text-sm text-slate-800 mt-1">${escapeHTML(result.title)}</p>
+        ${result.description ? `<p class="text-xs text-slate-500 mt-1">${escapeHTML(result.description)}</p>` : ''}
+      </button>
+    `).join('');
+
+    const localResults = [...results];
+    resultsBox.querySelectorAll('[data-search-index]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const index = Number(button.getAttribute('data-search-index'));
+        openSearchResult(localResults[index]);
+        const input = $('globalSearchInput');
+        if (input) input.value = '';
+        resultsBox.classList.add('hidden');
+      });
+    });
+
+    resultsBox.classList.remove('hidden');
+  }
+
+  function globalSearch(query) {
+    const results = collectGlobalSearchResults(query);
+    renderGlobalSearchResults(results);
+    return results;
+  }
+
   function getBusinessCategoryFromStorage() {
     const knownCategoryKeys = [
       STORAGE_KEYS.businessCategory,
@@ -577,6 +755,7 @@
 
     generateAIInsights();
     renderExecutiveSummary(totals);
+    renderReadinessScore();
 
     renderExpenses();
     renderRecurringExpenses();
@@ -888,6 +1067,14 @@
     });
   }
 
+  function isBusinessPlanTemplateComplete(templateId) {
+    const template = BUSINESS_PLAN_TEMPLATES.find((item) => item.id === templateId);
+    if (!template) return false;
+    ensureBusinessPlanDraft(templateId);
+    const draft = appState.businessPlan.drafts[templateId] || {};
+    return template.sections.every((section) => String(draft[section.id] || '').trim().length > 0);
+  }
+
   function saveBusinessPlanState() {
     const selectedTemplate = getSelectedBusinessTemplate();
     if (!selectedTemplate) return;
@@ -985,17 +1172,17 @@
     if (!container) return;
 
     const redFlagCards = WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => `
-      <article class="learning-card">
+      <article class="learning-card" id="guide-flag-${index + 1}">
         <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Red Flag ${index + 1}</p>
-        <h3 class="text-lg font-semibold mt-1">${escapeHTML(item.title)}</h3>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(item.explanation)}</p>
+        <h3 class="text-lg font-semibold mt-1">${highlightBusinessTerms(item.title)}</h3>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(item.explanation)}</p>
         <div class="warning-box mt-3">
           <p class="text-xs uppercase tracking-[0.16em] text-amber-700 font-semibold">Warning Sign</p>
-          <p class="text-sm text-amber-900 mt-1">${escapeHTML(item.warningSign)}</p>
+          <p class="text-sm text-amber-900 mt-1">${highlightBusinessTerms(item.warningSign)}</p>
         </div>
         <div class="action-box mt-3">
           <p class="text-xs uppercase tracking-[0.16em] text-sky-700 font-semibold">What to Do</p>
-          <p class="text-sm text-sky-900 mt-1">${escapeHTML(item.whatToDo)}</p>
+          <p class="text-sm text-sky-900 mt-1">${highlightBusinessTerms(item.whatToDo)}</p>
         </div>
       </article>
     `).join('');
@@ -1003,12 +1190,12 @@
     container.innerHTML = `
       <article class="learning-card">
         <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Title</p>
-        <h2 class="text-2xl font-semibold mt-1">${escapeHTML(WHEN_NOT_TO_START_MODULE.title)}</h2>
+        <h2 class="text-2xl font-semibold mt-1">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.title)}</h2>
       </article>
 
       <article class="learning-card">
         <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Introduction</p>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(WHEN_NOT_TO_START_MODULE.introduction)}</p>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.introduction)}</p>
       </article>
 
       <section class="learning-module-grid">
@@ -1017,7 +1204,7 @@
 
       <article class="learning-card">
         <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Final Takeaway</p>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${escapeHTML(WHEN_NOT_TO_START_MODULE.finalTakeaway)}</p>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.finalTakeaway)}</p>
       </article>
 
     `;
@@ -1140,6 +1327,7 @@
         if (!Number.isFinite(amount) || amount <= 0) return;
         appState.expenses.unshift({ id: crypto.randomUUID(), category, amount, ts: Date.now() });
         saveToStorage(STORAGE_KEYS.expenses, appState.expenses);
+        markReadinessTaskCompleted('addedExpense');
         expenseCategoryInput.value = 'Marketing';
         expenseAmountInput.value = '';
         renderDashboard();
@@ -1220,6 +1408,7 @@
         appState.ideaGeneratorHistory.unshift({ topic, ideas, ts: Date.now() });
         appState.ideaGeneratorHistory = appState.ideaGeneratorHistory.slice(0, 20);
         saveToStorage(STORAGE_KEYS.ideaGeneratorHistory, appState.ideaGeneratorHistory);
+        markReadinessTaskCompleted('generatedIdea');
         ideaGeneratorInput.value = '';
         renderIdeaGenerator();
       });
@@ -1375,6 +1564,9 @@
         saveBusinessPlanState();
         const status = $('businessPlanStatus');
         if (status) status.textContent = `${selectedTemplate.title} saved locally.`;
+        if (isBusinessPlanTemplateComplete(selectedTemplate.id)) {
+          markReadinessTaskCompleted('completedPlanTemplate');
+        }
       });
     }
 
@@ -1412,6 +1604,31 @@
         exportToPDF('planning');
       });
     }
+
+    const globalSearchInput = $('globalSearchInput');
+    const globalSearchResults = $('globalSearchResults');
+    if (globalSearchInput && globalSearchResults) {
+      globalSearchInput.addEventListener('input', () => {
+        const query = globalSearchInput.value.trim();
+        if (!query) {
+          globalSearchResults.classList.add('hidden');
+          globalSearchResults.innerHTML = '';
+          return;
+        }
+        globalSearch(query);
+      });
+
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (
+          target instanceof HTMLElement &&
+          !globalSearchInput.contains(target) &&
+          !globalSearchResults.contains(target)
+        ) {
+          globalSearchResults.classList.add('hidden');
+        }
+      });
+    }
   }
 
   function hydrateState() {
@@ -1428,6 +1645,7 @@
     });
     const savedAiMap = loadFromStorage(STORAGE_KEYS.businessPlanAiGenerated, {});
     appState.businessPlan.aiGenerated = typeof savedAiMap === 'object' && savedAiMap !== null ? savedAiMap : {};
+    appState.readinessTasks = loadReadinessTasks();
   }
 
   function initSelects() {
@@ -1464,6 +1682,7 @@
     applyTheme(localStorage.getItem(STORAGE_KEYS.theme) || 'light');
     window.startTour = startTour;
     window.exportToPDF = exportToPDF;
+    window.globalSearch = globalSearch;
 
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
