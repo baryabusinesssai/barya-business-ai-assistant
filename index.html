@@ -7,6 +7,8 @@
   <meta name="description" content="Barya Business AI - a professional local-first business intelligence workspace without external AI APIs." />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
   <style>
     :root {
@@ -654,6 +656,12 @@
           </div>
 
           <div id="dashboardSummary" class="mt-5 text-slate-300"></div>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button id="downloadPdfBtn" type="button" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Download PDF Report</button>
+            <p id="downloadPdfStatus" class="text-xs text-slate-400"></p>
+          </div>
+
+          <div id="aiInsights" class="mt-4 space-y-2"></div>
 
           <div id="monthlyOverviewCard" class="soft-card rounded-2xl p-4 mt-4">
             <p class="text-sm text-slate-400 uppercase tracking-[0.2em]" data-i18n="monthlyOverview">Monthly Overview</p>
@@ -906,6 +914,7 @@
                   <p id="businessPlanTemplateHelper" class="text-sm text-slate-400 mt-2">Select a template</p>
                 </div>
                 <div class="editor-actions">
+                  <button id="businessPlanGenerateAIBtn" class="editor-btn editor-btn-primary" type="button">Generate with AI</button>
                   <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
                   <button id="businessPlanResetBtn" class="editor-btn editor-btn-secondary" type="button">Reset</button>
                 </div>
