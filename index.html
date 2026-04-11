@@ -3,15 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Barya Business AI</title>
-  <meta name="description" content="Barya Business AI - a professional local-first business intelligence workspace without external AI APIs." />
+  <title>Barya Business AI - Your Local-First Startup Partner</title>
+  <meta name="description" content="Build business plans, track finances, and get AI-powered strategy advice—all stored privately in your browser." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Barya Business AI - Your Local-First Startup Partner" />
+  <meta property="og:description" content="Build business plans, track finances, and get AI-powered strategy advice—all stored privately in your browser." />
+  <meta property="og:image" content="./og-preview.svg" />
+  <meta property="og:image:alt" content="Barya Business AI dashboard preview" />
+  <meta property="og:site_name" content="Barya Business AI" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Barya Business AI - Your Local-First Startup Partner" />
+  <meta name="twitter:description" content="Build business plans, track finances, and get AI-powered strategy advice—all stored privately in your browser." />
+  <meta name="twitter:image" content="./og-preview.svg" />
   <meta name="theme-color" content="#111827" />
   <link rel="manifest" href="./manifest.json" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+  <script defer src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -159,20 +170,6 @@
       background: #111827;
       border-color: #111827;
       color: #fff;
-    }
-    .template-card {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-    }
-    .template-card:hover {
-      transform: translateY(-1px);
-      border-color: #cbd5e1;
-      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-    }
-    .template-card.active {
-      border-color: #111827;
-      box-shadow: 0 0 0 1px #111827, 0 12px 26px rgba(15, 23, 42, 0.1);
     }
     .template-editor-block {
       background: #ffffff;
@@ -679,6 +676,18 @@
       color: #e0e7ff;
       font-size: 1.15rem;
     }
+    .site-footer {
+      margin: 2rem auto 1rem;
+      width: min(1100px, calc(100% - 1.5rem));
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      padding: 1.1rem 1rem;
+    }
+    .footer-links { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .5rem; }
+    .footer-links a { color: #334155; font-size: .9rem; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
 
   </style>
 </head>
@@ -736,7 +745,7 @@
         </div>
       </section>
 
-      <section class="mt-8">
+      <section class="mt-8" id="how-it-works">
         <h2 class="text-2xl font-semibold">How to Use</h2>
         <div class="grid md:grid-cols-4 gap-3 mt-4">
           <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 1</p><p class="font-semibold mt-1">Choose a feature</p><p class="text-sm text-slate-600 mt-1">Open Dashboard, Planning, or another tool.</p></article>
@@ -744,6 +753,10 @@
           <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 3</p><p class="font-semibold mt-1">Save your progress</p><p class="text-sm text-slate-600 mt-1">Keep plans and notes locally in your browser.</p></article>
           <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 4</p><p class="font-semibold mt-1">Improve your business</p><p class="text-sm text-slate-600 mt-1">Review results weekly and refine execution.</p></article>
         </div>
+      </section>
+      <section id="privacy-policy" class="mt-8 landing-step">
+        <h2 class="text-2xl font-semibold">Privacy Policy (Local Storage)</h2>
+        <p class="text-slate-600 mt-2 text-sm">Barya Business AI stores your plans, financial inputs, and settings in your browser Local Storage. Your data stays on your device unless you export and share it yourself.</p>
       </section>
     </section>
   </div>
@@ -1201,9 +1214,18 @@
       </section>
     </main>
   </div>
+  <footer class="site-footer">
+    <p class="text-sm font-semibold">Barya Business AI</p>
+    <div class="footer-links">
+      <a href="#how-it-works">How it Works</a>
+      <a href="#privacy-policy">Privacy Policy</a>
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer">Support / GitHub</a>
+    </div>
+    <p class="text-xs text-slate-500 mt-3">Built with ❤️ for Founders</p>
+  </footer>
   <button id="tourHelpBtn" class="tour-help-btn" type="button" title="Start onboarding tour">?</button>
 
-    <script src="app.js"></script>
+    <script defer src="app.js"></script>
 
 </body>
 </html>
