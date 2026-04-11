@@ -510,20 +510,33 @@
       {
         selector: '#dashboardTourTarget',
         tab: 'dashboard',
-        title: 'Dashboard (Finance)',
-        description: 'Track monthly income, expenses, and savings health here.'
+        title: 'Dashboard (Finance Overview)',
+        description: 'Start here to track income, expenses, and net savings so you always know where your money is going.'
+      },
+      {
+        selector: '#tabs',
+        tab: 'dashboard',
+        title: 'Navigation',
+        description: 'Use this navigation area to move between tools like AI Assistant, Dashboard, Memory, and Business Plan.'
       },
       {
         selector: '#aiAssistantTourTarget',
         tab: 'chat',
         title: 'AI Assistant',
-        description: 'Ask business strategy questions and get action-oriented suggestions.'
+        description: 'Ask for strategy advice, next-step recommendations, and quick decisions tailored to your business.'
       },
       {
-        selector: '#businessPlanningTourTarget',
+        selector: '#ideaGeneratorForm',
+        tab: 'memory',
+        title: 'Idea Generator',
+        description: 'Use Idea Generator to kick off a plan with concrete business ideas before building the full strategy.'
+      },
+      {
+        selector: '#planningTemplatesSection',
         tab: 'planning',
-        description: 'Use guides and templates to build your business plan.',
-        title: 'Business Planning'
+        planningSection: 'templates',
+        description: 'Finish here: choose a template, complete your plan, then use Export Plan PDF to generate your final document.',
+        title: 'Business Planning (Templates)'
       }
     ];
 
@@ -545,6 +558,9 @@
       }
 
       setActiveTab(step.tab);
+      if (step.planningSection && step.tab === 'planning') {
+        setPlanningSection(step.planningSection);
+      }
       const target = document.querySelector(step.selector);
       if (!target) return;
       target.classList.add('tour-highlight');
