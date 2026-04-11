@@ -171,6 +171,48 @@
       border-color: #111827;
       color: #fff;
     }
+    .guided-entry-wrap {
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      border: 1px solid #dbeafe;
+      box-shadow: 0 18px 32px rgba(30, 41, 59, 0.1);
+    }
+    .guided-entry-card {
+      text-align: left;
+      border-radius: 1.15rem;
+      padding: 1.2rem;
+      border: 1px solid #c7d2fe;
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .guided-entry-card:hover {
+      transform: translateY(-2px);
+      border-color: #818cf8;
+      box-shadow: 0 16px 28px rgba(99, 102, 241, 0.18);
+    }
+    .guided-entry-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.3rem;
+      height: 2.3rem;
+      border-radius: 0.8rem;
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      font-size: 1.15rem;
+    }
+    #appContainer.guided-focus-mode header,
+    #appContainer.guided-focus-mode #appSection > .panel:not(.hidden) > * {
+      opacity: 0.28;
+      transition: opacity .18s ease;
+    }
+    #appContainer.guided-focus-mode .guided-highlight,
+    #appContainer.guided-focus-mode .tabBtn.guided-highlight {
+      opacity: 1 !important;
+      position: relative;
+      z-index: 5;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28), 0 18px 26px rgba(30, 41, 59, 0.24);
+    }
     .template-editor-block {
       background: #ffffff;
       border: 1px solid var(--border-soft);
@@ -794,6 +836,32 @@
 
     <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel hidden grid xl:grid-cols-3 gap-4">
+        <article id="guidedEntrySection" class="guided-entry-wrap rounded-3xl p-6 xl:col-span-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em] text-indigo-500 font-semibold">Quick Start</p>
+              <h2 class="font-semibold text-2xl mt-2">Guided Entry</h2>
+              <p class="text-slate-500 mt-2">New here? Pick your next move and we will focus the right tool for you.</p>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4 mt-5">
+            <button type="button" class="guided-entry-card" data-guided-entry="idea">
+              <span class="guided-entry-icon" aria-hidden="true">💡</span>
+              <p class="text-lg font-semibold mt-3">I have a New Idea</p>
+              <p class="text-sm text-slate-500 mt-1">Open Idea Generator</p>
+            </button>
+            <button type="button" class="guided-entry-card" data-guided-entry="planning">
+              <span class="guided-entry-icon" aria-hidden="true">🧭</span>
+              <p class="text-lg font-semibold mt-3">I want to Plan my Strategy</p>
+              <p class="text-sm text-slate-500 mt-1">Open Business Plan</p>
+            </button>
+            <button type="button" class="guided-entry-card" data-guided-entry="finances">
+              <span class="guided-entry-icon" aria-hidden="true">💰</span>
+              <p class="text-lg font-semibold mt-3">I need to Track my Finances</p>
+              <p class="text-sm text-slate-500 mt-1">Open Dashboard Expenses</p>
+            </button>
+          </div>
+        </article>
         <article id="dashboardTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
@@ -939,7 +1007,7 @@
           </div>
         </article>
 
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article id="ideaGeneratorToolCard" class="glass rounded-3xl border border-indigo-800/30 p-6">
           <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
           <h3 class="font-semibold text-xl mt-2" data-i18n="businessAdvisor">Business Advisor</h3>
 
@@ -947,7 +1015,7 @@
           <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" data-i18n-placeholder="monthlyIncome" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
             <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium" data-i18n="save">Save</button>
 
-            <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
+            <div id="dashboardExpensesTool" class="border border-slate-700 rounded-2xl p-3 space-y-2">
               <p class="text-sm font-medium text-slate-200">One-time Expense</p>
               <select id="expenseCategoryInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
                 <option value="Marketing">Marketing</option>
