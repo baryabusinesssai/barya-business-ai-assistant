@@ -1646,16 +1646,17 @@
 
   function handleQuickNavigation(entryType) {
     const configs = {
-      strategy: {
+      build: {
         tab: 'planning',
         panelSelector: '#panel-planning'
       },
-      finances: {
+      track: {
         tab: 'dashboard',
         panelSelector: '#dashboardExpensesTool'
       },
-      assistant: {
+      grow: {
         tab: 'chat',
+        tabSelector: '#tabs [data-tab=\"chat\"]',
         panelSelector: '#aiAssistantTourTarget'
       }
     };

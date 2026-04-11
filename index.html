@@ -222,6 +222,18 @@
       border: 1px solid #e2e8f0;
       font-size: 1.25rem;
     }
+    #appContainer.guided-focus-mode header,
+    #appContainer.guided-focus-mode #appSection > .panel:not(.hidden) > * {
+      opacity: 0.28;
+      transition: opacity .18s ease;
+    }
+    #appContainer.guided-focus-mode .guided-highlight,
+    #appContainer.guided-focus-mode .tabBtn.guided-highlight {
+      opacity: 1 !important;
+      position: relative;
+      z-index: 5;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28), 0 18px 26px rgba(30, 41, 59, 0.24);
+    }
     .template-editor-block {
       background: #ffffff;
       border: 1px solid var(--border-soft);
@@ -968,26 +980,26 @@
         <article id="guidedEntrySection" class="get-started-hero rounded-3xl p-7 md:p-8 xl:col-span-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Quick Navigation</p>
-              <h2 class="font-semibold text-2xl mt-2 text-slate-900">Choose Your Path</h2>
-              <p class="text-slate-500 mt-2">Jump directly to the business tools you need most—no tours, no popups.</p>
+              <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Get Started</p>
+              <h2 class="font-semibold text-2xl mt-2 text-slate-900">Choose your next business move</h2>
+              <p class="text-slate-500 mt-2">Focus on execution with the core tools built for planning, tracking, and growth.</p>
             </div>
           </div>
           <div class="grid md:grid-cols-3 gap-5 mt-7">
-            <button type="button" class="get-started-card" data-quick-nav="strategy">
+            <button type="button" class="get-started-card" data-guided-entry="build">
               <span class="get-started-icon" aria-hidden="true">🧱</span>
-              <p class="text-lg font-semibold mt-4 text-slate-900">Build Strategy</p>
-              <p class="text-sm text-slate-500 mt-2">Open Business Plan</p>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Build: Plan your business</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Templates</p>
             </button>
-            <button type="button" class="get-started-card" data-quick-nav="finances">
+            <button type="button" class="get-started-card" data-guided-entry="track">
               <span class="get-started-icon" aria-hidden="true">📊</span>
-              <p class="text-lg font-semibold mt-4 text-slate-900">Track Finances</p>
-              <p class="text-sm text-slate-500 mt-2">Open Expenses</p>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Track: Manage finances</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Expenses</p>
             </button>
-            <button type="button" class="get-started-card" data-quick-nav="assistant">
+            <button type="button" class="get-started-card" data-guided-entry="grow">
               <span class="get-started-icon" aria-hidden="true">✨</span>
-              <p class="text-lg font-semibold mt-4 text-slate-900">AI Assistant</p>
-              <p class="text-sm text-slate-500 mt-2">Open Chat</p>
+              <p class="text-lg font-semibold mt-4 text-slate-900">Grow: Ask AI for strategy</p>
+              <p class="text-sm text-slate-500 mt-2">Go to Assistant</p>
             </button>
           </div>
         </article>
