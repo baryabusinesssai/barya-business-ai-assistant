@@ -1783,7 +1783,7 @@
     });
 
     const hashPage = window.location.hash.replace('#', '').trim();
-    const validPages = new Set(['home', 'features', 'pricing', 'blog', 'contact', 'privacy', 'terms']);
+    const validPages = new Set(['home', 'features', 'pricing', 'blog', 'feedback', 'contact', 'privacy', 'terms']);
     showPublicPage(validPages.has(hashPage) ? hashPage : 'home');
   }
 
@@ -1802,20 +1802,29 @@
       feedbackForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const feedbackName = $('feedbackName')?.value?.trim();
+        const feedbackCategory = $('feedbackCategory')?.value || 'General Feedback';
+        const feedbackRating = Number(document.querySelector('input[name="feedbackRating"]:checked')?.value);
         const feedbackMessage = $('feedbackMessage')?.value?.trim();
         const feedbackStatus = $('feedbackStatus');
-        if (!feedbackName || !feedbackMessage) return;
+        if (!feedbackMessage || !Number.isFinite(feedbackRating) || feedbackRating < 1 || feedbackRating > 5) {
+          if (feedbackStatus) {
+            feedbackStatus.textContent = 'Please add a rating (1-5) and feedback message before submitting.';
+          }
+          return;
+        }
         const saved = ensureArray(loadFromStorage(STORAGE_KEYS.feedbackEntries, []));
         saved.unshift({
           id: createId(),
-          name: feedbackName,
+          name: feedbackName || 'Anonymous',
+          category: feedbackCategory,
+          rating: feedbackRating,
           message: feedbackMessage,
           createdAt: new Date().toISOString()
         });
         saveToStorage(STORAGE_KEYS.feedbackEntries, saved.slice(0, 100));
         feedbackForm.reset();
         if (feedbackStatus) {
-          feedbackStatus.textContent = 'Feedback saved locally on this device.';
+          feedbackStatus.textContent = 'Thanks! Your feedback was saved locally on this device.';
         }
       });
     }
