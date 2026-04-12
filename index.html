@@ -1249,6 +1249,29 @@
       padding: .7rem 1rem;
       font-weight: 700;
     }
+    .contact-shell {
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .contact-card {
+      text-align: left;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.07);
+    }
+    .contact-meta {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0;
+      display: grid;
+      gap: .55rem;
+    }
+    .contact-status {
+      margin-top: .9rem;
+      font-size: .92rem;
+      color: #0f766e;
+      font-weight: 600;
+      min-height: 1.3rem;
+    }
     @media (max-width: 900px) {
       .public-hero { grid-template-columns: 1fr; }
       .public-navbar-inner { min-height: auto; padding: .8rem 0; align-items: flex-start; flex-direction: column; }
@@ -1378,23 +1401,27 @@
     </section>
 
     <section id="contact" class="public-page" data-public-page="contact" hidden>
-      <h2 class="public-section-title">Contact</h2>
-      <p class="muted mt-2">Email us at <a class="text-indigo-700 font-semibold" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></p>
-      <form id="contactForm" class="public-form public-panel mt-5">
-        <label class="block text-slate-900 font-medium">Name<input type="text" id="contactName" required /></label>
-        <label class="block text-slate-900 font-medium mt-3">Email<input type="email" id="contactEmail" required /></label>
-        <label class="block text-slate-900 font-medium mt-3">Message<textarea id="contactMessage" required></textarea></label>
-        <button type="submit" class="public-btn mt-4">Send Message</button>
-      </form>
-      <article class="public-panel mt-5">
-        <h3 class="text-xl font-semibold text-slate-900">Give Feedback</h3>
-        <form id="feedbackForm" class="public-form mt-3">
-          <label class="block text-slate-900 font-medium">Name<input id="feedbackName" type="text" required /></label>
-          <label class="block text-slate-900 font-medium mt-3">Feedback<textarea id="feedbackMessage" required></textarea></label>
-          <button type="submit" class="public-btn mt-4">Save Feedback</button>
+      <div class="contact-shell">
+        <h2 class="public-section-title">Contact Us</h2>
+        <p class="muted mt-2">We’re here to help you build and grow your business.</p>
+
+        <form id="contactForm" class="public-form public-panel contact-card mt-5">
+          <label class="block text-slate-900 font-medium">Name<input type="text" id="contactName" required /></label>
+          <label class="block text-slate-900 font-medium mt-3">Email<input type="email" id="contactEmail" required /></label>
+          <label class="block text-slate-900 font-medium mt-3">Message<textarea id="contactMessage" required></textarea></label>
+          <button type="submit" class="public-btn mt-4">Send Message</button>
+          <p id="contactStatus" class="contact-status" aria-live="polite"></p>
         </form>
-        <p id="feedbackStatus" class="muted text-sm mt-2"></p>
-      </article>
+
+        <article class="public-panel mt-5">
+          <h3 class="text-xl font-semibold text-slate-900">Email</h3>
+          <p class="mt-2"><a class="text-indigo-700 font-semibold" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></p>
+          <ul class="contact-meta muted text-sm">
+            <li><strong class="text-slate-700">Response time:</strong> 24-48 hours</li>
+            <li>Our friendly support team is happy to guide you with your questions.</li>
+          </ul>
+        </article>
+      </div>
     </section>
 
     <section id="privacy" class="public-page" data-public-page="privacy" hidden>
