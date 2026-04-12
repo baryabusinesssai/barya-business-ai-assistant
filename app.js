@@ -19,7 +19,8 @@
     startupReadinessTasks: 'barya_startup_readiness_tasks',
     activityLog: 'barya_activity_log',
     taskManagerTasks: 'barya_task_manager_tasks',
-    languagePreference: 'barya_language_preference'
+    languagePreference: 'barya_language_preference',
+    profile: 'barya_profile'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -175,7 +176,7 @@
   const BUSINESS_PLAN_TEMPLATES = [
     {
       id: 'coffee-shop',
-      storageKey: 'barya_template_coffee_shop',
+      storageKey: 'barya_template_lean',
       title: 'Coffee Shop',
       description: 'Local café planning structure focused on menu, footfall, and neighborhood retention.',
       sections: [
@@ -189,7 +190,7 @@
     },
     {
       id: 'saas-startup',
-      storageKey: 'barya_template_saas_startup',
+      storageKey: 'barya_template_marketing',
       title: 'SaaS Startup',
       description: 'Software planning template for product, acquisition, retention, and recurring revenue.',
       sections: [
@@ -203,7 +204,7 @@
     },
     {
       id: 'ecommerce-store',
-      storageKey: 'barya_template_ecommerce_store',
+      storageKey: 'barya_template_operations',
       title: 'E-commerce Store',
       description: 'Commerce template focused on niche, catalog strategy, logistics, and repeat sales.',
       sections: [
@@ -387,6 +388,7 @@
     aiMemoryEntries: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
+    profile: { businessType: '', audience: '', preference: '' },
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
     sampleDashboardMode: false,
     readinessTasks: loadReadinessTasks(),
@@ -397,6 +399,9 @@
   let comparisonChartInstance = null;
 
   const $ = (id) => document.getElementById(id);
+  const createId = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+    ? crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 
   function escapeHTML(value) {
     return String(value ?? '')
@@ -415,6 +420,28 @@
     } catch {
       if (typeof fallback === 'number') return Number(raw) || fallback;
       return fallback;
+    }
+  }
+
+  function ensureArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function ensureObject(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }
+
+  function setStatusText(elementId, message, variant = 'muted') {
+    const target = $(elementId);
+    if (!target) return;
+    target.textContent = message;
+    target.classList.remove('text-rose-400', 'text-rose-500', 'text-emerald-400', 'text-emerald-500', 'text-slate-400', 'text-slate-500');
+    if (variant === 'success') {
+      target.classList.add('text-emerald-400');
+    } else if (variant === 'error') {
+      target.classList.add('text-rose-400');
+    } else {
+      target.classList.add('text-slate-400');
     }
   }
 
@@ -1117,26 +1144,49 @@
     return matched ? matched.intent : 'general';
   }
 
+  function pickVariant(items, seedText) {
+    if (!items.length) return '';
+    const seed = Array.from(String(seedText || '')).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return items[seed % items.length];
+  }
+
   function generateResponse(message) {
-    const intent = detectIntent(message);
-
-    if (intent === 'startup') {
-      return 'To start a business, first identify a real problem, define your target audience, create a simple solution, and test it with real users.';
-    }
-    if (intent === 'idea') {
-      return 'You can start with a small service, digital product, or local solution. Focus on solving one clear problem.';
-    }
-    if (intent === 'finance') {
-      return 'Track your income and expenses, reduce unnecessary costs, and review your savings regularly.';
-    }
-    if (intent === 'marketing') {
-      return 'Start with one target audience, one message, and one platform like Instagram or WhatsApp.';
-    }
-    if (intent === 'planning') {
-      return 'Break your goal into small steps. Focus on one task at a time and track progress weekly.';
-    }
-
-    return 'I can help with business ideas, startup planning, finance, and marketing. Ask a clear question.';
+    const userMessage = String(message || '').trim();
+    const intent = detectIntent(userMessage);
+    const totals = calculateTotals();
+    const replies = {
+      startup: [
+        'Start lean: define one painful customer problem, build a tiny MVP, and run 10 quick validation calls before adding features.',
+        'Launch with one offer and one audience first. Use weekly feedback loops, then improve pricing and positioning.',
+        'Before full launch, validate demand with a landing page + paid test. Evidence should guide your first 30 days.'
+      ],
+      idea: [
+        'Pick an idea where you can deliver value fast and charge early. Prefer service-first models before heavy product builds.',
+        'Choose a problem you understand deeply, then test 2-3 lightweight offers and keep the one with strongest response.',
+        'Good ideas are specific: one audience, one pain, one outcome. Start narrow and expand after traction.'
+      ],
+      finance: [
+        `With ${formatCurrency(totals.netSavings)} net savings currently, focus on lowering fixed costs and protecting runway.`,
+        'Separate must-have vs optional expenses, then review spending weekly to keep burn rate predictable.',
+        'Use a simple rule: revenue first, then controlled spending. Track changes every week, not once a month.'
+      ],
+      marketing: [
+        'Choose one core channel, publish proof-driven content, and end every post with one clear next action.',
+        'Start with customer language: problem, outcome, proof. Keep campaigns simple and optimize from real responses.',
+        'Build a 30-day content + outreach sprint and measure leads, reply rate, and conversion weekly.'
+      ],
+      planning: [
+        'Break your plan into weekly milestones: customer validation, offer test, distribution, and KPI review.',
+        'Use a 90-day roadmap with clear owners, deadlines, and one measurable outcome per milestone.',
+        'Plan in sprints: define the next 7 days clearly, execute, review, and refine.'
+      ],
+      general: [
+        'I can help with startup planning, finance, marketing, and idea validation. Share your current goal for focused steps.',
+        'Tell me your business stage (idea, early traction, or growth), and I will suggest a practical action plan.',
+        'Ask me something specific like pricing, validation, or budgeting, and I’ll provide a step-by-step answer.'
+      ]
+    };
+    return pickVariant(replies[intent] || replies.general, `${intent}-${userMessage}`);
   }
 
   function generateBusinessPlanSummaries(businessIdea) {
@@ -1353,8 +1403,8 @@
     const cleanMessage = String(message || '').trim();
     if (!cleanMessage) return;
     appState.aiChatHistory.push({ role: 'user', text: cleanMessage, ts: Date.now() });
-    const promptWithContext = `${buildSystemInfoLine()} User message: ${cleanMessage}`;
-    appState.aiChatHistory.push({ role: 'ai', text: generateResponse(promptWithContext), ts: Date.now() });
+    const assistantText = generateResponse(cleanMessage);
+    appState.aiChatHistory.push({ role: 'ai', text: assistantText || 'Please share more detail so I can help effectively.', ts: Date.now() });
     saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
     renderAIChat();
   }
@@ -1578,12 +1628,18 @@
     const currencySelect = $('currencySelect');
     const goalInput = $('goalInput');
     const autoSyncToggle = $('autoSyncToggle');
+    const businessTypeInput = $('businessTypeInput');
+    const audienceInput = $('audienceInput');
+    const preferenceInput = $('preferenceInput');
 
     if (languageSelect) languageSelect.value = appState.settings.language;
     if (settingsLanguageSelect) settingsLanguageSelect.value = appState.settings.language;
     if (currencySelect) currencySelect.value = appState.settings.currency;
     if (goalInput) goalInput.value = appState.settings.goal || '';
     if (autoSyncToggle) autoSyncToggle.checked = Boolean(appState.settings.autoSyncCloud);
+    if (businessTypeInput) businessTypeInput.value = appState.profile.businessType || '';
+    if (audienceInput) audienceInput.value = appState.profile.audience || '';
+    if (preferenceInput) preferenceInput.value = appState.profile.preference || '';
     setLanguage(appState.settings.language);
 
     renderDashboard();
@@ -1754,6 +1810,7 @@
         appState.monthlyIncome = Number.isFinite(value) && value >= 0 ? value : 0;
         saveToStorage(STORAGE_KEYS.monthlyIncome, String(appState.monthlyIncome));
         renderDashboard();
+        setStatusText('financeInsight', 'Monthly income saved successfully.', 'success');
       });
     }
 
@@ -1766,14 +1823,18 @@
         appState.sampleDashboardMode = false;
         const category = expenseCategoryInput.value || 'Others';
         const amount = Number(expenseAmountInput.value);
-        if (!Number.isFinite(amount) || amount <= 0) return;
-        appState.expenses.unshift({ id: crypto.randomUUID(), category, amount, ts: Date.now() });
+        if (!Number.isFinite(amount) || amount <= 0) {
+          setStatusText('financeInsight', 'Please enter a valid one-time expense amount.', 'error');
+          return;
+        }
+        appState.expenses.unshift({ id: createId(), category, amount, ts: Date.now() });
         saveToStorage(STORAGE_KEYS.expenses, appState.expenses);
         logActivity(`Added a new expense (${category})`);
         markReadinessTaskCompleted('addedExpense');
         expenseCategoryInput.value = 'Marketing';
         expenseAmountInput.value = '';
         renderDashboard();
+        setStatusText('financeInsight', `Expense added for ${category}.`, 'success');
       });
     }
 
@@ -1787,13 +1848,17 @@
         appState.sampleDashboardMode = false;
         const category = recurringCategoryInput.value.trim() || 'Recurring';
         const amount = Number(recurringAmountInput.value);
-        if (!Number.isFinite(amount) || amount <= 0) return;
-        appState.recurringExpenses.unshift({ id: crypto.randomUUID(), category, amount, frequency: recurringFrequencyInput.value, ts: Date.now() });
+        if (!Number.isFinite(amount) || amount <= 0) {
+          setStatusText('financeInsight', 'Please enter a valid recurring expense amount.', 'error');
+          return;
+        }
+        appState.recurringExpenses.unshift({ id: createId(), category, amount, frequency: recurringFrequencyInput.value, ts: Date.now() });
         saveToStorage(STORAGE_KEYS.recurringExpenses, appState.recurringExpenses);
         recurringCategoryInput.value = '';
         recurringAmountInput.value = '';
         recurringFrequencyInput.value = 'monthly';
         renderDashboard();
+        setStatusText('financeInsight', `Recurring expense added (${category}).`, 'success');
       });
     }
 
@@ -1823,6 +1888,33 @@
         appState.aiChatHistory = [];
         saveToStorage(STORAGE_KEYS.aiChatHistory, appState.aiChatHistory);
         renderAIChat();
+      });
+    }
+    const voiceInputBtn = $('voiceInputBtn');
+    if (voiceInputBtn && chatInput) {
+      voiceInputBtn.addEventListener('click', () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          appState.aiChatHistory.push({ role: 'ai', text: 'Voice input is not supported in this browser.', ts: Date.now() });
+          renderAIChat();
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onresult = (evt) => {
+          const transcript = evt?.results?.[0]?.[0]?.transcript || '';
+          if (!transcript.trim()) return;
+          chatInput.value = transcript.trim();
+          submitAIMessage(chatInput.value);
+          chatInput.value = '';
+        };
+        recognition.onerror = () => {
+          appState.aiChatHistory.push({ role: 'ai', text: 'Could not capture voice input. Please try again.', ts: Date.now() });
+          renderAIChat();
+        };
+        recognition.start();
       });
     }
 
@@ -1859,6 +1951,7 @@
         markReadinessTaskCompleted('generatedIdea');
         ideaGeneratorInput.value = '';
         renderIdeaGenerator();
+        setStatusText('taskRoadmapStatus', `Generated 3 ideas for "${topic}".`, 'success');
       });
     }
 
@@ -1877,6 +1970,7 @@
         };
         saveSettings();
         applySettings();
+        setStatusText('cloudSyncStatus', 'Settings saved successfully.', 'success');
       });
     }
 
@@ -1884,10 +1978,13 @@
     if (profileForm) {
       profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        const businessTypeInput = $('businessTypeInput');
-        if (businessTypeInput?.value?.trim()) {
-          saveToStorage(STORAGE_KEYS.businessCategory, businessTypeInput.value.trim());
-        }
+        const businessType = $('businessTypeInput')?.value?.trim() || '';
+        const audience = $('audienceInput')?.value?.trim() || '';
+        const preference = $('preferenceInput')?.value?.trim() || '';
+        appState.profile = { businessType, audience, preference };
+        if (businessType) saveToStorage(STORAGE_KEYS.businessCategory, businessType);
+        saveToStorage(STORAGE_KEYS.profile, appState.profile);
+        setStatusText('cloudSyncStatus', 'Profile saved successfully.', 'success');
       });
     }
 
@@ -1928,7 +2025,7 @@
         const type = typeInput?.value?.trim() || 'General';
         const note = noteInput?.value?.trim();
         if (!note) return;
-        appState.aiMemoryEntries.push({ id: crypto.randomUUID(), type, note, ts: Date.now() });
+        appState.aiMemoryEntries.push({ id: createId(), type, note, ts: Date.now() });
         appState.aiMemoryEntries = appState.aiMemoryEntries.slice(-120);
         saveToStorage(STORAGE_KEYS.aiMemory, appState.aiMemoryEntries);
         if (typeInput) typeInput.value = '';
@@ -2186,19 +2283,25 @@
 
   function hydrateState() {
     appState.monthlyIncome = Number(StorageService.getItem(STORAGE_KEYS.monthlyIncome, 0) || 0);
-    appState.expenses = loadFromStorage(STORAGE_KEYS.expenses, []);
-    appState.recurringExpenses = loadFromStorage(STORAGE_KEYS.recurringExpenses, []);
+    appState.expenses = ensureArray(loadFromStorage(STORAGE_KEYS.expenses, []));
+    appState.recurringExpenses = ensureArray(loadFromStorage(STORAGE_KEYS.recurringExpenses, []));
     appState.settings = loadSettings();
-    appState.aiChatHistory = loadFromStorage(STORAGE_KEYS.aiChatHistory, []);
-    appState.aiMemoryEntries = loadFromStorage(STORAGE_KEYS.aiMemory, []);
-    appState.businessAdvisorHistory = loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []);
-    appState.ideaGeneratorHistory = loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []);
+    appState.aiChatHistory = ensureArray(loadFromStorage(STORAGE_KEYS.aiChatHistory, []));
+    appState.aiMemoryEntries = ensureArray(loadFromStorage(STORAGE_KEYS.aiMemory, []));
+    appState.businessAdvisorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []));
+    appState.ideaGeneratorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []));
+    appState.profile = {
+      businessType: '',
+      audience: '',
+      preference: '',
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.profile, {}))
+    };
     BUSINESS_PLAN_TEMPLATES.forEach((template) => {
       const saved = loadFromStorage(template.storageKey, {});
-      appState.businessPlan.drafts[template.id] = typeof saved === 'object' && saved !== null ? saved : {};
+      appState.businessPlan.drafts[template.id] = ensureObject(saved);
     });
     const savedAiMap = loadFromStorage(STORAGE_KEYS.businessPlanAiGenerated, {});
-    appState.businessPlan.aiGenerated = typeof savedAiMap === 'object' && savedAiMap !== null ? savedAiMap : {};
+    appState.businessPlan.aiGenerated = ensureObject(savedAiMap);
     appState.readinessTasks = loadReadinessTasks();
     appState.activityLog = loadActivityLog();
     appState.taskManagerTasks = loadTaskManagerTasks();
