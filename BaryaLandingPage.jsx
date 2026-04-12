@@ -117,8 +117,8 @@ const SectionHeader = ({ eyebrow, title, description }) => (
 
 export default function BaryaLandingPage() {
   const ctaLinks = {
-    startPlanning: "/onboarding",
-    getStarted: "/signup"
+    startPlanning: "#workspace",
+    getStarted: "#features"
   };
 
   return (
