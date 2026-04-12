@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 
+/**
+ * NOTE: This React component is not wired into the current runtime.
+ * The app shipped in this repository is rendered from index.html + app.js
+ * (plain JavaScript, no React bundler entrypoint).
+ */
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "Workspace", href: "#workspace" },
