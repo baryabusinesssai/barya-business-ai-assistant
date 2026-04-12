@@ -121,6 +121,10 @@ const SectionHeader = ({ eyebrow, title, description }) => (
 );
 
 export default function BaryaLandingPage() {
+  const ctaLinks = {
+    startPlanning: "/onboarding",
+    getStarted: "/signup"
+  };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -145,10 +149,13 @@ export default function BaryaLandingPage() {
           <div className="hidden items-center gap-2 sm:gap-3 lg:flex">
             <button className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 sm:inline-flex">
               Start Planning
-            </button>
-            <button className="rounded-xl bg-gradient-to-r from-blue-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:opacity-95 sm:px-5">
+            </a>
+            <a
+              href={ctaLinks.getStarted}
+              className="rounded-xl bg-gradient-to-r from-blue-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:opacity-95 sm:px-5"
+            >
               Get Started
-            </button>
+            </a>
           </div>
           <button
             type="button"
@@ -203,12 +210,18 @@ export default function BaryaLandingPage() {
               Barya helps founders turn ideas into clear plans, practical strategies, and trackable execution so every week moves your business forward.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <button className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800">
+              <a
+                href={ctaLinks.startPlanning}
+                className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800"
+              >
                 Start Planning
-              </button>
-              <button className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700">
+              </a>
+              <a
+                href={ctaLinks.getStarted}
+                className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
+              >
                 Get Started
-              </button>
+              </a>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {heroTrustCards.map((card) => (
@@ -502,7 +515,7 @@ export default function BaryaLandingPage() {
             </p>
             <button className="mt-9 rounded-2xl bg-white px-8 py-3.5 text-sm font-semibold text-slate-900 shadow-lg transition hover:bg-slate-100">
               Get Started
-            </button>
+            </a>
           </div>
         </section>
       </main>
