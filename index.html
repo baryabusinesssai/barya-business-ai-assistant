@@ -1116,17 +1116,81 @@
     }
 
     .site-footer {
-      margin: 2rem auto 1rem;
-      width: min(1100px, calc(100% - 1.5rem));
+      margin: 2.4rem auto 1.2rem;
+      width: min(1120px, calc(100% - 1.5rem));
       background: #ffffff;
-      border: 1px solid var(--border-soft);
+      border-top: 1px solid #e2e8f0;
       border-radius: 1rem;
-      box-shadow: 0 8px 20px rgba(15,23,42,.06);
-      padding: 1.1rem 1rem;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      padding: 2rem 1.2rem 1.2rem;
     }
-    .footer-links { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .5rem; }
-    .footer-links a { color: #334155; font-size: .9rem; text-decoration: none; }
-    .footer-links a:hover { text-decoration: underline; }
+    .site-footer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .footer-brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .footer-brand-tagline {
+      margin-top: 0.65rem;
+      max-width: 36ch;
+      color: #475569;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+    .footer-column-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .footer-links {
+      display: grid;
+      gap: 0.58rem;
+      margin-top: 0.65rem;
+    }
+    .footer-links a {
+      color: #334155;
+      font-size: 0.92rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color .16s ease;
+    }
+    .footer-links a:hover {
+      color: #0f172a;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .site-footer-bottom {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-footer-bottom p {
+      margin: 0;
+      font-size: .82rem;
+      color: #64748b;
+    }
+    @media (max-width: 900px) {
+      .site-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+      .site-footer {
+        padding-top: 1.4rem;
+      }
+    }
     .trust-badges {
       position: fixed;
       left: 1rem;
@@ -1553,13 +1617,44 @@
     </section>
 
     <footer id="landingFooter" class="site-footer landing-only">
-      <p class="text-sm font-semibold text-slate-900">Barya’s</p>
-      <div class="footer-links">
-        <a href="#privacy" data-public-nav="privacy">Privacy Policy</a>
-        <a href="#terms" data-public-nav="terms">Terms of Service</a>
-        <a href="#contact" data-public-nav="contact">Contact</a>
+      <div class="site-footer-grid">
+        <section>
+          <h2 class="footer-brand-title">Barya</h2>
+          <p class="footer-brand-tagline">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
+        </section>
+
+        <section>
+          <h3 class="footer-column-title">Product</h3>
+          <nav class="footer-links" aria-label="Product links">
+            <a href="#features" data-public-nav="features">Product</a>
+            <a href="#home" data-public-nav="home">How it Works</a>
+            <a href="#features" data-public-nav="features">Features</a>
+            <a href="#features" data-public-nav="features">Templates</a>
+          </nav>
+        </section>
+
+        <section>
+          <h3 class="footer-column-title">Company</h3>
+          <nav class="footer-links" aria-label="Company links">
+            <a href="#home" data-public-nav="home">Story</a>
+            <a href="#privacy" data-public-nav="privacy">Privacy Policy</a>
+            <a href="#contact" data-public-nav="contact">Contact</a>
+          </nav>
+        </section>
+
+        <section>
+          <h3 class="footer-column-title">Resources</h3>
+          <nav class="footer-links" aria-label="Resources links">
+            <a href="#features" data-public-nav="features">Guides</a>
+            <a href="#blog" data-public-nav="blog">Blog</a>
+            <a href="#features" data-public-nav="features">Startup Checklist</a>
+          </nav>
+        </section>
       </div>
-      <p class="text-xs text-slate-500 mt-3">Professional local-first SaaS experience.</p>
+      <div class="site-footer-bottom">
+        <p>© 2024 Barya Labs. All rights reserved.</p>
+        <p>Built with love for founders by a fellow founder.</p>
+      </div>
     </footer>
   </div>
 
