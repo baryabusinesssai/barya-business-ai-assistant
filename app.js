@@ -21,7 +21,8 @@
     taskManagerTasks: 'barya_task_manager_tasks',
     languagePreference: 'barya_language_preference',
     profile: 'barya_profile',
-    feedbackEntries: 'barya_feedback_entries'
+    feedbackEntries: 'barya_feedback_entries',
+    contactMessages: 'barya_contact_messages'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -1792,8 +1793,26 @@
     if (contactForm) {
       contactForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        alert('Thanks! Your message has been received.');
+        const contactName = $('contactName')?.value?.trim();
+        const contactEmail = $('contactEmail')?.value?.trim();
+        const contactMessage = $('contactMessage')?.value?.trim();
+        const contactStatus = $('contactStatus');
+        if (!contactName || !contactEmail || !contactMessage) return;
+
+        const savedMessages = ensureArray(loadFromStorage(STORAGE_KEYS.contactMessages, []));
+        savedMessages.unshift({
+          id: createId(),
+          name: contactName,
+          email: contactEmail,
+          message: contactMessage,
+          createdAt: new Date().toISOString()
+        });
+        saveToStorage(STORAGE_KEYS.contactMessages, savedMessages.slice(0, 250));
+
         contactForm.reset();
+        if (contactStatus) {
+          contactStatus.textContent = 'Thank you! Your message has been saved. We will respond within 24-48 hours.';
+        }
       });
     }
 
