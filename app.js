@@ -2044,13 +2044,18 @@
       });
     }
 
+    const handleEnterWorkspace = (event) => {
+      event.preventDefault();
+      clearGuidedFocus();
+      showMainApp({ tab: 'dashboard', rememberStart: true });
+    };
     const enterWorkspaceBtn = $('enterWorkspaceBtn');
     if (enterWorkspaceBtn) {
-      enterWorkspaceBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        clearGuidedFocus();
-        showMainApp({ tab: 'dashboard', rememberStart: true });
-      });
+      enterWorkspaceBtn.addEventListener('click', handleEnterWorkspace);
+    }
+    const landingBottomEnterBtn = $('landingBottomEnterBtn');
+    if (landingBottomEnterBtn) {
+      landingBottomEnterBtn.addEventListener('click', handleEnterWorkspace);
     }
     const viewSampleDashboardBtn = $('viewSampleDashboardBtn');
     if (viewSampleDashboardBtn) {
