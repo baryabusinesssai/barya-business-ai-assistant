@@ -2439,15 +2439,6 @@
     window.exportToPDF = exportToPDF;
     window.globalSearch = globalSearch;
     window.setLanguage = setLanguage;
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch((error) => {
-          console.warn('Service worker registration failed:', error);
-        });
-      });
-    }
-
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
 
