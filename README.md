@@ -10,6 +10,8 @@ The page users actually see is rendered by **`index.html` + `app.js`**.
 `BaryaLandingPage.jsx` is currently an unmounted React draft and is **not imported or executed** by the running app.
 If edits to `BaryaLandingPage.jsx` appear ignored, edit `index.html` (landing markup) and `app.js` (behavior/state) instead.
 
+Legacy duplicate frontend files (`script.js` and `styles.css`) were removed because they were not linked from `index.html` and were not part of the live GitHub Pages runtime.
+
 ## Backend choice (for this MVP)
 
 This project now uses **Node.js + Express + a JSON file datastore** (`backend/data/store.json`).
@@ -37,18 +39,15 @@ API endpoints:
 
 ## What remains on the frontend
 
-- The existing UI structure and styling (`index.html`, `styles.css`) remain unchanged.
+- The existing UI structure and styling are defined in `index.html` (inline CSS + markup).
 - Form handling, dashboard rendering, tab behavior, and beginner guidance logic are currently implemented in `app.js`.
 - A fallback is included: if the backend is unavailable, the app still works with browser `localStorage`.
 
 ## Files
 
-- `index.html` – page layout, tabs, forms
-- `styles.css` – responsive styling
-- `app.js` – frontend logic + localStorage-first app behavior
-- `backend/server.js` – Express API + static file server
-- `backend/data/store.json` – simple backend datastore
-- `package.json` – Node scripts and dependencies
+- `index.html` – live page layout, tabs, forms, and inline styling
+- `app.js` – live frontend logic + localStorage-first app behavior
+- `BaryaLandingPage.jsx` – non-live React draft (not mounted)
 
 ## Run locally
 

@@ -1,10 +1,8 @@
-const CACHE_NAME = 'barya-cache-v2';
+const CACHE_NAME = 'barya-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
-  './styles.css',
-  './script.js',
   './manifest.json',
   './pwa-icon.svg'
 ];
