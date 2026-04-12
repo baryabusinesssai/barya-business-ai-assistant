@@ -2,6 +2,14 @@
 
 A beginner-friendly MVP for **Barya Business AI Assistant**: a simple responsive finance tracker built with plain HTML, CSS, JavaScript, and a lightweight Node.js backend.
 
+
+## Important runtime note
+
+The page users actually see is rendered by **`index.html` + `app.js`**.
+
+`BaryaLandingPage.jsx` is currently an unmounted React draft and is **not imported or executed** by the running app.
+If edits to `BaryaLandingPage.jsx` appear ignored, edit `index.html` (landing markup) and `app.js` (behavior/state) instead.
+
 ## Backend choice (for this MVP)
 
 This project now uses **Node.js + Express + a JSON file datastore** (`backend/data/store.json`).
@@ -30,14 +38,14 @@ API endpoints:
 ## What remains on the frontend
 
 - The existing UI structure and styling (`index.html`, `styles.css`) remain unchanged.
-- Form handling, dashboard rendering, tab behavior, and beginner guidance logic remain in `script.js`.
+- Form handling, dashboard rendering, tab behavior, and beginner guidance logic are currently implemented in `app.js`.
 - A fallback is included: if the backend is unavailable, the app still works with browser `localStorage`.
 
 ## Files
 
 - `index.html` – page layout, tabs, forms
 - `styles.css` – responsive styling
-- `script.js` – frontend logic + backend/localStorage fallback
+- `app.js` – frontend logic + localStorage-first app behavior
 - `backend/server.js` – Express API + static file server
 - `backend/data/store.json` – simple backend datastore
 - `package.json` – Node scripts and dependencies
