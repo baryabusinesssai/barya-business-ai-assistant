@@ -20,7 +20,8 @@
     activityLog: 'barya_activity_log',
     taskManagerTasks: 'barya_task_manager_tasks',
     languagePreference: 'barya_language_preference',
-    profile: 'barya_profile'
+    profile: 'barya_profile',
+    feedbackEntries: 'barya_feedback_entries'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -1755,6 +1756,71 @@
     if (globalSearchShell) globalSearchShell.style.display = 'none';
   }
 
+  function showPublicPage(pageName = 'home') {
+    const pages = document.querySelectorAll('[data-public-page]');
+    pages.forEach((page) => {
+      const isActive = page.getAttribute('data-public-page') === pageName;
+      if (isActive) {
+        page.removeAttribute('hidden');
+      } else {
+        page.setAttribute('hidden', 'hidden');
+      }
+    });
+  }
+
+  function initPublicNavigation() {
+    document.querySelectorAll('[data-public-nav]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const pageName = link.getAttribute('data-public-nav');
+        if (!pageName) return;
+        event.preventDefault();
+        showPublicPage(pageName);
+        if (window.location.hash !== `#${pageName}`) {
+          history.replaceState(null, '', `#${pageName}`);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    const hashPage = window.location.hash.replace('#', '').trim();
+    const validPages = new Set(['home', 'features', 'pricing', 'blog', 'contact', 'privacy', 'terms']);
+    showPublicPage(validPages.has(hashPage) ? hashPage : 'home');
+  }
+
+  function initPublicForms() {
+    const contactForm = $('contactForm');
+    if (contactForm) {
+      contactForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        alert('Thanks! Your message has been received.');
+        contactForm.reset();
+      });
+    }
+
+    const feedbackForm = $('feedbackForm');
+    if (feedbackForm) {
+      feedbackForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const feedbackName = $('feedbackName')?.value?.trim();
+        const feedbackMessage = $('feedbackMessage')?.value?.trim();
+        const feedbackStatus = $('feedbackStatus');
+        if (!feedbackName || !feedbackMessage) return;
+        const saved = ensureArray(loadFromStorage(STORAGE_KEYS.feedbackEntries, []));
+        saved.unshift({
+          id: createId(),
+          name: feedbackName,
+          message: feedbackMessage,
+          createdAt: new Date().toISOString()
+        });
+        saveToStorage(STORAGE_KEYS.feedbackEntries, saved.slice(0, 100));
+        feedbackForm.reset();
+        if (feedbackStatus) {
+          feedbackStatus.textContent = 'Feedback saved locally on this device.';
+        }
+      });
+    }
+  }
+
   function initTabs() {
     const tabButtons = document.querySelectorAll('#tabs [data-tab]');
     tabButtons.forEach((btn) => {
@@ -2049,14 +2115,9 @@
       clearGuidedFocus();
       showMainApp({ tab: 'dashboard', rememberStart: true });
     };
-    const enterWorkspaceBtn = $('enterWorkspaceBtn');
-    if (enterWorkspaceBtn) {
-      enterWorkspaceBtn.addEventListener('click', handleEnterWorkspace);
-    }
-    const landingBottomEnterBtn = $('landingBottomEnterBtn');
-    if (landingBottomEnterBtn) {
-      landingBottomEnterBtn.addEventListener('click', handleEnterWorkspace);
-    }
+    document.querySelectorAll('[data-enter-app]').forEach((button) => {
+      button.addEventListener('click', handleEnterWorkspace);
+    });
     const viewSampleDashboardBtn = $('viewSampleDashboardBtn');
     if (viewSampleDashboardBtn) {
       viewSampleDashboardBtn.addEventListener('click', () => {
@@ -2333,6 +2394,8 @@
     initSelects();
     initTabs();
     initPlanningSections();
+    initPublicNavigation();
+    initPublicForms();
     initControls();
     applySettings();
     renderDashboard();

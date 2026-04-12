@@ -1170,163 +1170,256 @@
       }
     }
 
+    .public-navbar {
+      position: fixed;
+      top: 0;
+      inset-inline: 0;
+      z-index: 1300;
+      border-bottom: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+    }
+    .public-navbar-inner {
+      width: min(1120px, calc(100% - 1.5rem));
+      margin: 0 auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .public-nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .8rem;
+    }
+    .public-nav-links a {
+      color: #334155;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .92rem;
+    }
+    .public-nav-links a:hover { color: #0f172a; }
+    .public-enter-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .58rem 1rem;
+      border-radius: .75rem;
+      background: #111827;
+      color: #fff;
+      border: 1px solid #111827;
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+    .public-page {
+      margin: 0 auto;
+      width: min(1120px, calc(100% - 1.5rem));
+      padding: 2rem 0;
+    }
+    .public-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.3rem; }
+    .public-grid { display: grid; gap: 1rem; }
+    .public-card { border: 1px solid #e2e8f0; border-radius: .9rem; padding: 1rem; background: #fff; }
+    .public-section-title { font-size: 1.75rem; font-weight: 700; color: #0f172a; }
+    .public-page[hidden] { display: none !important; }
+    .public-hero {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1.2fr .8fr;
+      align-items: center;
+    }
+    .muted { color: #64748b; }
+    .public-form input, .public-form textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: .75rem;
+      padding: .72rem .82rem;
+      margin-top: .4rem;
+      background: #fff;
+      color: #0f172a;
+    }
+    .public-form textarea { min-height: 120px; resize: vertical; }
+    .public-btn {
+      border: 1px solid #111827;
+      background: #111827;
+      color: #fff;
+      border-radius: .75rem;
+      padding: .7rem 1rem;
+      font-weight: 700;
+    }
+    @media (max-width: 900px) {
+      .public-hero { grid-template-columns: 1fr; }
+      .public-navbar-inner { min-height: auto; padding: .8rem 0; align-items: flex-start; flex-direction: column; }
+      .public-nav-links { width: 100%; }
+    }
+
   </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
-  <div id="globalSearchShell" class="global-search-shell">
+  <nav id="publicNavbar" class="public-navbar landing-only" aria-label="Main navigation">
+    <div class="public-navbar-inner">
+      <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya’s</a>
+      <div class="public-nav-links">
+        <a href="#home" data-public-nav="home">Home</a>
+        <a href="#features" data-public-nav="features">Features</a>
+        <a href="#pricing" data-public-nav="pricing">Pricing</a>
+        <a href="#blog" data-public-nav="blog">Blog</a>
+        <a href="#contact" data-public-nav="contact">Contact</a>
+        <a href="#app" class="public-enter-btn" data-enter-app>Enter App</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="globalSearchShell" class="global-search-shell" style="display:none;">
     <div class="global-search-box">
       <span aria-hidden="true">🔍</span>
       <input id="globalSearchInput" class="global-search-input" type="text" placeholder="Search tools, guides, or your saved data..." autocomplete="off" />
     </div>
     <div id="globalSearchResults" class="global-search-results hidden"></div>
   </div>
-  <div id="landingPageContainer" class="app-view is-visible max-w-6xl mx-auto px-4 py-6">
-
-    <section id="landingPage" class="landing-hero">
-      <div class="landing-hero-top">
-        <div class="landing-headline">
-          <p class="landing-eyebrow">Business Growth Platform</p>
-          <h1 class="text-4xl md:text-6xl font-semibold tracking-tight mt-4">Build a business you can actually run with confidence.</h1>
-          <p class="text-slate-600 text-base md:text-lg mt-4 leading-relaxed">Barya Business AI Assistant helps beginners and early-stage founders build, plan, and grow with practical tools, clear workflows, and local-first privacy.</p>
-          <p class="text-slate-600 mt-3">Turn messy startup ideas into weekly action plans, track your key numbers, and get AI guidance built for real founder decisions.</p>
-          <div class="landing-cta-row">
-            <button id="enterWorkspaceBtn" class="primary-action-glow inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-8 py-4 text-base font-semibold">Enter Workspace</button>
-            <a href="#landing-features" class="landing-secondary-cta">See Features</a>
+  <div id="landingPageContainer" class="app-view is-visible">
+    <section id="home" class="public-page public-page-panel" data-public-page="home">
+      <div class="public-hero">
+        <article class="public-panel">
+          <p class="text-xs uppercase tracking-[0.2em] text-indigo-700 font-semibold">Barya Business AI Assistant</p>
+          <h1 class="text-4xl font-bold text-slate-900 mt-2">Barya Business AI Assistant</h1>
+          <p class="muted mt-4">Launch and run your startup from one clean local-first workspace. Build plans, get AI help, and track your progress without complexity.</p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button class="public-btn" data-enter-app>Start Building</button>
+            <button class="public-btn bg-white text-slate-900 border-slate-300" data-enter-app>Enter App</button>
           </div>
-          <div class="landing-kpis">
-            <article class="landing-kpi"><p class="landing-kpi-label">Privacy</p><p class="landing-kpi-value">100% Local-First</p></article>
-            <article class="landing-kpi"><p class="landing-kpi-label">Workflow</p><p class="landing-kpi-value">Build → Plan → Grow</p></article>
-            <article class="landing-kpi"><p class="landing-kpi-label">Designed For</p><p class="landing-kpi-value">New Founders</p></article>
-          </div>
-          <div class="landing-quick-proof">
-            <article class="landing-proof-card"><p>Readiness</p><p>82 / 100 Score</p></article>
-            <article class="landing-proof-card"><p>Execution</p><p>7 Priority Tasks</p></article>
-            <article class="landing-proof-card"><p>Momentum</p><p>+14% This Month</p></article>
-          </div>
-        </div>
-        <div class="landing-visual" aria-hidden="true">
-          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80" alt="Founder reviewing business metrics with team" loading="lazy" />
-          <div class="landing-float-card landing-float-top">
-            <p>Business Metrics</p>
-            <strong>$24,900 Revenue</strong>
-            <p>+15.2% growth this month</p>
-          </div>
-          <div class="landing-float-card landing-float-mid">
-            <p>Readiness Score</p>
-            <strong>82 / 100 Launch Ready</strong>
-            <p>Strong planning, improve customer interviews</p>
-          </div>
-          <div class="landing-float-card landing-float-bottom">
-            <p>AI Suggestion</p>
-            <strong>Improve onboarding flow</strong>
-            <p>Deploy 7-day activation sequence for new leads</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="landing-grid-equal landing-section">
-        <article class="landing-feature-card">
-          <h2 class="text-xl font-semibold">What is this?</h2>
-          <p class="text-slate-600 mt-2">This is a business building platform designed for beginners and early-stage founders who need structure and clarity.</p>
-          <ul class="mt-3 space-y-1 text-slate-600 text-sm list-disc list-inside">
-            <li>Track finances and savings</li>
-            <li>Generate business ideas quickly</li>
-            <li>Create business plans with templates</li>
-            <li>Learn step-by-step with startup guides</li>
-          </ul>
         </article>
-        <article class="landing-feature-card">
-          <h2 class="text-xl font-semibold">Why this tool?</h2>
-          <ul class="mt-3 space-y-2 text-slate-600 text-sm list-disc list-inside">
-            <li>Simple and beginner-friendly workflows</li>
-            <li>No login required with local-first storage</li>
-            <li>Works instantly in your browser</li>
-            <li>Focused on real execution, not theory</li>
+        <article class="public-panel">
+          <h2 class="text-2xl font-bold text-slate-900">What is this?</h2>
+          <p class="muted mt-2">Barya is a complete AI-assisted founder platform with a public marketing website and a powerful workspace for day-to-day execution.</p>
+          <ul class="mt-4 list-disc list-inside text-slate-700 space-y-1">
+            <li>Professional Dashboard</li>
+            <li>AI Assistant for strategy</li>
+            <li>Business planning templates</li>
+            <li>Beginner-first startup guides</li>
           </ul>
         </article>
       </div>
-
-      <section id="landing-features" class="landing-section">
-        <h2 class="landing-section-title">Key Features</h2>
-        <div class="landing-feature-grid mt-4">
-          <article class="landing-feature-card"><h3 class="font-semibold">Dashboard</h3><p class="text-slate-600 text-sm mt-2">Track income, expenses, and savings in one place.</p></article>
-          <article class="landing-feature-card"><h3 class="font-semibold">AI Assistant</h3><p class="text-slate-600 text-sm mt-2">Get practical business advice and next steps instantly.</p></article>
-          <article class="landing-feature-card"><h3 class="font-semibold">Business Planning</h3><p class="text-slate-600 text-sm mt-2">Use templates and guides to shape your strategy.</p></article>
-          <article class="landing-feature-card"><h3 class="font-semibold">Idea Generator</h3><p class="text-slate-600 text-sm mt-2">Generate startup concepts and test opportunities quickly.</p></article>
-        </div>
-      </section>
-
-      <section class="landing-section" id="product-preview">
-        <h2 class="landing-section-title">Founder Workspace Preview</h2>
-        <p class="text-slate-600 mt-2">A realistic view of your daily control center for planning, finance tracking, and AI-guided execution.</p>
-        <article class="landing-dashboard-preview mt-4">
-          <div class="workspace-preview-shell">
-            <aside class="workspace-preview-sidebar">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Workspace</p>
-              <h3 class="text-lg font-semibold text-white mt-2">Barya OS</h3>
-              <ul class="space-y-2 mt-5 text-sm">
-                <li>• Dashboard</li>
-                <li>• AI Chat</li>
-                <li>• Planning</li>
-                <li>• Memory</li>
-                <li>• Profile</li>
-              </ul>
-            </aside>
-            <div class="workspace-preview-main">
-              <div class="preview-metric-grid">
-                <div class="preview-metric-card"><p class="text-xs text-slate-500 uppercase">Revenue</p><p class="text-lg font-semibold text-slate-900 mt-1">$24.9K</p></div>
-                <div class="preview-metric-card"><p class="text-xs text-slate-500 uppercase">Net Savings</p><p class="text-lg font-semibold text-slate-900 mt-1">$9.4K</p></div>
-                <div class="preview-metric-card"><p class="text-xs text-slate-500 uppercase">Runway</p><p class="text-lg font-semibold text-slate-900 mt-1">8.2 Months</p></div>
-              </div>
-              <div class="preview-chart"></div>
-              <div class="preview-recommendation">
-                <p class="text-xs uppercase tracking-[0.12em] text-blue-700 font-semibold">AI Recommendation</p>
-                <p class="text-sm text-slate-700 mt-1">Improve conversion by simplifying your offer page and running a 5-day onboarding sequence for new signups.</p>
-              </div>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="landing-section" id="how-it-works">
-        <h2 class="landing-section-title">How to Use</h2>
-        <div class="grid md:grid-cols-4 gap-3 mt-4">
-          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 1</p><p class="font-semibold mt-1">Choose a feature</p><p class="text-sm text-slate-600 mt-1">Open Dashboard, Planning, or another tool.</p></article>
-          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 2</p><p class="font-semibold mt-1">Fill templates or ask AI</p><p class="text-sm text-slate-600 mt-1">Input details in forms or ask specific questions.</p></article>
-          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 3</p><p class="font-semibold mt-1">Save your progress</p><p class="text-sm text-slate-600 mt-1">Keep plans and notes locally in your browser.</p></article>
-          <article class="landing-step"><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Step 4</p><p class="font-semibold mt-1">Improve your business</p><p class="text-sm text-slate-600 mt-1">Review results weekly and refine execution.</p></article>
-        </div>
-      </section>
-
-      <section id="privacy-policy" class="landing-section landing-privacy-grid">
-        <article class="landing-privacy-card">
-          <h2 class="text-2xl font-semibold">Privacy Policy (Local Storage)</h2>
-          <p class="text-slate-600 mt-2 text-sm leading-relaxed">Barya Business AI stores your plans, financial inputs, and settings in your browser Local Storage. Your data stays on your device unless you export and share it yourself.</p>
-          <p class="text-slate-600 mt-3 text-sm">No mandatory sign-up. No forced cloud sync. Built for founders who value control.</p>
-        </article>
-        <article class="landing-step">
-          <p class="text-xs uppercase tracking-[0.2em] text-emerald-600 font-semibold">Trust Snapshot</p>
-          <p class="font-semibold text-slate-900 mt-2">Private by design</p>
-          <ul class="mt-3 space-y-2 text-sm text-slate-600 list-disc list-inside">
-            <li>Your workspace data remains in-browser by default.</li>
-            <li>Export only when you choose to share.</li>
-            <li>No external AI APIs required for core flow.</li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="landing-section">
-        <article class="landing-cta-card">
-          <p class="text-xs uppercase tracking-[0.22em] font-semibold text-blue-100">Ready to move from idea to execution?</p>
-          <h2 class="text-2xl md:text-3xl font-semibold mt-2">Start building your business with a premium founder workspace.</h2>
-          <p class="mt-3 text-blue-50 text-sm md:text-base">Get practical planning tools, finance visibility, and AI guidance in one local-first platform made for early-stage founders.</p>
-          <div class="landing-cta-actions">
-            <button id="landingBottomEnterBtn" class="inline-flex items-center justify-center rounded-xl bg-white text-slate-900 px-6 py-3 font-semibold">Enter Workspace</button>
-            <a href="#how-it-works" class="landing-cta-ghost">See How It Works</a>
-          </div>
-        </article>
-      </section>
+      <div class="public-grid md:grid-cols-4 mt-5">
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Dashboard</h3><p class="muted text-sm mt-1">Clear financial and execution view.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">AI Assistant</h3><p class="muted text-sm mt-1">Get practical answers quickly.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Business Planning</h3><p class="muted text-sm mt-1">Use templates and guided prompts.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Idea Generator</h3><p class="muted text-sm mt-1">Generate startup ideas in seconds.</p></article>
+      </div>
+      <div class="public-grid md:grid-cols-3 mt-5">
+        <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 1</p><h3 class="font-semibold mt-1 text-slate-900">Choose a goal</h3><p class="muted text-sm mt-1">Pick Dashboard, Planning, or AI.</p></article>
+        <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 2</p><h3 class="font-semibold mt-1 text-slate-900">Build with guidance</h3><p class="muted text-sm mt-1">Fill templates and ask questions.</p></article>
+        <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 3</p><h3 class="font-semibold mt-1 text-slate-900">Execute weekly</h3><p class="muted text-sm mt-1">Save and improve with real actions.</p></article>
+      </div>
+      <article class="public-panel mt-5">
+        <h2 class="public-section-title">Why choose us</h2>
+        <ul class="mt-3 list-disc list-inside text-slate-700 space-y-1">
+          <li>Simple and focused experience</li>
+          <li>No login required</li>
+          <li>Local-first data privacy</li>
+          <li>Beginner friendly workflow</li>
+        </ul>
+      </article>
+      <article class="public-panel mt-5 text-center">
+        <h2 class="public-section-title">Ready to build your startup?</h2>
+        <p class="muted mt-2">Start with the public site, then move into the full workspace anytime.</p>
+        <button class="public-btn mt-4" data-enter-app>Enter App</button>
+      </article>
     </section>
+
+    <section id="features" class="public-page" data-public-page="features" hidden>
+      <h2 class="public-section-title">Features</h2>
+      <p class="muted mt-2">Detailed feature overview for founders and teams.</p>
+      <div class="public-grid md:grid-cols-2 mt-5">
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Dashboard</h3><p class="muted mt-2">Monitor revenue, expenses, savings, and monthly direction.</p><p class="text-sm text-slate-700 mt-2"><strong>Benefits:</strong> Better decisions, faster weekly reviews.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">AI Assistant</h3><p class="muted mt-2">Ask for strategy, growth ideas, and next-action recommendations.</p><p class="text-sm text-slate-700 mt-2"><strong>Benefits:</strong> Less confusion, clearer priorities.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Business Planning</h3><p class="muted mt-2">Build plans using guided sections and startup-friendly templates.</p><p class="text-sm text-slate-700 mt-2"><strong>Benefits:</strong> Structured planning from idea to execution.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Templates</h3><p class="muted mt-2">Use pre-built templates for SaaS, coffee shops, and e-commerce.</p><p class="text-sm text-slate-700 mt-2"><strong>Benefits:</strong> Start quickly with proven frameworks.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Startup Guides</h3><p class="muted mt-2">Learn practical startup fundamentals and avoid common mistakes.</p><p class="text-sm text-slate-700 mt-2"><strong>Benefits:</strong> Better readiness and less risky decisions.</p></article>
+      </div>
+    </section>
+
+    <section id="pricing" class="public-page" data-public-page="pricing" hidden>
+      <h2 class="public-section-title">Pricing</h2>
+      <div class="public-grid md:grid-cols-2 mt-5">
+        <article class="public-card">
+          <p class="text-xs uppercase text-emerald-700 font-semibold">Current Plan</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">Free</h3>
+          <p class="muted mt-2">Everything currently available in Barya workspace.</p>
+          <ul class="mt-3 text-sm text-slate-700 list-disc list-inside">
+            <li>Dashboard + tracking</li>
+            <li>AI chat assistant</li>
+            <li>Business planning templates</li>
+            <li>Local storage backup</li>
+          </ul>
+        </article>
+        <article class="public-card">
+          <p class="text-xs uppercase text-indigo-700 font-semibold">Future Plan</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">Pro (Optional)</h3>
+          <p class="muted mt-2">Planned premium capabilities for advanced teams.</p>
+          <ul class="mt-3 text-sm text-slate-700 list-disc list-inside">
+            <li>Enhanced automations</li>
+            <li>Deeper strategy workflows</li>
+            <li>Premium templates and reports</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="blog" class="public-page" data-public-page="blog" hidden>
+      <h2 class="public-section-title">Blog</h2>
+      <div class="public-grid md:grid-cols-3 mt-5">
+        <article class="public-card"><h3 class="font-semibold text-slate-900">How to start a business</h3><p class="muted text-sm mt-2">A practical checklist to go from idea to first customer.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Marketing basics for founders</h3><p class="muted text-sm mt-2">Core channels, messaging, and first campaign strategy.</p></article>
+        <article class="public-card"><h3 class="font-semibold text-slate-900">Common startup mistakes</h3><p class="muted text-sm mt-2">What to avoid in the first 90 days of building.</p></article>
+      </div>
+    </section>
+
+    <section id="contact" class="public-page" data-public-page="contact" hidden>
+      <h2 class="public-section-title">Contact</h2>
+      <p class="muted mt-2">Email us at <a class="text-indigo-700 font-semibold" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></p>
+      <form id="contactForm" class="public-form public-panel mt-5">
+        <label class="block text-slate-900 font-medium">Name<input type="text" id="contactName" required /></label>
+        <label class="block text-slate-900 font-medium mt-3">Email<input type="email" id="contactEmail" required /></label>
+        <label class="block text-slate-900 font-medium mt-3">Message<textarea id="contactMessage" required></textarea></label>
+        <button type="submit" class="public-btn mt-4">Send Message</button>
+      </form>
+      <article class="public-panel mt-5">
+        <h3 class="text-xl font-semibold text-slate-900">Give Feedback</h3>
+        <form id="feedbackForm" class="public-form mt-3">
+          <label class="block text-slate-900 font-medium">Name<input id="feedbackName" type="text" required /></label>
+          <label class="block text-slate-900 font-medium mt-3">Feedback<textarea id="feedbackMessage" required></textarea></label>
+          <button type="submit" class="public-btn mt-4">Save Feedback</button>
+        </form>
+        <p id="feedbackStatus" class="muted text-sm mt-2"></p>
+      </article>
+    </section>
+
+    <section id="privacy" class="public-page" data-public-page="privacy" hidden>
+      <h2 class="public-section-title">Privacy Policy</h2>
+      <article class="public-panel mt-4">
+        <p class="muted">Barya stores your workspace data in local browser storage by default. We do not require account creation to use core features. You control exports and backups.</p>
+      </article>
+    </section>
+
+    <section id="terms" class="public-page" data-public-page="terms" hidden>
+      <h2 class="public-section-title">Terms of Service</h2>
+      <article class="public-panel mt-4">
+        <p class="muted">Barya is provided as-is for business planning and educational workflow support. You are responsible for decisions made using this software and for securing your own device data.</p>
+      </article>
+    </section>
+
+    <footer id="landingFooter" class="site-footer landing-only">
+      <p class="text-sm font-semibold text-slate-900">Barya’s</p>
+      <div class="footer-links">
+        <a href="#privacy" data-public-nav="privacy">Privacy Policy</a>
+        <a href="#terms" data-public-nav="terms">Terms of Service</a>
+        <a href="#contact" data-public-nav="contact">Contact</a>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">Professional local-first SaaS experience.</p>
+    </footer>
   </div>
 
   <div id="appContainer" class="app-view is-hidden max-w-6xl mx-auto px-4 py-8 space-y-8" style="display:none;">
@@ -1851,35 +1944,7 @@
       </section>
     </main>
   </div>
-  <aside id="landingTrustBadges" class="trust-badges landing-only" aria-label="Trust badges">
-    <div class="trust-badge">🔒 100% Local-First: Your data never leaves your device.</div>
-  </aside>
-
-  <section id="landingFounderSection" class="founder-note-section landing-only" aria-labelledby="founder-note-title">
-    <div class="founder-note-grid">
-      <div class="founder-story">
-        <p class="text-xs uppercase tracking-[0.22em] text-indigo-700 font-semibold">Meet the Founder</p>
-        <h2 id="founder-note-title" class="text-2xl md:text-3xl font-semibold text-slate-900 mt-2">Why I Built Barya</h2>
-        <p class="text-slate-700 mt-4 leading-relaxed">
-          I built Barya after seeing how many founders struggle to stay focused while switching between scattered tools and unclear next steps. My goal was to create one trusted workspace where ideas become practical plans, progress stays measurable, and sensitive business information remains private. Barya is designed to help entrepreneurs move from uncertainty to confident execution.
-        </p>
-        <a class="founder-connect-btn" href="https://www.linkedin.com/in/shruti-barya-18a2a23a4" target="_blank" rel="noopener noreferrer" aria-label="Connect with Shruti on LinkedIn">Connect with me</a>
-      </div>
-      <div class="founder-image-wrap">
-        <img class="founder-image" src="https://images.unsplash.com/photo-1573497491765-55d7c86f7f89?auto=format&fit=crop&w=900&q=80" alt="Founder portrait" loading="lazy" />
-      </div>
-    </div>
-  </section>
-
-  <footer id="landingFooter" class="site-footer landing-only">
-    <p class="text-sm font-semibold">Barya Business AI</p>
-    <div class="footer-links">
-      <a href="#how-it-works">How it Works</a>
-      <a href="#privacy-policy">Privacy Policy</a>
-    </div>
-    <p class="text-xs text-slate-500 mt-3">Built with ❤️ for Founders</p>
-  </footer>
-    <script defer src="app.js"></script>
+  <script defer src="app.js"></script>
 
 </body>
 </html>
