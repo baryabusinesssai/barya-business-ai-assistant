@@ -673,6 +673,81 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
+
+    .landing-hero-top {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 1.4rem;
+      align-items: stretch;
+    }
+    .landing-headline {
+      text-align: left;
+      padding: 0.75rem 0.2rem;
+    }
+    .landing-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .landing-kpi {
+      border-radius: 0.9rem;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      padding: 0.72rem;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+    .landing-kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .landing-kpi-value {
+      margin-top: 0.3rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .landing-visual {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      background: #fff;
+      box-shadow: 0 20px 32px rgba(15, 23, 42, 0.14);
+      min-height: 420px;
+    }
+    .landing-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .landing-float-card {
+      position: absolute;
+      border-radius: 0.95rem;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.93);
+      box-shadow: 0 14px 24px rgba(15, 23, 42, 0.15);
+      backdrop-filter: blur(6px);
+      padding: 0.72rem 0.8rem;
+      width: min(220px, 80%);
+    }
+    .landing-float-card strong {
+      color: #0f172a;
+      font-size: 1rem;
+      display: block;
+      margin-top: 0.1rem;
+    }
+    .landing-float-card p {
+      color: #475569;
+      font-size: 0.76rem;
+      margin: 0;
+    }
+    .landing-float-top { top: 0.9rem; right: 0.8rem; }
+    .landing-float-bottom { bottom: 0.9rem; left: 0.8rem; }
     .primary-action-glow {
       border: 1px solid rgba(255, 255, 255, 0.72) !important;
       background: linear-gradient(120deg, #6366f1, #4f46e5, #0ea5e9) !important;
@@ -711,6 +786,18 @@
       .editor-panel {
         border-radius: 1rem;
         padding: 1rem;
+      }
+      .landing-hero-top {
+        grid-template-columns: 1fr;
+      }
+      .landing-headline {
+        text-align: center;
+      }
+      .landing-kpis {
+        grid-template-columns: 1fr;
+      }
+      .landing-visual {
+        min-height: 300px;
       }
       .landing-feature-grid,
       .template-grid,
@@ -959,13 +1046,43 @@
   <div id="landingPageContainer" class="app-view is-visible max-w-6xl mx-auto px-4 py-6">
 
     <section id="landingPage" class="landing-hero">
-      <div class="max-w-4xl mx-auto text-center space-y-4">
-        <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Business Growth Platform</p>
-        <h1 class="text-4xl md:text-5xl font-semibold tracking-tight">Barya Business AI Assistant</h1>
-        <p class="text-slate-600 text-base md:text-lg">Build, plan, and grow your business with smart tools and practical guidance.</p>
-        <p class="text-slate-600 max-w-3xl mx-auto">Barya is a business planning and AI-powered assistant tool that helps founders turn ideas into clear plans, practical strategies, and trackable execution.</p>
-        <div class="flex justify-center pt-3">
-          <button id="enterWorkspaceBtn" class="primary-action-glow inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-8 py-4 text-base font-semibold">Enter Workspace</button>
+      <div class="landing-hero-top">
+        <div class="landing-headline">
+          <p class="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold">Business Growth Platform</p>
+          <h1 class="text-4xl md:text-5xl font-semibold tracking-tight mt-3">Barya Business AI Assistant</h1>
+          <p class="text-slate-600 text-base md:text-lg mt-4">Build, plan, and grow your business with smart tools and practical guidance.</p>
+          <p class="text-slate-600 mt-3">Barya helps founders turn ideas into clear plans, practical strategies, and weekly execution in one local-first workspace.</p>
+          <div class="flex flex-wrap gap-3 pt-5">
+            <button id="enterWorkspaceBtn" class="primary-action-glow inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-8 py-4 text-base font-semibold">Enter Workspace</button>
+            <a href="#landing-features" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-4 text-sm font-semibold text-slate-700 hover:border-slate-400">See Features</a>
+          </div>
+          <div class="landing-kpis">
+            <article class="landing-kpi">
+              <p class="landing-kpi-label">Mode</p>
+              <p class="landing-kpi-value">100% Local</p>
+            </article>
+            <article class="landing-kpi">
+              <p class="landing-kpi-label">Workflow</p>
+              <p class="landing-kpi-value">Plan → Track</p>
+            </article>
+            <article class="landing-kpi">
+              <p class="landing-kpi-label">Focus</p>
+              <p class="landing-kpi-value">Founder Action</p>
+            </article>
+          </div>
+        </div>
+        <div class="landing-visual" aria-hidden="true">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80" alt="Founder dashboard and laptop workspace" loading="lazy" />
+          <div class="landing-float-card landing-float-top">
+            <p>Monthly Snapshot</p>
+            <strong>$18,400 Revenue</strong>
+            <p>+12.4% vs last month</p>
+          </div>
+          <div class="landing-float-card landing-float-bottom">
+            <p>AI Suggestion</p>
+            <strong>Improve onboarding flow</strong>
+            <p>Run a 7-day activation sequence</p>
+          </div>
         </div>
       </div>
 
