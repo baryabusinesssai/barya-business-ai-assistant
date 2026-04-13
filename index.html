@@ -1063,10 +1063,25 @@
     #appContainer .soft-card,
     #appContainer .glass {
       background: #ffffff !important;
-      border: 1px solid #dde7f5 !important;
-      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07) !important;
+      border: 1px solid #ededed !important;
+      box-shadow: none !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
+    }
+    #appContainer .workspace-content-card {
+      background: #ffffff !important;
+      border: 1px solid #ededed !important;
+      border-radius: 1.5rem;
+      box-shadow: none !important;
+      padding: 32px !important;
+    }
+    #appContainer .workspace-card-header {
+      margin-bottom: 1rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #0f172a;
     }
     #appContainer .panel article p,
     #appContainer .panel article li,
@@ -3118,7 +3133,8 @@
             <button id="viewSampleDashboardBtn" type="button" class="premium-hover mt-5 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 font-semibold text-white">View Sample Dashboard</button>
           </div>
         </article>
-        <article id="dashboardTourTarget" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-3 premium-hover">
+        <article id="dashboardTourTarget" class="dashboard-data-block glass workspace-content-card xl:col-span-3 premium-hover">
+          <p class="workspace-card-header">Real-Time Strategy</p>
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Finance</p>
@@ -3213,7 +3229,8 @@
       </section>
 
       <section id="panel-finances" class="panel hidden app-view">
-        <article id="ideaGeneratorToolCard" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 premium-hover">
+        <article id="ideaGeneratorToolCard" class="dashboard-data-block glass workspace-content-card premium-hover">
+          <p class="workspace-card-header">Finance Tracker</p>
           <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
           <h3 class="font-semibold text-xl mt-2">Finance Workspace</h3>
 
@@ -3261,7 +3278,8 @@
       </section>
 
       <section id="panel-strategy" class="panel hidden app-view">
-        <article id="aiAssistantTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-5 md:p-6">
+        <article id="aiAssistantTourTarget" class="glass workspace-content-card">
+          <p class="workspace-card-header">AI Chat</p>
           <div class="max-w-3xl">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Assistant</p>
             <h2 class="font-semibold text-2xl mt-2">Barya AI</h2>
@@ -3303,7 +3321,8 @@
       </section>
 
       <section id="panel-memory" class="panel hidden app-view">
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article class="glass workspace-content-card">
+          <p class="workspace-card-header">Memory Vault</p>
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Knowledge Retention</p>
             <h2 class="font-semibold text-2xl mt-2" data-i18n="memory">Memory</h2>
@@ -3323,7 +3342,8 @@
       </section>
 
       <section id="panel-planning" class="panel hidden app-view">
-        <article id="businessPlanningTourTarget" class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article id="businessPlanningTourTarget" class="glass workspace-content-card">
+          <p class="workspace-card-header">Business Planning</p>
           <div class="mb-5">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Planning</p>
             <h2 class="font-semibold text-2xl mt-2">Business Planning</h2>
@@ -3415,7 +3435,8 @@
       </section>
 
       <section id="panel-founder" class="panel hidden app-view">
-        <article class="glass rounded-3xl border border-indigo-800/30 p-6">
+        <article class="glass workspace-content-card">
+          <p class="workspace-card-header">Profile Settings</p>
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Workspace Settings</p>
             <h2 class="font-semibold text-2xl mt-2">Settings</h2>
