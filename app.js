@@ -22,7 +22,8 @@
     languagePreference: 'barya_language_preference',
     profile: 'barya_profile',
     feedbackEntries: 'barya_feedback_entries',
-    contactMessages: 'barya_contact_messages'
+    contactMessages: 'barya_contact_messages',
+    aiResponseMeta: 'barya_ai_response_meta'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -390,6 +391,7 @@
     aiMemoryEntries: [],
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
+    aiResponseMeta: { lastDomain: 'general', lastVariantByDomain: {} },
     profile: { businessType: '', audience: '', preference: '' },
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
     sampleDashboardMode: false,
@@ -1132,63 +1134,195 @@
     output.textContent = `Your business is currently ${profitability}. Your biggest expense is ${biggest.name}. Based on your ${formatCurrency(savingsBuffer)} savings, you can sustain for ${months.toFixed(1)} months.`;
   }
 
-  function detectIntent(message) {
+  function detectIntentAndDomain(message) {
     const text = String(message || '').toLowerCase();
-    const intentRules = [
-      { intent: 'idea', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start'] },
-      { intent: 'startup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture'] },
-      { intent: 'finance', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings'] },
-      { intent: 'marketing', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding'] },
-      { intent: 'planning', keywords: ['plan', 'planning', 'roadmap', 'strategy', 'goals', 'milestone', 'steps'] }
+    const domainRules = [
+      { domain: 'idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea'] },
+      { domain: 'startup', intent: 'startup_setup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture', 'mvp', 'how to start'] },
+      { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost'] },
+      { domain: 'marketing', intent: 'marketing_execution', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding', 'content', 'campaign'] },
+      { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel'] },
+      { domain: 'strategy', intent: 'strategy_planning', keywords: ['plan', 'planning', 'roadmap', 'strategy', 'goals', 'milestone', 'decision', 'priorities'] }
     ];
-
-    const matched = intentRules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
-    return matched ? matched.intent : 'general';
+    const matched = domainRules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
+    return matched || { domain: 'general', intent: 'general_support' };
   }
 
-  function pickVariant(items, seedText) {
-    if (!items.length) return '';
-    const seed = Array.from(String(seedText || '')).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return items[seed % items.length];
+  function getRecentUserContext(limit = 3) {
+    const history = ensureArray(appState.aiChatHistory);
+    return history
+      .filter((item) => item && item.role === 'user' && item.text)
+      .slice(-limit)
+      .map((item) => String(item.text));
+  }
+
+  function pickRandomVariant(items, domain) {
+    if (!Array.isArray(items) || !items.length) return null;
+    const meta = ensureObject(appState.aiResponseMeta);
+    const lastMap = ensureObject(meta.lastVariantByDomain);
+    let index = Math.floor(Math.random() * items.length);
+    const lastIndex = Number(lastMap[domain]);
+    if (items.length > 1 && Number.isFinite(lastIndex) && index === lastIndex) {
+      index = (index + 1 + Math.floor(Math.random() * (items.length - 1))) % items.length;
+    }
+    appState.aiResponseMeta = {
+      lastDomain: domain,
+      lastVariantByDomain: { ...lastMap, [domain]: index }
+    };
+    saveToStorage(STORAGE_KEYS.aiResponseMeta, appState.aiResponseMeta);
+    return items[index];
+  }
+
+  function buildStructuredReply(config, userMessage, contextSnippets) {
+    if (!config) return '';
+    const contextLine = contextSnippets.length > 1
+      ? `I’m using your recent context: ${contextSnippets.slice(0, 2).join(' → ')}.`
+      : '';
+    const parts = [
+      `1) Explanation\n${config.explanation}${contextLine ? ` ${contextLine}` : ''}`,
+      `2) Action steps\n- ${config.steps.join('\n- ')}`,
+      `3) Quick tip\n${config.quickTip}`
+    ];
+    if (config.nextSteps?.length) {
+      parts.push(`Next steps\n- ${config.nextSteps.join('\n- ')}`);
+    }
+    if (config.relatedActions?.length) {
+      parts.push(`Related actions\n- ${config.relatedActions.join('\n- ')}`);
+    }
+    return parts.join('\n\n');
   }
 
   function generateResponse(message) {
     const userMessage = String(message || '').trim();
-    const intent = detectIntent(userMessage);
+    const recentContext = getRecentUserContext(3);
     const totals = calculateTotals();
-    const replies = {
+    const { domain } = detectIntentAndDomain(userMessage);
+    const tooVague = userMessage.split(/\s+/).filter(Boolean).length < 3;
+    if (!userMessage || tooVague) {
+      return [
+        '1) Explanation',
+        'I can help better with a specific request.',
+        '',
+        '2) Action steps',
+        '- Tell me your domain: startup, marketing, finance, growth, strategy, or idea.',
+        '- Add your stage (idea, early traction, or scaling).',
+        '- Include one target metric or deadline.',
+        '',
+        '3) Quick tip',
+        'Try: "How do I reduce monthly expenses by 15% in 30 days?"'
+      ].join('\n');
+    }
+
+    const responseMap = {
       startup: [
-        'Start lean: define one painful customer problem, build a tiny MVP, and run 10 quick validation calls before adding features.',
-        'Launch with one offer and one audience first. Use weekly feedback loops, then improve pricing and positioning.',
-        'Before full launch, validate demand with a landing page + paid test. Evidence should guide your first 30 days.'
-      ],
-      idea: [
-        'Pick an idea where you can deliver value fast and charge early. Prefer service-first models before heavy product builds.',
-        'Choose a problem you understand deeply, then test 2-3 lightweight offers and keep the one with strongest response.',
-        'Good ideas are specific: one audience, one pain, one outcome. Start narrow and expand after traction.'
-      ],
-      finance: [
-        `With ${formatCurrency(totals.netSavings)} net savings currently, focus on lowering fixed costs and protecting runway.`,
-        'Separate must-have vs optional expenses, then review spending weekly to keep burn rate predictable.',
-        'Use a simple rule: revenue first, then controlled spending. Track changes every week, not once a month.'
+        {
+          explanation: 'Startup mode: we should keep this beginner-friendly and execution-first.',
+          steps: ['Define one customer problem in one sentence.', 'Build a tiny MVP that solves only that problem.', 'Run 10 validation calls and collect objections.', 'Launch a paid pilot before adding more features.'],
+          quickTip: 'Charge early to confirm demand.',
+          nextSteps: ['Draft your 7-day validation plan.', 'Set one success metric (e.g., 3 pilot users).'],
+          relatedActions: ['Open Workspace > Business Plan template.', 'Ask: "Create my first-week founder checklist."']
+        },
+        {
+          explanation: 'Treat your launch as a short experiment, not a perfect product release.',
+          steps: ['Pick one audience segment.', 'Write one clear offer with expected outcome.', 'Test with a landing page + outreach.', 'Review signal weekly and iterate fast.'],
+          quickTip: 'Speed beats complexity in week 1.',
+          nextSteps: ['Define your first acquisition channel.', 'Set weekly review on Friday.'],
+          relatedActions: ['Ask for a 30-day launch roadmap.']
+        }
       ],
       marketing: [
-        'Choose one core channel, publish proof-driven content, and end every post with one clear next action.',
-        'Start with customer language: problem, outcome, proof. Keep campaigns simple and optimize from real responses.',
-        'Build a 30-day content + outreach sprint and measure leads, reply rate, and conversion weekly.'
+        {
+          explanation: 'Marketing mode: focus on practical channels and measurable actions.',
+          steps: ['Choose one primary platform (Instagram, LinkedIn, or WhatsApp).', 'Publish proof-based content 4x/week.', 'Use one CTA in every post.', 'Track lead replies and conversion weekly.'],
+          quickTip: 'One channel done consistently beats five weak channels.',
+          nextSteps: ['Create a 14-day content sprint.', 'Collect 3 customer testimonials.'],
+          relatedActions: ['Ask for post ideas per platform.']
+        },
+        {
+          explanation: 'Use customer language in your messaging to improve response quality.',
+          steps: ['List top 5 customer pains.', 'Turn each pain into one post angle.', 'Add before/after proof or case snippet.', 'Retarget people who engaged but did not buy.'],
+          quickTip: 'Hook + proof + CTA is a strong content formula.',
+          nextSteps: ['Build a basic lead tracker sheet.'],
+          relatedActions: ['Ask: "Give me 10 LinkedIn hooks for my offer."']
+        }
       ],
-      planning: [
-        'Break your plan into weekly milestones: customer validation, offer test, distribution, and KPI review.',
-        'Use a 90-day roadmap with clear owners, deadlines, and one measurable outcome per milestone.',
-        'Plan in sprints: define the next 7 days clearly, execute, review, and refine.'
+      finance: [
+        {
+          explanation: `Finance mode: protect runway and reduce burn. Current net savings: ${formatCurrency(totals.netSavings)}.`,
+          steps: ['Separate fixed vs variable expenses.', 'Cut lowest-ROI costs first.', 'Negotiate recurring vendor bills.', 'Set weekly spending caps by category.'],
+          quickTip: 'Protect at least 3 months of operating runway.',
+          nextSteps: ['Identify top 3 cost categories this week.', 'Set a 10-15% expense reduction target.'],
+          relatedActions: ['Use Reduce expenses prompt for a focused plan.']
+        },
+        {
+          explanation: 'Your financial system should make decisions easier, not more complex.',
+          steps: ['Create must-have vs optional spending list.', 'Pause optional tools for 30 days.', 'Review revenue-per-expense weekly.', 'Reinvest only into channels with clear ROI.'],
+          quickTip: 'Cash discipline creates strategic freedom.',
+          nextSteps: ['Track runway every Monday.'],
+          relatedActions: ['Ask for a zero-based budget template.']
+        }
+      ],
+      growth: [
+        {
+          explanation: 'Growth mode: scale only what is already working.',
+          steps: ['Find your best-performing acquisition channel.', 'Improve conversion before increasing spend.', 'Build a referral or partner loop.', 'Strengthen onboarding to improve retention.'],
+          quickTip: 'Retention is a growth multiplier.',
+          nextSteps: ['Set one acquisition KPI and one retention KPI.'],
+          relatedActions: ['Ask for a customer acquisition funnel review.']
+        },
+        {
+          explanation: 'Sustainable growth requires repeatable systems, not random tactics.',
+          steps: ['Document your winning funnel.', 'Automate follow-ups.', 'Run weekly experiment cycles.', 'Scale budget only after stable conversion.'],
+          quickTip: 'Improve conversion by 1% before doubling ad spend.',
+          nextSteps: ['Launch one growth experiment this week.'],
+          relatedActions: ['Ask for 5 low-cost acquisition ideas.']
+        }
+      ],
+      strategy: [
+        {
+          explanation: 'Strategy mode: make decisions using priorities and trade-offs.',
+          steps: ['Define your main goal for the next 90 days.', 'List top 3 strategic options.', 'Score each option by impact, effort, and risk.', 'Commit to one and define milestones.'],
+          quickTip: 'A focused no-list protects your roadmap.',
+          nextSteps: ['Create a decision memo for your top option.'],
+          relatedActions: ['Ask for a 90-day strategic plan.']
+        },
+        {
+          explanation: 'Good strategy is clear sequencing: what now, what later, and what not at all.',
+          steps: ['Choose one core metric to win.', 'Align team tasks to that metric.', 'Set weekly checkpoints.', 'Review and reallocate resources monthly.'],
+          quickTip: 'If everything is priority, nothing is priority.',
+          nextSteps: ['Define weekly strategic review cadence.'],
+          relatedActions: ['Ask for milestone planning support.']
+        }
+      ],
+      idea: [
+        {
+          explanation: 'Idea mode: generate multiple practical options you can test quickly.',
+          steps: ['Brainstorm 3 ideas around one customer pain.', 'Pick the easiest idea to monetize quickly.', 'Validate with 10 quick conversations.', 'Run a paid micro-test for the top idea.'],
+          quickTip: 'Best first idea = fastest to test, not fanciest.',
+          nextSteps: ['Ask me to generate ideas by budget or skillset.'],
+          relatedActions: ['Use button: Give business idea.']
+        },
+        {
+          explanation: 'We should optimize for real demand signals, not personal assumptions.',
+          steps: ['Create 5 problem-solution idea pairs.', 'Rate each by demand, margin, and setup time.', 'Select top 2 and test offers.', 'Keep the one with strongest paid interest.'],
+          quickTip: 'Paid intent is the strongest validation signal.',
+          nextSteps: ['Ask for idea scoring matrix.'],
+          relatedActions: ['Ask for niche-specific idea list.']
+        }
       ],
       general: [
-        'I can help with startup planning, finance, marketing, and idea validation. Share your current goal for focused steps.',
-        'Tell me your business stage (idea, early traction, or growth), and I will suggest a practical action plan.',
-        'Ask me something specific like pricing, validation, or budgeting, and I’ll provide a step-by-step answer.'
+        {
+          explanation: 'I can act as your founder assistant across startup, marketing, finance, growth, strategy, and idea workflows.',
+          steps: ['Tell me your current challenge.', 'Choose one domain to focus.', 'Share deadline and expected outcome.'],
+          quickTip: 'Specific questions get stronger action plans.',
+          nextSteps: ['Try one of the suggestion buttons below the chat.'],
+          relatedActions: ['Ask: "How to start?" or "Improve growth".']
+        }
       ]
     };
-    return pickVariant(replies[intent] || replies.general, `${intent}-${userMessage}`);
+
+    const selected = pickRandomVariant(responseMap[domain] || responseMap.general, domain);
+    return buildStructuredReply(selected, userMessage, recentContext);
   }
 
   function generateBusinessPlanSummaries(businessIdea) {
@@ -2384,6 +2518,11 @@
     appState.settings = loadSettings();
     appState.aiChatHistory = ensureArray(loadFromStorage(STORAGE_KEYS.aiChatHistory, []));
     appState.aiMemoryEntries = ensureArray(loadFromStorage(STORAGE_KEYS.aiMemory, []));
+    appState.aiResponseMeta = {
+      lastDomain: 'general',
+      lastVariantByDomain: {},
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.aiResponseMeta, {}))
+    };
     appState.businessAdvisorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []));
     appState.ideaGeneratorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []));
     appState.profile = {
