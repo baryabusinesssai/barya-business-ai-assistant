@@ -3109,6 +3109,156 @@
       text-align: center;
     }
     .onboarding-modal-card p { margin-top: 0.35rem; color: #555555 !important; }
+
+    /* High-end minimalist redesign (Founders Club / Linear inspired) */
+    :root {
+      --hc-bg: #050505;
+      --hc-surface: #0b0b0b;
+      --hc-border: rgba(255, 255, 255, 0.1);
+      --hc-text: #ffffff;
+      --hc-muted: #888888;
+      --hc-accent: #6c7bff;
+      --hc-accent-soft: rgba(108, 123, 255, 0.35);
+    }
+    body {
+      background: var(--hc-bg) !important;
+      color: var(--hc-text) !important;
+      font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    }
+    #landingPageContainer {
+      background: radial-gradient(circle at 50% 0%, rgba(108, 123, 255, 0.12) 0%, rgba(5, 5, 5, 0.9) 36%, #050505 62%);
+    }
+    #landingPageContainer p,
+    #landingPageContainer .muted,
+    #landingPageContainer li {
+      color: var(--hc-muted) !important;
+    }
+    #landingPageContainer .public-panel,
+    #landingPageContainer .public-card,
+    #landingPageContainer .magic-preview-shell,
+    #landingPageContainer .magic-preview-result,
+    #landingPageContainer [class*="card"] {
+      border: 1px solid var(--hc-border) !important;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)) !important;
+      box-shadow: none !important;
+      border-radius: 16px !important;
+    }
+    .public-navbar {
+      background: rgba(0, 0, 0, 0.7) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid var(--hc-border) !important;
+    }
+    .public-navbar-inner > a,
+    .public-nav-links a {
+      color: #ffffff !important;
+    }
+    .public-enter-btn {
+      border: 1px solid var(--hc-border) !important;
+      background: rgba(255, 255, 255, 0.04) !important;
+      color: #ffffff !important;
+      border-radius: 999px !important;
+    }
+    .minimalist-hero {
+      min-height: calc(100vh - 90px) !important;
+      display: grid !important;
+      place-items: center !important;
+      position: relative;
+      isolation: isolate;
+      background: transparent !important;
+    }
+    .minimalist-hero::before {
+      content: "";
+      position: absolute;
+      width: min(1100px, 90vw);
+      height: 420px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(108, 123, 255, 0.26) 0%, rgba(108, 123, 255, 0.08) 42%, rgba(5, 5, 5, 0) 72%);
+      filter: blur(4px);
+      top: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .minimalist-hero-panel {
+      background: transparent !important;
+      border: 0 !important;
+      text-align: center;
+    }
+    .minimalist-hero .hero-title {
+      font-size: 80px !important;
+      font-weight: 800 !important;
+      letter-spacing: -4px !important;
+      line-height: 1 !important;
+      color: #ffffff !important;
+      text-transform: none !important;
+      -webkit-text-fill-color: #ffffff !important;
+      background: none !important;
+      text-shadow: 0 0 24px rgba(108, 123, 255, 0.22);
+      max-width: 14ch !important;
+      margin-inline: auto !important;
+    }
+    .minimalist-hero .hero-subtitle {
+      color: #888888 !important;
+      font-size: 1.15rem !important;
+      max-width: 60ch !important;
+    }
+    .hero-cta-group {
+      justify-content: center !important;
+    }
+    .hero-btn-primary {
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+      background: linear-gradient(180deg, #ffffff 0%, #d9d9d9 100%) !important;
+      color: #050505 !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      box-shadow: 0 0 0 0 rgba(108, 123, 255, 0.45);
+      animation: pulseHero 2.4s ease-out infinite;
+    }
+    @keyframes pulseHero {
+      0% { box-shadow: 0 0 0 0 rgba(108, 123, 255, 0.45); }
+      75% { box-shadow: 0 0 0 14px rgba(108, 123, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(108, 123, 255, 0); }
+    }
+    .hero-beta-proof,
+    .public-section-title,
+    #landingPageContainer h2,
+    #landingPageContainer h3 {
+      color: #ffffff !important;
+    }
+    #founder-promise {
+      background: transparent !important;
+      border: 1px solid var(--hc-border) !important;
+    }
+    .founder-photo-placeholder {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.03), rgba(108, 123, 255, 0.06)) !important;
+      border: 1px solid var(--hc-border) !important;
+      color: #a3a3a3 !important;
+    }
+    #founder-promise .public-card {
+      border: 1px solid rgba(108, 123, 255, 0.35) !important;
+      box-shadow: 0 0 0 1px rgba(108, 123, 255, 0.2), 0 0 28px rgba(108, 123, 255, 0.18) !important;
+      background: linear-gradient(180deg, rgba(108, 123, 255, 0.08), rgba(255, 255, 255, 0.02)) !important;
+    }
+    .founder-signature-script {
+      color: #ffffff !important;
+    }
+    .founder-linkedin-btn {
+      border: 1px solid rgba(108, 123, 255, 0.45) !important;
+      color: #dbe2ff !important;
+      background: rgba(108, 123, 255, 0.12) !important;
+    }
+    .founder-linkedin-btn:hover {
+      background: rgba(108, 123, 255, 0.2) !important;
+      color: #ffffff !important;
+    }
+    @media (max-width: 900px) {
+      .minimalist-hero .hero-title {
+        font-size: clamp(2.8rem, 12vw, 5rem) !important;
+        letter-spacing: -2px !important;
+      }
+    }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
@@ -3132,8 +3282,8 @@
     <section id="home" class="public-page public-page-panel" data-public-page="home">
       <div class="public-hero hero-master-container minimalist-hero">
         <article class="public-panel minimalist-hero-panel">
-          <h1 class="hero-title">CHAOS TO CLARITY. LAUNCH YOUR VISION.</h1>
-          <p class="hero-subtitle sub-headline">The local-first founder workspace for faster decisions and cleaner execution.</p>
+          <h1 class="hero-title">From founder chaos to sharp execution.</h1>
+          <p class="hero-subtitle sub-headline">Barya is your high-performance, local-first operating system for strategy, planning, and action.</p>
           <div class="hero-cta-group">
             <button class="public-btn hero-btn-primary" data-enter-app>Launch App</button>
           </div>
@@ -3170,8 +3320,8 @@
 
       <section id="founder-promise" class="landing-section-gap">
         <article class="public-panel">
-          <p class="section-kicker">Trust</p>
-          <h2 class="public-section-title mt-3">THE FOUNDER'S PROMISE</h2>
+          <p class="section-kicker">Executive Trust</p>
+          <h2 class="public-section-title mt-3">The Founder’s Promise</h2>
           <div class="founder-trust-grid mt-6">
             <div class="founder-photo-placeholder" aria-label="Placeholder for a professional photo of Shruti Barya">
               Placeholder for a professional photo of Shruti Barya
