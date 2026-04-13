@@ -1754,19 +1754,23 @@
       line-height: 1.8 !important;
       background: #ffffff !important;
       background-image: none !important;
-      color: #222222 !important;
+      color: #555555 !important;
     }
     p, li, .muted, .hero-subtitle, .editorial-block, .feature-intro {
       font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       font-weight: 400 !important;
       line-height: 1.8 !important;
-      color: #222222 !important;
+      color: #555555 !important;
     }
     h1, h2, h3 {
       font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       font-weight: 800 !important;
       letter-spacing: -0.03em !important;
       color: #000000 !important;
+    }
+    h1, h2 {
+      letter-spacing: -0.02em !important;
+      font-weight: 800 !important;
     }
     h1 {
       font-size: clamp(4.5rem, 8vw, 7rem) !important;
@@ -2752,6 +2756,117 @@
         display: flex;
       }
     }
+    #founder-promise {
+      background: #f9f9f9 !important;
+      border-top: 1px solid #ededed;
+      border-bottom: 1px solid #ededed;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .founder-signature {
+      font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.01em !important;
+      color: #111111 !important;
+    }
+    .preview-mockup {
+      margin-top: 1rem;
+      border: 1px solid #d8d8d8;
+      border-radius: 0.9rem;
+      background: #fcfcfc;
+      min-height: 170px;
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .mock-line {
+      height: 7px;
+      border-radius: 999px;
+      background: #d6d6d6;
+    }
+    .mock-line.sm { width: 32%; }
+    .mock-line.md { width: 58%; }
+    .mock-line.lg { width: 84%; }
+    .chat-bubble-row {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+    .chat-bubble {
+      height: 16px;
+      border-radius: 999px;
+      background: #d4d4d4;
+    }
+    .chat-bubble.left { width: 58%; }
+    .chat-bubble.right { width: 44%; margin-left: auto; background: #c8c8c8; }
+    .finance-head,
+    .finance-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 0.45rem;
+    }
+    .finance-cell {
+      height: 11px;
+      border-radius: 3px;
+      background: #d5d5d5;
+    }
+    .check-row {
+      display: grid;
+      grid-template-columns: 15px 1fr;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .check-box {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      border: 1.5px solid #c5c5c5;
+      background: #ffffff;
+    }
+    .site-footer {
+      background: #ffffff !important;
+      border-top: 1px solid #ececec !important;
+      padding: 1.2rem 1rem !important;
+    }
+    .footer-minimal {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.7rem;
+      color: #8a8a8a !important;
+      font-size: 0.78rem;
+    }
+    .footer-minimal a {
+      color: #8a8a8a !important;
+      text-decoration: none;
+      margin-left: 0.55rem;
+    }
+    .footer-minimal a:hover { text-decoration: underline; }
+    .onboarding-modal.hidden { display: none; }
+    .onboarding-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1800;
+      background: rgba(15, 23, 42, 0.46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .onboarding-modal-card {
+      width: min(460px, 100%);
+      background: #ffffff;
+      border-radius: 1rem;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+      padding: 1.4rem;
+      text-align: center;
+    }
+    .onboarding-modal-card p { margin-top: 0.35rem; color: #555555 !important; }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
@@ -2797,7 +2912,7 @@
               <span class="text-sm font-semibold text-slate-500">Headshot Placeholder</span>
             </div>
             <div class="public-card">
-              <h3 class="text-2xl font-bold text-slate-900">Shruti Barya</h3>
+              <h3 class="text-2xl font-bold text-slate-900 founder-signature">Shruti Barya</h3>
               <p class="muted mt-3">Building local-first tools to empower the next generation of Indian entrepreneurs.</p>
             </div>
           </div>
@@ -2820,20 +2935,39 @@
       <section id="product-preview" class="landing-section-gap">
         <div class="section-header">
           <h2 class="public-section-title">Product Preview</h2>
-          <p class="muted">Add polished screenshots here to show the exact in-product experience.</p>
+          <p class="muted">A visual teaser of the core workspace experience.</p>
         </div>
         <div class="public-grid centered-grid md:grid-cols-3 mt-5">
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Smart AI Strategy</h3>
-            <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 min-h-[170px] flex items-center justify-center text-sm text-slate-500">Screenshot Placeholder</div>
+            <h3 class="font-semibold text-slate-900">Chat UI</h3>
+            <div class="preview-mockup" aria-label="Chat UI preview mockup">
+              <div class="mock-line md"></div>
+              <div class="chat-bubble-row"><div class="chat-bubble left"></div></div>
+              <div class="chat-bubble-row"><div class="chat-bubble right"></div></div>
+              <div class="chat-bubble-row"><div class="chat-bubble left" style="width:70%"></div></div>
+              <div class="mock-line lg" style="margin-top:auto;"></div>
+            </div>
           </article>
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Live Finance Tracking</h3>
-            <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 min-h-[170px] flex items-center justify-center text-sm text-slate-500">Screenshot Placeholder</div>
+            <h3 class="font-semibold text-slate-900">Finance Table</h3>
+            <div class="preview-mockup" aria-label="Finance table preview mockup">
+              <div class="finance-head">
+                <div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div>
+              </div>
+              <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
+              <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
+              <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
+              <div class="mock-line sm" style="margin-top:auto;"></div>
+            </div>
           </article>
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Step-by-Step Launch Checklist</h3>
-            <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 min-h-[170px] flex items-center justify-center text-sm text-slate-500">Screenshot Placeholder</div>
+            <h3 class="font-semibold text-slate-900">Checklist</h3>
+            <div class="preview-mockup" aria-label="Checklist preview mockup">
+              <div class="check-row"><div class="check-box"></div><div class="mock-line lg"></div></div>
+              <div class="check-row"><div class="check-box"></div><div class="mock-line md"></div></div>
+              <div class="check-row"><div class="check-box"></div><div class="mock-line lg"></div></div>
+              <div class="check-row"><div class="check-box"></div><div class="mock-line sm"></div></div>
+            </div>
           </article>
         </div>
       </section>
@@ -3075,45 +3209,23 @@
     </section>
 
     <footer id="landingFooter" class="site-footer landing-only">
-      <div class="site-footer-grid">
-        <section>
-          <h2 class="footer-brand-title">Barya</h2>
-          <p class="footer-brand-tagline">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
-        </section>
-
-        <section>
-          <h3 class="footer-column-title">Product</h3>
-          <nav class="footer-links" aria-label="Product links">
-            <a href="#features" data-public-nav="features">Product</a>
-            <a href="#home" data-public-nav="home">How it Works</a>
-            <a href="#features" data-public-nav="features">Features</a>
-            <a href="#features" data-public-nav="features">Templates</a>
-          </nav>
-        </section>
-
-        <section>
-          <h3 class="footer-column-title">Company</h3>
-          <nav class="footer-links" aria-label="Company links">
-            <a href="#home" data-public-nav="home">Story</a>
-            <a href="#privacy" data-public-nav="privacy">Privacy Policy</a>
-            <a href="#contact" data-public-nav="contact">Contact</a>
-          </nav>
-        </section>
-
-        <section>
-          <h3 class="footer-column-title">Resources</h3>
-          <nav class="footer-links" aria-label="Resources links">
-            <a href="#features" data-public-nav="features">Guides</a>
-            <a href="#blog" data-public-nav="blog">Blog</a>
-            <a href="#features" data-public-nav="features">Startup Checklist</a>
-          </nav>
-        </section>
-      </div>
-      <div class="site-footer-bottom">
-        <p>© 2026 Barya Labs. All rights reserved.</p>
-        <p>Built with love for founders by a fellow founder.</p>
+      <div class="footer-minimal">
+        <p>Barya AI © 2024</p>
+        <p>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="#privacy" data-public-nav="privacy">Privacy</a>
+          <a href="#terms" data-public-nav="terms">Terms</a>
+        </p>
       </div>
     </footer>
+  </div>
+
+  <div id="welcomeModal" class="onboarding-modal hidden" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle">
+    <div class="onboarding-modal-card">
+      <h2 id="welcomeModalTitle" class="text-2xl font-bold text-slate-900">Welcome, Founder. Let’s set up your workspace.</h2>
+      <p class="text-sm">Load a sample dataset to preview your startup dashboard instantly.</p>
+      <button id="loadSampleStartupBtn" class="public-btn mt-5">Load Sample Startup</button>
+    </div>
   </div>
 
   <div id="appContainer" class="app-view is-hidden workspace-dashboard-view" style="display:none;">
