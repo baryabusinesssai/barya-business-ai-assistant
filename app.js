@@ -19,6 +19,7 @@
     startupReadinessTasks: 'barya_startup_readiness_tasks',
     activityLog: 'barya_activity_log',
     taskManagerTasks: 'barya_task_manager_tasks',
+    startupGuideProgress: 'barya_startup_guide_progress',
     languagePreference: 'barya_language_preference',
     profile: 'barya_profile',
     feedbackEntries: 'barya_feedback_entries',
@@ -247,43 +248,158 @@
     }
   };
 
-  const WHEN_NOT_TO_START_MODULE = {
-    title: 'When Not to Start a Business',
-    introduction: 'Use this module before launching a new venture. It helps you identify high-risk situations where delaying the start can protect your money, time, and reputation.',
-    finalTakeaway: 'A strong founder does not just know when to start. A strong founder also knows when to pause, validate, and prepare before committing fully.',
-    redFlags: [
-      {
-        title: 'No Real Customer Problem',
-        explanation: 'If your idea is interesting but does not solve a clear, painful problem, people will not pay consistently.',
-        warningSign: 'You cannot explain the customer pain in one clear sentence.',
-        whatToDo: 'Interview at least 10 target users and rewrite your offer around their exact language and urgent needs.'
-      },
-      {
-        title: 'Starting From Emotion, Not Evidence',
-        explanation: 'Excitement is useful, but business decisions need proof. Launching with assumptions increases failure risk.',
-        warningSign: 'Your confidence is high, but you have no test data, no pre-orders, and no pilot users.',
-        whatToDo: 'Run a low-cost validation sprint: landing page, outreach, and one paid test offer before building more.'
-      },
-      {
-        title: 'No Financial Runway',
-        explanation: 'Without a cushion, short-term pressure can force bad decisions and early shutdown.',
-        warningSign: 'You cannot cover personal and business essentials for the next 6 months.',
-        whatToDo: 'Create a runway plan: reduce fixed costs, keep income stability, and launch part-time until revenue is predictable.'
-      },
-      {
-        title: 'Lack of Execution Capacity',
-        explanation: 'A business needs consistent execution. If you do not have enough time, systems, or support, momentum breaks quickly.',
-        warningSign: 'Important tasks are repeatedly delayed and nothing reaches completion.',
-        whatToDo: 'Simplify scope to one core offer, set weekly execution blocks, and define a minimum operating workflow.'
-      },
-      {
-        title: 'Avoiding Market Reality',
-        explanation: 'Ignoring competition, pricing pressure, or legal requirements creates avoidable risk.',
-        warningSign: 'You have not reviewed competitors, customer alternatives, and compliance obligations.',
-        whatToDo: 'Do a structured market check: compare three competitors, map pricing, and verify basic legal/tax requirements.'
-      }
-    ]
-  };
+  const STARTUP_GUIDES = [
+    {
+      id: 'when-not-to-start',
+      title: 'When NOT to Start a Business',
+      introduction: 'This guide helps you avoid expensive founder mistakes. Sometimes the smartest move is to pause, prepare, and then launch with better timing and better data.',
+      keyConcepts: [
+        'Readiness beats hype. Business momentum comes from systems, not motivation alone.',
+        'Pain-first thinking: people pay to solve painful and urgent problems.',
+        'Personal stability matters. If your personal life is in crisis, startup pressure can multiply risk.',
+        'Validation before build. Evidence should come before heavy spending.',
+        'A delayed launch can be a strategic advantage if preparation increases your odds of survival.'
+      ],
+      warningSigns: [
+        'You cannot explain the exact customer pain in one sentence.',
+        'You are building features before talking to real buyers.',
+        'You have less than 3-6 months of personal and business runway.',
+        'You keep changing ideas weekly because there is no clear focus.',
+        'You have not checked legal, tax, or compliance basics for your market.'
+      ],
+      actionSteps: [
+        'Run 10 customer problem interviews and write down exact pain language.',
+        'Test one low-cost offer first (a paid pilot, preorder, or service version).',
+        'Create a survival budget and reduce fixed costs before full-time commitment.',
+        'Pick one customer segment and one core outcome for 90 days.',
+        'List your legal and financial setup checklist and complete it before scaling.'
+      ],
+      founderInsights: [
+        'A strong founder is not the fastest starter, but the one who makes fewer fatal mistakes.',
+        'If stress is making you reactive, pause. Calm founders make better strategic decisions.',
+        'Do not confuse activity with progress. Revenue and retention are better proof than busy days.'
+      ],
+      executionPlan: [
+        { id: 'audit-readiness', step: 'Complete a founder readiness audit for money, time, and support.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
+        { id: 'run-problem-calls', step: 'Run 10 customer problem calls before building anything.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me design 10 customer discovery questions to validate a business problem.' },
+        { id: 'validate-offer', step: 'Test one paid pilot offer this month and collect objections.', toolLabel: 'Open Idea Generator', actionType: 'open_idea_generator' },
+        { id: 'document-risks', step: 'Create a risk checklist in your memory so decisions stay evidence-based.', toolLabel: 'Open Memory', actionType: 'open_memory' }
+      ]
+    },
+    {
+      id: 'how-to-start-step-by-step',
+      title: 'How to Start a Business (Step-by-Step)',
+      introduction: 'Use this playbook as a practical launch system. It is designed for beginners who need clear order, clear decisions, and measurable weekly progress.',
+      keyConcepts: [
+        'Start with customer and problem clarity before product design.',
+        'Build a lean first offer you can deliver quickly and improve from feedback.',
+        'Cash flow focus from day one: know your pricing, costs, and margin.',
+        'Execution rhythm matters more than occasional big effort.',
+        'Simple operating systems (weekly planning, KPI check, follow-up loop) create consistency.'
+      ],
+      warningSigns: [
+        'You are writing long plans but taking no customer-facing action.',
+        'Your offer is too broad and not targeted to one clear buyer.',
+        'You cannot explain how money enters and leaves the business monthly.',
+        'You keep delaying launch because your branding or website is not perfect.',
+        'You have no follow-up process for leads or interested prospects.'
+      ],
+      actionSteps: [
+        'Step 1: Define one target segment, one painful problem, and one promised outcome.',
+        'Step 2: Create a simple offer page (what you solve, for whom, price, next step).',
+        'Step 3: Talk to 20 potential customers and ask for paid interest, not just opinions.',
+        'Step 4: Deliver to your first 3 paying customers and document what worked.',
+        'Step 5: Build your weekly operating dashboard (leads, calls, conversion, revenue, retention).',
+        'Step 6: Improve offer, pricing, and process every 7 days based on evidence.'
+      ],
+      founderInsights: [
+        'Your first version should be useful, not impressive.',
+        'The market rewards clarity: who you help, what result you deliver, and why your method is different.',
+        'Weekly reviews are founder leverage. Small adjustments compound quickly.'
+      ],
+      executionPlan: [
+        { id: 'choose-segment', step: 'Choose one customer segment and one painful problem to solve first.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
+        { id: 'draft-offer', step: 'Draft your first paid offer and value promise in plain language.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me write a simple first offer with pricing, audience, and promise.' },
+        { id: 'launch-template', step: 'Build your launch plan in a template and define 30/60/90-day milestones.', toolLabel: 'Open SaaS Template', actionType: 'open_template', templateId: 'saas-startup' },
+        { id: 'weekly-review', step: 'Run a weekly scorecard review: leads, conversions, revenue, and delivery quality.', toolLabel: 'Open Dashboard', actionType: 'open_tab', tab: 'dashboard' }
+      ]
+    },
+    {
+      id: 'market-research-validation',
+      title: 'Market Research & Validation',
+      introduction: 'This guide shows you how to test demand before scaling. Good validation helps you avoid building products people do not actually want to buy.',
+      keyConcepts: [
+        'Research has two parts: understanding the market and confirming willingness to pay.',
+        'Qualitative data (interviews) explains why buyers behave in certain ways.',
+        'Quantitative data (conversion rates, signup rates, pilot revenue) shows if demand is real.',
+        'Competition is useful data, not a reason to quit.',
+        'Validation is continuous. You keep testing messaging, pricing, and channels as you grow.'
+      ],
+      warningSigns: [
+        'You say “everyone is my customer.”',
+        'Your decision making is based on social media likes instead of buyer actions.',
+        'You avoid calling customers because you fear negative feedback.',
+        'You ignore competitor offers and pricing benchmarks.',
+        'Your tests are not time-bound, so learning is slow and unclear.'
+      ],
+      actionSteps: [
+        'Map top 5 competitors: offer, pricing, audience, promise, and trust signals.',
+        'Interview 10 ideal buyers and classify their pain by urgency and budget.',
+        'Create a test offer with clear value and a real price point.',
+        'Run a 14-day validation sprint using direct outreach and one landing page.',
+        'Track signal metrics: response rate, booked calls, paid conversions, objections.',
+        'Use feedback to sharpen positioning and remove low-value features.'
+      ],
+      founderInsights: [
+        'If people hesitate to pay, the issue is usually positioning or urgency, not effort.',
+        'Objections are market intelligence. Document them and improve your offer around them.',
+        'The fastest path to product-market fit is frequent customer conversations.'
+      ],
+      executionPlan: [
+        { id: 'competitor-map', step: 'Create a competitor map with offers, pricing, and positioning gaps.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
+        { id: 'interview-script', step: 'Prepare and run interview scripts for your top customer segment.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Generate a customer interview script for market research and validation.' },
+        { id: 'validation-sprint', step: 'Run a 14-day validation sprint and track conversion signals daily.', toolLabel: 'Open Idea Generator', actionType: 'open_idea_generator' },
+        { id: 'store-insights', step: 'Save objections and insight notes to memory for future offer updates.', toolLabel: 'Open Memory', actionType: 'open_memory' }
+      ]
+    },
+    {
+      id: 'branding-positioning-basics',
+      title: 'Branding & Positioning Basics',
+      introduction: 'Branding is how people remember and trust your business. Positioning is the strategic choice of how you are different. This guide helps you build both in a practical way.',
+      keyConcepts: [
+        'Brand is not just logo and color; it is promise, voice, and customer experience.',
+        'Positioning means owning a clear lane in the customer mind.',
+        'Specific messaging converts better than generic claims.',
+        'Consistency builds trust across website, sales calls, and delivery.',
+        'Strong positioning makes sales easier because buyers understand your value fast.'
+      ],
+      warningSigns: [
+        'Your message sounds like every competitor in your category.',
+        'Customers are confused about what you actually do.',
+        'You keep changing your brand voice every week.',
+        'Your social content and sales pitch communicate different promises.',
+        'Price objections are high because your value is not clearly framed.'
+      ],
+      actionSteps: [
+        'Define your positioning statement: “We help [audience] achieve [outcome] without [common pain] through [unique method].”',
+        'Write 3 core brand pillars (e.g., speed, clarity, reliability) and use them in all communication.',
+        'Create a message hierarchy: headline, proof points, offer details, and call-to-action.',
+        'Collect customer language from reviews, calls, and feedback; reuse that language in copy.',
+        'Audit all touchpoints monthly (website, deck, profile, onboarding) for consistency.'
+      ],
+      founderInsights: [
+        'Confused prospects do not buy. Clear positioning reduces friction.',
+        'Brand trust grows when your delivery matches your promise repeatedly.',
+        'The best beginner brand strategy is simple: be clear, be useful, and be consistent.'
+      ],
+      executionPlan: [
+        { id: 'positioning-statement', step: 'Write one clear positioning statement and test it on 5 prospects.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
+        { id: 'message-hierarchy', step: 'Build your message hierarchy (headline, proof, offer, CTA).', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me create a clear brand message hierarchy for a beginner startup.' },
+        { id: 'brand-plan', step: 'Document your brand pillars inside a business plan template for consistency.', toolLabel: 'Open E-commerce Template', actionType: 'open_template', templateId: 'ecommerce-store' },
+        { id: 'channel-audit', step: 'Audit website, profile, and sales messages to ensure one consistent voice.', toolLabel: 'Open Profile / Settings', actionType: 'open_tab', tab: 'founder' }
+      ]
+    }
+  ];
   const BUSINESS_DICTIONARY = {
     MVP: 'A basic version of a product built to test demand quickly.',
     Scalability: 'How well a business can grow without breaking operations.',
@@ -397,7 +513,8 @@
     sampleDashboardMode: false,
     readinessTasks: loadReadinessTasks(),
     activityLog: loadActivityLog(),
-    taskManagerTasks: loadTaskManagerTasks()
+    taskManagerTasks: loadTaskManagerTasks(),
+    startupGuideProgress: loadStartupGuideProgress()
   };
   let expenseChartInstance = null;
   let comparisonChartInstance = null;
@@ -476,6 +593,15 @@
     });
     const customTasks = safeSaved.filter((task) => task?.source === 'custom' || task?.source === 'roadmap');
     return [...withDefaults, ...customTasks];
+  }
+
+  function loadStartupGuideProgress() {
+    const saved = loadFromStorage(STORAGE_KEYS.startupGuideProgress, {});
+    return ensureObject(saved);
+  }
+
+  function saveStartupGuideProgress() {
+    saveToStorage(STORAGE_KEYS.startupGuideProgress, appState.startupGuideProgress);
   }
 
   function normalizeSearchText(value) {
@@ -768,14 +894,18 @@
     if (!term) return [];
     const results = [];
 
-    const guideEntries = [
-      { label: WHEN_NOT_TO_START_MODULE.title, content: `${WHEN_NOT_TO_START_MODULE.introduction} ${WHEN_NOT_TO_START_MODULE.finalTakeaway}`, anchorId: 'planningGuidesSection' },
-      ...WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => ({
-        label: item.title,
-        content: `${item.explanation} ${item.warningSign} ${item.whatToDo}`,
-        anchorId: `guide-flag-${index + 1}`
+    const guideEntries = STARTUP_GUIDES.flatMap((guide) => ([
+      {
+        label: guide.title,
+        content: `${guide.introduction} ${guide.keyConcepts.join(' ')} ${guide.warningSigns.join(' ')} ${guide.actionSteps.join(' ')} ${guide.founderInsights.join(' ')}`,
+        anchorId: `guide-${guide.id}`
+      },
+      ...guide.warningSigns.map((warningSign, index) => ({
+        label: `${guide.title}: Warning ${index + 1}`,
+        content: warningSign,
+        anchorId: `guide-${guide.id}`
       }))
-    ];
+    ]));
     guideEntries.forEach((guide) => {
       const haystack = normalizeSearchText(`${guide.label} ${guide.content}`);
       if (haystack.includes(term)) {
@@ -1889,48 +2019,132 @@
     ];
   }
 
+  function isGuideStepCompleted(guideId, stepId) {
+    return Boolean(appState.startupGuideProgress?.[`${guideId}:${stepId}`]);
+  }
 
-  function renderWhenNotToStartGuide() {
+  function toggleGuideStep(guideId, stepId, completed) {
+    if (!guideId || !stepId) return;
+    appState.startupGuideProgress[`${guideId}:${stepId}`] = Boolean(completed);
+    saveStartupGuideProgress();
+    renderStartupLearningGuides();
+  }
+
+  function runGuideAction(actionPayload = {}) {
+    const actionType = actionPayload.actionType;
+    if (!actionType) return;
+
+    if (actionType === 'add_task') {
+      addTask(actionPayload.step || 'Guide action step', 'roadmap');
+      setStatusText('taskRoadmapStatus', 'Learning step added to your Task Manager.', 'success');
+      return;
+    }
+    if (actionType === 'open_strategy') {
+      showMainApp({ tab: 'strategy', rememberStart: true });
+      const chatInput = $('chatInput');
+      if (chatInput && actionPayload.prompt) {
+        chatInput.value = actionPayload.prompt;
+        chatInput.focus();
+      }
+      return;
+    }
+    if (actionType === 'open_idea_generator') {
+      showMainApp({ tab: 'strategy', rememberStart: true });
+      const ideaInput = $('ideaGeneratorInput');
+      if (ideaInput) ideaInput.focus();
+      return;
+    }
+    if (actionType === 'open_memory') {
+      showMainApp({ tab: 'memory', rememberStart: true });
+      $('memoryInput')?.focus();
+      return;
+    }
+    if (actionType === 'open_template') {
+      showMainApp({ tab: 'planning', rememberStart: true });
+      setPlanningSection('templates');
+      if (actionPayload.templateId) selectBusinessTemplate(actionPayload.templateId);
+      document.getElementById('businessPlanning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (actionType === 'open_tab') {
+      showMainApp({ tab: actionPayload.tab || 'dashboard', rememberStart: true });
+    }
+  }
+
+
+  function renderStartupLearningGuides() {
     const container = $('whenNotToStartGuide');
     if (!container) return;
+    const guideMarkup = STARTUP_GUIDES.map((guide, guideIndex) => `
+      <article class="learning-card" id="guide-${guide.id}">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Core Guide ${guideIndex + 1}</p>
+        <h2 class="text-2xl font-semibold mt-1">${highlightBusinessTerms(guide.title)}</h2>
 
-    const redFlagCards = WHEN_NOT_TO_START_MODULE.redFlags.map((item, index) => `
-      <article class="learning-card" id="guide-flag-${index + 1}">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Red Flag ${index + 1}</p>
-        <h3 class="text-lg font-semibold mt-1">${highlightBusinessTerms(item.title)}</h3>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(item.explanation)}</p>
-        <div class="warning-box mt-3">
-          <p class="text-xs uppercase tracking-[0.16em] text-amber-700 font-semibold">Warning Sign</p>
-          <p class="text-sm text-amber-900 mt-1">${highlightBusinessTerms(item.warningSign)}</p>
+        <div class="mt-4">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Introduction</p>
+          <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(guide.introduction)}</p>
         </div>
-        <div class="action-box mt-3">
-          <p class="text-xs uppercase tracking-[0.16em] text-sky-700 font-semibold">What to Do</p>
-          <p class="text-sm text-sky-900 mt-1">${highlightBusinessTerms(item.whatToDo)}</p>
+
+        <div class="mt-5">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Key Concepts</p>
+          <ul class="mt-2 text-sm text-slate-600 leading-relaxed space-y-2">
+            ${guide.keyConcepts.map((concept) => `<li>• ${highlightBusinessTerms(concept)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="warning-box mt-5">
+          <p class="text-xs uppercase tracking-[0.16em] text-amber-700 font-semibold">Warning Signs</p>
+          <ul class="mt-2 text-sm text-amber-900 leading-relaxed space-y-2">
+            ${guide.warningSigns.map((warning) => `<li>• ${highlightBusinessTerms(warning)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="action-box mt-5">
+          <p class="text-xs uppercase tracking-[0.16em] text-sky-700 font-semibold">Action Steps</p>
+          <ol class="mt-2 text-sm text-sky-900 leading-relaxed space-y-2 list-decimal pl-5">
+            ${guide.actionSteps.map((step) => `<li>${highlightBusinessTerms(step)}</li>`).join('')}
+          </ol>
+        </div>
+
+        <div class="mt-5">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Founder Insights</p>
+          <ul class="mt-2 text-sm text-slate-600 leading-relaxed space-y-2">
+            ${guide.founderInsights.map((insight) => `<li>• ${highlightBusinessTerms(insight)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="mt-6 border-t border-slate-200 pt-5">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Action Sprint</p>
+            <p class="text-xs text-slate-500">${guide.executionPlan.filter((step) => isGuideStepCompleted(guide.id, step.id)).length}/${guide.executionPlan.length} steps completed</p>
+          </div>
+          <p class="text-sm text-slate-600 mt-2">Do these steps inside the app to convert learning into progress.</p>
+          <div class="mt-3 space-y-3">
+            ${guide.executionPlan.map((step, index) => `
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" data-guide-step-toggle="true" data-guide-id="${guide.id}" data-step-id="${step.id}" ${isGuideStepCompleted(guide.id, step.id) ? 'checked' : ''} class="mt-1 h-4 w-4" />
+                  <div class="flex-1">
+                    <p class="text-xs uppercase tracking-[0.15em] text-slate-500">Sprint Step ${index + 1}</p>
+                    <p class="text-sm text-slate-700 mt-1">${highlightBusinessTerms(step.step)}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="founder-btn mt-3"
+                  data-guide-action="true"
+                  data-guide-action-payload="${escapeHTML(JSON.stringify({ ...step, guideId: guide.id }))}"
+                >
+                  ${escapeHTML(step.toolLabel)}
+                </button>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </article>
     `).join('');
 
-    container.innerHTML = `
-      <article class="learning-card">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Title</p>
-        <h2 class="text-2xl font-semibold mt-1">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.title)}</h2>
-      </article>
-
-      <article class="learning-card">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Introduction</p>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.introduction)}</p>
-      </article>
-
-      <section class="learning-module-grid">
-        ${redFlagCards}
-      </section>
-
-      <article class="learning-card">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Final Takeaway</p>
-        <p class="text-sm text-slate-600 mt-2 leading-relaxed">${highlightBusinessTerms(WHEN_NOT_TO_START_MODULE.finalTakeaway)}</p>
-      </article>
-
-    `;
+    container.innerHTML = guideMarkup;
   }
 
   function applySettings() {
@@ -1977,7 +2191,7 @@
     if (tabName === 'planning') {
       renderBusinessPlanTemplates();
       renderBusinessPlanEditor();
-      renderWhenNotToStartGuide();
+      renderStartupLearningGuides();
     }
     if (tabName === 'memory') {
       renderMemoryEntries();
@@ -2643,6 +2857,30 @@
       });
     }
 
+    const learningGuidesContainer = $('whenNotToStartGuide');
+    if (learningGuidesContainer) {
+      learningGuidesContainer.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') return;
+        if (target.getAttribute('data-guide-step-toggle') !== 'true') return;
+        const guideId = target.getAttribute('data-guide-id') || '';
+        const stepId = target.getAttribute('data-step-id') || '';
+        toggleGuideStep(guideId, stepId, target.checked);
+      });
+
+      learningGuidesContainer.addEventListener('click', (event) => {
+        const actionButton = event.target.closest('[data-guide-action="true"]');
+        if (!actionButton) return;
+        const payloadRaw = actionButton.getAttribute('data-guide-action-payload') || '{}';
+        try {
+          const payload = JSON.parse(payloadRaw);
+          runGuideAction(payload);
+        } catch {
+          setStatusText('taskRoadmapStatus', 'Could not open learning action. Please try again.', 'error');
+        }
+      });
+    }
+
     const downloadPdfBtn = $('downloadPdfBtn');
     if (downloadPdfBtn) {
       downloadPdfBtn.addEventListener('click', () => {
@@ -2713,6 +2951,7 @@
     appState.readinessTasks = loadReadinessTasks();
     appState.activityLog = loadActivityLog();
     appState.taskManagerTasks = loadTaskManagerTasks();
+    appState.startupGuideProgress = loadStartupGuideProgress();
   }
 
   function initSelects() {
@@ -2747,7 +2986,7 @@
     renderMemoryEntries();
     renderBusinessPlanTemplates();
     renderBusinessPlanEditor();
-    renderWhenNotToStartGuide();
+    renderStartupLearningGuides();
     setPlanningSection('guides');
     applyTheme(StorageService.getItem(STORAGE_KEYS.theme, 'light') || 'light');
     window.exportToPDF = exportToPDF;
