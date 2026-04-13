@@ -46,7 +46,7 @@
       color: var(--text-primary);
       padding-top: 88px;
       overflow-x: hidden;
-      font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background-image: none;
     }
     button {
@@ -2396,9 +2396,13 @@
 
     /* Luxury SaaS polish overrides */
     h1 {
+      font-size: 72px !important;
       font-weight: 900 !important;
       letter-spacing: -0.05em !important;
-      line-height: 1.05 !important;
+      line-height: 1.1 !important;
+    }
+    h2, h3, h4, h5, h6 {
+      color: #444444 !important;
     }
     p {
       line-height: 1.6 !important;
@@ -2406,6 +2410,20 @@
     }
     *, *::before, *::after {
       box-shadow: none !important;
+    }
+    [class*="card"],
+    [class*="panel"],
+    [class*="box"],
+    .workspace-shell,
+    .glass,
+    .soft-card,
+    .landing-hero,
+    .template-card,
+    .learning-card,
+    .get-started-card {
+      border: 1px solid #F0F0F0 !important;
+      border-radius: 4px !important;
+      padding: 48px !important;
     }
     [class*="border"],
     .public-panel,
@@ -2430,9 +2448,9 @@
       position: sticky !important;
       top: 0 !important;
       z-index: 1200 !important;
-      background: rgba(255, 255, 255, 0.78) !important;
-      backdrop-filter: blur(12px) !important;
-      -webkit-backdrop-filter: blur(12px) !important;
+      background: rgba(255, 255, 255, 0.8) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
       border-bottom: 1px solid #F0F0F0 !important;
     }
     .public-navbar-inner,
@@ -2457,12 +2475,22 @@
     .workspace-primary-btn,
     .founder-btn,
     .founder-connect-btn,
-    .standalone-center-btn {
+    .standalone-center-btn,
+    #appContainer button:not(.tabBtn):not(.template-card):not(.get-started-card):not(.prompt-chip):not(.guide-box-action) {
       background: #000000 !important;
       color: #ffffff !important;
       border: 0 !important;
       padding: 16px 32px !important;
       font-weight: 600 !important;
+      transition: all 0.3s ease !important;
+    }
+    .hero-btn-primary:hover,
+    .workspace-primary-btn:hover,
+    .founder-btn:hover,
+    .founder-connect-btn:hover,
+    .standalone-center-btn:hover,
+    #appContainer button:not(.tabBtn):not(.template-card):not(.get-started-card):not(.prompt-chip):not(.guide-box-action):hover {
+      transform: translateY(-2px) !important;
     }
     .hero-btn-secondary,
     .public-enter-btn,
