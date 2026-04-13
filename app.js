@@ -2357,6 +2357,87 @@
     showPublicPage(validPages.has(hashPage) ? hashPage : 'home');
   }
 
+
+  function initMagicPreview() {
+    const form = $('magicPreviewForm');
+    const input = $('magicPreviewInput');
+    const result = $('magicPreviewResult');
+    const status = $('magicPreviewStatus');
+    const output = $('magicPreviewOutput');
+    const cta = $('magicPreviewCta');
+    if (!form || !input || !result || !status || !output || !cta) return;
+
+    let scanningTimeoutId = null;
+    let typewriterTimeoutId = null;
+
+    const clearTimers = () => {
+      if (scanningTimeoutId) {
+        clearTimeout(scanningTimeoutId);
+        scanningTimeoutId = null;
+      }
+      if (typewriterTimeoutId) {
+        clearTimeout(typewriterTimeoutId);
+        typewriterTimeoutId = null;
+      }
+    };
+
+    const buildBlueprint = (idea) => {
+      const cleaned = idea || 'your startup concept';
+      return [
+        'The Edge:',
+        `Position ${cleaned} as the fastest way for a specific niche to get one measurable outcome in under 10 minutes.`,
+        '',
+        'The First $1,000:',
+        '1) Offer a focused launch package to 10 warm leads and ask for paid pilot commitments.',
+        '2) Publish one proof-driven landing page with a clear CTA and collect deposits or pre-orders.',
+        '3) Run a 7-day outreach sprint (DM + email) and close your first 3 customers with urgency-based onboarding.',
+        '',
+        'The Tech Stack:',
+        '• Notion (operating system + SOP hub)',
+        '• Framer (high-converting landing page)',
+        '• Stripe (payments + simple checkout)'
+      ].join('\n');
+    };
+
+    const typeWriter = (text) => {
+      output.textContent = '';
+      output.classList.remove('hidden');
+      output.classList.add('typing');
+      cta.classList.remove('is-visible');
+      let index = 0;
+      const tick = () => {
+        output.textContent = text.slice(0, index);
+        index += 1;
+        if (index <= text.length) {
+          typewriterTimeoutId = setTimeout(tick, 14);
+          return;
+        }
+        output.classList.remove('typing');
+        cta.classList.add('is-visible');
+      };
+      tick();
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const idea = input.value.trim();
+      if (!idea) {
+        input.focus();
+        return;
+      }
+      clearTimers();
+      result.classList.remove('hidden');
+      status.classList.remove('hidden');
+      output.classList.add('hidden');
+      cta.classList.remove('is-visible');
+      const strategyCard = buildBlueprint(idea);
+      scanningTimeoutId = setTimeout(() => {
+        status.classList.add('hidden');
+        typeWriter(strategyCard);
+      }, 2000);
+    });
+  }
+
   function initPublicForms() {
     const contactForm = $('contactForm');
     if (contactForm) {
@@ -3053,6 +3134,7 @@
     initPlanningSections();
     initPublicNavigation();
     initPublicForms();
+    initMagicPreview();
     initControls();
     applySettings();
     renderDashboard();
