@@ -1963,6 +1963,125 @@
     [class*="border-rose"] {
       border-color: #ededed !important;
     }
+    body {
+      background: #fafafa;
+      background-image: none;
+    }
+    #appContainer {
+      max-width: 1120px;
+    }
+    #appContainer .workspace-shell,
+    #appContainer .panel article,
+    #appContainer .planning-shell,
+    #appContainer .editor-panel,
+    #appContainer .soft-card,
+    #appContainer .glass,
+    #appContainer .settings-card,
+    #appContainer .template-card,
+    #appContainer .get-started-card {
+      background: #ffffff !important;
+      border: 1px solid #ededed !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    #appContainer h1,
+    #appContainer h2,
+    #appContainer h3,
+    #appContainer h4 {
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
+    #appContainer p,
+    #appContainer li,
+    #appContainer small,
+    #appContainer .workspace-muted,
+    #appContainer .text-slate-300,
+    #appContainer .text-slate-400,
+    #appContainer .text-slate-500 {
+      color: #8a8a8a !important;
+    }
+    .tabBtn {
+      background: transparent;
+      color: #888888;
+      border: 1px solid #ededed;
+      border-radius: 999px;
+      box-shadow: none;
+    }
+    .tabBtn:hover {
+      transform: none;
+      box-shadow: none;
+      background: #ffffff;
+      color: #111111;
+      border-color: #dcdcdc;
+    }
+    .tabBtn.active {
+      background: #111111;
+      border-color: #111111;
+      color: #ffffff;
+    }
+    #chatBox {
+      background: #ffffff !important;
+      border: 1px solid #ededed !important;
+      border-radius: 1rem;
+    }
+    #chatForm #chatInput,
+    #businessAdvisorInput {
+      background: #ffffff !important;
+      border: 1px solid #ededed !important;
+      color: #111111 !important;
+    }
+    .prompt-chip {
+      background: #ffffff;
+      border: 1px solid #ededed;
+      color: #5f5f5f;
+      box-shadow: none;
+    }
+    .guide-box {
+      margin-top: 0.75rem;
+      border: 1px solid #e8e8e8;
+      border-radius: 0.9rem;
+      padding: 0.95rem;
+      background: #ffffff;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .guide-box p {
+      margin: 0;
+      color: #a1a1a1 !important;
+      font-size: 0.9rem;
+    }
+    .guide-box-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.55rem 0.95rem;
+      border-radius: 0.65rem;
+      background: #000000;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid #000000;
+    }
+    .workspace-quick-links {
+      margin-top: 0.75rem;
+      border-top: 1px solid #ededed;
+      padding-top: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .workspace-quick-links a {
+      color: #666666;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
   
   </style>
 </head>
@@ -2343,12 +2462,11 @@
         <button id="startConversationBtn" class="workspace-primary-btn inline-flex items-center justify-center text-sm" data-i18n="startConversation">Start conversation</button>
       </div>
 
-      <nav id="tabs" class="workspace-nav workspace-tabbar">
-        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium">Dashboard</button>
-        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Barya AI</button>
-        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Business Planning</button>
-        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Memory</button>
-        <button data-tab="founder" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Profile / Settings</button>
+      <nav id="tabs" class="workspace-nav workspace-tabbar" aria-label="Workspace sections">
+        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium">Overview (Dashboard)</button>
+        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Strategy (AI)</button>
+        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Planning (Templates)</button>
+        <button data-tab="finances" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Finances</button>
       </nav>
     </header>
 
@@ -2379,7 +2497,7 @@
             <button id="viewSampleDashboardBtn" type="button" class="premium-hover mt-5 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 font-semibold text-white">View Sample Dashboard</button>
           </div>
         </article>
-        <article id="dashboardTourTarget" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-2 premium-hover">
+        <article id="dashboardTourTarget" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 xl:col-span-3 premium-hover">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Finance</p>
@@ -2471,6 +2589,9 @@
           </div>
         </article>
 
+      </section>
+
+      <section id="panel-finances" class="panel hidden app-view">
         <article id="ideaGeneratorToolCard" class="dashboard-data-block glass rounded-3xl border border-indigo-800/30 p-6 premium-hover">
           <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
           <h3 class="font-semibold text-xl mt-2">Finance Workspace</h3>
@@ -2489,7 +2610,10 @@
               </select>
               <input id="expenseAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
               <button id="addExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium" data-i18n="addExpense" title="Add a new expense entry to your finance tracker">Add Expense</button>
-              <p id="financeEmptyState" class="text-xs text-slate-400 hidden">No expenses yet! Click "Add Expense" to start tracking.</p>
+              <div id="financeEmptyState" class="guide-box hidden">
+                <p>Nothing here yet. Start your journey by adding your first expense.</p>
+                <a href="#expenseAmountInput" class="guide-box-action">Add Expense</a>
+              </div>
             </div>
 
             <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
@@ -2545,10 +2669,10 @@
           <div id="chatBox" class="scrollbar-thin mt-5 h-[480px] overflow-y-auto rounded-2xl p-4 space-y-3"></div>
 
           <div id="promptChipsRow" class="mt-4 flex flex-wrap gap-2">
-            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Give business idea">💡 Give business idea</button>
-            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="How to start?">🚀 How to start?</button>
-            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Improve growth">📈 Improve growth</button>
-            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Reduce expenses">💸 Reduce expenses</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Give business idea">Give business idea</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="How to start?">How to start?</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Improve growth">Improve growth</button>
+            <button type="button" class="prompt-chip premium-hover" data-prompt-chip="Reduce expenses">Reduce expenses</button>
           </div>
           <form id="chatForm" class="mt-4 flex gap-2">
             <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" placeholder="Ask anything about your business..." data-i18n-placeholder="chatPlaceholder" />
@@ -2658,7 +2782,10 @@
                 </div>
               </div>
 
-              <p id="businessPlanStatus" class="text-sm text-slate-500 mt-4">Pick one of the planning templates to start building your document.</p>
+              <div id="businessPlanStatus" class="guide-box mt-4">
+                <p>Nothing here yet. Start your journey by selecting a template.</p>
+                <a href="#businessPlanning" class="guide-box-action">Choose Template</a>
+              </div>
               <form id="businessPlanEditorForm" class="editor-grid mt-5"></form>
             </div>
           </div>
@@ -2754,6 +2881,13 @@
         </article>
       </section>
     </main>
+
+    <footer class="workspace-quick-links" aria-label="Workspace shortcuts">
+      <a href="https://www.linkedin.com/in/baryabusiness/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="#about" data-public-nav="about">Meet the Founder</a>
+      <button type="button" data-tab="memory" class="tabBtn rounded-xl px-3 py-2 text-xs font-medium">Memory</button>
+      <button type="button" data-tab="founder" class="tabBtn rounded-xl px-3 py-2 text-xs font-medium">Profile / Settings</button>
+    </footer>
   </div>
   <script defer src="app.js"></script>
 
