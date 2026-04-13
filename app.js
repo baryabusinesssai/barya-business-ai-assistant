@@ -847,7 +847,7 @@
     if (!activityList) return;
     const recent = appState.activityLog.slice(0, 5);
     activityList.innerHTML = recent.length
-      ? recent.map((item) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">${escapeHTML(item.action)} - ${formatRelativeTime(item.ts)}</li>`).join('')
+      ? recent.map((item) => `<li class="border border-[#eeeeee] rounded px-3 py-2 bg-white text-slate-700">${escapeHTML(item.action)} - ${formatRelativeTime(item.ts)}</li>`).join('')
       : '<li class="text-slate-400">No activities yet.</li>';
   }
 
@@ -2234,6 +2234,7 @@
     }
     if (tabName === 'memory') {
       renderMemoryEntries();
+      renderActivityLog();
     }
   }
 
