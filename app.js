@@ -2213,7 +2213,7 @@
 
   function setActiveTab(tabName) {
     if (!tabName) return;
-    const tabButtons = document.querySelectorAll('#tabs [data-tab]');
+    const tabButtons = document.querySelectorAll('[data-tab]');
     document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
     tabButtons.forEach((btn) => btn.classList.remove('active'));
 
@@ -2223,8 +2223,8 @@
       target.classList.remove('fade-in');
       requestAnimationFrame(() => target.classList.add('fade-in'));
     }
-    const activeBtn = document.querySelector(`#tabs [data-tab="${tabName}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
+    const activeButtons = document.querySelectorAll(`[data-tab="${tabName}"]`);
+    activeButtons.forEach((btn) => btn.classList.add('active'));
 
     if (tabName === 'planning') {
       renderBusinessPlanTemplates();
@@ -2411,7 +2411,7 @@
   }
 
   function initTabs() {
-    const tabButtons = document.querySelectorAll('#tabs [data-tab]');
+    const tabButtons = document.querySelectorAll('[data-tab]');
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         clearGuidedFocus();
