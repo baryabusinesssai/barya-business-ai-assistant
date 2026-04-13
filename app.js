@@ -1369,9 +1369,11 @@
     if (!chatBox) return;
     chatBox.innerHTML = appState.aiChatHistory.length
       ? appState.aiChatHistory.map((item) => {
-          const roleClass = item.role === 'user' ? 'border-indigo-500/40' : 'border-emerald-500/40';
+          const roleClass = item.role === 'user'
+            ? 'workspace-minimal-card border-slate-300 bg-white'
+            : 'workspace-minimal-card border-blue-100 bg-blue-50';
           const prefix = item.role === 'user' ? 'You' : 'Barya AI';
-          return `<div class="rounded-xl border ${roleClass} bg-slate-900/80 p-3"><p class="text-xs text-slate-400">${prefix}</p><p class="mt-1 text-sm">${item.text}</p></div>`;
+          return `<div class="rounded-xl border ${roleClass} p-3"><p class="text-xs text-slate-500">${prefix}</p><p class="mt-1 text-sm text-slate-800">${item.text}</p></div>`;
         }).join('')
       : '<p class="text-slate-400 text-sm">No messages yet. Start a conversation.</p>';
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -1385,7 +1387,7 @@
     }
     if (history) {
       history.innerHTML = appState.businessAdvisorHistory.length
-        ? appState.businessAdvisorHistory.slice(0, 5).map((entry) => `<li class="bg-slate-900/70 border border-slate-700 rounded-xl p-2"><span class="text-slate-400">Q:</span> ${entry.question}<br><span class="text-slate-400">A:</span> ${entry.advice}</li>`).join('')
+        ? appState.businessAdvisorHistory.slice(0, 5).map((entry) => `<li class="workspace-minimal-card rounded-xl p-3"><span class="text-slate-500">Q:</span> ${entry.question}<br><span class="text-slate-500">A:</span> ${entry.advice}</li>`).join('')
         : '<li class="text-slate-400">No advisor history yet.</li>';
     }
   }
