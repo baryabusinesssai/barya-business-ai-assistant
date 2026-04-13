@@ -1137,12 +1137,15 @@
   function detectIntentAndDomain(message) {
     const text = String(message || '').toLowerCase();
     const domainRules = [
-      { domain: 'idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea'] },
-      { domain: 'startup', intent: 'startup_setup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture', 'mvp', 'how to start'] },
-      { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost'] },
-      { domain: 'marketing', intent: 'marketing_execution', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding', 'content', 'campaign'] },
-      { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel'] },
-      { domain: 'strategy', intent: 'strategy_planning', keywords: ['plan', 'planning', 'roadmap', 'strategy', 'goals', 'milestone', 'decision', 'priorities'] }
+      { domain: 'idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea', 'niche'] },
+      { domain: 'startup', intent: 'startup_setup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture', 'mvp', 'how to start', 'validate'] },
+      { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost', 'runway', 'burn'] },
+      { domain: 'marketing', intent: 'marketing_execution', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding', 'content', 'campaign', 'positioning', 'messaging'] },
+      { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel', 'conversion', 'leads'] },
+      { domain: 'product', intent: 'product_thinking', keywords: ['product', 'feature', 'roadmap', 'onboarding', 'ux', 'user feedback', 'churn'] },
+      { domain: 'founder', intent: 'founder_mindset', keywords: ['mindset', 'focus', 'discipline', 'founder', 'motivation', 'overwhelm', 'confidence'] },
+      { domain: 'templates', intent: 'business_templates', keywords: ['template', 'framework', 'checklist', 'canvas', 'business plan template'] },
+      { domain: 'planning', intent: 'planning_execution', keywords: ['plan', 'planning', 'strategy', 'goals', 'milestone', 'decision', 'priorities', 'quarterly plan', '90-day'] }
     ];
     const matched = domainRules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
     return matched || { domain: 'general', intent: 'general_support' };
@@ -1176,18 +1179,16 @@
   function buildStructuredReply(config, userMessage, contextSnippets) {
     if (!config) return '';
     const contextLine = contextSnippets.length > 1
-      ? `I’m using your recent context: ${contextSnippets.slice(0, 2).join(' → ')}.`
+      ? `Based on your recent context: ${contextSnippets.slice(0, 2).join(' → ')}.`
       : '';
     const parts = [
-      `1) Explanation\n${config.explanation}${contextLine ? ` ${contextLine}` : ''}`,
-      `2) Action steps\n- ${config.steps.join('\n- ')}`,
-      `3) Quick tip\n${config.quickTip}`
+      `Clear Answer:\n${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
+      `Why It Matters:\n${config.whyItMatters}`,
+      `Action Steps:\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
+      `Founder Tip:\n${config.founderTip}`
     ];
-    if (config.nextSteps?.length) {
-      parts.push(`Next steps\n- ${config.nextSteps.join('\n- ')}`);
-    }
-    if (config.relatedActions?.length) {
-      parts.push(`Related actions\n- ${config.relatedActions.join('\n- ')}`);
+    if (config.nextMove) {
+      parts.push(`Next Move:\n${config.nextMove}`);
     }
     return parts.join('\n\n');
   }
@@ -1200,123 +1201,156 @@
     const tooVague = userMessage.split(/\s+/).filter(Boolean).length < 3;
     if (!userMessage || tooVague) {
       return [
-        '1) Explanation',
-        'I can help better with a specific request.',
+        'Clear Answer:',
+        'I can give you a founder-quality plan, but I need one clear business context first.',
         '',
-        '2) Action steps',
-        '- Tell me your domain: startup, marketing, finance, growth, strategy, or idea.',
-        '- Add your stage (idea, early traction, or scaling).',
-        '- Include one target metric or deadline.',
+        'Why It Matters:',
+        'Without a concrete context, advice becomes generic and hard to execute.',
         '',
-        '3) Quick tip',
-        'Try: "How do I reduce monthly expenses by 15% in 30 days?"'
+        'Action Steps:',
+        '1. Share your domain: startup, marketing, growth, finance, product, or planning.',
+        '2. Tell me your current stage: idea, early traction, or scaling.',
+        '3. Add one hard target and deadline (example: 20 qualified leads in 30 days).',
+        '',
+        'Founder Tip:',
+        'The quality of your decision-making is proportional to the clarity of your constraints.',
+        '',
+        'Next Move:',
+        'Reply with: "I run [business type], my goal is [metric], and my deadline is [date]."'
       ].join('\n');
     }
 
     const responseMap = {
       startup: [
         {
-          explanation: 'Startup mode: we should keep this beginner-friendly and execution-first.',
-          steps: ['Define one customer problem in one sentence.', 'Build a tiny MVP that solves only that problem.', 'Run 10 validation calls and collect objections.', 'Launch a paid pilot before adding more features.'],
-          quickTip: 'Charge early to confirm demand.',
-          nextSteps: ['Draft your 7-day validation plan.', 'Set one success metric (e.g., 3 pilot users).'],
-          relatedActions: ['Open Workspace > Business Plan template.', 'Ask: "Create my first-week founder checklist."']
+          clearAnswer: 'Start by narrowing to one painful customer problem, one target segment, and one minimal paid offer.',
+          whyItMatters: 'Most early startups fail from broad scope and delayed validation, not from lack of ideas.',
+          steps: ['Define the customer pain in one sentence and one segment.', 'Create a minimum offer you can sell this week.', 'Run 10 interviews and capture objections word-for-word.', 'Launch a paid pilot before expanding product scope.'],
+          founderTip: 'Revenue is stronger validation than positive feedback.',
+          nextMove: 'Ask me for a 14-day startup validation sprint tailored to your idea.'
         },
         {
-          explanation: 'Treat your launch as a short experiment, not a perfect product release.',
-          steps: ['Pick one audience segment.', 'Write one clear offer with expected outcome.', 'Test with a landing page + outreach.', 'Review signal weekly and iterate fast.'],
-          quickTip: 'Speed beats complexity in week 1.',
-          nextSteps: ['Define your first acquisition channel.', 'Set weekly review on Friday.'],
-          relatedActions: ['Ask for a 30-day launch roadmap.']
+          clearAnswer: 'Treat your launch as a controlled experiment with a strict timeline and measurable outcomes.',
+          whyItMatters: 'Founders lose months polishing products before proving demand.',
+          steps: ['Select one audience segment with urgent pain.', 'Write one clear promise and measurable result.', 'Test through a simple page plus direct outreach.', 'Review weekly signals and cut non-performing features quickly.'],
+          founderTip: 'Speed to learning beats feature completeness.',
+          nextMove: 'Ask for a launch scorecard to evaluate traction each week.'
         }
       ],
       marketing: [
         {
-          explanation: 'Marketing mode: focus on practical channels and measurable actions.',
-          steps: ['Choose one primary platform (Instagram, LinkedIn, or WhatsApp).', 'Publish proof-based content 4x/week.', 'Use one CTA in every post.', 'Track lead replies and conversion weekly.'],
-          quickTip: 'One channel done consistently beats five weak channels.',
-          nextSteps: ['Create a 14-day content sprint.', 'Collect 3 customer testimonials.'],
-          relatedActions: ['Ask for post ideas per platform.']
+          clearAnswer: 'Choose one channel, one audience, and one conversion goal before creating more content.',
+          whyItMatters: 'Marketing without focus creates activity, not pipeline.',
+          steps: ['Pick your highest-probability channel for the next 30 days.', 'Build messaging around one painful customer outcome.', 'Publish proof-backed content 4 times weekly.', 'Track lead-to-call and call-to-close conversion weekly.'],
+          founderTip: 'Distribution consistency is usually more important than content volume.',
+          nextMove: 'Ask me for a 2-week content and outreach calendar.'
         },
         {
-          explanation: 'Use customer language in your messaging to improve response quality.',
-          steps: ['List top 5 customer pains.', 'Turn each pain into one post angle.', 'Add before/after proof or case snippet.', 'Retarget people who engaged but did not buy.'],
-          quickTip: 'Hook + proof + CTA is a strong content formula.',
-          nextSteps: ['Build a basic lead tracker sheet.'],
-          relatedActions: ['Ask: "Give me 10 LinkedIn hooks for my offer."']
+          clearAnswer: 'Improve growth by upgrading your message-market fit before increasing ad spend.',
+          whyItMatters: 'Weak messaging inflates CAC and lowers conversion across every channel.',
+          steps: ['List top five customer pains in their own words.', 'Turn each pain into a single offer angle.', 'Add one proof point in every campaign asset.', 'Retarget engaged non-buyers with objection-handling content.'],
+          founderTip: 'If people do not understand your value in 10 seconds, they will not buy in 10 days.',
+          nextMove: 'Ask me for conversion-focused messaging rewrites for your current offer.'
         }
       ],
       finance: [
         {
-          explanation: `Finance mode: protect runway and reduce burn. Current net savings: ${formatCurrency(totals.netSavings)}.`,
-          steps: ['Separate fixed vs variable expenses.', 'Cut lowest-ROI costs first.', 'Negotiate recurring vendor bills.', 'Set weekly spending caps by category.'],
-          quickTip: 'Protect at least 3 months of operating runway.',
-          nextSteps: ['Identify top 3 cost categories this week.', 'Set a 10-15% expense reduction target.'],
-          relatedActions: ['Use Reduce expenses prompt for a focused plan.']
+          clearAnswer: `Protect runway first: cut low-ROI spending and redirect cash toward revenue-generating activities. Current net savings: ${formatCurrency(totals.netSavings)}.`,
+          whyItMatters: 'Cash constraints kill otherwise good businesses when decisions are delayed.',
+          steps: ['Split expenses into must-have vs optional immediately.', 'Cut or pause the bottom 20% ROI tools and subscriptions.', 'Negotiate your top recurring costs this week.', 'Set category spending caps and review every Monday.'],
+          founderTip: 'Runway buys time; time buys strategic options.',
+          nextMove: 'Ask me for a 30-day cash preservation and revenue recovery plan.'
         },
         {
-          explanation: 'Your financial system should make decisions easier, not more complex.',
-          steps: ['Create must-have vs optional spending list.', 'Pause optional tools for 30 days.', 'Review revenue-per-expense weekly.', 'Reinvest only into channels with clear ROI.'],
-          quickTip: 'Cash discipline creates strategic freedom.',
-          nextSteps: ['Track runway every Monday.'],
-          relatedActions: ['Ask for a zero-based budget template.']
+          clearAnswer: 'Build a simple operating finance system that drives weekly decisions, not monthly surprises.',
+          whyItMatters: 'Founders who track only totals miss where profit is leaking.',
+          steps: ['Set a weekly P&L review cadence.', 'Track revenue per major expense category.', 'Pause non-critical spend for 30 days.', 'Reinvest only where payback is measurable.'],
+          founderTip: 'What you measure weekly, you can improve quarterly.',
+          nextMove: 'Ask me for a founder-friendly budget tracker structure.'
         }
       ],
       growth: [
         {
-          explanation: 'Growth mode: scale only what is already working.',
-          steps: ['Find your best-performing acquisition channel.', 'Improve conversion before increasing spend.', 'Build a referral or partner loop.', 'Strengthen onboarding to improve retention.'],
-          quickTip: 'Retention is a growth multiplier.',
-          nextSteps: ['Set one acquisition KPI and one retention KPI.'],
-          relatedActions: ['Ask for a customer acquisition funnel review.']
+          clearAnswer: 'Scale only the channel and offer combination that already converts profitably.',
+          whyItMatters: 'Premature scaling amplifies inefficiencies and burns cash faster.',
+          steps: ['Identify your strongest acquisition channel by conversion quality.', 'Improve landing page and sales conversion before adding budget.', 'Add one referral or partner loop for lower-cost growth.', 'Fix onboarding drop-offs to improve retention.'],
+          founderTip: 'Retention is compounding growth, not a support function.',
+          nextMove: 'Ask for a full-funnel diagnostic from click to retained customer.'
         },
         {
-          explanation: 'Sustainable growth requires repeatable systems, not random tactics.',
-          steps: ['Document your winning funnel.', 'Automate follow-ups.', 'Run weekly experiment cycles.', 'Scale budget only after stable conversion.'],
-          quickTip: 'Improve conversion by 1% before doubling ad spend.',
-          nextSteps: ['Launch one growth experiment this week.'],
-          relatedActions: ['Ask for 5 low-cost acquisition ideas.']
+          clearAnswer: 'Build a repeatable growth engine by standardizing what works and testing one variable at a time.',
+          whyItMatters: 'Unstructured experimentation creates noisy data and weak decisions.',
+          steps: ['Document your current winning funnel stages.', 'Automate follow-ups on warm leads.', 'Run one controlled growth experiment per week.', 'Scale spend only after stable conversion for two cycles.'],
+          founderTip: 'A 1% conversion gain can outperform a 30% budget increase.',
+          nextMove: 'Ask me to design a 4-week experiment roadmap.'
         }
       ],
-      strategy: [
+      product: [
         {
-          explanation: 'Strategy mode: make decisions using priorities and trade-offs.',
-          steps: ['Define your main goal for the next 90 days.', 'List top 3 strategic options.', 'Score each option by impact, effort, and risk.', 'Commit to one and define milestones.'],
-          quickTip: 'A focused no-list protects your roadmap.',
-          nextSteps: ['Create a decision memo for your top option.'],
-          relatedActions: ['Ask for a 90-day strategic plan.']
+          clearAnswer: 'Prioritize product decisions based on user pain severity, frequency, and willingness to pay.',
+          whyItMatters: 'Feature-heavy roadmaps without customer value increase churn and delivery waste.',
+          steps: ['Rank top user pain points from interviews or support data.', 'Choose one problem for the next sprint.', 'Ship the smallest usable improvement fast.', 'Measure activation, retention, or conversion impact after release.'],
+          founderTip: 'Roadmaps should follow customer pain, not internal preference.',
+          nextMove: 'Ask me to build a product prioritization matrix for your backlog.'
         },
         {
-          explanation: 'Good strategy is clear sequencing: what now, what later, and what not at all.',
-          steps: ['Choose one core metric to win.', 'Align team tasks to that metric.', 'Set weekly checkpoints.', 'Review and reallocate resources monthly.'],
-          quickTip: 'If everything is priority, nothing is priority.',
-          nextSteps: ['Define weekly strategic review cadence.'],
-          relatedActions: ['Ask for milestone planning support.']
+          clearAnswer: 'Use a tight build-measure-learn loop to reduce product risk quickly.',
+          whyItMatters: 'Slow feedback loops delay course corrections and waste engineering cycles.',
+          steps: ['Define one success metric before building.', 'Release in small increments to real users.', 'Collect behavior plus qualitative feedback.', 'Decide to double down, iterate, or remove quickly.'],
+          founderTip: 'The fastest learning loop usually wins the market.',
+          nextMove: 'Ask for a weekly product decision review template.'
+        }
+      ],
+      founder: [
+        {
+          clearAnswer: 'Operate like an investor in your own time: focus on high-leverage decisions and remove low-value work.',
+          whyItMatters: 'Founder overwhelm is usually a prioritization failure, not a workload problem.',
+          steps: ['Define your top business outcome for this quarter.', 'Schedule daily deep work for mission-critical tasks.', 'Delegate or eliminate low-leverage admin work.', 'Run a weekly founder review: wins, blockers, next priorities.'],
+          founderTip: 'Discipline in prioritization is a competitive advantage.',
+          nextMove: 'Ask for a founder operating system for weekly execution.'
+        }
+      ],
+      templates: [
+        {
+          clearAnswer: 'Use decision templates to increase speed and consistency in execution.',
+          whyItMatters: 'Founders often lose momentum recreating structure for repeat decisions.',
+          steps: ['Pick one template: validation plan, marketing sprint, or budget review.', 'Customize it for your current stage and constraints.', 'Use it for one weekly cycle.', 'Refine based on what improved decision quality.'],
+          founderTip: 'Templates reduce decision fatigue so you can focus on leverage.',
+          nextMove: 'Ask me to generate a specific template for your business stage.'
+        }
+      ],
+      planning: [
+        {
+          clearAnswer: 'Build a 90-day plan with one primary objective, three milestones, and weekly metrics.',
+          whyItMatters: 'Founders with vague plans drift into reactive execution.',
+          steps: ['Set one quarterly objective tied to revenue or growth.', 'Define three milestone outcomes.', 'Break milestones into weekly priorities.', 'Review performance every Friday and reallocate resources.'],
+          founderTip: 'Strategic clarity is the antidote to busy but ineffective work.',
+          nextMove: 'Ask me for a complete 90-day operating plan.'
         }
       ],
       idea: [
         {
-          explanation: 'Idea mode: generate multiple practical options you can test quickly.',
-          steps: ['Brainstorm 3 ideas around one customer pain.', 'Pick the easiest idea to monetize quickly.', 'Validate with 10 quick conversations.', 'Run a paid micro-test for the top idea.'],
-          quickTip: 'Best first idea = fastest to test, not fanciest.',
-          nextSteps: ['Ask me to generate ideas by budget or skillset.'],
-          relatedActions: ['Use button: Give business idea.']
+          clearAnswer: 'Choose ideas by speed-to-validation and speed-to-cash, not by complexity.',
+          whyItMatters: 'Great founders optimize for fast signal gathering before deep investment.',
+          steps: ['Generate three ideas around one painful customer problem.', 'Score ideas by setup time, margin potential, and demand proof.', 'Pick one and test with direct outreach this week.', 'Run a paid micro-offer to validate real intent.'],
+          founderTip: 'The best first business is the one that reaches paying users fastest.',
+          nextMove: 'Ask for idea options based on your skills, budget, and available time.'
         },
         {
-          explanation: 'We should optimize for real demand signals, not personal assumptions.',
-          steps: ['Create 5 problem-solution idea pairs.', 'Rate each by demand, margin, and setup time.', 'Select top 2 and test offers.', 'Keep the one with strongest paid interest.'],
-          quickTip: 'Paid intent is the strongest validation signal.',
-          nextSteps: ['Ask for idea scoring matrix.'],
-          relatedActions: ['Ask for niche-specific idea list.']
+          clearAnswer: 'Use a structured idea filter so you pursue opportunities with strong market pull.',
+          whyItMatters: 'Most idea failure comes from selecting based on excitement instead of demand.',
+          steps: ['Write five problem-solution ideas in one page.', 'Rate each on demand, margin, and delivery feasibility.', 'Test top two offers with real prospects.', 'Keep only the idea with strongest paid traction.'],
+          founderTip: 'Paid intent is a stronger signal than compliments.',
+          nextMove: 'Ask me for a plug-and-play idea scoring sheet.'
         }
       ],
       general: [
         {
-          explanation: 'I can act as your founder assistant across startup, marketing, finance, growth, strategy, and idea workflows.',
-          steps: ['Tell me your current challenge.', 'Choose one domain to focus.', 'Share deadline and expected outcome.'],
-          quickTip: 'Specific questions get stronger action plans.',
-          nextSteps: ['Try one of the suggestion buttons below the chat.'],
-          relatedActions: ['Ask: "How to start?" or "Improve growth".']
+          clearAnswer: 'I can help you make practical business decisions across startup planning, growth, marketing, finance, product, and execution.',
+          whyItMatters: 'Structured decisions reduce confusion and accelerate founder progress.',
+          steps: ['State your current challenge in one sentence.', 'Add your stage and available resources.', 'Define one measurable result and timeline.', 'Pick one domain so we create a focused plan.'],
+          founderTip: 'General questions create general answers; precise inputs create strategic outputs.',
+          nextMove: 'Ask a specific question like: "How do I acquire 20 qualified leads in 30 days?"'
         }
       ]
     };
