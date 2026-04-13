@@ -1015,7 +1015,7 @@
     const dashboardState = getDashboardRenderState();
     const totals = calculateTotals(dashboardState);
     const showEmpty = shouldShowDashboardEmptyState();
-    $('dashboardEmptyState')?.classList.toggle('hidden', !showEmpty);
+    $('workspaceOverviewState')?.classList.toggle('hidden', !showEmpty);
     document.querySelectorAll('.dashboard-data-block').forEach((node) => node.classList.toggle('hidden', showEmpty));
 
     if ($('overviewIncome')) $('overviewIncome').textContent = formatCurrency(totals.monthlyIncome);
