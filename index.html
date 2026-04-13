@@ -492,6 +492,16 @@
       border-color: #818cf8;
       box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.5), 0 0 22px rgba(99, 102, 241, 0.24);
     }
+    .recommended-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid #c7d2fe;
+      background: #eef2ff;
+      color: #4338ca;
+    }
     @media (max-width: 640px) {
       .backup-restore-actions {
         grid-template-columns: 1fr;
@@ -619,7 +629,7 @@
     .editor-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: .85rem;
+      gap: 1.1rem;
     }
     .editor-field-card {
       background: rgba(255, 255, 255, 0.66);
@@ -2086,23 +2096,23 @@
             <div id="businessPlanning" class="planning-shell mt-6">
             <div class="template-hero-grid mt-2">
               <button type="button" class="template-card template-hero-card premium-hover" data-template-id="coffee-shop">
-                <p class="text-3xl">☕</p>
                 <h3 class="font-bold text-xl mt-3">Coffee Shop</h3>
-                <p class="text-sm text-slate-500 mt-2">Perfect for local café launches, pricing, and daily operations.</p>
-                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+                <p class="text-sm text-slate-500 mt-2">Structured planning for local café launch, menu economics, and operating workflow.</p>
+                <p class="text-xs text-slate-500 mt-3">Use case: Founders opening a neighborhood café or coffee bar.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Start Building</span>
               </button>
               <button type="button" class="template-card template-hero-card recommended premium-hover" data-template-id="saas-startup">
-                <p class="text-xs uppercase tracking-[0.2em] text-indigo-500 font-semibold">Recommended</p>
-                <p class="text-3xl mt-2">💻</p>
+                <p class="text-xs uppercase tracking-[0.2em] text-indigo-500 font-semibold recommended-badge">Recommended</p>
                 <h3 class="font-bold text-xl mt-3">SaaS</h3>
-                <p class="text-sm text-slate-500 mt-2">Great for product strategy, acquisition funnels, and recurring revenue.</p>
-                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+                <p class="text-sm text-slate-500 mt-2">Execution-focused plan for product scope, acquisition channels, and recurring revenue growth.</p>
+                <p class="text-xs text-slate-500 mt-3">Use case: Teams building or scaling subscription software products.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Start Building</span>
               </button>
               <button type="button" class="template-card template-hero-card premium-hover" data-template-id="ecommerce-store">
-                <p class="text-3xl">🛍️</p>
                 <h3 class="font-bold text-xl mt-3">E-commerce</h3>
-                <p class="text-sm text-slate-500 mt-2">Built for store setup, logistics, conversion flow, and repeat sales.</p>
-                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Build Now</span>
+                <p class="text-sm text-slate-500 mt-2">Complete framework for online store strategy, operations, and repeat purchase growth.</p>
+                <p class="text-xs text-slate-500 mt-3">Use case: Founders launching a direct-to-consumer retail brand.</p>
+                <span class="inline-flex mt-4 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs font-semibold">Start Building</span>
               </button>
             </div>
             <p id="businessPlanFallback" class="mt-4 text-sm text-rose-600"></p>
@@ -2117,8 +2127,8 @@
                 </div>
                 <div class="editor-actions">
                   <button id="businessPlanGenerateAIBtn" class="editor-btn editor-btn-primary founder-btn" type="button">Generate with AI</button>
-                  <button id="planningPdfBtn" class="editor-btn editor-btn-secondary founder-btn" type="button">Export Plan PDF</button>
-                  <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save Template</button>
+                  <button id="planningPdfBtn" class="editor-btn editor-btn-secondary founder-btn" type="button">Export Plan (PDF)</button>
+                  <button id="businessPlanSaveBtn" class="editor-btn editor-btn-primary" type="button">Save</button>
                   <button id="businessPlanResetBtn" class="editor-btn editor-btn-secondary" type="button">Reset</button>
                 </div>
               </div>
