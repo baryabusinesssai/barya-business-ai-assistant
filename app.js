@@ -22,7 +22,8 @@
     languagePreference: 'barya_language_preference',
     profile: 'barya_profile',
     feedbackEntries: 'barya_feedback_entries',
-    contactMessages: 'barya_contact_messages'
+    contactMessages: 'barya_contact_messages',
+    pwaCleanupDone: 'barya_pwa_cleanup_done'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -2417,7 +2418,23 @@
     }
   }
 
+  function unregisterLegacyServiceWorkers() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const hasRunCleanup = StorageService.getItem(STORAGE_KEYS.pwaCleanupDone, 'false') === 'true';
+    if (hasRunCleanup) return;
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .then(() => {
+        StorageService.setItem(STORAGE_KEYS.pwaCleanupDone, 'true');
+      })
+      .catch(() => {});
+  }
+
   function initApp() {
+    unregisterLegacyServiceWorkers();
     hydrateState();
     initSelects();
     initTabs();
