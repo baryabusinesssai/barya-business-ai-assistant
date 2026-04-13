@@ -1684,7 +1684,7 @@
 
   function analyzeChallenge(input) {
     const message = String(input || '').toLowerCase().trim();
-    if (!message || message.split(/\s+/).length < 3) return 'general';
+    if (!message) return 'general';
 
     const hasAny = (keywords) => keywords.some((word) => message.includes(word));
 
@@ -1706,6 +1706,8 @@
     if (hasAny(['confused', 'unclear', 'not sure', 'strategy', 'direction', 'what should i do first'])) {
       return 'strategy';
     }
+
+    if (message.split(/\s+/).length < 3) return 'general';
 
     return 'general';
   }
