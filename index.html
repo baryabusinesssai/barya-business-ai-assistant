@@ -2304,12 +2304,14 @@
     }
     /* Final minimalist hero + navbar */
     .public-navbar {
-      background: #ffffff !important;
-      border-bottom: 1px solid #e5e7eb !important;
-      backdrop-filter: none !important;
+      background: rgba(255, 255, 255, 0.92) !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      min-height: 80px !important;
     }
     .public-navbar-inner {
-      min-height: 56px !important;
+      min-height: 80px !important;
       width: min(1120px, calc(100% - 2rem)) !important;
     }
     .public-navbar-inner > a {
@@ -2336,9 +2338,11 @@
       border-color: #000000 !important;
     }
     .minimalist-hero {
-      display: block !important;
-      padding-top: 140px !important;
-      padding-bottom: 120px !important;
+      display: grid !important;
+      align-items: center !important;
+      min-height: 80vh !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
     }
     .minimalist-hero-panel {
       background: transparent !important;
@@ -2350,19 +2354,19 @@
     }
     .minimalist-hero .hero-title {
       max-width: 1100px !important;
-      font-size: 4.5rem !important;
-      line-height: 1.05 !important;
+      font-size: 80px !important;
+      line-height: 1 !important;
       text-align: center !important;
       color: #000000 !important;
       margin: 0 auto !important;
-      letter-spacing: -0.04em !important;
+      letter-spacing: -4px !important;
     }
     .minimalist-hero .hero-subtitle {
       color: #666666 !important;
       text-align: center !important;
       margin: 1.5rem auto 0 !important;
-      max-width: 760px !important;
-      font-size: 1.15rem !important;
+      max-width: 600px !important;
+      font-size: 20px !important;
     }
     .hero-cta-group {
       margin-top: 2.2rem !important;
@@ -2395,11 +2399,33 @@
     }
 
     /* Luxury SaaS polish overrides */
+    :root {
+      --primary: #000000;
+      --secondary: #444444;
+      --bg: #ffffff;
+      --border: #f0f0f0;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+    }
+    body {
+      background-color: var(--bg) !important;
+      color: var(--primary) !important;
+      font-family: var(--font-main) !important;
+      line-height: 1.6 !important;
+    }
     h1 {
-      font-size: 72px !important;
+      font-size: 80px !important;
       font-weight: 900 !important;
-      letter-spacing: -0.05em !important;
-      line-height: 1.1 !important;
+      letter-spacing: -4px !important;
+      line-height: 1 !important;
+      text-align: center !important;
+      margin-bottom: 24px !important;
+    }
+    p.sub-headline {
+      font-size: 20px !important;
+      color: var(--secondary) !important;
+      text-align: center !important;
+      max-width: 600px !important;
+      margin: 0 auto 48px auto !important;
     }
     h2, h3, h4, h5, h6 {
       color: #444444 !important;
@@ -2479,9 +2505,10 @@
     #appContainer button:not(.tabBtn):not(.template-card):not(.get-started-card):not(.prompt-chip):not(.guide-box-action) {
       background: #000000 !important;
       color: #ffffff !important;
-      border: 0 !important;
-      padding: 16px 32px !important;
-      font-weight: 600 !important;
+      border: none !important;
+      border-radius: 4px !important;
+      padding: 18px 40px !important;
+      font-weight: 700 !important;
       transition: all 0.3s ease !important;
     }
     .hero-btn-primary:hover,
@@ -2503,6 +2530,45 @@
       padding: 16px 32px !important;
       font-weight: 600 !important;
     }
+    .public-card,
+    .public-panel {
+      background: #ffffff !important;
+      border: 1px solid #f0f0f0 !important;
+      box-shadow: none !important;
+      padding: 48px !important;
+    }
+    .founder-spotlight {
+      margin-top: 4rem !important;
+    }
+    .founder-card {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 2rem !important;
+      text-align: left !important;
+      align-items: start !important;
+    }
+    .founder-name-row {
+      display: block !important;
+    }
+    .founder-card > .section-kicker,
+    .founder-card > .founder-name-row,
+    .founder-card > .editorial-block {
+      grid-column: 1 !important;
+    }
+    .founder-card > .quote-block,
+    .founder-card > .founder-link-btn {
+      grid-column: 2 !important;
+    }
+    .founder-link-btn {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 4px !important;
+      padding: 18px 40px !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      width: fit-content !important;
+    }
     .founder-signature {
       font-family: "Cormorant Garamond", "Georgia", "Times New Roman", serif !important;
       letter-spacing: -0.02em !important;
@@ -2512,8 +2578,13 @@
         font-size: clamp(2.4rem, 9vw, 4.5rem) !important;
       }
       .minimalist-hero {
-        padding-top: 120px !important;
-        padding-bottom: 90px !important;
+        min-height: 70vh !important;
+      }
+      .founder-card {
+        grid-template-columns: 1fr !important;
+      }
+      .founder-card > * {
+        grid-column: 1 !important;
       }
     }
 </style>
@@ -2544,8 +2615,8 @@
     <section id="home" class="public-page public-page-panel" data-public-page="home">
       <div class="public-hero hero-master-container minimalist-hero">
         <article class="public-panel minimalist-hero-panel">
-          <h1 class="hero-title">Build. Scale. Automate. The AI Workspace for India’s Next Founders.</h1>
-          <p class="hero-subtitle">A minimalist ecosystem to manage your strategy, finance, and growth—without the clutter.</p>
+          <h1 class="hero-title">BUILD. SCALE. AUTOMATE.</h1>
+          <p class="hero-subtitle sub-headline">A minimalist ecosystem to manage your strategy, finance, and growth—without the clutter.</p>
           <div class="hero-cta-group">
             <button class="public-btn hero-btn-primary" data-enter-app>Start Free</button>
             <a href="#how-it-works" class="public-btn hero-btn-secondary no-underline">View Templates</a>
@@ -2628,35 +2699,39 @@
         </div>
       </section>
 
-      <section class="landing-section-gap founder-spotlight">
-        <div class="section-header">
-          <h2 class="public-section-title">Meet the Founder</h2>
-        </div>
-        <article class="public-panel founder-card" aria-label="Founder card">
-          <p class="section-kicker">Meet the Founder</p>
-          <div class="founder-name-row mt-3">
-            <h2 class="public-section-title founder-signature">Shruti Barya</h2>
-            <span class="founder-badge">Verified Founder</span>
-          </div>
-          <p class="editorial-block mt-4">Barya was designed to remove visual noise and operational chaos so founders can focus on strategy and execution. Every section is intentionally minimal, local-first, and built to keep momentum consistent week after week.</p>
-          <p class="quote-block">“Simple systems, clear decisions, and focused action create long-term startup resilience.”</p>
-          <a
-            class="founder-link-btn"
-            href="https://www.linkedin.com/in/shruti-barya-18a2a23a4"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Connect on LinkedIn
-          </a>
-        </article>
-      </section>
-
       <article class="final-cta landing-section-gap">
         <p class="section-kicker">Final Call</p>
         <h2 class="public-section-title mt-3">The next serious version of your startup starts now.</h2>
         <p class="mt-3">Join Barya and move from scattered effort to focused execution with the confidence of a founder who knows exactly what to do next.</p>
         <button class="public-btn standalone-center-btn mt-5" data-enter-app>Enter Barya Workspace</button>
       </article>
+
+      <section class="landing-section-gap founder-spotlight">
+        <div class="section-header">
+          <h2 class="public-section-title">Meet the Founder</h2>
+        </div>
+        <article class="public-panel founder-card" aria-label="Founder card">
+          <div>
+            <p class="section-kicker">Meet the Founder</p>
+            <div class="founder-name-row mt-3">
+              <h2 class="public-section-title founder-signature">Shruti Barya</h2>
+              <span class="founder-badge">Verified Founder</span>
+            </div>
+            <p class="editorial-block mt-4">Barya was designed to remove visual noise and operational chaos so founders can focus on strategy and execution. Every section is intentionally minimal, local-first, and built to keep momentum consistent week after week.</p>
+          </div>
+          <div>
+            <p class="quote-block">“Simple systems, clear decisions, and focused action create long-term startup resilience.”</p>
+            <a
+              class="founder-link-btn"
+              href="https://www.linkedin.com/in/shruti-barya-18a2a23a4"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+        </article>
+      </section>
     </section>
 
     <section id="features" class="public-page" data-public-page="features" hidden>
