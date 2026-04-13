@@ -1728,7 +1728,7 @@
       --bg-surface: #ffffff;
       --border-soft: #e0e0e0;
       --text-primary: #000000;
-      --text-secondary: #333333;
+      --text-secondary: #222222;
       --btn-bg: #000000;
       --btn-bg-hover: #000000;
       --btn-text: #ffffff;
@@ -1739,22 +1739,26 @@
       line-height: 1.8 !important;
       background: #ffffff !important;
       background-image: none !important;
-      color: #333333 !important;
+      color: #222222 !important;
     }
     p, li, .muted, .hero-subtitle, .editorial-block, .feature-intro {
       font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       font-weight: 400 !important;
       line-height: 1.8 !important;
-      color: #333333 !important;
+      color: #222222 !important;
     }
-    h1, h2 {
+    h1, h2, h3 {
       font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       font-weight: 800 !important;
-      letter-spacing: -0.02em !important;
+      letter-spacing: -0.03em !important;
       color: #000000 !important;
     }
+    h1 {
+      font-size: clamp(4.5rem, 8vw, 7rem) !important;
+      line-height: 1.02 !important;
+    }
     label, a, strong, small, span {
-      color: #333333 !important;
+      color: #222222 !important;
     }
     button,
     .public-enter-btn,
@@ -1774,6 +1778,9 @@
       box-shadow: none !important;
       filter: none !important;
       transform: none !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 1px !important;
     }
     button:hover,
     .public-enter-btn:hover,
@@ -1834,7 +1841,7 @@
     .landing-section:nth-of-type(even),
     .landing-section-gap:nth-of-type(even),
     .public-page > section:nth-of-type(even) {
-      background: #f9f9f9 !important;
+      background: #ffffff !important;
       border: 1px solid #e0e0e0;
       padding: 2rem;
       border-radius: 6px;
@@ -1855,7 +1862,7 @@
       font-size: clamp(4rem, 8vw, 7rem) !important;
       line-height: 1.02 !important;
       font-weight: 800 !important;
-      letter-spacing: -0.02em !important;
+      letter-spacing: -0.03em !important;
       color: #000000 !important;
       text-align: center !important;
       margin-top: 100px !important;
