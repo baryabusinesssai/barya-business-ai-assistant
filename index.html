@@ -2260,16 +2260,16 @@
         <article class="glass rounded-3xl border border-indigo-800/30 p-6">
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Workspace Settings</p>
-            <h2 class="font-semibold text-2xl mt-2">Workspace Control Center</h2>
-            <p class="text-slate-300 mt-2">Manage your profile, product preferences, and workspace data with a clean SaaS-style setup.</p>
+            <h2 class="font-semibold text-2xl mt-2">Settings</h2>
+            <p class="text-slate-300 mt-2">Manage your profile and workspace preferences.</p>
           </div>
 
           <div class="settings-layout">
             <section class="settings-card">
               <div class="settings-card-header">
-                <p class="settings-card-kicker">Profile Settings</p>
+                <p class="settings-card-kicker">Profile / Settings</p>
                 <h3 class="font-semibold text-lg mt-1">Business Profile</h3>
-                <p class="text-sm text-slate-500 mt-1">Keep your profile clear so recommendations stay relevant to your business context.</p>
+                <p class="text-sm text-slate-500 mt-1">Set your business details and communication style.</p>
               </div>
               <form id="profileForm" class="settings-field-grid">
                 <div class="settings-field">
@@ -2295,7 +2295,7 @@
               <div class="settings-card-header">
                 <p class="settings-card-kicker">Application Preferences</p>
                 <h3 class="font-semibold text-lg mt-1">Interface &amp; Localization</h3>
-                <p class="text-sm text-slate-500 mt-1">Customize region, language, and display options for your daily workflow.</p>
+                <p class="text-sm text-slate-500 mt-1">Customize your currency, language, and dark mode.</p>
               </div>
               <div class="settings-field-grid">
                 <div class="settings-field">
@@ -2327,8 +2327,8 @@
             <section class="settings-card">
               <div class="settings-card-header">
                 <p class="settings-card-kicker">Goal Setting</p>
-                <h3 class="font-semibold text-lg mt-1">Execution Goal</h3>
-                <p class="text-sm text-slate-500 mt-1">Set one clear objective so your workspace remains focused on what matters now.</p>
+                <h3 class="font-semibold text-lg mt-1">Goal</h3>
+                <p class="text-sm text-slate-500 mt-1">Set one clear goal for your current focus.</p>
               </div>
               <div class="settings-field">
                 <label for="goalInput">Define your current business goal</label>
@@ -2339,67 +2339,7 @@
                 <button id="saveGoalBtn" type="button" class="workspace-secondary-btn">Save Goal</button>
               </div>
             </section>
-
-            <section class="settings-card backup-restore-section">
-              <div class="settings-card-header">
-                <p class="settings-card-kicker">Data &amp; Control</p>
-                <h3 class="font-semibold text-lg mt-1">Privacy, Backup &amp; Workspace Safety</h3>
-                <p class="text-sm text-slate-500 mt-1">Your workspace is local-first by default. You decide when to export or sync backups.</p>
-              </div>
-
-              <div id="exportBackupTourTarget" class="backup-restore-actions">
-                <button id="exportDataBtn" type="button" class="backup-btn backup-btn-primary" title="Download your data for safety">
-                  <span aria-hidden="true">⬇️</span>
-                  <span>Export Backup</span>
-                </button>
-
-                <input id="importDataInput" class="backup-file-input" type="file" accept=".json,application/json" />
-                <label for="importDataInput" class="backup-btn backup-btn-secondary" role="button" tabindex="0" title="Upload a saved backup file to restore your data">
-                  <span aria-hidden="true">⬆️</span>
-                  <span>Import Backup</span>
-                </label>
-              </div>
-              <div class="mt-4 flex flex-col gap-3">
-                <div class="settings-toggle-row">
-                  <div>
-                    <p class="text-sm font-semibold text-slate-800">Auto-Sync to Cloud</p>
-                    <p class="text-xs text-slate-500 mt-1">Keep cloud backup synced whenever you export manually.</p>
-                  </div>
-                  <label for="autoSyncToggle" class="inline-flex items-center cursor-pointer">
-                    <input id="autoSyncToggle" type="checkbox" class="sr-only peer" />
-                    <span class="settings-toggle-track" aria-hidden="true"></span>
-                  </label>
-                </div>
-                <button id="exportToCloudBtn" type="button" class="backup-btn backup-btn-secondary">☁️ Export to Cloud (Google Drive compatible JSON)</button>
-                <div class="settings-actions">
-                  <button type="button" class="future-control" disabled>Export (Advanced)</button>
-                  <button type="button" class="future-control" disabled>Reset Workspace</button>
-                </div>
-                <p id="cloudSyncStatus" class="settings-status"></p>
-              </div>
-            </section>
           </div>
-
-          <section class="mt-8 pt-6 border-t border-slate-700/70">
-            <p class="text-xs uppercase tracking-[0.22em] text-indigo-300 font-semibold">Meet the Founder</p>
-            <h3 class="text-2xl font-semibold mt-2">Why I Built Barya</h3>
-            <p class="text-slate-300 mt-3 leading-relaxed">
-              I built Barya after seeing how many founders struggle to stay focused while switching between scattered tools and unclear next steps. My goal was to create one trusted workspace where ideas become practical plans, progress stays measurable, and sensitive business information remains private.
-            </p>
-            <p class="text-sm text-indigo-200 mt-4 font-medium">— Shruti Barya</p>
-            <a
-              href="https://www.linkedin.com/in/shruti-barya-18a2a23a4"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 mt-4 rounded-xl border border-indigo-400/60 bg-indigo-500/15 px-4 py-2 text-sm font-semibold text-indigo-100 transition hover:border-indigo-300 hover:bg-indigo-500/25 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-300/70 focus:ring-offset-2 focus:ring-offset-slate-900"
-              aria-label="View Shruti Barya on LinkedIn"
-            >
-              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor" aria-hidden="true">
-                <path d="M4.98 3.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM3 9h4v12H3zm7 0h3.83v1.64h.05c.53-1 1.84-2.06 3.79-2.06C21.3 8.58 22 11 22 14.13V21h-4v-6.06c0-1.45-.03-3.3-2.01-3.3-2.01 0-2.32 1.57-2.32 3.2V21h-4z"></path>
-              </svg>
-              <span>LinkedIn</span>
-            </a>
-          </section>
 
         </article>
       </section>

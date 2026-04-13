@@ -2610,13 +2610,9 @@
       });
     }
 
-    const founderProfileForm = $('founderProfileForm');
-    if (founderProfileForm) {
-      founderProfileForm.addEventListener('submit', (event) => {
-    const saveSettingsBtn = $('saveSettingsBtn');
-    const saveGoalBtn = $('saveGoalBtn');
-    if (saveSettingsBtn) {
-      saveSettingsBtn.addEventListener('click', (event) => {
+    const profileForm = $('profileForm');
+    if (profileForm) {
+      profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
         appState.profile = {
           name: $('founderNameInput')?.value?.trim() || '',
@@ -2627,30 +2623,12 @@
         };
         if (appState.profile.businessType) saveToStorage(STORAGE_KEYS.businessCategory, appState.profile.businessType);
         saveToStorage(STORAGE_KEYS.profile, appState.profile);
-        saveToStorage(STORAGE_KEYS.founderProfile, appState.profile);
-        setStatusText('cloudSyncStatus', 'Founder profile saved.', 'success');
       });
     }
 
-    const goalDirectionForm = $('goalDirectionForm');
-    if (goalDirectionForm) {
-      goalDirectionForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        appState.goalDirection = {
-          currentGoal: $('goalInput')?.value?.trim() || '',
-          timeline: $('goalTimelineInput')?.value?.trim() || '',
-          priorityFocus: $('priorityFocusInput')?.value?.trim() || ''
-        };
-        appState.settings.goal = appState.goalDirection.currentGoal;
-        saveToStorage(STORAGE_KEYS.goalDirection, appState.goalDirection);
-        saveSettings();
-        setStatusText('cloudSyncStatus', 'Goal and direction saved.', 'success');
-      });
-    }
-
-    const workspacePreferencesForm = $('workspacePreferencesForm');
-    if (workspacePreferencesForm) {
-      workspacePreferencesForm.addEventListener('submit', (event) => {
+    const saveSettingsBtn = $('saveSettingsBtn');
+    if (saveSettingsBtn) {
+      saveSettingsBtn.addEventListener('click', (event) => {
         event.preventDefault();
         appState.settings.currency = $('currencySelect')?.value || appState.settings.currency;
         appState.settings.language = $('settingsLanguageSelect')?.value || appState.settings.language;
@@ -2660,63 +2638,16 @@
           language: appState.settings.language
         });
         applySettings();
-        setStatusText('cloudSyncStatus', 'Workspace preferences saved.', 'success');
       });
     }
+
+    const saveGoalBtn = $('saveGoalBtn');
     if (saveGoalBtn) {
-      saveGoalBtn.addEventListener('click', () => {
-        saveSettingsBtn?.click();
-      });
-    }
-
-    const aiBehaviorForm = $('aiBehaviorForm');
-    if (aiBehaviorForm) {
-      aiBehaviorForm.addEventListener('submit', (event) => {
+      saveGoalBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        appState.aiBehavior = {
-          responseStyle: $('responseStyleSelect')?.value || 'structured',
-          focusMode: $('focusModeSelect')?.value || 'startup'
-        };
-        saveToStorage(STORAGE_KEYS.aiBehaviorSettings, appState.aiBehavior);
-        setStatusText('cloudSyncStatus', 'AI behavior settings saved.', 'success');
+        appState.settings.goal = $('goalInput')?.value?.trim() || '';
+        saveSettings();
       });
-    }
-
-    const businessContextForm = $('businessContextForm');
-    if (businessContextForm) {
-      businessContextForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        appState.businessContext = {
-          building: $('buildingInput')?.value?.trim() || '',
-          revenueStage: $('revenueStageInput')?.value?.trim() || '',
-          biggestChallenge: $('biggestChallengeInput')?.value?.trim() || ''
-        };
-        saveToStorage(STORAGE_KEYS.businessContext, appState.businessContext);
-        setStatusText('cloudSyncStatus', 'Business context saved.', 'success');
-      });
-    }
-
-    const learningPreferencesForm = $('learningPreferencesForm');
-    if (learningPreferencesForm) {
-      learningPreferencesForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        appState.learningPreferences = {
-          level: $('learningLevelSelect')?.value || 'beginner',
-          showSuggestions: Boolean($('showSuggestionsToggle')?.checked)
-        };
-        saveToStorage(STORAGE_KEYS.learningPreferences, appState.learningPreferences);
-        setStatusText('cloudSyncStatus', 'Learning preferences saved.', 'success');
-      });
-    }
-
-    const exportDataBtn = $('exportDataBtn');
-    if (exportDataBtn) {
-      exportDataBtn.addEventListener('click', exportData);
-    }
-
-    const importDataInput = $('importDataInput');
-    if (importDataInput) {
-      importDataInput.addEventListener('change', importData);
     }
     const resetWorkspaceBtn = $('resetWorkspaceBtn');
     if (resetWorkspaceBtn) {
