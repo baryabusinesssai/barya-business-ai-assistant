@@ -183,13 +183,14 @@
       storageKey: 'barya_template_lean',
       title: 'Coffee Shop',
       description: 'Local café planning structure focused on menu, footfall, and neighborhood retention.',
+      useCase: 'Best for founders launching a neighborhood café or specialty coffee concept.',
       sections: [
-        { id: 'concept', title: 'Concept', placeholder: 'Define your café concept and ambiance.' },
-        { id: 'target-market', title: 'Target Market', placeholder: 'Describe your main customer segments and location behavior.' },
-        { id: 'menu-pricing', title: 'Menu & Pricing', placeholder: 'Outline your hero products, pricing strategy, and margins.' },
-        { id: 'operations', title: 'Operations', placeholder: 'Describe staffing, suppliers, and opening-hour workflow.' },
-        { id: 'marketing', title: 'Marketing Plan', placeholder: 'List launch and retention marketing actions.' },
-        { id: 'financials', title: 'Financial Plan', placeholder: 'Capture startup costs, monthly expenses, and break-even assumptions.' }
+        { id: 'concept', title: 'Concept', helper: 'Define the business model, customer experience, and positioning.', placeholder: 'Define your café concept and ambiance.' },
+        { id: 'target-market', title: 'Target Market', helper: 'Identify who buys from you, where they are, and why they choose you.', placeholder: 'Describe your main customer segments and location behavior.' },
+        { id: 'menu-pricing', title: 'Menu & Pricing', helper: 'Document key offerings, price points, and gross margin targets.', placeholder: 'Outline your hero products, pricing strategy, and margins.' },
+        { id: 'operations', title: 'Operations', helper: 'Map staffing, supplier management, and daily execution standards.', placeholder: 'Describe staffing, suppliers, and opening-hour workflow.' },
+        { id: 'marketing', title: 'Marketing Plan', helper: 'Set clear channels, campaign priorities, and retention initiatives.', placeholder: 'List launch and retention marketing actions.' },
+        { id: 'financials', title: 'Financial Plan', helper: 'Summarize startup budget, monthly costs, and break-even timing.', placeholder: 'Capture startup costs, monthly expenses, and break-even assumptions.' }
       ]
     },
     {
@@ -197,13 +198,14 @@
       storageKey: 'barya_template_marketing',
       title: 'SaaS Startup',
       description: 'Software planning template for product, acquisition, retention, and recurring revenue.',
+      useCase: 'Designed for founders validating and scaling subscription software products.',
       sections: [
-        { id: 'problem', title: 'Problem', placeholder: 'Define the customer workflow pain your SaaS solves.' },
-        { id: 'product', title: 'Product Scope', placeholder: 'Describe MVP features and roadmap priorities.' },
-        { id: 'pricing', title: 'Pricing & Packaging', placeholder: 'Define tiers, trial model, and upgrade path.' },
-        { id: 'go-to-market', title: 'Go-To-Market', placeholder: 'Explain channels, funnel, and sales motion.' },
-        { id: 'retention', title: 'Retention Strategy', placeholder: 'Outline onboarding, support, and churn prevention systems.' },
-        { id: 'metrics', title: 'Metrics', placeholder: 'Track MRR, CAC, churn, and expansion revenue goals.' }
+        { id: 'problem', title: 'Problem', helper: 'State the operational pain, impact, and current workaround.', placeholder: 'Define the customer workflow pain your SaaS solves.' },
+        { id: 'product', title: 'Product Scope', helper: 'Prioritize MVP capabilities and near-term roadmap milestones.', placeholder: 'Describe MVP features and roadmap priorities.' },
+        { id: 'pricing', title: 'Pricing & Packaging', helper: 'Define package structure, monetization logic, and upgrade flow.', placeholder: 'Define tiers, trial model, and upgrade path.' },
+        { id: 'go-to-market', title: 'Go-To-Market', helper: 'Outline demand channels, funnel targets, and sales process.', placeholder: 'Explain channels, funnel, and sales motion.' },
+        { id: 'retention', title: 'Retention Strategy', helper: 'Describe onboarding, customer success, and churn controls.', placeholder: 'Outline onboarding, support, and churn prevention systems.' },
+        { id: 'metrics', title: 'Metrics', helper: 'Track core KPIs used for weekly and monthly decisions.', placeholder: 'Track MRR, CAC, churn, and expansion revenue goals.' }
       ]
     },
     {
@@ -211,13 +213,14 @@
       storageKey: 'barya_template_operations',
       title: 'E-commerce Store',
       description: 'Commerce template focused on niche, catalog strategy, logistics, and repeat sales.',
+      useCase: 'Ideal for founders building a direct-to-consumer online retail operation.',
       sections: [
-        { id: 'niche', title: 'Niche & Audience', placeholder: 'Define store niche and buyer profile.' },
-        { id: 'catalog', title: 'Product Catalog', placeholder: 'Describe winning SKUs and margin priorities.' },
-        { id: 'storefront', title: 'Storefront & UX', placeholder: 'Plan site structure, conversion path, and trust signals.' },
-        { id: 'fulfillment', title: 'Fulfillment', placeholder: 'Define sourcing, inventory, shipping, and returns process.' },
-        { id: 'growth', title: 'Growth Channels', placeholder: 'List paid, organic, and partnership channels.' },
-        { id: 'forecast', title: 'Sales Forecast', placeholder: 'Estimate traffic, conversion, AOV, and 90-day targets.' }
+        { id: 'niche', title: 'Niche & Audience', helper: 'Define target segment, needs, and purchase motivations.', placeholder: 'Define store niche and buyer profile.' },
+        { id: 'catalog', title: 'Product Catalog', helper: 'Prioritize products based on demand, margin, and repeat potential.', placeholder: 'Describe winning SKUs and margin priorities.' },
+        { id: 'storefront', title: 'Storefront & UX', helper: 'Map user journey from landing page to completed checkout.', placeholder: 'Plan site structure, conversion path, and trust signals.' },
+        { id: 'fulfillment', title: 'Fulfillment', helper: 'Document sourcing, inventory controls, shipping, and returns SOPs.', placeholder: 'Define sourcing, inventory, shipping, and returns process.' },
+        { id: 'growth', title: 'Growth Channels', helper: 'Set channel mix, campaign cadence, and acquisition targets.', placeholder: 'List paid, organic, and partnership channels.' },
+        { id: 'forecast', title: 'Sales Forecast', helper: 'Estimate traffic, conversion, revenue, and cash requirements.', placeholder: 'Estimate traffic, conversion, AOV, and 90-day targets.' }
       ]
     }
   ];
@@ -1555,7 +1558,7 @@
     const selectedTemplate = getSelectedBusinessTemplate();
     const status = $('businessPlanStatus');
     if (!selectedTemplate) {
-      if (status) status.textContent = 'Select a template before using AI Magic.';
+      if (status) status.textContent = 'Select a template before requesting an AI suggestion.';
       return;
     }
     const section = selectedTemplate.sections.find((item) => item.id === sectionId);
@@ -1573,7 +1576,7 @@
     saveBusinessPlanState();
     saveToStorage(STORAGE_KEYS.businessPlanAiGenerated, appState.businessPlan.aiGenerated);
     renderBusinessPlanEditor();
-    if (status) status.textContent = `AI Magic completed for ${section.title}. Prompt used: ${aiPrompt}`;
+    if (status) status.textContent = `AI suggestion generated for ${section.title}. Prompt used: ${aiPrompt}`;
   }
 
   function fillBusinessPlanFromAI() {
@@ -1936,6 +1939,7 @@
           <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Template</p>
           <h3 class="font-semibold text-lg mt-1">${template.title}</h3>
           <p class="text-sm text-slate-300 mt-2 leading-relaxed">${template.description}</p>
+          <p class="text-xs text-slate-500 mt-2">Use case: ${template.useCase}</p>
           <p class="text-xs text-slate-400 mt-3">Fields: ${template.sections.length} editable blocks</p>
         </button>
       `;
@@ -1961,16 +1965,17 @@
     ensureBusinessPlanDraft(selectedTemplate.id);
     const draft = appState.businessPlan.drafts[selectedTemplate.id];
 
-    header.textContent = `${selectedTemplate.title} — Editable Blocks`;
+    header.textContent = selectedTemplate.title;
     if (helper) helper.textContent = selectedTemplate.description;
     status.textContent = 'Edit any box below. Your inputs stay editable and save locally.';
     const aiMap = appState.businessPlan.aiGenerated[selectedTemplate.id] || {};
     form.innerHTML = selectedTemplate.sections.map((section) => `
-      <label class="template-editor-block rounded-2xl p-4 flex flex-col gap-2">
+      <label class="template-editor-block rounded-2xl p-5 flex flex-col gap-3">
         <span class="flex items-center justify-between gap-2">
           <span class="text-xs uppercase tracking-[0.18em] text-slate-400">${section.title}</span>
-          <button type="button" class="founder-btn ai-magic-btn" data-ai-section="${section.id}">✨ AI Magic</button>
+          <button type="button" class="founder-btn ai-magic-btn" data-ai-section="${section.id}">Generate Suggestion</button>
         </span>
+        <p class="text-xs text-slate-500">${section.helper || 'Add clear, practical details for this section.'}</p>
         <textarea
           data-template-field="${section.id}"
           rows="6"
