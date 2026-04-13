@@ -49,7 +49,7 @@
       settings: 'Settings',
       resources: 'Resources',
       save: 'Save',
-      saveProfile: 'Save profile',
+      saveProfile: 'Save Profile',
       saveImageNote: 'Save image context',
       financeIntelligence: 'Finance Intelligence',
       recommendations: 'Recommendations',
@@ -84,7 +84,7 @@
       shareOnLinkedIn: 'Share on LinkedIn',
       shareOnWhatsApp: 'Share on WhatsApp',
       startConversation: 'Start conversation',
-      saveSettings: 'Save',
+      saveSettings: 'Save Changes',
       chatPlaceholder: 'Ask anything about your business...'
     },
     Urdu: {
@@ -131,7 +131,7 @@
       shareOnLinkedIn: 'لنکڈاِن پر شیئر کریں',
       shareOnWhatsApp: 'واٹس ایپ پر شیئر کریں',
       startConversation: 'گفتگو شروع کریں',
-      saveSettings: 'محفوظ کریں',
+      saveSettings: 'تبدیلیاں محفوظ کریں',
       chatPlaceholder: 'اپنے کاروبار کے بارے میں سوال پوچھیں...'
     },
     'Roman Urdu': {
@@ -178,7 +178,7 @@
       shareOnLinkedIn: 'LinkedIn par Share karein',
       shareOnWhatsApp: 'WhatsApp par Share karein',
       startConversation: 'Conversation start karein',
-      saveSettings: 'Save',
+      saveSettings: 'Save Changes',
       chatPlaceholder: 'Apne business ke bare mein kuch bhi poochain...'
     }
   };
@@ -2611,6 +2611,10 @@
     const founderProfileForm = $('founderProfileForm');
     if (founderProfileForm) {
       founderProfileForm.addEventListener('submit', (event) => {
+    const saveSettingsBtn = $('saveSettingsBtn');
+    const saveGoalBtn = $('saveGoalBtn');
+    if (saveSettingsBtn) {
+      saveSettingsBtn.addEventListener('click', (event) => {
         event.preventDefault();
         appState.profile = {
           name: $('founderNameInput')?.value?.trim() || '',
@@ -2655,6 +2659,11 @@
         });
         applySettings();
         setStatusText('cloudSyncStatus', 'Workspace preferences saved.', 'success');
+      });
+    }
+    if (saveGoalBtn) {
+      saveGoalBtn.addEventListener('click', () => {
+        saveSettingsBtn?.click();
       });
     }
 
