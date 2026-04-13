@@ -18,7 +18,7 @@
   <meta name="twitter:image" content="./og-preview.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Plus+Jakarta+Sans:wght@700;800;900&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet" />
   <script defer src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -2393,6 +2393,92 @@
       transform: none !important;
       filter: none !important;
     }
+
+    /* Luxury SaaS polish overrides */
+    h1 {
+      font-weight: 900 !important;
+      letter-spacing: -0.05em !important;
+      line-height: 1.05 !important;
+    }
+    p {
+      line-height: 1.6 !important;
+      color: #444444 !important;
+    }
+    *, *::before, *::after {
+      box-shadow: none !important;
+    }
+    [class*="border"],
+    .public-panel,
+    .public-card,
+    .landing-section-gap,
+    .founder-card,
+    .founder-badge,
+    input,
+    textarea,
+    select,
+    button,
+    .public-btn,
+    .tabBtn,
+    .workspace-shell,
+    .glass,
+    .soft-card,
+    .global-search-box,
+    .global-search-results {
+      border: 1px solid #F0F0F0 !important;
+    }
+    .public-navbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1200 !important;
+      background: rgba(255, 255, 255, 0.78) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-bottom: 1px solid #F0F0F0 !important;
+    }
+    .public-navbar-inner,
+    .public-page > section,
+    .public-page > article,
+    .public-page > .public-hero {
+      width: min(1200px, calc(100% - 2rem)) !important;
+      margin-inline: auto !important;
+    }
+    .public-page > section,
+    .public-page > article,
+    .public-page > .public-hero,
+    .section-header,
+    .public-grid,
+    .hero-cta-group,
+    .founder-spotlight {
+      justify-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+    }
+    .hero-btn-primary,
+    .workspace-primary-btn,
+    .founder-btn,
+    .founder-connect-btn,
+    .standalone-center-btn {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border: 0 !important;
+      padding: 16px 32px !important;
+      font-weight: 600 !important;
+    }
+    .hero-btn-secondary,
+    .public-enter-btn,
+    .workspace-secondary-btn,
+    .landing-secondary-cta,
+    .landing-cta-ghost {
+      background: transparent !important;
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+      padding: 16px 32px !important;
+      font-weight: 600 !important;
+    }
+    .founder-signature {
+      font-family: "Cormorant Garamond", "Georgia", "Times New Roman", serif !important;
+      letter-spacing: -0.02em !important;
+    }
     @media (max-width: 900px) {
       .minimalist-hero .hero-title {
         font-size: clamp(2.4rem, 9vw, 4.5rem) !important;
@@ -2521,7 +2607,7 @@
         <article class="public-panel founder-card" aria-label="Founder card">
           <p class="section-kicker">Meet the Founder</p>
           <div class="founder-name-row mt-3">
-            <h2 class="public-section-title">Shruti Barya</h2>
+            <h2 class="public-section-title founder-signature">Shruti Barya</h2>
             <span class="founder-badge">Verified Founder</span>
           </div>
           <p class="editorial-block mt-4">Barya was designed to remove visual noise and operational chaos so founders can focus on strategy and execution. Every section is intentionally minimal, local-first, and built to keep momentum consistent week after week.</p>
