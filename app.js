@@ -1585,14 +1585,129 @@
   }
 
   function generateBusinessAdvice(prompt) {
+    const challengeType = analyzeChallenge(prompt);
+    const lowerPrompt = String(prompt || '').toLowerCase();
     const totals = calculateTotals();
-    if (totals.netSavings < 0) {
-      return `Priority plan: reduce monthly spending by at least ${formatCurrency(Math.abs(totals.netSavings) * 0.3)} and launch one short-term revenue offer this week.`;
+    const formatAdvice = (content) => [
+      `1. Clear Advice\n${content.clearAdvice}`,
+      `2. Why This Matters\n${content.whyThisMatters}`,
+      `3. Action Steps\n${content.actionSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
+      `4. Resource Suggestions\n${content.resourceSuggestions.map((item) => `- ${item}`).join('\n')}`,
+      `5. Founder Note\n${content.founderNote}`
+    ].join('\n\n');
+
+    const challengeAdviceMap = {
+      finance: {
+        clearAdvice: 'You do not need a website to start. Focus on validation before spending money.',
+        whyThisMatters: `Early spending without proof of demand increases risk and shortens runway. Your current net savings is ${formatCurrency(totals.netSavings)}, so every dollar should be tied to customer learning or sales.`,
+        actionSteps: [
+          'Use free tools like Instagram, WhatsApp, or Google Forms.',
+          'Create a simple offer and share it manually with your target audience.',
+          'Talk directly to at least 10 potential customers and capture objections.',
+          'Validate demand with pre-orders, deposits, or paid pilots before investing in tools.'
+        ],
+        resourceSuggestions: ['Startup Guide: Validate Idea', 'Template: Lean Launch Canvas', 'Founder Workspace: Budget Review'],
+        founderNote: 'Spending money early is not required. Clarity and validation matter more.'
+      },
+      idea: {
+        clearAdvice: 'Start with one clear customer pain, not a random business concept.',
+        whyThisMatters: 'Strong ideas come from specific, repeated customer frustrations and willingness to pay for a solution.',
+        actionSteps: [
+          'List 3 customer groups you understand well.',
+          'For each group, write the top 3 urgent problems they already spend time or money on.',
+          'Choose one problem with clear pain and propose a simple paid solution.',
+          'Test interest by pitching that offer to real people this week.'
+        ],
+        resourceSuggestions: ['Startup Guide: Problem Discovery', 'Template: Lean Launch Canvas', 'Idea Generator'],
+        founderNote: 'A practical idea tested with real buyers beats a perfect idea kept in your head.'
+      },
+      startup: {
+        clearAdvice: 'Start lean: define the problem, test one small offer, and collect real customer feedback fast.',
+        whyThisMatters: 'Most founders fail at the start by building too much before validating demand.',
+        actionSteps: [
+          'Define your target customer and their top painful problem in one sentence.',
+          'Create a minimum offer you can deliver manually this week.',
+          'Get 10 direct conversations and ask for paid commitment where possible.',
+          'Improve the offer based on objections before expanding operations.'
+        ],
+        resourceSuggestions: ['Startup Guide: Getting Started', 'Startup Readiness Check', 'Template: Lean Launch Canvas'],
+        founderNote: 'Momentum comes from fast learning cycles, not from perfect planning.'
+      },
+      growth: {
+        clearAdvice: 'Scale only what is already working and fix bottlenecks before increasing spend.',
+        whyThisMatters: 'Growth without process control increases costs and creates operational chaos.',
+        actionSteps: [
+          'Identify your best-performing channel by lead quality and conversion.',
+          'Improve conversion at each funnel step before adding more traffic.',
+          'Strengthen onboarding and retention to increase lifetime value.',
+          'Run one growth experiment weekly and document results.'
+        ],
+        resourceSuggestions: ['Operations Roadmap', 'Founder Workspace: Metrics', 'Template: Growth Experiment Tracker'],
+        founderNote: 'Sustainable growth is system-driven, not campaign-driven.'
+      },
+      marketing: {
+        clearAdvice: 'Focus on one audience, one channel, and one clear message tied to a customer outcome.',
+        whyThisMatters: 'Scattered marketing efforts create noise, while focused positioning improves conversions.',
+        actionSteps: [
+          'Choose your primary channel for the next 30 days.',
+          'Write a single offer message that solves one urgent problem.',
+          'Publish proof-based content 3-4 times weekly with one CTA.',
+          'Track lead quality, conversion rate, and cost per result each week.'
+        ],
+        resourceSuggestions: ['Template: Marketing Sprint', 'Founder Workspace: Offer Positioning', 'Resource: Content Planning Guide'],
+        founderNote: 'Consistency with the right message beats posting everywhere.'
+      },
+      strategy: {
+        clearAdvice: 'Reduce confusion by making one strategic decision at a time with clear criteria.',
+        whyThisMatters: 'Unclear strategy leads to reactive actions, wasted effort, and slow progress.',
+        actionSteps: [
+          'Define your single top goal for the next 30-90 days.',
+          'List 2-3 options and score them by impact, effort, and risk.',
+          'Pick one direction and commit resources for a fixed test window.',
+          'Review results weekly and adjust only based on evidence.'
+        ],
+        resourceSuggestions: ['Template: Decision Matrix', 'Founder Workspace: Quarterly Plan', 'Memory: Key Learnings'],
+        founderNote: 'Clarity is built through decisions and evidence, not through overthinking.'
+      }
+    };
+
+    if (challengeType === 'general') {
+      return 'Can you describe your challenge more specifically?';
     }
-    if (prompt.toLowerCase().includes('marketing')) {
-      return 'Use one core channel: publish 3 educational posts weekly, add one offer CTA, and track lead-to-sale conversion each Friday.';
+
+    if (challengeType === 'finance' && /website|site|landing page/.test(lowerPrompt)) {
+      return formatAdvice(challengeAdviceMap.finance);
     }
-    return 'Use a 30-day sprint: define one measurable goal, assign weekly actions, and review results every Sunday.';
+
+    return formatAdvice(challengeAdviceMap[challengeType]);
+  }
+
+  function analyzeChallenge(input) {
+    const message = String(input || '').toLowerCase().trim();
+    if (!message || message.split(/\s+/).length < 3) return 'general';
+
+    const hasAny = (keywords) => keywords.some((word) => message.includes(word));
+
+    if (hasAny(['no money', 'no budget', "can't afford", 'cannot afford', 'too expensive', 'budget issue'])) {
+      return 'finance';
+    }
+    if (hasAny(['no idea', "don't know what business", 'what should i start', 'which business idea', 'idea nhi', 'idea nahi'])) {
+      return 'idea';
+    }
+    if (hasAny(['how to start', 'starting problem', 'start business', 'just starting', 'beginning stage', 'where to start'])) {
+      return 'startup';
+    }
+    if (hasAny(['not growing', 'slow growth', 'scale', 'scaling', 'plateau', 'stuck in growth', 'increase revenue'])) {
+      return 'growth';
+    }
+    if (hasAny(['marketing', 'ads', 'facebook ads', 'instagram ads', 'lead generation', 'traffic', 'promotion'])) {
+      return 'marketing';
+    }
+    if (hasAny(['confused', 'unclear', 'not sure', 'strategy', 'direction', 'what should i do first'])) {
+      return 'strategy';
+    }
+
+    return 'general';
   }
 
   function submitAIMessage(message) {
