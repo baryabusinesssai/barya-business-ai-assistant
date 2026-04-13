@@ -2611,16 +2611,22 @@
     .workspace-dashboard-layout {
       display: flex;
       min-height: 100vh;
+      position: relative;
     }
     .workspace-sidebar {
-      width: 250px;
-      flex: 0 0 250px;
+      width: 240px;
+      flex: 0 0 240px;
       background: #ffffff;
-      border-right: 1px solid #ececec;
+      border-right: 1px solid #f0f0f0;
       padding: 1.25rem 1rem;
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
       height: 100vh;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .workspace-sidebar-nav {
       display: flex;
@@ -2661,6 +2667,56 @@
       padding: 1.25rem;
       min-width: 0;
       padding-bottom: 5.5rem;
+      margin-left: 240px;
+    }
+    .workspace-module-card {
+      background: #ffffff !important;
+      border: 1px solid #eeeeee !important;
+      border-radius: 4px !important;
+      padding: 32px !important;
+      box-shadow: none !important;
+    }
+    .workspace-card-header {
+      color: #9ca3af !important;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    #chatBox {
+      height: 420px !important;
+      overflow-y: auto;
+      background: #0b0b0b;
+      border: 1px solid #202020;
+      border-radius: 4px !important;
+      color: #e5e7eb;
+      font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    #chatForm #chatInput {
+      border-radius: 4px !important;
+      border-color: #d1d5db !important;
+      background: #ffffff !important;
+      color: #111827 !important;
+    }
+    .ai-send-btn {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      padding: 0 !important;
+      border-radius: 4px !important;
+      background: #000000 !important;
+      border: 1px solid #000000 !important;
+      color: #ffffff !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-founder-profile {
+      border: 1px solid #eeeeee;
+      border-radius: 4px;
+      padding: 14px;
+      background: #ffffff;
     }
     .workspace-mobile-nav {
       display: none;
@@ -2690,6 +2746,7 @@
       }
       .workspace-main-canvas {
         padding: 1rem;
+        margin-left: 0;
       }
       .workspace-mobile-nav {
         display: flex;
@@ -3078,15 +3135,20 @@
       <aside class="workspace-sidebar" aria-label="Workspace navigation">
         <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
           <button data-tab="dashboard" class="tabBtn active">Dashboard</button>
-          <button data-tab="strategy" class="tabBtn">AI Assistant</button>
+          <button data-tab="strategy" class="tabBtn">AI Strategy</button>
+          <button data-tab="finances" class="tabBtn">Finance</button>
           <button data-tab="planning" class="tabBtn">Business Plan</button>
-          <button data-tab="finances" class="tabBtn">Finances</button>
-          <button data-tab="founder" class="tabBtn">Settings</button>
+          <button data-tab="memory" class="tabBtn">Memory</button>
         </nav>
+        <div class="sidebar-founder-profile">
+          <p class="text-[11px] uppercase tracking-[0.16em] text-slate-400">Founder Profile</p>
+          <p class="text-sm font-semibold text-slate-900 mt-1">Shruti Barya</p>
+          <button data-tab="founder" class="tabBtn mt-3 !bg-black !text-white !rounded !px-3 !py-2 !text-center w-full">Open Profile</button>
+        </div>
       </aside>
 
       <div class="workspace-main-canvas">
-        <header class="workspace-shell p-5 md:p-6">
+        <header class="workspace-shell p-5 md:p-6 workspace-module-card">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center gap-3">
               <span class="h-2.5 w-2.5 rounded-full bg-slate-900"></span>
@@ -3133,8 +3195,8 @@
             <button id="viewSampleDashboardBtn" type="button" class="premium-hover mt-5 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 font-semibold text-white">View Sample Dashboard</button>
           </div>
         </article>
-        <article id="dashboardTourTarget" class="dashboard-data-block glass workspace-content-card xl:col-span-3 premium-hover">
-          <p class="workspace-card-header">Real-Time Strategy</p>
+        <article id="dashboardTourTarget" class="dashboard-data-block workspace-content-card workspace-module-card xl:col-span-3 premium-hover">
+          <p class="workspace-card-header">SYSTEM / AI_ASSISTANT_V1</p>
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Finance</p>
@@ -3229,8 +3291,8 @@
       </section>
 
       <section id="panel-finances" class="panel hidden app-view">
-        <article id="ideaGeneratorToolCard" class="dashboard-data-block glass workspace-content-card premium-hover">
-          <p class="workspace-card-header">Finance Tracker</p>
+        <article id="ideaGeneratorToolCard" class="dashboard-data-block workspace-content-card workspace-module-card premium-hover">
+          <p class="workspace-card-header">SYSTEM / FINANCE_TRACKER_V1</p>
           <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
           <h3 class="font-semibold text-xl mt-2">Finance Workspace</h3>
 
@@ -3278,8 +3340,8 @@
       </section>
 
       <section id="panel-strategy" class="panel hidden app-view">
-        <article id="aiAssistantTourTarget" class="glass workspace-content-card">
-          <p class="workspace-card-header">AI Chat</p>
+        <article id="aiAssistantTourTarget" class="workspace-content-card workspace-module-card">
+          <p class="workspace-card-header">SYSTEM / AI_ASSISTANT_V1</p>
           <div class="max-w-3xl">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Assistant</p>
             <h2 class="font-semibold text-2xl mt-2">Barya AI</h2>
@@ -3315,18 +3377,18 @@
           </div>
           <form id="chatForm" class="mt-4 flex gap-2">
             <input id="chatInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-emerald-400" placeholder="Ask anything about your business..." data-i18n-placeholder="chatPlaceholder" />
-            <button class="workspace-primary-btn px-5 font-medium" data-i18n="send">Send</button>
+            <button class="ai-send-btn font-medium" data-i18n="send">Send</button>
           </form>
         </article>
       </section>
 
       <section id="panel-memory" class="panel hidden app-view">
-        <article class="glass workspace-content-card">
-          <p class="workspace-card-header">Saved Insights</p>
+        <article class="workspace-content-card workspace-module-card">
+          <p class="workspace-card-header">SYSTEM / MEMORY_V1</p>
           <div>
-            <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Saved Insights</p>
-            <h2 class="font-semibold text-2xl mt-2">Saved Insights</h2>
-            <p class="text-slate-300 mt-2">Capture and review your saved strategies in one clean list.</p>
+            <p class="text-xs uppercase tracking-[0.25em] text-slate-400 font-semibold">Memory</p>
+            <h2 class="font-semibold text-2xl mt-2 text-slate-900">Saved Insights</h2>
+            <p class="text-slate-500 mt-2">Capture and review your saved strategies in one clean list.</p>
           </div>
 
           <form id="memoryForm" class="mt-5 grid lg:grid-cols-5 gap-2">
@@ -3336,14 +3398,17 @@
           </form>
 
           <ul id="memoryList" class="mt-4 memory-grid"></ul>
-
+          <div class="mt-6 border border-[#eeeeee] rounded p-4">
+            <h3 class="font-semibold text-slate-900">Recent Actions</h3>
+            <ul id="activityLogList" class="mt-3 space-y-2 text-sm text-slate-600"></ul>
+          </div>
           <p class="text-xs text-slate-400 mt-4">Helper: save short context notes to improve continuity across sessions.</p>
         </article>
       </section>
 
       <section id="panel-planning" class="panel hidden app-view">
-        <article id="businessPlanningTourTarget" class="glass workspace-content-card">
-          <p class="workspace-card-header">Business Planning</p>
+        <article id="businessPlanningTourTarget" class="workspace-content-card workspace-module-card">
+          <p class="workspace-card-header">SYSTEM / BUSINESS_PLAN_V1</p>
           <div class="mb-5">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Planning</p>
             <h2 class="font-semibold text-2xl mt-2">Business Planning</h2>
@@ -3435,8 +3500,8 @@
       </section>
 
       <section id="panel-founder" class="panel hidden app-view">
-        <article class="glass workspace-content-card">
-          <p class="workspace-card-header">Founder Profile</p>
+        <article class="workspace-content-card workspace-module-card">
+          <p class="workspace-card-header">SYSTEM / FOUNDER_PROFILE_V1</p>
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Profile</p>
             <h2 class="font-semibold text-2xl mt-2">Founder Profile</h2>
@@ -3541,10 +3606,10 @@
 
     <footer class="workspace-mobile-nav" aria-label="Workspace mobile navigation">
       <button type="button" data-tab="dashboard" class="tabBtn active">Dashboard</button>
-      <button type="button" data-tab="strategy" class="tabBtn">AI Assistant</button>
-      <button type="button" data-tab="planning" class="tabBtn">Business Plan</button>
-      <button type="button" data-tab="finances" class="tabBtn">Finances</button>
-      <button type="button" data-tab="founder" class="tabBtn">Settings</button>
+      <button type="button" data-tab="strategy" class="tabBtn">AI Strategy</button>
+      <button type="button" data-tab="finances" class="tabBtn">Finance</button>
+      <button type="button" data-tab="planning" class="tabBtn">Plan</button>
+      <button type="button" data-tab="memory" class="tabBtn">Memory</button>
     </footer>
   </div>
   <script defer src="app.js"></script>
