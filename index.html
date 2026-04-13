@@ -2362,6 +2362,7 @@
       min-height: 80vh !important;
       padding-top: 0 !important;
       padding-bottom: 0 !important;
+      background: radial-gradient(circle at center, #ffffff 0%, #fdfdfd 100%) !important;
     }
     .minimalist-hero-panel {
       background: transparent !important;
@@ -2371,21 +2372,41 @@
       max-width: 1100px;
       margin: 0 auto;
     }
+    .hero-urgency-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #F0F0F0;
+      padding: 8px 16px;
+      font-size: 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin: 0 auto 1.3rem;
+      color: #1f1f1f;
+    }
     .minimalist-hero .hero-title {
       max-width: 1100px !important;
-      font-size: 80px !important;
-      line-height: 1 !important;
+      font-size: 96px !important;
+      line-height: 0.95 !important;
       text-align: center !important;
+      font-weight: 900 !important;
+      text-transform: uppercase !important;
       color: #000000 !important;
+      background: linear-gradient(180deg, #000000 0%, #3a3a3a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 16px rgba(0, 0, 0, 0.08);
       margin: 0 auto !important;
-      letter-spacing: -4px !important;
+      letter-spacing: -6px !important;
     }
     .minimalist-hero .hero-subtitle {
-      color: #666666 !important;
+      color: #555 !important;
       text-align: center !important;
-      margin: 1.5rem auto 0 !important;
-      max-width: 600px !important;
-      font-size: 20px !important;
+      margin: 0 auto 40px !important;
+      max-width: 700px !important;
+      font-size: 22px !important;
     }
     .hero-cta-group {
       margin-top: 2.2rem !important;
@@ -2400,16 +2421,16 @@
       color: #ffffff !important;
       border: 1px solid #000000 !important;
       border-radius: 0 !important;
-      padding: 0.72rem 1.3rem !important;
-      font-weight: 600 !important;
+      padding: 18px 48px !important;
+      font-weight: 800 !important;
     }
     .hero-btn-secondary {
       background: transparent !important;
       color: #000000 !important;
       border: 1px solid #000000 !important;
       border-radius: 0 !important;
-      padding: 0.72rem 1.3rem !important;
-      font-weight: 600 !important;
+      padding: 18px 44px !important;
+      font-weight: 700 !important;
     }
     .hero-btn-secondary:hover,
     .hero-btn-primary:hover {
@@ -2594,7 +2615,8 @@
     }
     @media (max-width: 900px) {
       .minimalist-hero .hero-title {
-        font-size: clamp(2.4rem, 9vw, 4.5rem) !important;
+        font-size: clamp(2.4rem, 12vw, 5.25rem) !important;
+        letter-spacing: -2.5px !important;
       }
       .minimalist-hero {
         min-height: 70vh !important;
@@ -2894,11 +2916,12 @@
     <section id="home" class="public-page public-page-panel" data-public-page="home">
       <div class="public-hero hero-master-container minimalist-hero">
         <article class="public-panel minimalist-hero-panel">
-          <h1 class="hero-title">Plan, Launch, and Scale your Startup in one AI-Powered Workspace.</h1>
-          <p class="hero-subtitle sub-headline">The minimalist operating system for founders who want to move fast and stay organized.</p>
+          <span class="hero-urgency-badge">🔥 USED BY 500+ EARLY-STAGE FOUNDERS</span>
+          <h1 class="hero-title">CHAOS TO CLARITY. LAUNCH YOUR VISION.</h1>
+          <p class="hero-subtitle sub-headline">The world’s first local-first workspace that thinks like a founder. Stop juggling spreadsheets—start building your empire.</p>
           <div class="hero-cta-group">
-            <button class="public-btn hero-btn-primary" data-enter-app>Launch App</button>
-            <a href="#features-overview" class="public-btn hero-btn-secondary no-underline">Explore Features</a>
+            <button class="public-btn hero-btn-primary" data-enter-app>GET INSTANT ACCESS</button>
+            <a href="#features-overview" class="public-btn hero-btn-secondary no-underline">WATCH THE 60-SEC DEMO</a>
           </div>
         </article>
       </div>
