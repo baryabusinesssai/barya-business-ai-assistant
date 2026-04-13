@@ -1886,7 +1886,7 @@
           <p class="text-sm text-slate-700 mt-1">${escapeHTML(item.note || '')}</p>
         </li>
       `).join('')
-      : '<li class="memory-empty-state">No memories saved yet. Ask AI something and save the response.</li>';
+      : '<li class="memory-empty-state">No saved strategies yet.</li>';
   }
 
   function escapeHtml(text) {
