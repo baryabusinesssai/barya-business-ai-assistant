@@ -1476,21 +1476,55 @@
     }
     .public-page {
       margin: 0 auto;
-      width: min(1120px, calc(100% - 1.5rem));
-      padding: 2rem 0;
+      width: min(1180px, calc(100% - 1.75rem));
+      padding: 2.8rem 0 4rem;
     }
-    .public-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.3rem; }
+    .public-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 1.15rem; padding: 1.6rem; box-shadow: 0 22px 44px rgba(15, 23, 42, 0.07); }
     .public-grid { display: grid; gap: 1rem; }
-    .public-card { border: 1px solid #e2e8f0; border-radius: .9rem; padding: 1rem; background: #fff; }
-    .public-section-title { font-size: 1.75rem; font-weight: 700; color: #0f172a; }
+    .public-card { border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.2rem; background: #fff; }
+    .public-section-title { font-size: clamp(1.9rem, 2.9vw, 2.7rem); font-weight: 800; letter-spacing: -0.02em; color: #0f172a; line-height: 1.12; }
     .public-page[hidden] { display: none !important; }
-    .public-hero {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: 1.2fr .8fr;
-      align-items: center;
-    }
+    .public-hero { display: grid; gap: 2rem; grid-template-columns: 1.05fr 0.95fr; align-items: center; }
     .muted { color: #64748b; }
+    .landing-section-gap { margin-top: 2.6rem; }
+    .hero-title { font-size: clamp(2.25rem, 5vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; color: #0f172a; font-weight: 800; margin-top: .85rem; }
+    .hero-subtitle { margin-top: 1.2rem; font-size: 1.08rem; line-height: 1.75; color: #475569; max-width: 640px; }
+    .hero-image-wrap { overflow: hidden; border-radius: 1.2rem; border: 1px solid #dbe8f6; min-height: 540px; box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16); position: relative; }
+    .hero-image-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-proof-badge {
+      position: absolute;
+      left: 1.1rem;
+      bottom: 1.1rem;
+      border-radius: .95rem;
+      border: 1px solid rgba(255, 255, 255, .88);
+      background: rgba(255, 255, 255, .95);
+      padding: .9rem 1rem;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: .92rem;
+    }
+    .positioning-grid,
+    .feature-spotlight,
+    .planning-grid,
+    .founder-grid {
+      display: grid;
+      gap: 1.35rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+    .visual-card { overflow: hidden; padding: 0; }
+    .visual-card img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; display: block; }
+    .section-kicker { color: #4338ca; font-size: .74rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .feature-list { margin-top: 1rem; display: grid; gap: .75rem; color: #334155; }
+    .feature-list li { line-height: 1.55; }
+    .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; margin-top: 1.4rem; }
+    .mini-stat { border: 1px solid #dbe7f4; border-radius: .95rem; padding: .8rem; background: linear-gradient(180deg, #ffffff, #f8fbff); }
+    .mini-stat strong { display: block; font-size: 1.3rem; color: #0f172a; }
+    .mini-stat span { font-size: .8rem; color: #64748b; font-weight: 600; }
+    .final-cta { text-align: center; padding: 2.4rem; background: linear-gradient(132deg, #0f172a, #1d4ed8 56%, #0369a1 100%); color: #f8fafc; border-radius: 1.25rem; border: 1px solid rgba(191, 219, 254, .8); }
+    .final-cta h2, .final-cta p { color: #f8fafc; }
+    .founder-photo { min-height: 420px; }
     .public-form input, .public-form textarea, .public-form select {
       width: 100%;
       border: 1px solid #cbd5e1;
@@ -1557,7 +1591,16 @@
       min-height: 1.3rem;
     }
     @media (max-width: 900px) {
-      .public-hero { grid-template-columns: 1fr; }
+      .public-hero,
+      .positioning-grid,
+      .feature-spotlight,
+      .planning-grid,
+      .founder-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-title { font-size: clamp(2rem, 10vw, 2.9rem); }
+      .hero-image-wrap { min-height: 360px; }
+      .mini-stats { grid-template-columns: 1fr; }
       .public-navbar-inner { min-height: auto; padding: .8rem 0; align-items: flex-start; flex-direction: column; }
       .public-nav-links { width: 100%; }
     }
@@ -1590,94 +1633,88 @@
     <section id="home" class="public-page public-page-panel" data-public-page="home">
       <div class="public-hero">
         <article class="public-panel">
-          <p class="text-xs uppercase tracking-[0.2em] text-indigo-700 font-semibold">Barya Business AI</p>
-          <h1 class="text-4xl font-bold text-slate-900 mt-2">The all-in-one startup operating system for first-time founders.</h1>
-          <p class="muted mt-4">Plan smarter, execute faster, and move from idea to action with guided workflows, AI support, and a premium local-first workspace.</p>
-          <div class="mt-5 flex flex-wrap gap-3">
-            <button class="public-btn" data-enter-app>Enter Workspace</button>
-            <a href="#features-overview" class="public-btn bg-white text-slate-900 border-slate-300 no-underline">Explore Features</a>
+          <p class="section-kicker">Barya Founder Platform</p>
+          <h1 class="hero-title">Build your company with the clarity, discipline, and momentum of a top founder.</h1>
+          <p class="hero-subtitle">Barya gives ambitious builders one premium operating layer for strategy, business planning, and weekly execution. From first idea to first real traction, every move is structured, focused, and under your control.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <button class="public-btn" data-enter-app>Start Building in Barya</button>
+            <a href="#features-overview" class="public-btn bg-white text-slate-900 border-slate-300 no-underline">View Platform Overview</a>
+          </div>
+          <div class="mini-stats">
+            <div class="mini-stat"><strong>1 Workspace</strong><span>Plan, decide, and execute in one place</span></div>
+            <div class="mini-stat"><strong>Private by default</strong><span>Local-first workflow for founder trust</span></div>
+            <div class="mini-stat"><strong>Execution-first</strong><span>Turn strategy into weekly action</span></div>
           </div>
         </article>
-        <article class="public-panel">
-          <h2 class="text-2xl font-bold text-slate-900">Built for serious startup clarity</h2>
-          <p class="muted mt-2">From your first business idea to weekly execution reviews, Barya gives you one structured, beginner-friendly flow.</p>
-          <ul class="mt-4 list-disc list-inside text-slate-700 space-y-1">
-            <li>Business planning + startup guidance</li>
-            <li>Interactive templates + AI help</li>
-            <li>Private, local-first workflow</li>
-            <li>Unified founder workspace</li>
-          </ul>
+        <article class="hero-image-wrap">
+          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80" alt="Startup founders in a strategy meeting" loading="lazy" />
+          <div class="hero-proof-badge">Built for founders who are serious about execution.</div>
         </article>
       </div>
 
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">What is Barya?</h2>
-        <p class="muted mt-2">Barya Business AI is a SaaS-style founder platform that combines business planning, startup guidance, practical templates, and AI-assisted decision support in one place. It is designed for local-first work, so your planning flow remains private, focused, and under your control from day one.</p>
-      </article>
-
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Who is it for?</h2>
-        <div class="public-grid md:grid-cols-2 mt-4">
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Students</h3><p class="muted text-sm mt-1">Learn practical startup thinking with clear structure and simple workflows.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">First-time founders</h3><p class="muted text-sm mt-1">Turn ideas into real plans without getting stuck in complexity.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Small business starters</h3><p class="muted text-sm mt-1">Track finances, plan operations, and grow with confidence.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">People with ideas, no structure</h3><p class="muted text-sm mt-1">Get step-by-step guidance when you know what you want, but not where to begin.</p></article>
-        </div>
-      </article>
-
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Why this platform exists</h2>
-        <p class="muted mt-2">Business planning is often confusing. Most people have strong ideas but low clarity. Existing tools are either too complex, too scattered, or too generic. Barya exists to fix that gap by giving founders one practical environment where learning, planning, and execution stay connected.</p>
-      </article>
-
-      <section id="features-overview" class="mt-5">
-        <h2 class="public-section-title">Key Features</h2>
-        <div class="public-grid md:grid-cols-3 mt-4">
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Dashboard</h3><p class="muted text-sm mt-1">Track revenue, expenses, savings, and performance in one clear view.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Barya AI</h3><p class="muted text-sm mt-1">Ask strategic questions and get focused, practical next actions.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Startup Guides</h3><p class="muted text-sm mt-1">Learn startup fundamentals through beginner-friendly guidance.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Business Plan Templates</h3><p class="muted text-sm mt-1">Build plans faster with editable, structured templates.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Memory</h3><p class="muted text-sm mt-1">Save important context and keep decisions organized over time.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Founder Workspace</h3><p class="muted text-sm mt-1">Manage your full startup workflow from one premium control center.</p></article>
-        </div>
+      <section class="landing-section-gap positioning-grid">
+        <article class="public-panel">
+          <p class="section-kicker">Positioning</p>
+          <h2 class="public-section-title mt-3">Barya is a founder operating system, not just another planning tool.</h2>
+          <p class="muted mt-4">Most startup tools solve one narrow task. Barya unifies your full founder workflow: strategy decisions, business models, startup guides, templates, and progress review. The result is a platform that helps you think clearly and move with conviction.</p>
+          <ul class="feature-list">
+            <li>• Strategic direction with actionable next moves.</li>
+            <li>• Business planning that stays connected to execution.</li>
+            <li>• A clean premium environment designed for focused builders.</li>
+          </ul>
+        </article>
+        <article class="public-panel visual-card">
+          <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80" alt="Founders collaborating over startup planning documents" loading="lazy" />
+        </article>
       </section>
 
-      <section id="how-it-works" class="mt-5">
-        <h2 class="public-section-title">How it works</h2>
-        <div class="public-grid md:grid-cols-4 mt-4">
-          <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 1</p><h3 class="font-semibold mt-1 text-slate-900">Learn</h3><p class="muted text-sm mt-1">Use startup guides to build core business understanding.</p></article>
-          <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 2</p><h3 class="font-semibold mt-1 text-slate-900">Plan</h3><p class="muted text-sm mt-1">Use templates and AI help to map your strategy clearly.</p></article>
-          <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 3</p><h3 class="font-semibold mt-1 text-slate-900">Build</h3><p class="muted text-sm mt-1">Execute tasks from your workspace and track your progress.</p></article>
-          <article class="public-card"><p class="text-xs text-indigo-700 font-semibold uppercase">Step 4</p><h3 class="font-semibold mt-1 text-slate-900">Improve</h3><p class="muted text-sm mt-1">Review performance and refine decisions every week.</p></article>
-        </div>
+      <section id="features-overview" class="landing-section-gap feature-spotlight">
+        <article class="public-panel visual-card">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80" alt="Founder reviewing startup metrics on a laptop" loading="lazy" />
+        </article>
+        <article class="public-panel">
+          <p class="section-kicker">Core Platform</p>
+          <h2 class="public-section-title mt-3">Everything you need to run your startup with confidence.</h2>
+          <div class="public-grid md:grid-cols-2 mt-5">
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Founder Dashboard</h3><p class="muted text-sm mt-1">Track performance, expenses, and momentum in one premium command center.</p></article>
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Barya AI</h3><p class="muted text-sm mt-1">Get focused strategic guidance built for founder decision speed.</p></article>
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Memory + Continuity</h3><p class="muted text-sm mt-1">Keep context, decisions, and lessons in one continuous workflow.</p></article>
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Founder Workspace</h3><p class="muted text-sm mt-1">Operate your startup from a single, clean, execution-ready environment.</p></article>
+          </div>
+        </article>
       </section>
 
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Startup Guides highlight</h2>
-        <p class="muted mt-2">Our startup guides are beginner-friendly and practical. They focus on real founder decisions, not abstract theory. You get direct business learning, execution advice, and frameworks that are useful from day one.</p>
-      </article>
+      <section id="how-it-works" class="landing-section-gap planning-grid">
+        <article class="public-panel">
+          <p class="section-kicker">Business Planning</p>
+          <h2 class="public-section-title mt-3">Premium startup guides and templates that make planning valuable again.</h2>
+          <p class="muted mt-4">Barya turns business planning into a strategic asset. Startup Guides teach the thinking. Templates structure your model. AI helps refine your direction. You leave each session with clearer priorities and stronger execution confidence.</p>
+          <div class="public-grid md:grid-cols-2 mt-5">
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Startup Guides</h3><p class="muted text-sm mt-1">Founder-focused frameworks to reduce guesswork and sharpen decisions.</p></article>
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Business Plan Templates</h3><p class="muted text-sm mt-1">Structured templates that feel professional, practical, and investor-ready.</p></article>
+          </div>
+        </article>
+        <article class="public-panel visual-card">
+          <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1400&q=80" alt="Business planning documents and laptop on a modern workspace desk" loading="lazy" />
+        </article>
+      </section>
 
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Business Plan Templates highlight</h2>
-        <p class="muted mt-2">Barya includes interactive templates with editable planning sections, so you can build and refine your business model continuously. Plans are saved locally and connected directly to your workspace for smoother execution.</p>
-      </article>
+      <section class="landing-section-gap founder-grid">
+        <article class="public-panel visual-card founder-photo">
+          <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=1200&q=80" alt="Founder working with focus in a modern office" loading="lazy" />
+        </article>
+        <article class="public-panel">
+          <p class="section-kicker">Founder Mission</p>
+          <h2 class="public-section-title mt-3">Built by a founder who believes serious ideas deserve serious systems.</h2>
+          <p class="muted mt-4">Barya exists because too many capable builders lose momentum inside cluttered tools and fragmented workflows. The mission is simple: give founders an environment they can trust, where strategy, planning, and execution finally work together.</p>
+          <div class="public-grid md:grid-cols-2 mt-5">
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Trust-first design</h3><p class="muted text-sm mt-1">Local-first architecture keeps your core planning private by default.</p></article>
+            <article class="public-card"><h3 class="font-semibold text-slate-900">Built for long-term builders</h3><p class="muted text-sm mt-1">A disciplined workflow that supports consistency, not chaos.</p></article>
+          </div>
+        </article>
+      </section>
 
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Why Barya is different</h2>
-        <div class="public-grid md:grid-cols-2 mt-4">
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Local-first and private</h3><p class="muted text-sm mt-1">Your planning workflow stays on your device by default.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Beginner-friendly structure</h3><p class="muted text-sm mt-1">Designed for people who need clarity, not complexity.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Structured execution</h3><p class="muted text-sm mt-1">Every feature supports a real plan-to-action workflow.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">All-in-one founder flow</h3><p class="muted text-sm mt-1">Learn, plan, build, and improve from one unified platform.</p></article>
-        </div>
-      </article>
-
-      <article class="public-panel mt-5">
-        <h2 class="public-section-title">Founder story / mission</h2>
-        <p class="muted mt-2">Barya was created from a simple mission: ambitious people should not be blocked by scattered tools and unclear systems. The goal is to make startup building feel structured, practical, and empowering—so more founders can move from uncertainty to confident execution.</p>
-      </article>
-
-      <section id="faq" class="mt-5">
+      <section id="faq" class="landing-section-gap">
         <h2 class="public-section-title">Frequently Asked Questions</h2>
         <div class="public-grid md:grid-cols-2 mt-4">
           <article class="public-card"><h3 class="font-semibold text-slate-900">What is Barya?</h3><p class="muted text-sm mt-1">Barya is a founder platform for business planning, AI support, templates, and execution tracking.</p></article>
@@ -1688,10 +1725,10 @@
         </div>
       </section>
 
-      <article class="public-panel mt-5 text-center">
-        <h2 class="public-section-title">Ready to build with clarity and momentum?</h2>
-        <p class="muted mt-2">Step into the workspace and turn your startup vision into structured action.</p>
-        <button class="public-btn mt-4" data-enter-app>Enter Workspace</button>
+      <article class="final-cta landing-section-gap">
+        <h2 class="public-section-title">The next serious version of your startup starts now.</h2>
+        <p class="mt-3">Join Barya and move from scattered effort to focused execution with the confidence of a founder who knows exactly what to do next.</p>
+        <button class="public-btn mt-5" data-enter-app>Enter Barya Workspace</button>
       </article>
     </section>
 
