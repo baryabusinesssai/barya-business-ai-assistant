@@ -1137,13 +1137,13 @@
   function detectIntentAndDomain(message) {
     const text = String(message || '').toLowerCase();
     const domainRules = [
-      { domain: 'idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea', 'niche'] },
+      { domain: 'business_idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea', 'niche'] },
       { domain: 'startup', intent: 'startup_setup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture', 'mvp', 'how to start', 'validate'] },
       { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost', 'runway', 'burn'] },
       { domain: 'marketing', intent: 'marketing_execution', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding', 'content', 'campaign', 'positioning', 'messaging'] },
       { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel', 'conversion', 'leads'] },
       { domain: 'product', intent: 'product_thinking', keywords: ['product', 'feature', 'roadmap', 'onboarding', 'ux', 'user feedback', 'churn'] },
-      { domain: 'founder', intent: 'founder_mindset', keywords: ['mindset', 'focus', 'discipline', 'founder', 'motivation', 'overwhelm', 'confidence'] },
+      { domain: 'founder_mindset', intent: 'founder_mindset', keywords: ['mindset', 'focus', 'discipline', 'founder', 'motivation', 'overwhelm', 'confidence'] },
       { domain: 'templates', intent: 'business_templates', keywords: ['template', 'framework', 'checklist', 'canvas', 'business plan template'] },
       { domain: 'planning', intent: 'planning_execution', keywords: ['plan', 'planning', 'strategy', 'goals', 'milestone', 'decision', 'priorities', 'quarterly plan', '90-day'] }
     ];
@@ -1176,16 +1176,35 @@
     return items[index];
   }
 
-  function buildStructuredReply(config, userMessage, contextSnippets) {
+  function getUsefulResourcesForDomain(domain) {
+    const resourceMap = {
+      startup: ['Startup Guides', 'Lean Launch Canvas', 'Startup Readiness Check'],
+      business_idea: ['Startup Guides', 'Lean Launch Canvas', 'Founder Workspace sections'],
+      marketing: ['Marketing Campaign Block', 'Founder Workspace sections', 'Memory'],
+      growth: ['Operations Roadmap', 'Founder Workspace sections', 'Memory'],
+      finance: ['Business Plan Templates', 'Operations Roadmap', 'Founder Workspace sections'],
+      planning: ['Business Plan Templates', 'Operations Roadmap', 'Lean Launch Canvas'],
+      founder_mindset: ['Memory', 'Startup Readiness Check', 'Founder Workspace sections'],
+      templates: ['Business Plan Templates', 'Lean Launch Canvas', 'Startup Guides'],
+      product: ['Lean Launch Canvas', 'Founder Workspace sections', 'Memory'],
+      general: ['Startup Guides', 'Founder Workspace sections', 'Memory']
+    };
+    const selected = resourceMap[domain] || resourceMap.general;
+    return selected.slice(0, 3);
+  }
+
+  function buildStructuredReply(config, userMessage, contextSnippets, domain) {
     if (!config) return '';
     const contextLine = contextSnippets.length > 1
       ? `Based on your recent context: ${contextSnippets.slice(0, 2).join(' → ')}.`
       : '';
+    const resources = getUsefulResourcesForDomain(domain);
     const parts = [
-      `Clear Answer:\n${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
-      `Why It Matters:\n${config.whyItMatters}`,
-      `Action Steps:\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
-      `Founder Tip:\n${config.founderTip}`
+      `1. Clear Answer\n${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
+      `2. Why It Matters\n${config.whyItMatters}`,
+      `3. Action Steps\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
+      `4. Useful Resources\n${resources.map((resource) => `- ${resource}`).join('\n')}`,
+      `5. Founder Note\n${config.founderTip}`
     ];
     if (config.nextMove) {
       parts.push(`Next Move:\n${config.nextMove}`);
@@ -1201,18 +1220,23 @@
     const tooVague = userMessage.split(/\s+/).filter(Boolean).length < 3;
     if (!userMessage || tooVague) {
       return [
-        'Clear Answer:',
+        '1. Clear Answer',
         'I can give you a founder-quality plan, but I need one clear business context first.',
         '',
-        'Why It Matters:',
+        '2. Why It Matters',
         'Without a concrete context, advice becomes generic and hard to execute.',
         '',
-        'Action Steps:',
+        '3. Action Steps',
         '1. Share your domain: startup, marketing, growth, finance, product, or planning.',
         '2. Tell me your current stage: idea, early traction, or scaling.',
         '3. Add one hard target and deadline (example: 20 qualified leads in 30 days).',
         '',
-        'Founder Tip:',
+        '4. Useful Resources',
+        '- Startup Guides',
+        '- Founder Workspace sections',
+        '- Memory',
+        '',
+        '5. Founder Note',
         'The quality of your decision-making is proportional to the clarity of your constraints.',
         '',
         'Next Move:',
@@ -1301,7 +1325,7 @@
           nextMove: 'Ask for a weekly product decision review template.'
         }
       ],
-      founder: [
+      founder_mindset: [
         {
           clearAnswer: 'Operate like an investor in your own time: focus on high-leverage decisions and remove low-value work.',
           whyItMatters: 'Founder overwhelm is usually a prioritization failure, not a workload problem.',
@@ -1328,7 +1352,7 @@
           nextMove: 'Ask me for a complete 90-day operating plan.'
         }
       ],
-      idea: [
+      business_idea: [
         {
           clearAnswer: 'Choose ideas by speed-to-validation and speed-to-cash, not by complexity.',
           whyItMatters: 'Great founders optimize for fast signal gathering before deep investment.',
@@ -1356,7 +1380,7 @@
     };
 
     const selected = pickRandomVariant(responseMap[domain] || responseMap.general, domain);
-    return buildStructuredReply(selected, userMessage, recentContext);
+    return buildStructuredReply(selected, userMessage, recentContext, domain);
   }
 
   function generateBusinessPlanSummaries(businessIdea) {
@@ -1541,7 +1565,7 @@
             ? 'workspace-minimal-card border-slate-300 bg-white'
             : 'workspace-minimal-card border-blue-100 bg-blue-50';
           const prefix = item.role === 'user' ? 'You' : 'Barya AI';
-          return `<div class="rounded-xl border ${roleClass} p-3"><p class="text-xs text-slate-500">${prefix}</p><p class="mt-1 text-sm text-slate-800">${item.text}</p></div>`;
+          return `<div class="rounded-xl border ${roleClass} p-3"><p class="text-xs text-slate-500">${prefix}</p><p class="mt-1 text-sm text-slate-800 whitespace-pre-line">${item.text}</p></div>`;
         }).join('')
       : '<p class="text-slate-400 text-sm">No messages yet. Start a conversation.</p>';
     chatBox.scrollTop = chatBox.scrollHeight;
