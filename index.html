@@ -1505,8 +1505,8 @@
     }
     .public-page {
       margin: 0 auto;
-      width: min(1180px, calc(100% - 1.75rem));
-      padding: 2.8rem 0 4rem;
+      width: min(1100px, calc(100% - 2rem));
+      padding: 0;
     }
     .public-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 1.15rem; padding: 1.6rem; box-shadow: 0 22px 44px rgba(15, 23, 42, 0.07); }
     .public-grid { display: grid; gap: 1rem; }
@@ -1515,7 +1515,7 @@
     .public-page[hidden] { display: none !important; }
     .public-hero { display: grid; gap: 2rem; grid-template-columns: 1.05fr 0.95fr; align-items: center; }
     .muted { color: #64748b; line-height: 1.75; max-width: 62ch; }
-    .landing-section-gap { margin-top: 2.6rem; }
+    .landing-section-gap { margin-top: 0; }
     .hero-title { font-size: clamp(2.7rem, 5.5vw, 4.6rem); line-height: .99; letter-spacing: -0.045em; color: #0f172a; font-weight: 800; margin-top: .9rem; max-width: 11.5ch; text-wrap: balance; }
     .hero-subtitle { margin-top: 1.2rem; font-size: 1.06rem; line-height: 1.82; color: #475569; max-width: 54ch; }
     .hero-image-wrap { overflow: hidden; border-radius: 1.2rem; border: 1px solid #dbe8f6; min-height: 540px; box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16); position: relative; }
@@ -2121,8 +2121,8 @@
       flex-direction: column !important;
       align-items: center !important;
       text-align: center !important;
-      padding-top: 140px !important;
-      padding-bottom: 100px !important;
+      padding-top: 120px !important;
+      padding-bottom: 120px !important;
       gap: 2.25rem !important;
     }
     .hero-master-container > * {
@@ -2132,17 +2132,23 @@
       max-width: 850px !important;
       margin-inline: auto !important;
       margin-top: 0 !important;
-      margin-bottom: 0 !important;
+      margin-bottom: 32px !important;
     }
     .hero-master-container .hero-subtitle {
       max-width: 650px !important;
-      margin: 24px auto !important;
+      margin: 0 auto 48px !important;
+    }
+    .hero-master-container .micro-note {
+      margin-top: 24px !important;
     }
     .hero-master-container .micro-note,
     .hero-master-container .mini-stats,
     .hero-master-container .mt-7 {
       margin-inline: auto !important;
       justify-content: center !important;
+    }
+    .hero-master-container .mt-7 {
+      margin-top: 0 !important;
     }
     .section-header {
       width: 100%;
@@ -2173,12 +2179,19 @@
       align-items: center;
     }
     .public-page > section,
-    .public-page > article {
-      margin-top: 120px !important;
+    .public-page > article,
+    .public-page > .public-hero {
+      padding-top: 120px !important;
+      padding-bottom: 120px !important;
+      margin-top: 0 !important;
     }
     .public-page > section:first-of-type,
     .public-page > article:first-of-type {
       margin-top: 0 !important;
+    }
+    .feature-spotlight .public-card,
+    #features .public-card {
+      padding: 40px !important;
     }
     .public-form .public-btn,
     .standalone-center-btn {
@@ -2254,11 +2267,11 @@
           <p class="section-kicker">Barya Founder Platform</p>
           <h1 class="hero-title">Build with <span class="headline-accent">clarity</span>. Scale with discipline.</h1>
           <p class="hero-subtitle">Barya gives ambitious builders one premium operating layer for strategy, business planning, and weekly execution. From first idea to first real traction, every move is structured, focused, and fully in your control.</p>
-          <p class="micro-note">For founders who prefer signal over noise.</p>
           <div class="mt-7 flex flex-wrap gap-3">
             <button class="public-btn" data-enter-app>Start Building in Barya</button>
             <a href="#features-overview" class="public-btn bg-white text-slate-900 border-slate-300 no-underline">View Platform Overview</a>
           </div>
+          <p class="micro-note">For founders who prefer signal over noise.</p>
           <div class="mini-stats centered-grid">
             <div class="mini-stat"><strong>1 Workspace</strong><span>Plan, decide, and execute in one place</span></div>
             <div class="mini-stat"><strong>Private by default</strong><span>Local-first workflow for founder trust</span></div>
