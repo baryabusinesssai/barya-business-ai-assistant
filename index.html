@@ -2243,7 +2243,66 @@
       }
     }
   
-  </style>
+  
+    /* UI normalization: sharp edges, no shadows, monochrome icons */
+    *, *::before, *::after {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+    button,
+    input,
+    select,
+    textarea,
+    [class*="card"],
+    article {
+      border-radius: 4px !important;
+    }
+    [class*="shadow"],
+    [class*="card"],
+    article,
+    .glass,
+    .soft-card,
+    .workspace-shell,
+    .landing-hero,
+    .planning-shell,
+    .editor-panel {
+      border: 1px solid #EDEDED !important;
+    }
+    button,
+    .public-enter-btn,
+    #appContainer .workspace-primary-btn,
+    .backup-btn-primary,
+    .founder-btn,
+    .founder-connect-btn {
+      background: #111111 !important;
+      border-color: #111111 !important;
+      color: #ffffff !important;
+    }
+    button:hover,
+    .public-enter-btn:hover,
+    #appContainer .workspace-primary-btn:hover,
+    .backup-btn-primary:hover,
+    .founder-btn:hover,
+    .founder-connect-btn:hover {
+      background: #262626 !important;
+      border-color: #262626 !important;
+      filter: none !important;
+      transform: none !important;
+    }
+    input, select, textarea, .global-search-box, .global-search-results {
+      background: #ffffff !important;
+      border: 1px solid #EDEDED !important;
+      box-shadow: none !important;
+    }
+    svg, i, .get-started-icon, .executive-summary-icon {
+      color: #1f2937 !important;
+      fill: currentColor;
+      stroke: currentColor;
+    }
+    svg [stroke] {
+      stroke-width: 1.3 !important;
+    }
+</style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
   <nav id="publicNavbar" class="public-navbar landing-only" aria-label="Main navigation">
@@ -2262,7 +2321,7 @@
 
   <div id="globalSearchShell" class="global-search-shell" style="display:none;">
     <div class="global-search-box">
-      <span aria-hidden="true">🔍</span>
+      <span aria-hidden="true">⌕</span>
       <input id="globalSearchInput" class="global-search-input" type="text" placeholder="Search tools, guides, or your saved data..." autocomplete="off" />
     </div>
     <div id="globalSearchResults" class="global-search-results hidden"></div>
@@ -2662,22 +2721,22 @@
       <section id="panel-dashboard" class="panel hidden app-view grid xl:grid-cols-3 gap-4">
         <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
           <div class="dashboard-empty-card">
-            <div class="text-5xl" aria-hidden="true">✨</div>
+            <div class="text-5xl" aria-hidden="true">✦</div>
             <h3 class="text-2xl font-semibold mt-3">Your Workspace is Ready</h3>
             <p class="text-slate-500 mt-2">Choose your next business move.</p>
             <div class="grid md:grid-cols-3 gap-4 mt-6 text-left">
               <button type="button" class="get-started-card" data-guided-entry="build">
-                <span class="get-started-icon" aria-hidden="true">🧱</span>
+                <span class="get-started-icon" aria-hidden="true">▦</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Business Planning</p>
                 <p class="text-sm text-slate-500 mt-1">Open templates and start building.</p>
               </button>
               <button type="button" class="get-started-card" data-guided-entry="track">
-                <span class="get-started-icon" aria-hidden="true">📊</span>
+                <span class="get-started-icon" aria-hidden="true">▤</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Dashboard</p>
                 <p class="text-sm text-slate-500 mt-1">Track income, expenses, and savings.</p>
               </button>
               <button type="button" class="get-started-card" data-guided-entry="grow">
-                <span class="get-started-icon" aria-hidden="true">✨</span>
+                <span class="get-started-icon" aria-hidden="true">✦</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Barya AI</p>
                 <p class="text-sm text-slate-500 mt-1">Get advice and next-step prompts.</p>
               </button>
@@ -2717,7 +2776,7 @@
 
           <div id="executiveSummaryCard" class="executive-summary-card rounded-2xl p-4 mt-4">
             <div class="flex items-start gap-3">
-              <span class="executive-summary-icon" aria-hidden="true">💡</span>
+              <span class="executive-summary-icon" aria-hidden="true">◉</span>
               <div>
                 <p class="text-xs uppercase tracking-[0.2em] text-indigo-600 font-semibold">Founder Workspace Insight</p>
                 <h3 class="font-semibold text-lg mt-1">Executive Summary</h3>

@@ -446,7 +446,7 @@
   const RESOURCES_DIRECTORY = [
     {
       category: 'Free Logo Makers',
-      icon: '🎨',
+      icon: '◧',
       items: [
         { title: 'Canva Logo Maker', url: 'https://www.canva.com/create/logos/' },
         { title: 'Looka', url: 'https://looka.com/logo-maker/' }
@@ -454,7 +454,7 @@
     },
     {
       category: 'Domain Registration',
-      icon: '🌐',
+      icon: '◎',
       items: [
         { title: 'Namecheap Domains', url: 'https://www.namecheap.com/domains/' },
         { title: 'Cloudflare Registrar', url: 'https://www.cloudflare.com/products/registrar/' }
@@ -462,7 +462,7 @@
     },
     {
       category: 'Legal Templates',
-      icon: '⚖️',
+      icon: '∥',
       items: [
         { title: 'SBA Business Forms', url: 'https://www.sba.gov/business-guide/launch-your-business/register-your-business' },
         { title: 'DocuSign Template Library', url: 'https://www.docusign.com/resources/templates' }
@@ -470,7 +470,7 @@
     },
     {
       category: 'Networking Groups',
-      icon: '🤝',
+      icon: '⌘',
       items: [
         { title: 'Meetup Entrepreneurship', url: 'https://www.meetup.com/topics/entrepreneurship/' },
         { title: 'LinkedIn Startup Groups', url: 'https://www.linkedin.com/groups/' }
