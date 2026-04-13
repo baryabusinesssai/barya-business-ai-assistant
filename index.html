@@ -1530,7 +1530,7 @@
     .public-page[hidden] { display: none !important; }
     .public-hero { display: grid; gap: 2rem; grid-template-columns: 1.05fr 0.95fr; align-items: center; }
     .muted { color: #64748b; line-height: 1.75; max-width: 62ch; }
-    .landing-section-gap { margin-top: 0; }
+    .landing-section-gap { margin-top: 160px; }
     .hero-title { font-size: clamp(2.7rem, 5.5vw, 4.6rem); line-height: .99; letter-spacing: -0.045em; color: #0f172a; font-weight: 800; margin-top: .9rem; max-width: 11.5ch; text-wrap: balance; }
     .hero-subtitle { margin-top: 1.2rem; font-size: 1.06rem; line-height: 1.82; color: #475569; max-width: 54ch; }
     .hero-image-wrap { overflow: hidden; border-radius: 1.2rem; border: 1px solid #dbe8f6; min-height: 540px; box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16); position: relative; }
@@ -2896,10 +2896,6 @@
     <div class="public-navbar-inner">
       <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya AI</a>
       <div class="public-nav-links">
-        <a href="#home" data-public-nav="home">Home</a>
-        <a href="#features-overview">Features</a>
-        <a href="#pricing-overview">Pricing</a>
-        <a href="#trust">Trust</a>
         <a href="#app" class="public-enter-btn" data-enter-app>Launch App</a>
       </div>
     </div>
@@ -2916,79 +2912,64 @@
     <section id="home" class="public-page public-page-panel" data-public-page="home">
       <div class="public-hero hero-master-container minimalist-hero">
         <article class="public-panel minimalist-hero-panel">
-          <span class="hero-urgency-badge">🔥 USED BY 500+ EARLY-STAGE FOUNDERS</span>
           <h1 class="hero-title">CHAOS TO CLARITY. LAUNCH YOUR VISION.</h1>
-          <p class="hero-subtitle sub-headline">The world’s first local-first workspace that thinks like a founder. Stop juggling spreadsheets—start building your empire.</p>
+          <p class="hero-subtitle sub-headline">The local-first founder workspace for faster decisions and cleaner execution.</p>
           <div class="hero-cta-group">
-            <button class="public-btn hero-btn-primary" data-enter-app>GET INSTANT ACCESS</button>
-            <a href="#features-overview" class="public-btn hero-btn-secondary no-underline">WATCH THE 60-SEC DEMO</a>
+            <button class="public-btn hero-btn-primary" data-enter-app>Launch App</button>
           </div>
         </article>
       </div>
 
-      <section id="founder-promise" class="landing-section-gap">
-        <article class="public-panel">
-          <p class="section-kicker">Trust</p>
-          <h2 class="public-section-title mt-3">The Founder's Promise</h2>
-          <div class="public-grid md:grid-cols-[220px,1fr] mt-6 items-center gap-6">
-            <div class="public-card flex items-center justify-center min-h-[220px]">
-              <span class="text-sm font-semibold text-slate-500">Headshot Placeholder</span>
-            </div>
-            <div class="public-card">
-              <h3 class="text-2xl font-bold text-slate-900 founder-signature">Shruti Barya</h3>
-              <p class="muted mt-3">Building local-first tools to empower the next generation of Indian entrepreneurs.</p>
-            </div>
-          </div>
-        </article>
+      <section id="problem-overview" class="landing-section-gap">
+        <div class="section-header">
+          <h2 class="public-section-title">Founding is Hard. Managing it shouldn't be.</h2>
+        </div>
+        <div class="public-grid centered-grid md:grid-cols-3 mt-5">
+          <article class="public-card text-center"><p class="text-3xl">📣</p><h3 class="font-semibold text-slate-900 mt-3">Too Much Noise</h3></article>
+          <article class="public-card text-center"><p class="text-3xl">🔒</p><h3 class="font-semibold text-slate-900 mt-3">Data Privacy Risks</h3></article>
+          <article class="public-card text-center"><p class="text-3xl">🧭</p><h3 class="font-semibold text-slate-900 mt-3">No Clear Path</h3></article>
+        </div>
       </section>
 
       <section id="features-overview" class="landing-section-gap">
         <div class="section-header">
-          <h2 class="public-section-title">Features</h2>
-          <p class="muted">Everything you need to plan, execute, and grow from one focused workspace.</p>
+          <h2 class="public-section-title">Feature Grid</h2>
         </div>
-        <div class="public-grid centered-grid md:grid-cols-2 mt-5">
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Smart AI Strategy</h3><p class="muted text-sm mt-2">Get actionable strategy support for positioning, pricing, and weekly founder decisions.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Live Finance Tracking</h3><p class="muted text-sm mt-2">Track income, expenses, and savings in real time with founder-friendly clarity.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Step-by-Step Launch Checklist</h3><p class="muted text-sm mt-2">Follow practical launch checklists that help you move from idea to execution with confidence.</p></article>
-          <article class="public-card"><h3 class="font-semibold text-slate-900">Local-First Privacy</h3><p class="muted text-sm mt-2">Keep your business context and planning data on your own device by default.</p></article>
+        <div class="public-grid centered-grid md:grid-cols-3 mt-5">
+          <article class="public-card"><h3 class="font-semibold text-slate-900">Strategy</h3><p class="muted text-sm mt-2">Decide faster.</p></article>
+          <article class="public-card"><h3 class="font-semibold text-slate-900">Finance</h3><p class="muted text-sm mt-2">Track clearly.</p></article>
+          <article class="public-card"><h3 class="font-semibold text-slate-900">Memory</h3><p class="muted text-sm mt-2">Keep context.</p></article>
         </div>
       </section>
 
       <section id="product-preview" class="landing-section-gap">
         <div class="section-header">
           <h2 class="public-section-title">Product Preview</h2>
-          <p class="muted">A visual teaser of the core workspace experience.</p>
         </div>
         <div class="public-grid centered-grid md:grid-cols-3 mt-5">
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Chat UI</h3>
-            <div class="preview-mockup" aria-label="Chat UI preview mockup">
+            <h3 class="font-semibold text-slate-900">Strategy Mockup</h3>
+            <div class="preview-mockup" aria-label="Strategy panel preview mockup">
               <div class="mock-line md"></div>
               <div class="chat-bubble-row"><div class="chat-bubble left"></div></div>
               <div class="chat-bubble-row"><div class="chat-bubble right"></div></div>
-              <div class="chat-bubble-row"><div class="chat-bubble left" style="width:70%"></div></div>
               <div class="mock-line lg" style="margin-top:auto;"></div>
             </div>
           </article>
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Finance Table</h3>
+            <h3 class="font-semibold text-slate-900">Finance Mockup</h3>
             <div class="preview-mockup" aria-label="Finance table preview mockup">
-              <div class="finance-head">
-                <div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div>
-              </div>
-              <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
+              <div class="finance-head"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
               <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
               <div class="finance-row"><div class="finance-cell"></div><div class="finance-cell"></div><div class="finance-cell"></div></div>
               <div class="mock-line sm" style="margin-top:auto;"></div>
             </div>
           </article>
           <article class="public-card min-h-[260px] flex flex-col justify-between">
-            <h3 class="font-semibold text-slate-900">Checklist</h3>
-            <div class="preview-mockup" aria-label="Checklist preview mockup">
+            <h3 class="font-semibold text-slate-900">Memory Mockup</h3>
+            <div class="preview-mockup" aria-label="Memory checklist preview mockup">
               <div class="check-row"><div class="check-box"></div><div class="mock-line lg"></div></div>
               <div class="check-row"><div class="check-box"></div><div class="mock-line md"></div></div>
-              <div class="check-row"><div class="check-box"></div><div class="mock-line lg"></div></div>
               <div class="check-row"><div class="check-box"></div><div class="mock-line sm"></div></div>
             </div>
           </article>
@@ -2997,49 +2978,24 @@
 
       <section id="pricing-overview" class="landing-section-gap">
         <div class="section-header">
-          <h2 class="public-section-title">Pricing</h2>
-          <p class="muted">Simple pricing for founders at every stage.</p>
+          <h2 class="public-section-title">Simple Pricing</h2>
         </div>
         <div class="public-grid centered-grid md:grid-cols-2 mt-5">
           <article class="public-card">
-            <p class="section-kicker">Plan 01</p>
-            <h3 class="text-2xl font-bold text-slate-900 mt-1">Free Forever</h3>
+            <h3 class="text-2xl font-bold text-slate-900 mt-1">Free</h3>
             <p class="muted mt-2">$0/month</p>
-            <ul class="muted text-sm mt-4 space-y-1">
-              <li>• Core AI workspace access</li>
-              <li>• Basic finance tracking</li>
-              <li>• Startup planning templates</li>
-              <li>• Local-first data storage</li>
-            </ul>
           </article>
           <article class="public-card border-2 border-slate-900">
-            <p class="section-kicker">Plan 02</p>
             <h3 class="text-2xl font-bold text-slate-900 mt-1">Pro</h3>
-            <p class="muted mt-2">$9/mo - Coming Soon</p>
-            <ul class="muted text-sm mt-4 space-y-1">
-              <li>• Advanced Financial Exports</li>
-              <li>• Unlimited AI Context</li>
-              <li>• Priority feature access</li>
-              <li>• Founder growth insights</li>
-            </ul>
+            <p class="muted mt-2">$9/month</p>
           </article>
         </div>
       </section>
 
-      <section id="trust" class="landing-section-gap">
-        <article class="public-panel">
-          <p class="section-kicker">Trust</p>
-          <h2 class="public-section-title mt-3">Built for serious founders</h2>
-          <div class="public-grid md:grid-cols-3 mt-5">
-            <article class="public-card"><h3 class="font-semibold text-slate-900">Private by default</h3><p class="muted text-sm mt-2">Your workspace data stays local in your browser unless you choose to export it.</p></article>
-            <article class="public-card"><h3 class="font-semibold text-slate-900">Action-oriented design</h3><p class="muted text-sm mt-2">Every module is designed around launch progress and execution, not dashboard noise.</p></article>
-            <article class="public-card"><h3 class="font-semibold text-slate-900">Built with founders in mind</h3><p class="muted text-sm mt-2">Barya is designed for first-time and early-stage founders who value clarity and momentum.</p></article>
-          </div>
-          <div class="mt-6">
-            <button class="public-btn" data-enter-app>Launch App</button>
-          </div>
-        </article>
-      </section>
+      <div id="internal-archive" hidden>
+        <section id="founder-promise-internal"></section>
+        <section id="trust-internal"></section>
+      </div>
     </section>
 
     <section id="features" class="public-page" data-public-page="features" hidden>
