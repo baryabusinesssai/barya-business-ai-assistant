@@ -2587,6 +2587,99 @@
         grid-column: 1 !important;
       }
     }
+    .workspace-dashboard-view {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .workspace-dashboard-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .workspace-sidebar {
+      width: 250px;
+      flex: 0 0 250px;
+      background: #ffffff;
+      border-right: 1px solid #ececec;
+      padding: 1.25rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .workspace-sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .workspace-sidebar-nav .tabBtn,
+    .workspace-mobile-nav .tabBtn {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      color: #666666;
+      border: 0;
+      background: transparent;
+      border-radius: 10px;
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      font-weight: 500;
+      box-shadow: none;
+      transform: none;
+    }
+    .workspace-sidebar-nav .tabBtn:hover,
+    .workspace-mobile-nav .tabBtn:hover {
+      background: #f5f5f5;
+      color: #111827;
+      transform: none;
+      box-shadow: none;
+    }
+    .workspace-sidebar-nav .tabBtn.active,
+    .workspace-mobile-nav .tabBtn.active {
+      background: #f2f2f2;
+      color: #111827;
+      border-bottom-color: transparent;
+      font-weight: 600;
+    }
+    .workspace-main-canvas {
+      flex: 1;
+      background: #fafafa;
+      padding: 1.25rem;
+      min-width: 0;
+      padding-bottom: 5.5rem;
+    }
+    .workspace-mobile-nav {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ffffff;
+      border-top: 1px solid #ececec;
+      z-index: 1300;
+      padding: 0.45rem 0.35rem calc(0.45rem + env(safe-area-inset-bottom));
+      gap: 0.2rem;
+      justify-content: space-between;
+    }
+    .workspace-mobile-nav .tabBtn {
+      flex: 1;
+      text-align: center;
+      padding: 0.5rem 0.2rem;
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      .workspace-dashboard-layout {
+        display: block;
+      }
+      .workspace-sidebar {
+        display: none;
+      }
+      .workspace-main-canvas {
+        padding: 1rem;
+      }
+      .workspace-mobile-nav {
+        display: flex;
+      }
+    }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
@@ -2965,37 +3058,40 @@
     </footer>
   </div>
 
-  <div id="appContainer" class="app-view is-hidden max-w-6xl mx-auto px-4 py-8 space-y-8" style="display:none;">
+  <div id="appContainer" class="app-view is-hidden workspace-dashboard-view" style="display:none;">
+    <div class="workspace-dashboard-layout">
+      <aside class="workspace-sidebar" aria-label="Workspace navigation">
+        <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
+          <button data-tab="dashboard" class="tabBtn active">Dashboard</button>
+          <button data-tab="strategy" class="tabBtn">AI Assistant</button>
+          <button data-tab="planning" class="tabBtn">Business Plan</button>
+          <button data-tab="finances" class="tabBtn">Finances</button>
+          <button data-tab="founder" class="tabBtn">Settings</button>
+        </nav>
+      </aside>
 
-    <header class="workspace-shell p-5 md:p-6">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <span class="h-2.5 w-2.5 rounded-full bg-slate-900"></span>
-          <p class="text-xs uppercase tracking-[0.3em] workspace-muted font-semibold" data-i18n="founderWorkspace">Founder Workspace</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">← Back to Landing Page</button>
-          <span class="px-3 py-2 rounded-xl text-[11px] font-medium uppercase tracking-[0.2em] text-slate-600 bg-slate-50 border border-slate-200">Local Mode</span>
-          <select id="languageSelect" class="border border-slate-300 rounded-xl px-3 py-2 text-sm" aria-label="Language" data-i18n-aria-label="language"></select>
-        </div>
-      </div>
+      <div class="workspace-main-canvas">
+        <header class="workspace-shell p-5 md:p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span class="h-2.5 w-2.5 rounded-full bg-slate-900"></span>
+              <p class="text-xs uppercase tracking-[0.3em] workspace-muted font-semibold" data-i18n="founderWorkspace">Founder Workspace</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">← Back to Landing Page</button>
+              <span class="px-3 py-2 rounded-xl text-[11px] font-medium uppercase tracking-[0.2em] text-slate-600 bg-slate-50 border border-slate-200">Local Mode</span>
+              <select id="languageSelect" class="border border-slate-300 rounded-xl px-3 py-2 text-sm" aria-label="Language" data-i18n-aria-label="language"></select>
+            </div>
+          </div>
 
-      <div class="mt-8 md:mt-9 space-y-3">
-        <h1 class="workspace-heading">Founder Workspace</h1>
-        <p class="workspace-subtitle text-base md:text-lg">Your daily operating system to plan smarter, execute faster, and grow with confidence.</p>
-        <button id="startConversationBtn" class="workspace-primary-btn inline-flex items-center justify-center text-sm" data-i18n="startConversation">Start conversation</button>
-      </div>
+          <div class="mt-8 md:mt-9 space-y-3">
+            <h1 class="workspace-heading">Founder Workspace</h1>
+            <p class="workspace-subtitle text-base md:text-lg">Your daily operating system to plan smarter, execute faster, and grow with confidence.</p>
+            <button id="startConversationBtn" class="workspace-primary-btn inline-flex items-center justify-center text-sm" data-i18n="startConversation">Start conversation</button>
+          </div>
+        </header>
 
-      <nav id="tabs" class="workspace-nav workspace-tabbar" aria-label="Workspace sections">
-        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm">Dashboard</button>
-        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm">AI Strategy</button>
-        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Business Planning</button>
-        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Memory</button>
-        <button data-tab="founder" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Profile / Settings</button>
-      </nav>
-    </header>
-
-    <main id="appSection" class="space-y-5">
+        <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel hidden app-view grid xl:grid-cols-3 gap-4">
         <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
           <div class="dashboard-empty-card">
@@ -3418,13 +3514,16 @@
 
         </article>
       </section>
-    </main>
+        </main>
+      </div>
+    </div>
 
-    <footer class="workspace-quick-links" aria-label="Workspace shortcuts">
-      <a href="https://www.linkedin.com/in/baryabusiness/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="#about" data-public-nav="about">Meet the Founder</a>
-      <button type="button" data-tab="memory" class="tabBtn rounded-xl px-3 py-2 text-xs font-medium">Memory</button>
-      <button type="button" data-tab="founder" class="tabBtn rounded-xl px-3 py-2 text-xs font-medium">Profile / Settings</button>
+    <footer class="workspace-mobile-nav" aria-label="Workspace mobile navigation">
+      <button type="button" data-tab="dashboard" class="tabBtn active">Dashboard</button>
+      <button type="button" data-tab="strategy" class="tabBtn">AI Assistant</button>
+      <button type="button" data-tab="planning" class="tabBtn">Business Plan</button>
+      <button type="button" data-tab="finances" class="tabBtn">Finances</button>
+      <button type="button" data-tab="founder" class="tabBtn">Settings</button>
     </footer>
   </div>
   <script defer src="app.js"></script>
