@@ -1839,21 +1839,64 @@
     }
     .founder-spotlight {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 1.5rem;
       align-items: stretch;
     }
-    .founder-spotlight-image img {
-      width: 100%;
-      height: 100%;
+    .founder-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       min-height: 420px;
-      object-fit: cover;
-      display: block;
-      filter: grayscale(100%);
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      padding: 2rem;
+    }
+    .founder-name-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .founder-badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #000000;
+      color: #000000;
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .founder-link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      margin-top: 1.25rem;
+      background: #000000;
+      color: #ffffff !important;
+      border: 1px solid #000000;
+      border-radius: 0.75rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+    .founder-link-btn:hover {
+      opacity: 0.88;
+    }
+    .founder-link-btn:focus-visible {
+      outline: 2px solid #000000;
+      outline-offset: 2px;
     }
     @media (max-width: 900px) {
-      .founder-spotlight {
-        grid-template-columns: 1fr;
+      .founder-card {
+        min-height: auto;
       }
     }
     .gradient-text,
@@ -2035,14 +2078,22 @@
       </section>
 
       <section class="landing-section-gap founder-spotlight">
-        <article class="public-panel founder-spotlight-image" aria-label="Founder portrait">
-          <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1400&q=80" alt="Founder portrait in monochrome style" loading="lazy" />
-        </article>
-        <article class="public-panel">
+        <article class="public-panel founder-card" aria-label="Founder card">
           <p class="section-kicker">Meet the Founder</p>
-          <h2 class="public-section-title mt-3">Built with founder discipline, clarity, and trust.</h2>
+          <div class="founder-name-row mt-3">
+            <h2 class="public-section-title">Shruti Barya</h2>
+            <span class="founder-badge">Verified Founder</span>
+          </div>
           <p class="editorial-block mt-4">Barya was designed to remove visual noise and operational chaos so founders can focus on strategy and execution. Every section is intentionally minimal, local-first, and built to keep momentum consistent week after week.</p>
           <p class="quote-block">“Simple systems, clear decisions, and focused action create long-term startup resilience.”</p>
+          <a
+            class="founder-link-btn"
+            href="https://www.linkedin.com/in/shruti-barya-18a2a23a4"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Connect on LinkedIn
+          </a>
         </article>
       </section>
 
