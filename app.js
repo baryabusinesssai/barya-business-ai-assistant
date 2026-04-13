@@ -2320,6 +2320,12 @@
     if (globalSearchShell) globalSearchShell.style.display = 'none';
   }
 
+  function toggleWelcomeModal(isVisible) {
+    const welcomeModal = $('welcomeModal');
+    if (!welcomeModal) return;
+    welcomeModal.classList.toggle('hidden', !isVisible);
+  }
+
   function showPublicPage(pageName = 'home') {
     const pages = document.querySelectorAll('[data-public-page]');
     pages.forEach((page) => {
@@ -2694,11 +2700,24 @@
     const handleEnterWorkspace = (event) => {
       event.preventDefault();
       clearGuidedFocus();
-      showMainApp({ tab: 'dashboard', rememberStart: true });
+      const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
+      if (hasStarted) {
+        showMainApp({ tab: 'dashboard', rememberStart: true });
+        return;
+      }
+      toggleWelcomeModal(true);
     };
     document.querySelectorAll('[data-enter-app]').forEach((button) => {
       button.addEventListener('click', handleEnterWorkspace);
     });
+    const loadSampleStartupBtn = $('loadSampleStartupBtn');
+    if (loadSampleStartupBtn) {
+      loadSampleStartupBtn.addEventListener('click', () => {
+        appState.sampleDashboardMode = true;
+        toggleWelcomeModal(false);
+        showMainApp({ tab: 'dashboard', rememberStart: true });
+      });
+    }
     const viewSampleDashboardBtn = $('viewSampleDashboardBtn');
     if (viewSampleDashboardBtn) {
       viewSampleDashboardBtn.addEventListener('click', () => {
