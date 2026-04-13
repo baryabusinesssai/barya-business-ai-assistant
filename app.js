@@ -24,7 +24,13 @@
     profile: 'barya_profile',
     feedbackEntries: 'barya_feedback_entries',
     contactMessages: 'barya_contact_messages',
-    aiResponseMeta: 'barya_ai_response_meta'
+    aiResponseMeta: 'barya_ai_response_meta',
+    founderProfile: 'barya_founder_profile',
+    goalDirection: 'barya_goal_direction',
+    workspacePreferences: 'barya_workspace_preferences',
+    aiBehaviorSettings: 'barya_ai_behavior_settings',
+    businessContext: 'barya_business_context',
+    learningPreferences: 'barya_learning_preferences'
   };
 
   const LANGUAGES = ['English', 'Urdu', 'Roman Urdu'];
@@ -511,7 +517,11 @@
     businessAdvisorHistory: [],
     ideaGeneratorHistory: [],
     aiResponseMeta: { lastDomain: 'general', lastVariantByDomain: {} },
-    profile: { businessType: '', audience: '', preference: '' },
+    profile: { name: '', businessType: '', stage: '', audience: '', preference: '' },
+    goalDirection: { currentGoal: '', timeline: '', priorityFocus: '' },
+    aiBehavior: { responseStyle: 'structured', focusMode: 'startup' },
+    businessContext: { building: '', revenueStage: '', biggestChallenge: '' },
+    learningPreferences: { level: 'beginner', showSuggestions: true },
     businessPlan: { selectedTemplateId: '', drafts: {}, aiGenerated: {} },
     sampleDashboardMode: false,
     readinessTasks: loadReadinessTasks(),
@@ -695,11 +705,12 @@
 
   function loadSettings() {
     const loaded = loadFromStorage(STORAGE_KEYS.settings, {});
+    const workspacePreferences = loadFromStorage(STORAGE_KEYS.workspacePreferences, {});
     const storedLanguage = StorageService.getItem(STORAGE_KEYS.languagePreference, '');
-    const candidateLanguage = storedLanguage || loaded?.language;
+    const candidateLanguage = storedLanguage || workspacePreferences?.language || loaded?.language;
     const language = LANGUAGES.includes(candidateLanguage) ? candidateLanguage : 'English';
     return {
-      currency: loaded?.currency || 'USD',
+      currency: workspacePreferences?.currency || loaded?.currency || 'USD',
       language,
       goal: loaded?.goal || '',
       autoSyncCloud: Boolean(loaded?.autoSyncCloud)
@@ -2157,19 +2168,39 @@
     const settingsLanguageSelect = $('settingsLanguageSelect');
     const currencySelect = $('currencySelect');
     const goalInput = $('goalInput');
-    const autoSyncToggle = $('autoSyncToggle');
+    const founderNameInput = $('founderNameInput');
     const businessTypeInput = $('businessTypeInput');
+    const founderStageInput = $('founderStageInput');
     const audienceInput = $('audienceInput');
     const preferenceInput = $('preferenceInput');
+    const goalTimelineInput = $('goalTimelineInput');
+    const priorityFocusInput = $('priorityFocusInput');
+    const responseStyleSelect = $('responseStyleSelect');
+    const focusModeSelect = $('focusModeSelect');
+    const buildingInput = $('buildingInput');
+    const revenueStageInput = $('revenueStageInput');
+    const biggestChallengeInput = $('biggestChallengeInput');
+    const learningLevelSelect = $('learningLevelSelect');
+    const showSuggestionsToggle = $('showSuggestionsToggle');
 
     if (languageSelect) languageSelect.value = appState.settings.language;
     if (settingsLanguageSelect) settingsLanguageSelect.value = appState.settings.language;
     if (currencySelect) currencySelect.value = appState.settings.currency;
     if (goalInput) goalInput.value = appState.settings.goal || '';
-    if (autoSyncToggle) autoSyncToggle.checked = Boolean(appState.settings.autoSyncCloud);
+    if (founderNameInput) founderNameInput.value = appState.profile.name || '';
     if (businessTypeInput) businessTypeInput.value = appState.profile.businessType || '';
+    if (founderStageInput) founderStageInput.value = appState.profile.stage || '';
     if (audienceInput) audienceInput.value = appState.profile.audience || '';
     if (preferenceInput) preferenceInput.value = appState.profile.preference || '';
+    if (goalTimelineInput) goalTimelineInput.value = appState.goalDirection.timeline || '';
+    if (priorityFocusInput) priorityFocusInput.value = appState.goalDirection.priorityFocus || '';
+    if (responseStyleSelect) responseStyleSelect.value = appState.aiBehavior.responseStyle || 'structured';
+    if (focusModeSelect) focusModeSelect.value = appState.aiBehavior.focusMode || 'startup';
+    if (buildingInput) buildingInput.value = appState.businessContext.building || '';
+    if (revenueStageInput) revenueStageInput.value = appState.businessContext.revenueStage || '';
+    if (biggestChallengeInput) biggestChallengeInput.value = appState.businessContext.biggestChallenge || '';
+    if (learningLevelSelect) learningLevelSelect.value = appState.learningPreferences.level || 'beginner';
+    if (showSuggestionsToggle) showSuggestionsToggle.checked = Boolean(appState.learningPreferences.showSuggestions);
     setLanguage(appState.settings.language);
 
     renderDashboard();
@@ -2577,23 +2608,57 @@
       });
     }
 
+    const founderProfileForm = $('founderProfileForm');
+    if (founderProfileForm) {
+      founderProfileForm.addEventListener('submit', (event) => {
     const saveSettingsBtn = $('saveSettingsBtn');
     const saveGoalBtn = $('saveGoalBtn');
     if (saveSettingsBtn) {
       saveSettingsBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        const currencySelect = $('currencySelect');
-        const settingsLanguageSelect = $('settingsLanguageSelect');
-        const goalInput = $('goalInput');
-        appState.settings = {
-          currency: currencySelect?.value || appState.settings.currency,
-          language: settingsLanguageSelect?.value || appState.settings.language,
-          goal: goalInput?.value?.trim() || '',
-          autoSyncCloud: Boolean(appState.settings.autoSyncCloud)
+        appState.profile = {
+          name: $('founderNameInput')?.value?.trim() || '',
+          businessType: $('businessTypeInput')?.value?.trim() || '',
+          stage: $('founderStageInput')?.value?.trim() || '',
+          audience: $('audienceInput')?.value?.trim() || '',
+          preference: $('preferenceInput')?.value?.trim() || ''
         };
+        if (appState.profile.businessType) saveToStorage(STORAGE_KEYS.businessCategory, appState.profile.businessType);
+        saveToStorage(STORAGE_KEYS.profile, appState.profile);
+        saveToStorage(STORAGE_KEYS.founderProfile, appState.profile);
+        setStatusText('cloudSyncStatus', 'Founder profile saved.', 'success');
+      });
+    }
+
+    const goalDirectionForm = $('goalDirectionForm');
+    if (goalDirectionForm) {
+      goalDirectionForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        appState.goalDirection = {
+          currentGoal: $('goalInput')?.value?.trim() || '',
+          timeline: $('goalTimelineInput')?.value?.trim() || '',
+          priorityFocus: $('priorityFocusInput')?.value?.trim() || ''
+        };
+        appState.settings.goal = appState.goalDirection.currentGoal;
+        saveToStorage(STORAGE_KEYS.goalDirection, appState.goalDirection);
         saveSettings();
+        setStatusText('cloudSyncStatus', 'Goal and direction saved.', 'success');
+      });
+    }
+
+    const workspacePreferencesForm = $('workspacePreferencesForm');
+    if (workspacePreferencesForm) {
+      workspacePreferencesForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        appState.settings.currency = $('currencySelect')?.value || appState.settings.currency;
+        appState.settings.language = $('settingsLanguageSelect')?.value || appState.settings.language;
+        saveSettings();
+        saveToStorage(STORAGE_KEYS.workspacePreferences, {
+          currency: appState.settings.currency,
+          language: appState.settings.language
+        });
         applySettings();
-        setStatusText('cloudSyncStatus', 'Settings saved successfully.', 'success');
+        setStatusText('cloudSyncStatus', 'Workspace preferences saved.', 'success');
       });
     }
     if (saveGoalBtn) {
@@ -2602,17 +2667,43 @@
       });
     }
 
-    const profileForm = $('profileForm');
-    if (profileForm) {
-      profileForm.addEventListener('submit', (event) => {
+    const aiBehaviorForm = $('aiBehaviorForm');
+    if (aiBehaviorForm) {
+      aiBehaviorForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        const businessType = $('businessTypeInput')?.value?.trim() || '';
-        const audience = $('audienceInput')?.value?.trim() || '';
-        const preference = $('preferenceInput')?.value?.trim() || '';
-        appState.profile = { businessType, audience, preference };
-        if (businessType) saveToStorage(STORAGE_KEYS.businessCategory, businessType);
-        saveToStorage(STORAGE_KEYS.profile, appState.profile);
-        setStatusText('cloudSyncStatus', 'Profile saved successfully.', 'success');
+        appState.aiBehavior = {
+          responseStyle: $('responseStyleSelect')?.value || 'structured',
+          focusMode: $('focusModeSelect')?.value || 'startup'
+        };
+        saveToStorage(STORAGE_KEYS.aiBehaviorSettings, appState.aiBehavior);
+        setStatusText('cloudSyncStatus', 'AI behavior settings saved.', 'success');
+      });
+    }
+
+    const businessContextForm = $('businessContextForm');
+    if (businessContextForm) {
+      businessContextForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        appState.businessContext = {
+          building: $('buildingInput')?.value?.trim() || '',
+          revenueStage: $('revenueStageInput')?.value?.trim() || '',
+          biggestChallenge: $('biggestChallengeInput')?.value?.trim() || ''
+        };
+        saveToStorage(STORAGE_KEYS.businessContext, appState.businessContext);
+        setStatusText('cloudSyncStatus', 'Business context saved.', 'success');
+      });
+    }
+
+    const learningPreferencesForm = $('learningPreferencesForm');
+    if (learningPreferencesForm) {
+      learningPreferencesForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        appState.learningPreferences = {
+          level: $('learningLevelSelect')?.value || 'beginner',
+          showSuggestions: Boolean($('showSuggestionsToggle')?.checked)
+        };
+        saveToStorage(STORAGE_KEYS.learningPreferences, appState.learningPreferences);
+        setStatusText('cloudSyncStatus', 'Learning preferences saved.', 'success');
       });
     }
 
@@ -2625,22 +2716,15 @@
     if (importDataInput) {
       importDataInput.addEventListener('change', importData);
     }
-    const autoSyncToggle = $('autoSyncToggle');
-    if (autoSyncToggle) {
-      autoSyncToggle.checked = Boolean(appState.settings.autoSyncCloud);
-      autoSyncToggle.addEventListener('change', () => {
-        appState.settings.autoSyncCloud = autoSyncToggle.checked;
-        saveSettings();
-      });
-    }
-    const exportToCloudBtn = $('exportToCloudBtn');
-    if (exportToCloudBtn) {
-      exportToCloudBtn.addEventListener('click', () => {
-        const status = $('cloudSyncStatus');
-        exportData();
-        if (status) {
-          status.textContent = 'Backup exported. Upload this JSON file to your Google Drive for cloud storage.';
-        }
+    const resetWorkspaceBtn = $('resetWorkspaceBtn');
+    if (resetWorkspaceBtn) {
+      resetWorkspaceBtn.addEventListener('click', () => {
+        const confirmed = window.confirm('Reset the workspace? This clears all locally saved Barya data.');
+        if (!confirmed) return;
+        StorageService.keys()
+          .filter((key) => key.startsWith('barya_'))
+          .forEach((key) => localStorage.removeItem(key));
+        window.location.reload();
       });
     }
 
@@ -2947,11 +3031,38 @@
     };
     appState.businessAdvisorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.businessAdvisorHistory, []));
     appState.ideaGeneratorHistory = ensureArray(loadFromStorage(STORAGE_KEYS.ideaGeneratorHistory, []));
+    const legacyProfile = ensureObject(loadFromStorage(STORAGE_KEYS.profile, {}));
+    const founderProfile = ensureObject(loadFromStorage(STORAGE_KEYS.founderProfile, {}));
     appState.profile = {
+      name: '',
       businessType: '',
+      stage: '',
       audience: '',
       preference: '',
-      ...ensureObject(loadFromStorage(STORAGE_KEYS.profile, {}))
+      ...legacyProfile,
+      ...founderProfile
+    };
+    appState.goalDirection = {
+      currentGoal: appState.settings.goal || '',
+      timeline: '',
+      priorityFocus: '',
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.goalDirection, {}))
+    };
+    appState.aiBehavior = {
+      responseStyle: 'structured',
+      focusMode: 'startup',
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.aiBehaviorSettings, {}))
+    };
+    appState.businessContext = {
+      building: '',
+      revenueStage: '',
+      biggestChallenge: '',
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.businessContext, {}))
+    };
+    appState.learningPreferences = {
+      level: 'beginner',
+      showSuggestions: true,
+      ...ensureObject(loadFromStorage(STORAGE_KEYS.learningPreferences, {}))
     };
     BUSINESS_PLAN_TEMPLATES.forEach((template) => {
       const saved = loadFromStorage(template.storageKey, {});
