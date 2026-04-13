@@ -1710,19 +1710,19 @@
       line-height: 1.8 !important;
       background: #ffffff !important;
       background-image: none !important;
-      color: #000000 !important;
+      color: #333333 !important;
     }
     p, li, .muted, .hero-subtitle, .editorial-block, .feature-intro {
       line-height: 1.8 !important;
-      color: #000000 !important;
+      color: #333333 !important;
     }
     h1, h2, h3, h4, h5, h6 {
-      font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       font-weight: 800 !important;
       color: #000000 !important;
     }
     label, a, strong, small, span {
-      color: #000000 !important;
+      color: #333333 !important;
     }
     button,
     .public-enter-btn,
@@ -1809,8 +1809,9 @@
     }
     .public-navbar {
       background: #ffffff !important;
-      border-bottom: 1px solid #000000 !important;
+      border-bottom: 1px solid #ededed !important;
       backdrop-filter: none !important;
+      box-shadow: none !important;
     }
     .public-navbar-inner {
       min-height: 52px !important;
@@ -1818,29 +1819,50 @@
     .hero-title,
     .landing-headline h1,
     .landing-headline .hero-title {
-      font-size: clamp(4rem, 8vw, 6rem) !important;
+      font-size: clamp(4.5rem, 10vw, 7rem) !important;
       line-height: 1.02 !important;
-      font-weight: 800 !important;
+      font-weight: 900 !important;
       color: #000000 !important;
       text-align: center !important;
+      margin-top: 100px !important;
+      margin-bottom: 100px !important;
     }
     .landing-headline {
       text-align: center !important;
       max-width: 100% !important;
-      padding: 5rem 0 !important;
+      padding: 6.25rem 0 !important;
     }
     .public-hero,
     .landing-hero {
-      padding-top: clamp(4rem, 8vw, 7rem) !important;
-      padding-bottom: clamp(4rem, 8vw, 7rem) !important;
+      padding-top: clamp(6.25rem, 10vw, 8rem) !important;
+      padding-bottom: clamp(6.25rem, 10vw, 8rem) !important;
+    }
+    .founder-spotlight {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+    .founder-spotlight-image img {
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(100%);
+    }
+    @media (max-width: 900px) {
+      .founder-spotlight {
+        grid-template-columns: 1fr;
+      }
     }
     .gradient-text,
     .headline-accent,
     .primary-action-glow,
     [class*="gradient"],
     [style*="gradient"] {
-      background: #000000 !important;
-      color: #ffffff !important;
+      background: none !important;
+      color: #000000 !important;
       -webkit-background-clip: border-box !important;
       background-clip: border-box !important;
       animation: none !important;
@@ -2001,22 +2023,6 @@
         </article>
       </section>
 
-      <section class="landing-section-gap founder-grid">
-        <article class="public-panel visual-card founder-photo">
-          <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=1200&q=80" alt="Founder working with focus in a modern office" loading="lazy" />
-        </article>
-        <article class="public-panel">
-          <p class="section-kicker">Founder Mission</p>
-          <h2 class="public-section-title mt-3">Built by a founder who believes serious ideas deserve serious systems.</h2>
-          <blockquote class="quote-block">“The mission is simple: give founders an environment they can trust, where strategy, planning, and execution finally work together.”</blockquote>
-          <p class="editorial-block mt-4">Barya exists because too many capable builders lose momentum inside cluttered tools and fragmented workflows. This product is intentionally minimal, so the text, tasks, and priorities stay clear at every stage.</p>
-          <div class="public-grid md:grid-cols-2 mt-5">
-            <article class="public-card"><h3 class="font-semibold text-slate-900">Trust-first design</h3><p class="muted text-sm mt-1">Local-first architecture keeps your core planning private by default.</p></article>
-            <article class="public-card"><h3 class="font-semibold text-slate-900">Built for long-term builders</h3><p class="muted text-sm mt-1">A disciplined workflow that supports consistency, not chaos.</p></article>
-          </div>
-        </article>
-      </section>
-
       <section id="faq" class="landing-section-gap">
         <h2 class="public-section-title">Frequently Asked Questions</h2>
         <div class="public-grid md:grid-cols-2 mt-4">
@@ -2026,6 +2032,18 @@
           <article class="public-card"><h3 class="font-semibold text-slate-900">Can I use it on mobile?</h3><p class="muted text-sm mt-1">Yes, Barya is accessible on mobile browsers for on-the-go founder work.</p></article>
           <article class="public-card"><h3 class="font-semibold text-slate-900">Who is this for?</h3><p class="muted text-sm mt-1">Students, first-time founders, small business starters, and idea-stage builders.</p></article>
         </div>
+      </section>
+
+      <section class="landing-section-gap founder-spotlight">
+        <article class="public-panel founder-spotlight-image" aria-label="Founder portrait">
+          <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1400&q=80" alt="Founder portrait in monochrome style" loading="lazy" />
+        </article>
+        <article class="public-panel">
+          <p class="section-kicker">Meet the Founder</p>
+          <h2 class="public-section-title mt-3">Built with founder discipline, clarity, and trust.</h2>
+          <p class="editorial-block mt-4">Barya was designed to remove visual noise and operational chaos so founders can focus on strategy and execution. Every section is intentionally minimal, local-first, and built to keep momentum consistent week after week.</p>
+          <p class="quote-block">“Simple systems, clear decisions, and focused action create long-term startup resilience.”</p>
+        </article>
       </section>
 
       <article class="final-cta landing-section-gap">
