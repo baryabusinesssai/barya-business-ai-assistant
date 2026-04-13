@@ -186,19 +186,21 @@
     }
     .tabBtn {
       background: #ffffff;
-      color: #475569;
-      border: 1px solid #dbe4ef;
+      color: #111827;
+      border: 0;
+      border-bottom: 2px solid transparent;
       transition: all .18s ease;
+      font-weight: 600;
     }
     .tabBtn:hover {
-      border-color: #cbd5e1;
-      color: #0f172a;
-      background: #f8fbff;
+      color: #000000;
+      background: #f8fafc;
     }
     .tabBtn.active {
-      background: #111827;
-      border-color: #111827;
-      color: #fff;
+      color: #000000;
+      border-bottom-color: #000000;
+      background: #ffffff;
+      font-weight: 700;
     }
     .workspace-nav {
       display: flex;
@@ -228,6 +230,33 @@
       border-top: 1px solid #e2e8f0;
       padding-top: 1rem;
       margin-top: 1.25rem;
+    }
+    #appContainer button:not(.tabBtn):not(.template-card):not(.get-started-card):not(.prompt-chip):not(.guide-box-action) {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border-color: #000000 !important;
+    }
+    #appContainer button:not(.tabBtn):not(.template-card):not(.get-started-card):not(.prompt-chip):not(.guide-box-action):hover {
+      background: #111111 !important;
+      border-color: #111111 !important;
+    }
+    .memory-empty-state {
+      border: 1px dashed #cbd5e1;
+      border-radius: 0.9rem;
+      padding: 1rem;
+      color: #475569;
+      background: #f8fafc;
+    }
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .memory-item {
+      border: 1px solid #dbe4ef;
+      border-radius: 0.85rem;
+      padding: 0.85rem;
+      background: #ffffff;
     }
     .app-view {
       transition: opacity .35s ease, transform .35s ease;
@@ -2463,10 +2492,11 @@
       </div>
 
       <nav id="tabs" class="workspace-nav workspace-tabbar" aria-label="Workspace sections">
-        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm font-medium">Overview (Dashboard)</button>
-        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Strategy (AI)</button>
-        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Planning (Templates)</button>
-        <button data-tab="finances" class="tabBtn rounded-xl px-4 py-2.5 text-sm font-medium">Finances</button>
+        <button data-tab="dashboard" class="tabBtn active rounded-xl px-4 py-2.5 text-sm">Dashboard</button>
+        <button data-tab="strategy" class="tabBtn rounded-xl px-4 py-2.5 text-sm">AI Strategy</button>
+        <button data-tab="planning" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Business Planning</button>
+        <button data-tab="memory" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Memory</button>
+        <button data-tab="founder" class="tabBtn rounded-xl px-4 py-2.5 text-sm">Profile / Settings</button>
       </nav>
     </header>
 
@@ -2695,7 +2725,7 @@
             <button class="bg-indigo-600 hover:bg-indigo-500 rounded-xl px-4 font-medium" data-i18n="save">Save</button>
           </form>
 
-          <ul id="memoryList" class="mt-4 space-y-2"></ul>
+          <ul id="memoryList" class="mt-4 memory-grid"></ul>
 
           <p class="text-xs text-slate-400 mt-4">Helper: save short context notes to improve continuity across sessions.</p>
         </article>
@@ -2804,6 +2834,18 @@
           <div class="settings-layout">
             <section class="settings-card">
               <div class="settings-card-header">
+                <p class="settings-card-kicker">Meet the Founder</p>
+                <h3 class="font-semibold text-lg mt-1">Shruti Barya</h3>
+                <p class="text-sm text-slate-500 mt-1">Building Barya to help founders make clear decisions and execute with confidence.</p>
+              </div>
+              <p class="text-sm text-slate-600">“Simple systems, clear decisions, and focused action create long-term startup resilience.”</p>
+              <div class="settings-actions mt-4">
+                <a href="https://www.linkedin.com/in/baryabusiness/" target="_blank" rel="noopener noreferrer" class="workspace-primary-btn inline-flex items-center justify-center px-4 py-2 rounded-xl">Connect on LinkedIn</a>
+              </div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-header">
                 <p class="settings-card-kicker">Profile / Settings</p>
                 <h3 class="font-semibold text-lg mt-1">Business Profile</h3>
                 <p class="text-sm text-slate-500 mt-1">Set your business details and communication style.</p>
@@ -2863,17 +2905,18 @@
 
             <section class="settings-card">
               <div class="settings-card-header">
-                <p class="settings-card-kicker">Goal Setting</p>
-                <h3 class="font-semibold text-lg mt-1">Goal</h3>
-                <p class="text-sm text-slate-500 mt-1">Set one clear goal for your current focus.</p>
+                <p class="settings-card-kicker">Preferences</p>
+                <h3 class="font-semibold text-lg mt-1">Workspace Data</h3>
+                <p class="text-sm text-slate-500 mt-1">Set one clear goal, or safely reset local workspace data.</p>
               </div>
               <div class="settings-field">
                 <label for="goalInput">Define your current business goal</label>
                 <small>Use a measurable statement such as revenue, growth, or product milestones.</small>
                 <input id="goalInput" placeholder="e.g., Reach $10k MRR in the next 90 days" class="settings-input" />
               </div>
-              <div class="settings-actions">
+              <div class="settings-actions flex flex-wrap gap-2">
                 <button id="saveGoalBtn" type="button" class="workspace-secondary-btn">Save Goal</button>
+                <button id="resetWorkspaceBtn" type="button" class="workspace-primary-btn">Clear All Data</button>
               </div>
             </section>
           </div>
