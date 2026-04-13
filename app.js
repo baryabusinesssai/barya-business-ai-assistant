@@ -36,7 +36,7 @@
   const translations = {
     English: {
       dashboard: 'Dashboard',
-      aiAssistant: 'AI Chat',
+      aiAssistant: 'Barya AI',
       workspace: 'Workspace',
       memory: 'Memory',
       profile: 'Profile',
@@ -130,7 +130,7 @@
     },
     'Roman Urdu': {
       dashboard: 'Dashboard',
-      aiAssistant: 'AI Chat',
+      aiAssistant: 'Barya AI',
       workspace: 'Workspace',
       memory: 'Memory',
       profile: 'Profile',
@@ -281,7 +281,7 @@
       ],
       executionPlan: [
         { id: 'audit-readiness', step: 'Complete a founder readiness audit for money, time, and support.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
-        { id: 'run-problem-calls', step: 'Run 10 customer problem calls before building anything.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me design 10 customer discovery questions to validate a business problem.' },
+        { id: 'run-problem-calls', step: 'Run 10 customer problem calls before building anything.', toolLabel: 'Open Barya AI', actionType: 'open_strategy', prompt: 'Help me design 10 customer discovery questions to validate a business problem.' },
         { id: 'validate-offer', step: 'Test one paid pilot offer this month and collect objections.', toolLabel: 'Open Idea Generator', actionType: 'open_idea_generator' },
         { id: 'document-risks', step: 'Create a risk checklist in your memory so decisions stay evidence-based.', toolLabel: 'Open Memory', actionType: 'open_memory' }
       ]
@@ -319,7 +319,7 @@
       ],
       executionPlan: [
         { id: 'choose-segment', step: 'Choose one customer segment and one painful problem to solve first.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
-        { id: 'draft-offer', step: 'Draft your first paid offer and value promise in plain language.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me write a simple first offer with pricing, audience, and promise.' },
+        { id: 'draft-offer', step: 'Draft your first paid offer and value promise in plain language.', toolLabel: 'Open Barya AI', actionType: 'open_strategy', prompt: 'Help me write a simple first offer with pricing, audience, and promise.' },
         { id: 'launch-template', step: 'Build your launch plan in a template and define 30/60/90-day milestones.', toolLabel: 'Open SaaS Template', actionType: 'open_template', templateId: 'saas-startup' },
         { id: 'weekly-review', step: 'Run a weekly scorecard review: leads, conversions, revenue, and delivery quality.', toolLabel: 'Open Dashboard', actionType: 'open_tab', tab: 'dashboard' }
       ]
@@ -357,7 +357,7 @@
       ],
       executionPlan: [
         { id: 'competitor-map', step: 'Create a competitor map with offers, pricing, and positioning gaps.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
-        { id: 'interview-script', step: 'Prepare and run interview scripts for your top customer segment.', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Generate a customer interview script for market research and validation.' },
+        { id: 'interview-script', step: 'Prepare and run interview scripts for your top customer segment.', toolLabel: 'Open Barya AI', actionType: 'open_strategy', prompt: 'Generate a customer interview script for market research and validation.' },
         { id: 'validation-sprint', step: 'Run a 14-day validation sprint and track conversion signals daily.', toolLabel: 'Open Idea Generator', actionType: 'open_idea_generator' },
         { id: 'store-insights', step: 'Save objections and insight notes to memory for future offer updates.', toolLabel: 'Open Memory', actionType: 'open_memory' }
       ]
@@ -394,7 +394,7 @@
       ],
       executionPlan: [
         { id: 'positioning-statement', step: 'Write one clear positioning statement and test it on 5 prospects.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
-        { id: 'message-hierarchy', step: 'Build your message hierarchy (headline, proof, offer, CTA).', toolLabel: 'Open AI Chat Prompt', actionType: 'open_strategy', prompt: 'Help me create a clear brand message hierarchy for a beginner startup.' },
+        { id: 'message-hierarchy', step: 'Build your message hierarchy (headline, proof, offer, CTA).', toolLabel: 'Open Barya AI', actionType: 'open_strategy', prompt: 'Help me create a clear brand message hierarchy for a beginner startup.' },
         { id: 'brand-plan', step: 'Document your brand pillars inside a business plan template for consistency.', toolLabel: 'Open E-commerce Template', actionType: 'open_template', templateId: 'ecommerce-store' },
         { id: 'channel-audit', step: 'Audit website, profile, and sales messages to ensure one consistent voice.', toolLabel: 'Open Profile / Settings', actionType: 'open_tab', tab: 'founder' }
       ]

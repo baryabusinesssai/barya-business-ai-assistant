@@ -46,7 +46,7 @@ const features = [
     )
   },
   {
-    title: "AI Assistant",
+    title: "Barya AI",
     desc: "Get practical business advice, next steps, and decision support.",
     icon: (
       <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -383,7 +383,7 @@ export default function BaryaLandingPage() {
                   </div>
                 </div>
                 <nav className="space-y-2 text-sm">
-                  {["Dashboard", "AI Assistant", "Business Planning", "Idea Generator", "Privacy", "Reports"].map((item, i) => (
+                  {["Dashboard", "Barya AI", "Business Planning", "Idea Generator", "Privacy", "Reports"].map((item, i) => (
                     <a
                       key={item}
                       href="#"
