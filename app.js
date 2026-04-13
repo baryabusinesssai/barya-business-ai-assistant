@@ -1881,12 +1881,12 @@
     const entries = appState.aiMemoryEntries || [];
     memoryList.innerHTML = entries.length
       ? entries.slice().reverse().map((item) => `
-        <li data-memory-id="${escapeHTML(item.id)}" class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-          <p class="text-xs uppercase tracking-[0.16em] text-slate-400">${escapeHTML(item.type || 'General')}</p>
-          <p class="text-sm text-slate-200 mt-1">${escapeHTML(item.note || '')}</p>
+        <li data-memory-id="${escapeHTML(item.id)}" class="memory-item">
+          <p class="text-xs uppercase tracking-[0.16em] text-slate-500">${escapeHTML(item.type || 'General')}</p>
+          <p class="text-sm text-slate-700 mt-1">${escapeHTML(item.note || '')}</p>
         </li>
       `).join('')
-      : '<li class="text-slate-400">No AI memory entries yet.</li>';
+      : '<li class="memory-empty-state">No memories saved yet. Ask AI something and save the response.</li>';
   }
 
   function escapeHtml(text) {
@@ -2411,7 +2411,7 @@
   }
 
   function initTabs() {
-    const tabButtons = document.querySelectorAll('#tabs [data-tab]');
+    const tabButtons = document.querySelectorAll('[data-tab]');
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         clearGuidedFocus();
