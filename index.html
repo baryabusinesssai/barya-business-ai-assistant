@@ -27,7 +27,7 @@
   <style>
     :root {
       color-scheme: light;
-      --bg-page: #f8fafc;
+      --bg-page: #ffffff;
       --bg-surface: #ffffff;
       --border-soft: #e5e7eb;
       --text-primary: #111827;
@@ -47,7 +47,7 @@
       padding-top: 88px;
       overflow-x: hidden;
       font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-image: radial-gradient(circle at 12% 12%, rgba(99, 102, 241, 0.12), transparent 42%), radial-gradient(circle at 85% 0%, rgba(56, 189, 248, 0.08), transparent 36%);
+      background-image: none;
     }
     button {
       transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease, filter .22s ease;
@@ -2302,19 +2302,119 @@
     svg [stroke] {
       stroke-width: 1.3 !important;
     }
+    /* Final minimalist hero + navbar */
+    .public-navbar {
+      background: #ffffff !important;
+      border-bottom: 1px solid #e5e7eb !important;
+      backdrop-filter: none !important;
+    }
+    .public-navbar-inner {
+      min-height: 56px !important;
+      width: min(1120px, calc(100% - 2rem)) !important;
+    }
+    .public-navbar-inner > a {
+      font-weight: 800 !important;
+      font-size: 1.3rem !important;
+      color: #000000 !important;
+      letter-spacing: -0.02em;
+    }
+    .public-nav-links a {
+      color: #000000 !important;
+      font-weight: 500 !important;
+    }
+    .public-enter-btn {
+      background: transparent !important;
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+      border-radius: 0 !important;
+      padding: 0.45rem 1rem !important;
+      font-weight: 600 !important;
+    }
+    .public-enter-btn:hover {
+      background: transparent !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+    }
+    .minimalist-hero {
+      display: block !important;
+      padding-top: 140px !important;
+      padding-bottom: 120px !important;
+    }
+    .minimalist-hero-panel {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .minimalist-hero .hero-title {
+      max-width: 1100px !important;
+      font-size: 4.5rem !important;
+      line-height: 1.05 !important;
+      text-align: center !important;
+      color: #000000 !important;
+      margin: 0 auto !important;
+      letter-spacing: -0.04em !important;
+    }
+    .minimalist-hero .hero-subtitle {
+      color: #666666 !important;
+      text-align: center !important;
+      margin: 1.5rem auto 0 !important;
+      max-width: 760px !important;
+      font-size: 1.15rem !important;
+    }
+    .hero-cta-group {
+      margin-top: 2.2rem !important;
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .hero-btn-primary {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border: 1px solid #000000 !important;
+      border-radius: 0 !important;
+      padding: 0.72rem 1.3rem !important;
+      font-weight: 600 !important;
+    }
+    .hero-btn-secondary {
+      background: transparent !important;
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+      border-radius: 0 !important;
+      padding: 0.72rem 1.3rem !important;
+      font-weight: 600 !important;
+    }
+    .hero-btn-secondary:hover,
+    .hero-btn-primary:hover {
+      transform: none !important;
+      filter: none !important;
+    }
+    @media (max-width: 900px) {
+      .minimalist-hero .hero-title {
+        font-size: clamp(2.4rem, 9vw, 4.5rem) !important;
+      }
+      .minimalist-hero {
+        padding-top: 120px !important;
+        padding-bottom: 90px !important;
+      }
+    }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
   <nav id="publicNavbar" class="public-navbar landing-only" aria-label="Main navigation">
     <div class="public-navbar-inner">
-      <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya Business AI</a>
+      <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya AI</a>
       <div class="public-nav-links">
         <a href="#home" data-public-nav="home">Home</a>
         <a href="#features-overview">Features</a>
         <a href="#how-it-works">How It Works</a>
         <a href="#faq">FAQ</a>
         <a href="#contact" data-public-nav="contact">Contact</a>
-        <a href="#app" class="public-enter-btn" data-enter-app>Enter Workspace</a>
+        <a href="#app" class="public-enter-btn" data-enter-app>Join Now</a>
       </div>
     </div>
   </nav>
@@ -2328,25 +2428,14 @@
   </div>
   <div id="landingPageContainer" class="app-view is-visible">
     <section id="home" class="public-page public-page-panel" data-public-page="home">
-      <div class="public-hero hero-master-container">
-        <article class="public-panel">
-          <p class="section-kicker">Barya Founder Platform</p>
-          <h1 class="hero-title">Build with <span class="headline-accent">clarity</span>. Scale with discipline.</h1>
-          <p class="hero-subtitle">Barya gives ambitious builders one premium operating layer for strategy, business planning, and weekly execution. From first idea to first real traction, every move is structured, focused, and fully in your control.</p>
-          <div class="mt-7 flex flex-wrap gap-3">
-            <button class="public-btn" data-enter-app>Start Building in Barya</button>
-            <a href="#features-overview" class="public-btn bg-white text-slate-900 border-slate-300 no-underline">View Platform Overview</a>
+      <div class="public-hero hero-master-container minimalist-hero">
+        <article class="public-panel minimalist-hero-panel">
+          <h1 class="hero-title">Build. Scale. Automate. The AI Workspace for India’s Next Founders.</h1>
+          <p class="hero-subtitle">A minimalist ecosystem to manage your strategy, finance, and growth—without the clutter.</p>
+          <div class="hero-cta-group">
+            <button class="public-btn hero-btn-primary" data-enter-app>Start Free</button>
+            <a href="#how-it-works" class="public-btn hero-btn-secondary no-underline">View Templates</a>
           </div>
-          <p class="micro-note">For founders who prefer signal over noise.</p>
-          <div class="mini-stats centered-grid">
-            <div class="mini-stat"><strong>1 Workspace</strong><span>Plan, decide, and execute in one place</span></div>
-            <div class="mini-stat"><strong>Private by default</strong><span>Local-first workflow for founder trust</span></div>
-            <div class="mini-stat"><strong>Execution-first</strong><span>Turn strategy into weekly action</span></div>
-          </div>
-        </article>
-        <article class="hero-image-wrap">
-          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80" alt="Startup founders in a strategy meeting" loading="lazy" />
-          <div class="hero-proof-badge">Built for founders who are serious about execution.</div>
         </article>
       </div>
 
