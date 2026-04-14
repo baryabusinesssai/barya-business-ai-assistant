@@ -1419,13 +1419,14 @@
     }
     .site-footer-bottom p {
       margin: 0;
+      padding-top: 0.35rem;
       font-size: .82rem;
       color: #64748b;
     }
     @media (max-width: 900px) {
       .site-footer-grid {
         grid-template-columns: 1fr;
-        gap: 1.2rem;
+        gap: 1.8rem;
       }
       .site-footer {
         padding-top: 1.4rem;
@@ -2638,7 +2639,7 @@
       background: #ffffff !important;
       border: 1px solid #f0f0f0 !important;
       border-radius: 8px !important;
-      padding: 2rem !important;
+      padding: 2.2rem !important;
       text-align: left !important;
     }
     .magic-preview-shell h2 {
@@ -2821,21 +2822,22 @@
       background: rgba(255, 255, 255, 0.92) !important;
       border: 1px solid rgba(255, 255, 255, 0.8) !important;
       border-radius: 22px !important;
-      padding: 1.5rem !important;
+      padding: 1.8rem !important;
       box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14) !important;
     }
     @media (min-width: 900px) {
       .workspace-module-card {
-        padding: 2rem !important;
+        padding: 2.2rem !important;
       }
     }
     #appSection {
       display: grid;
-      gap: 1.2rem;
+      gap: 1.8rem;
       margin-top: 1rem;
     }
     #appSection .panel {
       margin: 0;
+      padding-top: 0.35rem;
     }
     .workspace-card-header {
       color: #64748b !important;
@@ -3690,12 +3692,8 @@
           <button data-tab="strategy" class="tabBtn">Barya AI</button>
           <button data-tab="planning" class="tabBtn">Business Planning</button>
           <button data-tab="memory" class="tabBtn">Memory</button>
+          <button data-tab="settings" class="tabBtn">Profile / Settings</button>
         </nav>
-        <div class="sidebar-founder-profile">
-          <p class="text-[11px] uppercase tracking-[0.16em] text-slate-400">Workspace</p>
-          <p class="text-sm font-semibold text-slate-900 mt-1">Calm. Focused. Local-first.</p>
-          <button data-tab="settings" class="tabBtn mt-3 !bg-slate-900 !text-white !rounded-xl !px-3 !py-2.5 !text-center w-full">Open Settings</button>
-        </div>
       </aside>
 
       <div class="workspace-main-canvas">
@@ -3704,7 +3702,7 @@
             <div class="space-y-2">
               <p class="text-xs uppercase tracking-[0.28em] workspace-muted font-semibold">Founder Workspace</p>
               <h1 class="workspace-heading">Founder Workspace</h1>
-              <p class="workspace-subtitle text-sm md:text-base">One workspace. One active focus. Move from strategy to execution without noise.</p>
+              <p class="workspace-subtitle text-sm md:text-base">Select one tab and focus on one task at a time.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <select id="languageSelect" class="border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white" aria-label="Language" data-i18n-aria-label="language"></select>
@@ -3718,8 +3716,8 @@
         <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
           <div class="dashboard-empty-card">
             <div class="text-5xl" aria-hidden="true">✦</div>
-            <h3 class="text-2xl font-semibold mt-3">No data yet.</h3>
-            <p class="text-slate-500 mt-2">Start by adding your first entry and your dashboard will light up.</p>
+            <h3 class="text-2xl font-semibold mt-3">No data yet. Start by adding your first entry.</h3>
+            <p class="text-slate-500 mt-2">Pick one action to begin.</p>
             <div class="grid md:grid-cols-3 gap-4 mt-6 text-left">
               <button type="button" class="get-started-card" data-guided-entry="build">
                 <span class="get-started-icon" aria-hidden="true">▦</span>
@@ -3746,7 +3744,7 @@
             <div>
               <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Finance</p>
               <h2 class="font-semibold text-2xl mt-2" data-i18n="dashboard">Dashboard</h2>
-              <p class="text-slate-300 mt-2">See your financial health, readiness, and next priorities in one focused view.</p>
+              <p class="text-slate-300 mt-2">Track your numbers and immediate priorities.</p>
             </div>
             <div class="soft-card rounded-2xl px-4 py-3">
               <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Workspace Status</p>
@@ -3835,54 +3833,7 @@
 
       </section>
 
-      <section id="panel-finances" class="panel hidden app-view" hidden>
-        <article id="ideaGeneratorToolCard" class="dashboard-data-block workspace-content-card workspace-module-card premium-hover">
-          <p class="workspace-card-header">SYSTEM / FINANCE_TRACKER_V1</p>
-          <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold" data-i18n="ideaGenerator">Idea Generator</p>
-          <h3 class="font-semibold text-xl mt-2">Finance Workspace</h3>
-
-          <div class="space-y-3 mt-5">
-          <input id="incomeInput" type="number" min="0" step="0.01" placeholder="Monthly income" data-i18n-placeholder="monthlyIncome" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-            <button id="saveIncomeBtn" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 font-medium" data-i18n="save">Save</button>
-
-            <div id="dashboardExpensesTool" class="border border-slate-700 rounded-2xl p-3 space-y-2">
-              <p class="text-sm font-medium text-slate-200">One-time Expense</p>
-              <select id="expenseCategoryInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
-                <option value="Marketing">Marketing</option>
-                <option value="Operations">Operations</option>
-                <option value="Salary">Salary</option>
-                <option value="Others">Others</option>
-              </select>
-              <input id="expenseAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              <button id="addExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium" data-i18n="addExpense" title="Add a new expense entry to your finance tracker">Add Expense</button>
-              <div id="financeEmptyState" class="guide-box hidden">
-                <p>Nothing here yet. Start your journey by adding your first expense.</p>
-                <a href="#expenseAmountInput" class="guide-box-action">Add Expense</a>
-              </div>
-            </div>
-
-            <div class="border border-slate-700 rounded-2xl p-3 space-y-2">
-              <p class="text-sm font-medium text-slate-200">Recurring Expense</p>
-              <input id="recurringCategoryInput" placeholder="Category" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              <input id="recurringAmountInput" type="number" min="0" step="0.01" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400" />
-              <select id="recurringFrequencyInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-400">
-                <option value="monthly">Monthly</option>
-                <option value="weekly">Weekly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-              <button id="addRecurringExpenseBtn" class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 py-2.5 font-medium" data-i18n="addRecurringExpense">Add Recurring Expense</button>
-            </div>
-
-            <div class="soft-card rounded-2xl p-4">
-              <p class="text-sm text-slate-400" data-i18n="netSavings">Net Savings</p>
-              <p class="text-3xl font-bold mt-1"><span id="profitOutput">$0.00</span></p>
-            </div>
-
-            <p class="text-sm text-slate-400" data-i18n="financeIntelligence">Finance Intelligence</p>
-            <p id="financeInsight" class="text-slate-300 text-sm leading-relaxed"></p>
-          </div>
-        </article>
-      </section>
+      
 
       <section id="panel-strategy" class="panel hidden app-view">
         <article id="aiAssistantTourTarget" class="workspace-content-card workspace-module-card">
@@ -3933,7 +3884,7 @@
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-slate-400 font-semibold">Memory</p>
             <h2 class="font-semibold text-2xl mt-2 text-slate-900">Saved Insights</h2>
-            <p class="text-slate-500 mt-2">Capture and review your saved strategies in one clean list.</p>
+            <p class="text-slate-500 mt-2">Save key notes and revisit them fast.</p>
           </div>
 
           <form id="memoryForm" class="mt-5 grid lg:grid-cols-5 gap-2">
@@ -3947,7 +3898,7 @@
             <h3 class="font-semibold text-slate-900">Recent Actions</h3>
             <ul id="activityLogList" class="mt-3 space-y-2 text-sm text-slate-600"></ul>
           </div>
-          <p class="text-xs text-slate-400 mt-4">Helper: save short context notes to improve continuity across sessions.</p>
+
         </article>
       </section>
 
@@ -3957,7 +3908,7 @@
           <div class="mb-5">
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Planning</p>
             <h2 class="font-semibold text-2xl mt-2">Business Planning</h2>
-            <p class="text-slate-300 mt-2">Pick a guide or template and build your plan with clear, structured steps.</p>
+            <p class="text-slate-300 mt-2">Choose a guide or template and keep building.</p>
           </div>
           <div id="planningSectionTabs" class="flex flex-wrap gap-2 mb-5">
             <button type="button" class="tabBtn active rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="guides">Startup Guides</button>
@@ -4050,7 +4001,7 @@
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Settings</p>
             <h2 class="font-semibold text-2xl mt-2">Settings</h2>
-            <p class="text-slate-300 mt-2">Manage profile, workspace preferences, and local data controls.</p>
+            <p class="text-slate-300 mt-2">Manage profile and workspace preferences.</p>
           </div>
 
           <div class="settings-layout">

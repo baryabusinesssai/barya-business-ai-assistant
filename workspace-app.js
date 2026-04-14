@@ -848,7 +848,7 @@
     const recent = appState.activityLog.slice(0, 5);
     activityList.innerHTML = recent.length
       ? recent.map((item) => `<li class="border border-[#eeeeee] rounded px-3 py-2 bg-white text-slate-700">${escapeHTML(item.action)} - ${formatRelativeTime(item.ts)}</li>`).join('')
-      : '<li class="text-slate-400">No activities yet.</li>';
+      : '<li class="text-slate-400">No data yet. Start by adding your first entry.</li>';
   }
 
   function saveTaskManagerTasks() {
@@ -1886,7 +1886,7 @@
           <p class="text-sm text-slate-700 mt-1">${escapeHTML(item.note || '')}</p>
         </li>
       `).join('')
-      : '<li class="memory-empty-state">No saved strategies yet.</li>';
+      : '<li class="memory-empty-state">No data yet. Start by adding your first entry.</li>';
   }
 
   function escapeHtml(text) {
