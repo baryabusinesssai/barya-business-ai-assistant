@@ -2340,81 +2340,133 @@
 
   function initMagicPreview() {
     const form = $('magicPreviewForm');
-    const input = $('magicPreviewInput');
+    const input = $('userIdea');
+    const submit = $('magicPreviewSubmit');
+    const error = $('magicPreviewError');
     const result = $('magicPreviewResult');
     const status = $('magicPreviewStatus');
-    const output = $('magicPreviewOutput');
+    const statusText = $('magicPreviewStatusText');
+    const card = $('magicPreviewCard');
+    const edge = $('magicPreviewEdge');
+    const marketing = $('magicPreviewMarketing');
+    const stack = $('magicPreviewStack');
     const cta = $('magicPreviewCta');
-    if (!form || !input || !result || !status || !output || !cta) return;
+    const retry = $('magicPreviewRetry');
+    if (!form || !input || !submit || !error || !result || !status || !statusText || !card || !edge || !marketing || !stack || !cta || !retry) return;
 
-    let scanningTimeoutId = null;
-    let typewriterTimeoutId = null;
+    let sequenceTimeoutId = null;
 
     const clearTimers = () => {
-      if (scanningTimeoutId) {
-        clearTimeout(scanningTimeoutId);
-        scanningTimeoutId = null;
-      }
-      if (typewriterTimeoutId) {
-        clearTimeout(typewriterTimeoutId);
-        typewriterTimeoutId = null;
+      if (sequenceTimeoutId) {
+        clearTimeout(sequenceTimeoutId);
+        sequenceTimeoutId = null;
       }
     };
 
     const buildBlueprint = (idea) => {
-      const cleaned = idea || 'your startup concept';
-      return [
-        'The Edge:',
-        `Position ${cleaned} as the fastest way for a specific niche to get one measurable outcome in under 10 minutes.`,
-        '',
-        'The First $1,000:',
-        '1) Offer a focused launch package to 10 warm leads and ask for paid pilot commitments.',
-        '2) Publish one proof-driven landing page with a clear CTA and collect deposits or pre-orders.',
-        '3) Run a 7-day outreach sprint (DM + email) and close your first 3 customers with urgency-based onboarding.',
-        '',
-        'The Tech Stack:',
-        '• Notion (operating system + SOP hub)',
-        '• Framer (high-converting landing page)',
-        '• Stripe (payments + simple checkout)'
-      ].join('\n');
+      const cleaned = (idea || 'your startup concept').replace(/\s+/g, ' ').trim();
+      const lower = cleaned.toLowerCase();
+      const isB2b = /saas|ai|tool|platform|software|dashboard|crm|ops|workflow/.test(lower);
+      const isConsumer = /fitness|health|food|creator|community|learning|education|travel|app/.test(lower);
+
+      const competitiveEdge = isB2b
+        ? `Position ${cleaned} as the fastest path to a measurable weekly win for one tight niche, then use benchmark reporting as your moat.`
+        : isConsumer
+          ? `Frame ${cleaned} around one high-frequency user habit and own a narrow use-case where competitors feel too generic or complex.`
+          : `Position ${cleaned} as a niche-first solution for an underserved segment, with one clear promise customers can verify in the first 7 days.`;
+
+      const marketingHack = isB2b
+        ? 'Run founder-led outreach to 20 ideal accounts this week, offer a 14-day pilot, and collect objections to sharpen your landing page copy.'
+        : 'Recruit 20 target users into a lightweight pilot cohort, document quick wins, and publish 3 proof-based testimonials before paid ads.';
+
+      const stackSuggestion = isB2b ? 'Notion • Webflow • Stripe' : 'Airtable • Framer • Stripe';
+
+      return { competitiveEdge, marketingHack, stackSuggestion };
     };
 
-    const typeWriter = (text) => {
-      output.textContent = '';
-      output.classList.remove('hidden');
-      output.classList.add('typing');
-      cta.classList.remove('is-visible');
-      let index = 0;
-      const tick = () => {
-        output.textContent = text.slice(0, index);
-        index += 1;
-        if (index <= text.length) {
-          typewriterTimeoutId = setTimeout(tick, 14);
+    const resetToInput = () => {
+      clearTimers();
+      form.classList.remove('is-collapsed');
+      submit.disabled = false;
+      submit.textContent = 'Generate Blueprint';
+      input.value = '';
+      input.focus();
+      status.classList.add('hidden');
+      card.classList.add('hidden');
+      cta.classList.add('hidden');
+      retry.classList.add('hidden');
+      result.classList.remove('is-visible');
+      window.setTimeout(() => {
+        result.classList.add('hidden');
+      }, 220);
+    };
+
+    const runStatusSequence = (idea) => {
+      clearTimers();
+      const statuses = [
+        'Scanning Market Gap...',
+        'Drafting GTM Strategy...',
+        'Finalizing Tech Stack...'
+      ];
+      let idx = 0;
+      const blueprint = buildBlueprint(idea);
+
+      result.classList.remove('hidden');
+      window.requestAnimationFrame(() => result.classList.add('is-visible'));
+      status.classList.remove('hidden');
+      status.classList.remove('is-fading');
+      card.classList.add('hidden');
+      cta.classList.add('hidden');
+      retry.classList.add('hidden');
+
+      const step = () => {
+        statusText.textContent = statuses[idx];
+        idx += 1;
+        if (idx < statuses.length) {
+          sequenceTimeoutId = window.setTimeout(() => {
+            status.classList.add('is-fading');
+            sequenceTimeoutId = window.setTimeout(() => {
+              status.classList.remove('is-fading');
+              step();
+            }, 140);
+          }, 820);
           return;
         }
-        output.classList.remove('typing');
-        cta.classList.add('is-visible');
+
+        sequenceTimeoutId = window.setTimeout(() => {
+          form.classList.add('is-collapsed');
+          edge.textContent = blueprint.competitiveEdge;
+          marketing.textContent = blueprint.marketingHack;
+          stack.textContent = blueprint.stackSuggestion;
+          status.classList.add('hidden');
+          card.classList.remove('hidden');
+          cta.classList.remove('hidden');
+          retry.classList.remove('hidden');
+          submit.disabled = false;
+          submit.textContent = 'Generate Blueprint';
+        }, 880);
       };
-      tick();
+      step();
     };
+
+    input.addEventListener('input', () => {
+      if (input.value.trim()) error.classList.remove('is-visible');
+    });
+
+    retry.addEventListener('click', resetToInput);
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const idea = input.value.trim();
       if (!idea) {
+        error.classList.add('is-visible');
         input.focus();
         return;
       }
-      clearTimers();
-      result.classList.remove('hidden');
-      status.classList.remove('hidden');
-      output.classList.add('hidden');
-      cta.classList.remove('is-visible');
-      const strategyCard = buildBlueprint(idea);
-      scanningTimeoutId = setTimeout(() => {
-        status.classList.add('hidden');
-        typeWriter(strategyCard);
-      }, 2000);
+      error.classList.remove('is-visible');
+      submit.disabled = true;
+      submit.textContent = 'Analyzing Idea...';
+      runStatusSequence(idea);
     });
   }
 
