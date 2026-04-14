@@ -405,7 +405,7 @@
         { id: 'positioning-statement', step: 'Write one clear positioning statement and test it on 5 prospects.', toolLabel: 'Add to Task Manager', actionType: 'add_task' },
         { id: 'message-hierarchy', step: 'Build your message hierarchy (headline, proof, offer, CTA).', toolLabel: 'Open Barya AI', actionType: 'open_strategy', prompt: 'Help me create a clear brand message hierarchy for a beginner startup.' },
         { id: 'brand-plan', step: 'Document your brand pillars inside a business plan template for consistency.', toolLabel: 'Open E-commerce Template', actionType: 'open_template', templateId: 'ecommerce-store' },
-        { id: 'channel-audit', step: 'Audit website, profile, and sales messages to ensure one consistent voice.', toolLabel: 'Open Profile / Settings', actionType: 'open_tab', tab: 'founder' }
+        { id: 'channel-audit', step: 'Audit website, profile, and sales messages to ensure one consistent voice.', toolLabel: 'Open Settings', actionType: 'open_tab', tab: 'settings' }
       ]
     }
   ];
@@ -2217,7 +2217,11 @@
     document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
     tabButtons.forEach((btn) => btn.classList.remove('active'));
 
-    const target = document.getElementById(`panel-${tabName}`);
+    let target = document.getElementById(`panel-${tabName}`);
+    if (!target) {
+      tabName = 'dashboard';
+      target = document.getElementById('panel-dashboard');
+    }
     if (target) {
       target.classList.remove('hidden');
       target.classList.remove('fade-in');
@@ -2522,7 +2526,7 @@
       },
       track: {
         tab: 'dashboard',
-        panelSelector: '#dashboardExpensesTool'
+        panelSelector: '#monthlyOverviewCard'
       },
       grow: {
         tab: 'strategy',
