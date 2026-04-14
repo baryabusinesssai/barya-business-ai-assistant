@@ -3452,14 +3452,45 @@
         letter-spacing: -2px !important;
       }
     }
+    body.unified-single-page .landing-only {
+      display: block !important;
+    }
+    body.unified-single-page #appContainer {
+      display: block !important;
+      margin-top: 2.5rem;
+    }
+    body.unified-single-page .workspace-dashboard-layout {
+      display: block;
+    }
+    body.unified-single-page .workspace-sidebar,
+    body.unified-single-page .workspace-top-header {
+      display: none !important;
+    }
+    body.unified-single-page .workspace-main-grid {
+      display: block;
+    }
+    body.unified-single-page #appSection {
+      display: grid;
+      gap: 1.5rem;
+    }
+    body.unified-single-page #appSection .panel {
+      display: block !important;
+    }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
-  <nav id="publicNavbar" class="public-navbar landing-only" aria-label="Main navigation">
+  <nav id="publicNavbar" class="public-navbar" aria-label="Main navigation">
     <div class="public-navbar-inner">
       <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya AI</a>
       <div class="public-nav-links">
-        <a href="#app" class="public-enter-btn" data-enter-app>Launch App</a>
+        <a href="#home" data-public-nav="home">Home</a>
+        <a href="#features-overview">Features</a>
+        <a href="#barya-ai">Barya AI</a>
+        <a href="#business-planning">Business Planning</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#memory">Memory</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#contact">Contact</a>
       </div>
     </div>
   </nav>
@@ -3610,7 +3641,7 @@
       </div>
     </section>
 
-    <section id="features" class="public-page" data-public-page="features" hidden>
+    <section id="features" class="public-page" data-public-page="features">
       <div class="section-header">
         <h2 class="public-section-title">Features</h2>
         <p class="muted mt-2">Detailed feature overview for founders and teams.</p>
@@ -3624,7 +3655,7 @@
       </div>
     </section>
 
-    <section id="pricing" class="public-page" data-public-page="pricing" hidden>
+    <section id="pricing" class="public-page" data-public-page="pricing">
       <div class="section-header">
         <h2 class="public-section-title">Pricing</h2>
       </div>
@@ -3697,7 +3728,7 @@
       </article>
     </section>
 
-    <section id="contact" class="public-page" data-public-page="contact" hidden>
+    <section id="contact" class="public-page" data-public-page="contact">
       <div class="section-header">
         <h2 class="public-section-title">Contact</h2>
         <p class="muted mt-2">Email us at <a class="text-indigo-700 font-semibold" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a></p>
@@ -3870,6 +3901,11 @@
         <div class="workspace-main-grid">
           <main id="appSection" class="space-y-5">
       <section id="panel-dashboard" class="panel hidden app-view grid xl:grid-cols-3 gap-4">
+        <div id="dashboard" class="xl:col-span-3 scroll-mt-28">
+          <p class="section-kicker">Workspace Section</p>
+          <h2 class="public-section-title mt-2">Dashboard</h2>
+          <p class="muted mt-2">Monitor revenue, expenses, and key founder actions in one clean financial command center.</p>
+        </div>
         <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
           <div class="dashboard-empty-card">
             <div class="text-5xl" aria-hidden="true">✦</div>
@@ -3996,6 +4032,11 @@
       
 
       <section id="panel-strategy" class="panel hidden app-view">
+        <div id="barya-ai" class="scroll-mt-28 mb-4">
+          <p class="section-kicker">Workspace Section</p>
+          <h2 class="public-section-title mt-2">Barya AI</h2>
+          <p class="muted mt-2">Use the premium chat assistant, prompt suggestions, and structured responses for execution clarity.</p>
+        </div>
         <article id="aiAssistantTourTarget" class="workspace-content-card workspace-module-card">
           <p class="workspace-card-header">SYSTEM / AI_ASSISTANT_V1</p>
           <div class="max-w-3xl">
@@ -4042,6 +4083,11 @@
       </section>
 
       <section id="panel-memory" class="panel hidden app-view">
+        <div id="memory" class="scroll-mt-28 mb-4">
+          <p class="section-kicker">Workspace Section</p>
+          <h2 class="public-section-title mt-2">Memory</h2>
+          <p class="muted mt-2">Capture decisions, saved insights, and notes so your progress always stays contextual.</p>
+        </div>
         <article class="workspace-content-card workspace-module-card">
           <p class="workspace-card-header">SYSTEM / MEMORY_V1</p>
           <div>
@@ -4066,6 +4112,11 @@
       </section>
 
       <section id="panel-planning" class="panel hidden app-view">
+        <div id="business-planning" class="scroll-mt-28 mb-4">
+          <p class="section-kicker">Workspace Section</p>
+          <h2 class="public-section-title mt-2">Business Planning</h2>
+          <p class="muted mt-2">Build with startup guides, plan templates, and structured editor workflows in one premium section.</p>
+        </div>
         <article id="businessPlanningTourTarget" class="workspace-content-card workspace-module-card">
           <p class="workspace-card-header">SYSTEM / BUSINESS_PLAN_V1</p>
           <div class="mb-5">
@@ -4159,6 +4210,11 @@
       </section>
 
       <section id="panel-settings" class="panel hidden app-view">
+        <div id="settings" class="scroll-mt-28 mb-4">
+          <p class="section-kicker">Workspace Section</p>
+          <h2 class="public-section-title mt-2">Profile / Settings</h2>
+          <p class="muted mt-2">Keep personalization and workspace controls accessible without breaking the single-page flow.</p>
+        </div>
         <article class="workspace-content-card workspace-module-card">
           <p class="workspace-card-header">SYSTEM / FOUNDER_PROFILE_V1</p>
           <div>

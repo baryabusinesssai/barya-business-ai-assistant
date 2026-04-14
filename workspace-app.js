@@ -1,4 +1,5 @@
 (() => {
+  const UNIFIED_SINGLE_PAGE = true;
   const STORAGE_KEYS = {
     monthlyIncome: 'barya_monthlyIncome',
     expenses: 'barya_expenses',
@@ -2174,7 +2175,6 @@
   function setActiveTab(tabName) {
     if (!tabName) return;
     const tabButtons = document.querySelectorAll('[data-tab]');
-    document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
     tabButtons.forEach((btn) => btn.classList.remove('active'));
 
     let target = document.getElementById(`panel-${tabName}`);
@@ -2182,7 +2182,11 @@
       tabName = 'dashboard';
       target = document.getElementById('panel-dashboard');
     }
-    if (target) {
+    if (UNIFIED_SINGLE_PAGE) {
+      document.querySelectorAll('.panel').forEach((panel) => panel.classList.remove('hidden'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (target) {
+      document.querySelectorAll('.panel').forEach((panel) => panel.classList.add('hidden'));
       target.classList.remove('hidden');
       target.classList.remove('fade-in');
       requestAnimationFrame(() => target.classList.add('fade-in'));
@@ -2241,7 +2245,6 @@
     const appContainer = $('appContainer');
     const globalSearchShell = $('globalSearchShell');
     document.body.classList.add('workspace-mode-active');
-    showPublicPage('home');
     if (appContainer) {
       appContainer.style.display = 'block';
       requestAnimationFrame(() => {
@@ -2259,6 +2262,7 @@
   }
 
   function showLandingPage() {
+    if (UNIFIED_SINGLE_PAGE) return;
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
     const globalSearchShell = $('globalSearchShell');
@@ -2300,6 +2304,20 @@
   }
 
   function initPublicNavigation() {
+    if (UNIFIED_SINGLE_PAGE) {
+      document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const href = link.getAttribute('href');
+          if (!href || href === '#') return;
+          const target = document.querySelector(href);
+          if (!target) return;
+          event.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+      return;
+    }
+
     document.querySelectorAll('[data-public-nav]').forEach((link) => {
       link.addEventListener('click', (event) => {
         const pageName = link.getAttribute('data-public-nav');
@@ -2742,6 +2760,10 @@
     const handleEnterWorkspace = (event) => {
       event.preventDefault();
       clearGuidedFocus();
+      if (UNIFIED_SINGLE_PAGE) {
+        showMainApp({ tab: 'dashboard', rememberStart: true });
+        return;
+      }
       const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
       if (hasStarted) {
         showMainApp({ tab: 'dashboard', rememberStart: true });
@@ -2771,7 +2793,10 @@
     if (backToLandingBtn) {
       backToLandingBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        window.location.href = 'index.html';
+        const homeSection = $('home');
+        if (homeSection) {
+          homeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     }
 
@@ -3089,6 +3114,9 @@
   }
 
   function initApp() {
+    if (UNIFIED_SINGLE_PAGE) {
+      document.body.classList.add('unified-single-page');
+    }
     mountWorkspaceBetweenLandingSections();
     hydrateState();
     initSelects();
@@ -3115,6 +3143,11 @@
     const incomeInput = $('incomeInput');
     if (incomeInput) incomeInput.value = String(appState.monthlyIncome || '');
 
+    if (UNIFIED_SINGLE_PAGE) {
+      clearGuidedFocus();
+      showMainApp({ tab: 'dashboard' });
+      return;
+    }
     const hasStarted = StorageService.getItem(STORAGE_KEYS.userStarted, 'false') === 'true';
     if (hasStarted) {
       clearGuidedFocus();
