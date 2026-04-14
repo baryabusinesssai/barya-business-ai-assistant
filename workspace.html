@@ -3658,6 +3658,182 @@
         align-items: center !important;
       }
     }
+
+
+    /* Workspace redesign: Command center glassmorphism */
+    #appContainer.workspace-dashboard-view {
+      font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #dbe5ff;
+      padding: clamp(1rem, 2vw, 2rem);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.2), transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(236, 72, 153, 0.16), transparent 35%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.14), transparent 42%),
+        #030712;
+      min-height: 100vh;
+    }
+    #appContainer .workspace-dashboard-layout {
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: linear-gradient(160deg, rgba(7, 17, 38, 0.94), rgba(2, 6, 23, 0.9));
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.14), 0 25px 70px rgba(2, 6, 23, 0.7);
+      overflow: hidden;
+      min-height: calc(100vh - 2.5rem);
+    }
+    #appContainer .workspace-sidebar {
+      background: linear-gradient(185deg, rgba(15, 23, 42, 0.8), rgba(17, 24, 39, 0.56));
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+      backdrop-filter: blur(16px);
+    }
+    #appContainer .workspace-sidebar-brand h2,
+    #appContainer .workspace-sidebar-brand p,
+    #appContainer .workspace-top-header,
+    #appContainer .workspace-top-header * { color: #e2e8f0 !important; }
+    .workspace-sparkline {
+      width: 100%;
+      height: 26px;
+      margin-top: .4rem;
+      opacity: .85;
+    }
+    .workspace-sparkline path { fill: none; stroke-width: 2; stroke-linecap: round; }
+    #appContainer .workspace-sidebar-nav .tabBtn {
+      text-align: left;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.45);
+      color: #cbd5e1;
+      padding: 0.75rem 0.85rem;
+      border-radius: 14px !important;
+      display: block;
+    }
+    #appContainer .workspace-sidebar-nav .tabBtn.active {
+      background: linear-gradient(130deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
+      border-color: rgba(125, 211, 252, 0.7);
+      color: #eff6ff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.22);
+    }
+    #appContainer .workspace-sidebar-nav .tab-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .9rem;
+      font-weight: 600;
+      letter-spacing: .01em;
+    }
+    .workspace-command-topbar {
+      border-radius: 16px;
+      padding: .72rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.56);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .encryption-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      border-radius: 999px;
+      padding: .4rem .8rem;
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      background: rgba(20, 83, 45, 0.34);
+      color: #bbf7d0;
+      font-size: .74rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 22px rgba(74, 222, 128, 0.2);
+    }
+    .encryption-badge .shield {
+      filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.7));
+    }
+    .workspace-neural-shell {
+      margin-top: 1rem;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      padding: clamp(1rem, 2vw, 1.6rem);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14), transparent 40%),
+        rgba(2, 6, 23, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+    .workspace-neural-center {
+      max-width: 420px;
+      margin: 1.4rem auto;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .workspace-neural-input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.7);
+      color: #e2e8f0;
+      padding: 0.9rem 1rem;
+    }
+    .workspace-neural-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,189,248,0.4); }
+    .workspace-generate-btn {
+      margin-top: .7rem;
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(59, 130, 246, 0.8);
+      background: linear-gradient(120deg, #2563eb, #7c3aed);
+      color: white;
+      font-weight: 700;
+      padding: .8rem 1rem;
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+    }
+    .neural-network-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: .45;
+    }
+    .neural-network-bg path {
+      stroke: rgba(148, 163, 184, 0.7);
+      stroke-width: 1.2;
+      stroke-dasharray: 460;
+      stroke-dashoffset: 460;
+    }
+    .workspace-neural-shell.is-animating .neural-network-bg path {
+      animation: drawLines 1.6s ease forwards;
+    }
+    .neural-node-grid {
+      margin-top: 1.6rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .9rem;
+      position: relative;
+      z-index: 2;
+    }
+    .neural-node {
+      padding: .85rem;
+      border-radius: 16px;
+      border: 1px solid currentColor;
+      background: color-mix(in oklab, currentColor 12%, transparent);
+      opacity: 0;
+      transform: translateY(10px) scale(.98);
+      box-shadow: 0 0 18px color-mix(in srgb, currentColor 40%, transparent);
+    }
+    .neural-node.visible { animation: nodePop .5s ease forwards, nodePulse 2.4s ease-in-out infinite; }
+    .neural-node h4 { font-size: .86rem; font-weight: 700; color: #f8fafc; }
+    .neural-pill-row { margin-top: .5rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .neural-pill { border-radius: 999px; font-size: .68rem; padding: .26rem .55rem; background: rgba(2,6,23,.45); border: 1px solid rgba(226,232,240,.22); color: #cbd5e1; }
+    .node-green { color: #22c55e; }
+    .node-blue { color: #38bdf8; }
+    .node-purple { color: #a78bfa; }
+    .node-pink { color: #f472b6; }
+    @keyframes drawLines { to { stroke-dashoffset: 0; } }
+    @keyframes nodePop { to { opacity: 1; transform: translateY(0) scale(1);} }
+    @keyframes nodePulse {
+      0%,100% { box-shadow: 0 0 10px color-mix(in srgb, currentColor 20%, transparent); }
+      50% { box-shadow: 0 0 26px color-mix(in srgb, currentColor 45%, transparent); }
+    }
+    #appContainer .workspace-utility-rail { display: none; }
+
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
@@ -4017,11 +4193,11 @@
           </div>
         </div>
         <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
-          <button data-tab="dashboard" class="tabBtn active">Dashboard</button>
-          <button data-tab="strategy" class="tabBtn">Barya AI</button>
-          <button data-tab="planning" class="tabBtn">Business Planning</button>
-          <button data-tab="memory" class="tabBtn">Memory</button>
-          <button data-tab="settings" class="tabBtn">Profile / Settings</button>
+          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Strategy</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 22 L22 18 L38 20 L56 12 L78 14 L96 9 L116 7" stroke="#38bdf8"/></svg></button>
+          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway Tracker</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 24 L20 19 L36 20 L54 16 L72 12 L90 10 L116 6" stroke="#22c55e"/></svg></button>
+          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Startup Guides</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 21 L24 22 L42 17 L60 15 L82 12 L98 14 L116 10" stroke="#a78bfa"/></svg></button>
+          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 20 L18 16 L34 19 L52 13 L70 16 L88 10 L116 8" stroke="#f472b6"/></svg></button>
+          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Profile / Settings</span><span>•</span></span></button>
         </nav>
         <div class="sidebar-founder-profile">
           <p class="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold">Navigation Tip</p>
@@ -4030,23 +4206,38 @@
       </aside>
 
       <div class="workspace-main-canvas">
-        <header class="workspace-shell p-5 md:p-6 workspace-module-card workspace-top-header">
-          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div class="space-y-2">
-              <p class="text-xs uppercase tracking-[0.28em] workspace-muted font-semibold">Founder Workspace</p>
-              <h1 class="workspace-heading">Founder Workspace</h1>
-              <p class="workspace-subtitle text-sm md:text-base">A premium local-first operating system for planning, strategy, and execution.</p>
-              <div class="workspace-header-meta">
-                <span class="workspace-status-pill">Mode: Build</span>
-                <span class="workspace-status-pill">Status: Active</span>
-                <span class="workspace-status-pill">Storage: Local-first</span>
-              </div>
+        <header class="workspace-top-header">
+          <div class="workspace-command-topbar">
+            <div class="flex items-center gap-3">
+              <p class="text-xs font-semibold tracking-[0.28em]">BARYA AI</p>
+              <span class="text-slate-500">|</span>
+              <h1 class="text-sm md:text-base font-semibold">Founder Command Center</h1>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <select id="languageSelect" class="border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white" aria-label="Language" data-i18n-aria-label="language"></select>
+            <div class="flex items-center gap-2">
+              <span class="encryption-badge"><span class="shield">🛡</span>Local-First Encryption Active</span>
+              <select id="languageSelect" class="border border-slate-700 rounded-xl px-3 py-2 text-xs bg-slate-900/80" aria-label="Language" data-i18n-aria-label="language"></select>
               <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">Back to Landing</button>
             </div>
           </div>
+          <section class="workspace-neural-shell" aria-label="Magic AI Preview neural map">
+            <svg class="neural-network-bg" viewBox="0 0 900 360" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M120 280 C 250 220, 320 160, 450 180"/>
+              <path d="M450 180 C 560 180, 640 120, 780 80"/>
+              <path d="M450 180 C 560 220, 670 250, 820 260"/>
+              <path d="M450 180 C 340 210, 260 90, 140 70"/>
+            </svg>
+            <div class="workspace-neural-center">
+              <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Magic AI Preview</p>
+              <input id="workspaceIdeaInput" class="workspace-neural-input" type="text" placeholder="Describe your startup idea..." />
+              <button id="workspaceBlueprintBtn" type="button" class="workspace-generate-btn">Generate Blueprint</button>
+            </div>
+            <div class="neural-node-grid" id="workspaceNeuralNodes">
+              <article class="neural-node node-green"><h4>Market Gap</h4><div class="neural-pill-row"><span class="neural-pill">Loneliness &amp; Mental Health</span><span class="neural-pill">Burnout Recovery</span></div></article>
+              <article class="neural-node node-blue"><h4>Revenue Model</h4><div class="neural-pill-row"><span class="neural-pill">Subscription Tier</span><span class="neural-pill">B2B Partnerships</span></div></article>
+              <article class="neural-node node-purple"><h4>GTM Strategy (Viral Loop)</h4><div class="neural-pill-row"><span class="neural-pill">Challenge Invites</span><span class="neural-pill">Creator Flywheel</span></div></article>
+              <article class="neural-node node-pink"><h4>GTM Strategy (Influencer)</h4><div class="neural-pill-row"><span class="neural-pill">Micro-creator Pods</span><span class="neural-pill">Proof Stories</span></div></article>
+            </div>
+          </section>
         </header>
 
         <div class="workspace-main-grid">
@@ -4504,6 +4695,25 @@
       </p>
     </div>
   </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const blueprintBtn = document.getElementById('workspaceBlueprintBtn');
+      const neuralShell = document.querySelector('.workspace-neural-shell');
+      const nodes = Array.from(document.querySelectorAll('#workspaceNeuralNodes .neural-node'));
+      if (!blueprintBtn || !neuralShell || !nodes.length) return;
+      const animateNodes = () => {
+        neuralShell.classList.remove('is-animating');
+        nodes.forEach((node) => node.classList.remove('visible'));
+        void neuralShell.offsetWidth;
+        neuralShell.classList.add('is-animating');
+        nodes.forEach((node, index) => {
+          window.setTimeout(() => node.classList.add('visible'), 280 * (index + 1));
+        });
+      };
+      animateNodes();
+      blueprintBtn.addEventListener('click', animateNodes);
+    });
+  </script>
   <script defer src="workspace-app.js"></script>
 
 </body>
