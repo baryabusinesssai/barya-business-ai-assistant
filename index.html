@@ -21,17 +21,82 @@
     };
   </script>
   <style>
+    :root {
+      --space-1: 8px;
+      --space-2: 16px;
+      --space-3: 24px;
+      --space-4: 32px;
+      --space-5: 48px;
+      --surface: #ffffff;
+      --surface-subtle: #f8fafc;
+      --border-soft: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #111827;
+      --primary-hover: #1f2937;
+    }
     html { scroll-behavior: smooth; }
-    body { background: #ffffff; color: #0f172a; }
-    .soft-card {
+    body {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+      color: var(--text-main);
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+    }
+    main > section {
+      margin-bottom: var(--space-5) !important;
+    }
+    h1, h2, h3 {
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-size: clamp(1.8rem, 2vw, 2.35rem);
+      margin-bottom: var(--space-2);
+    }
+    p {
+      color: var(--text-muted);
+      max-width: 72ch;
+    }
+    a, button {
+      transition: all .2s ease;
+    }
+    .soft-card {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
     }
     .trust-pill {
       border: 1px solid #cbd5e1;
+      background: var(--surface-subtle);
+      color: var(--text-soft);
+    }
+    .rounded-full.bg-slate-900,
+    .rounded-full.border {
+      min-height: 44px;
+      border-radius: 12px;
+      padding-inline: 1.25rem;
+      font-weight: 600;
+    }
+    .rounded-full.bg-slate-900 {
+      background: var(--primary);
+    }
+    .rounded-full.bg-slate-900:hover {
+      background: var(--primary-hover);
+    }
+    .rounded-full.border:hover {
+      border-color: #94a3b8;
       background: #f8fafc;
-      color: #334155;
+    }
+    @media (max-width: 768px) {
+      main {
+        padding-top: 6.5rem !important;
+      }
+      main > section {
+        margin-bottom: var(--space-4) !important;
+      }
+      h1 {
+        font-size: clamp(2rem, 8vw, 2.8rem) !important;
+      }
     }
   </style>
 </head>
