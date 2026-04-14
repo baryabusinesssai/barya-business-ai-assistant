@@ -3585,22 +3585,92 @@
     body.unified-single-page #appSection .panel {
       display: block !important;
     }
+
+
+    /* Step 4: Navigation & Flow Optimization */
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      padding-top: 0;
+    }
+    .public-navbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1000 !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      background: rgba(255, 255, 255, 0.7) !important;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    }
+    .public-navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      min-height: 74px;
+    }
+    .public-logo {
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #0f172a !important;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .public-nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex: 1;
+    }
+    .public-nav-links a {
+      white-space: nowrap;
+      color: #111827 !important;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .nav-launch-btn,
+    .public-enter-btn.nav-launch-btn {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border: 1px solid #000000 !important;
+      border-radius: 0.65rem !important;
+      padding: 0.56rem 0.95rem !important;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .public-page > section,
+    .public-page > article,
+    .public-page > .public-hero {
+      padding-top: 80px !important;
+      padding-bottom: 80px !important;
+    }
+    .landing-section-gap {
+      margin-top: 0 !important;
+    }
+    @media (max-width: 900px) {
+      .public-nav-links {
+        display: none !important;
+      }
+      .public-navbar-inner {
+        flex-direction: row !important;
+        align-items: center !important;
+      }
+    }
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
   <nav id="publicNavbar" class="public-navbar" aria-label="Main navigation">
     <div class="public-navbar-inner">
-      <a href="#home" data-public-nav="home" class="text-xl font-extrabold text-slate-900 no-underline">Barya AI</a>
+      <a href="#home" data-public-nav="home" class="public-logo">BARYA AI</a>
       <div class="public-nav-links">
         <a href="#home" data-public-nav="home">Home</a>
-        <a href="#features-overview">Features</a>
-        <a href="#barya-ai">Barya AI</a>
-        <a href="#business-planning">Business Planning</a>
-        <a href="#dashboard">Dashboard</a>
-        <a href="#memory">Memory</a>
+        <a href="#preview">Magic Preview</a>
+        <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
-        <a href="#contact">Contact</a>
       </div>
+      <button class="public-enter-btn nav-launch-btn" data-enter-app type="button">Launch Workspace</button>
     </div>
   </nav>
 
@@ -3617,7 +3687,7 @@
         </article>
       </div>
 
-      <section class="magic-preview-section" aria-label="Magic Preview">
+      <section id="preview" class="magic-preview-section" aria-label="Magic Preview">
         <article class="magic-preview-shell">
           <h2>Magic Preview</h2>
           <p>Drop your idea and get an instant strategy blueprint that feels like your private AI co-founder at work.</p>
