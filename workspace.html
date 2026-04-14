@@ -2780,16 +2780,19 @@
     .workspace-dashboard-view {
       width: 100%;
       max-width: none;
-      margin: 2rem 0 3rem;
-      padding: 0 clamp(1rem, 2.5vw, 2rem);
+      margin: 0;
+      padding: clamp(1rem, 2vw, 2rem) clamp(1rem, 3.6vw, 3.25rem) 3rem;
       min-height: 100vh;
     }
     .workspace-dashboard-layout {
-      display: flex;
-      min-height: auto;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      align-items: start;
+      width: 100%;
+      min-height: calc(100vh - 88px);
       position: relative;
       background: transparent;
-      gap: 1rem;
+      gap: 1.2rem;
     }
     .workspace-sidebar {
       width: 270px;
@@ -2928,9 +2931,13 @@
     }
     .workspace-main-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 280px;
-      gap: 1.2rem;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+      gap: 1.25rem;
       align-items: start;
+    }
+    #appContainer p,
+    #appContainer li {
+      max-width: none;
     }
     .workspace-utility-rail {
       position: sticky;
@@ -3042,6 +3049,7 @@
     @media (max-width: 900px) {
       .workspace-dashboard-layout {
         display: block;
+        min-height: auto;
       }
       .workspace-sidebar {
         width: 100%;
@@ -3068,6 +3076,19 @@
       }
       #panel-dashboard .xl\:col-span-3 {
         grid-column: span 1 / span 1;
+      }
+    }
+    @media (min-width: 1200px) {
+      .workspace-dashboard-view {
+        padding-left: clamp(2rem, 4vw, 4rem);
+        padding-right: clamp(2rem, 4vw, 4rem);
+      }
+      .workspace-dashboard-layout {
+        gap: 1.5rem;
+      }
+      .workspace-main-grid {
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 1.5rem;
       }
     }
     #chatForm #chatInput {
