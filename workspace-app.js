@@ -1281,15 +1281,12 @@
   function detectIntentAndDomain(message) {
     const text = String(message || '').toLowerCase();
     const domainRules = [
-      { domain: 'business_idea', intent: 'idea_generation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea', 'niche'] },
+      { domain: 'idea', intent: 'idea_validation', keywords: ['idea', 'ideas', 'business idea', 'what business', 'what can i start', 'new idea', 'niche'] },
       { domain: 'startup', intent: 'startup_setup', keywords: ['startup', 'start a business', 'start business', 'launch business', 'new venture', 'mvp', 'how to start', 'validate'] },
-      { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost', 'runway', 'burn'] },
+      { domain: 'finance', intent: 'finance_optimization', keywords: ['finance', 'financial', 'money', 'income', 'expense', 'expenses', 'budget', 'cashflow', 'profit', 'savings', 'reduce expenses', 'cost', 'runway', 'burn', 'pricing'] },
       { domain: 'marketing', intent: 'marketing_execution', keywords: ['marketing', 'promote', 'promotion', 'advertising', 'audience', 'instagram', 'whatsapp', 'branding', 'content', 'campaign', 'positioning', 'messaging'] },
-      { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel', 'conversion', 'leads'] },
-      { domain: 'product', intent: 'product_thinking', keywords: ['product', 'feature', 'roadmap', 'onboarding', 'ux', 'user feedback', 'churn'] },
-      { domain: 'founder_mindset', intent: 'founder_mindset', keywords: ['mindset', 'focus', 'discipline', 'founder', 'motivation', 'overwhelm', 'confidence'] },
-      { domain: 'templates', intent: 'business_templates', keywords: ['template', 'framework', 'checklist', 'canvas', 'business plan template'] },
-      { domain: 'planning', intent: 'planning_execution', keywords: ['plan', 'planning', 'strategy', 'goals', 'milestone', 'decision', 'priorities', 'quarterly plan', '90-day'] }
+      { domain: 'growth', intent: 'growth_execution', keywords: ['growth', 'scale', 'scaling', 'customer acquisition', 'acquisition', 'retention', 'funnel', 'conversion', 'leads', 'first customers'] },
+      { domain: 'planning', intent: 'planning_execution', keywords: ['plan', 'planning', 'strategy', 'goals', 'milestone', 'decision', 'priorities', 'quarterly plan', '90-day', 'roadmap', 'launch plan'] }
     ];
     const matched = domainRules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
     return matched || { domain: 'general', intent: 'general_support' };
@@ -1323,25 +1320,27 @@
   function getUsefulResourcesForDomain(domain) {
     const resourceMap = {
       startup: ['Startup Guides', 'Lean Launch Canvas', 'Startup Readiness Check'],
-      business_idea: ['Startup Guides', 'Lean Launch Canvas', 'Founder Workspace sections'],
+      idea: ['Startup Guides', 'Lean Launch Canvas', 'Business Templates'],
       marketing: ['Marketing Campaign Block', 'Founder Workspace sections', 'Memory'],
       growth: ['Operations Roadmap', 'Founder Workspace sections', 'Memory'],
       finance: ['Business Plan Templates', 'Operations Roadmap', 'Founder Workspace sections'],
       planning: ['Business Plan Templates', 'Operations Roadmap', 'Lean Launch Canvas'],
-      founder_mindset: ['Memory', 'Startup Readiness Check', 'Founder Workspace sections'],
-      templates: ['Business Plan Templates', 'Lean Launch Canvas', 'Startup Guides'],
-      product: ['Lean Launch Canvas', 'Founder Workspace sections', 'Memory'],
-      general: ['Startup Guides', 'Founder Workspace sections', 'Memory']
+      general: ['Startup Guides', 'Dashboard', 'Memory']
     };
     const selected = resourceMap[domain] || resourceMap.general;
     return selected.slice(0, 3);
   }
 
+  function buildContextSnapshot(contextSnippets) {
+    if (!contextSnippets.length) return '';
+    const condensed = contextSnippets.slice(-3).map((item) => item.trim()).filter(Boolean);
+    if (!condensed.length) return '';
+    return `Recent context: ${condensed.join(' → ')}.`;
+  }
+
   function buildStructuredReply(config, userMessage, contextSnippets, domain) {
     if (!config) return '';
-    const contextLine = contextSnippets.length > 1
-      ? `Based on your recent context: ${contextSnippets.slice(0, 2).join(' → ')}.`
-      : '';
+    const contextLine = buildContextSnapshot(contextSnippets);
     const resources = getUsefulResourcesForDomain(domain);
     const parts = [
       `1. Clear Answer\n${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
@@ -1362,30 +1361,25 @@
     const totals = calculateTotals();
     const { domain } = detectIntentAndDomain(userMessage);
     const tooVague = userMessage.split(/\s+/).filter(Boolean).length < 3;
+    const vagueReplyMap = [
+      {
+        clearAnswer: 'I can build you a practical founder plan, but I need one real business constraint first.',
+        whyItMatters: 'Specific constraints remove generic advice and make execution measurable.',
+        steps: ['Tell me your domain: startup, idea, marketing, growth, finance, or planning.', 'Share your current stage and one blocker.', 'Set one metric target and deadline.', 'I will return a founder-ready action plan based on that input.'],
+        founderTip: 'Clarity creates leverage. Vague inputs create vague plans.',
+        nextMove: 'Reply with: "Domain: __, Stage: __, Goal: __ by __."'
+      },
+      {
+        clearAnswer: 'Give me one concrete challenge and I will turn it into a 7-day execution plan.',
+        whyItMatters: 'Execution improves when the objective, owner, and deadline are explicit.',
+        steps: ['State your challenge in one sentence.', 'Add your current resources (time, budget, team).', 'Define what success looks like numerically.', 'I will generate the exact next 3–5 moves for you.'],
+        founderTip: 'Great founder decisions are constraint-led, not inspiration-led.',
+        nextMove: 'Example: "Marketing, solo founder, $200 budget, need 10 calls in 2 weeks."'
+      }
+    ];
     if (!userMessage || tooVague) {
-      return [
-        '1. Clear Answer',
-        'I can give you a founder-quality plan, but I need one clear business context first.',
-        '',
-        '2. Why It Matters',
-        'Without a concrete context, advice becomes generic and hard to execute.',
-        '',
-        '3. Action Steps',
-        '1. Share your domain: startup, marketing, growth, finance, product, or planning.',
-        '2. Tell me your current stage: idea, early traction, or scaling.',
-        '3. Add one hard target and deadline (example: 20 qualified leads in 30 days).',
-        '',
-        '4. Useful Resources',
-        '- Startup Guides',
-        '- Founder Workspace sections',
-        '- Memory',
-        '',
-        '5. Founder Note',
-        'The quality of your decision-making is proportional to the clarity of your constraints.',
-        '',
-        'Next Move:',
-        'Reply with: "I run [business type], my goal is [metric], and my deadline is [date]."'
-      ].join('\n');
+      const selectedVague = pickRandomVariant(vagueReplyMap, 'vague');
+      return buildStructuredReply(selectedVague, userMessage, recentContext, domain);
     }
 
     const responseMap = {
@@ -1453,40 +1447,6 @@
           nextMove: 'Ask me to design a 4-week experiment roadmap.'
         }
       ],
-      product: [
-        {
-          clearAnswer: 'Prioritize product decisions based on user pain severity, frequency, and willingness to pay.',
-          whyItMatters: 'Feature-heavy roadmaps without customer value increase churn and delivery waste.',
-          steps: ['Rank top user pain points from interviews or support data.', 'Choose one problem for the next sprint.', 'Ship the smallest usable improvement fast.', 'Measure activation, retention, or conversion impact after release.'],
-          founderTip: 'Roadmaps should follow customer pain, not internal preference.',
-          nextMove: 'Ask me to build a product prioritization matrix for your backlog.'
-        },
-        {
-          clearAnswer: 'Use a tight build-measure-learn loop to reduce product risk quickly.',
-          whyItMatters: 'Slow feedback loops delay course corrections and waste engineering cycles.',
-          steps: ['Define one success metric before building.', 'Release in small increments to real users.', 'Collect behavior plus qualitative feedback.', 'Decide to double down, iterate, or remove quickly.'],
-          founderTip: 'The fastest learning loop usually wins the market.',
-          nextMove: 'Ask for a weekly product decision review template.'
-        }
-      ],
-      founder_mindset: [
-        {
-          clearAnswer: 'Operate like an investor in your own time: focus on high-leverage decisions and remove low-value work.',
-          whyItMatters: 'Founder overwhelm is usually a prioritization failure, not a workload problem.',
-          steps: ['Define your top business outcome for this quarter.', 'Schedule daily deep work for mission-critical tasks.', 'Delegate or eliminate low-leverage admin work.', 'Run a weekly founder review: wins, blockers, next priorities.'],
-          founderTip: 'Discipline in prioritization is a competitive advantage.',
-          nextMove: 'Ask for a founder operating system for weekly execution.'
-        }
-      ],
-      templates: [
-        {
-          clearAnswer: 'Use decision templates to increase speed and consistency in execution.',
-          whyItMatters: 'Founders often lose momentum recreating structure for repeat decisions.',
-          steps: ['Pick one template: validation plan, marketing sprint, or budget review.', 'Customize it for your current stage and constraints.', 'Use it for one weekly cycle.', 'Refine based on what improved decision quality.'],
-          founderTip: 'Templates reduce decision fatigue so you can focus on leverage.',
-          nextMove: 'Ask me to generate a specific template for your business stage.'
-        }
-      ],
       planning: [
         {
           clearAnswer: 'Build a 90-day plan with one primary objective, three milestones, and weekly metrics.',
@@ -1496,11 +1456,11 @@
           nextMove: 'Ask me for a complete 90-day operating plan.'
         }
       ],
-      business_idea: [
+      idea: [
         {
-          clearAnswer: 'Choose ideas by speed-to-validation and speed-to-cash, not by complexity.',
+          clearAnswer: 'Choose ideas by speed-to-validation and speed-to-cash, then test with a paid signal this week.',
           whyItMatters: 'Great founders optimize for fast signal gathering before deep investment.',
-          steps: ['Generate three ideas around one painful customer problem.', 'Score ideas by setup time, margin potential, and demand proof.', 'Pick one and test with direct outreach this week.', 'Run a paid micro-offer to validate real intent.'],
+          steps: ['Generate three ideas around one painful customer problem.', 'Score ideas by setup time, margin potential, and demand proof.', 'Pick one and test with direct outreach this week.', 'Run a paid micro-offer to validate real intent.', 'Log objections in Memory to refine your offer.'],
           founderTip: 'The best first business is the one that reaches paying users fastest.',
           nextMove: 'Ask for idea options based on your skills, budget, and available time.'
         },
@@ -1514,9 +1474,9 @@
       ],
       general: [
         {
-          clearAnswer: 'I can help you make practical business decisions across startup planning, growth, marketing, finance, product, and execution.',
+          clearAnswer: 'I can help you make practical business decisions across startup, idea validation, marketing, growth, finance, and planning.',
           whyItMatters: 'Structured decisions reduce confusion and accelerate founder progress.',
-          steps: ['State your current challenge in one sentence.', 'Add your stage and available resources.', 'Define one measurable result and timeline.', 'Pick one domain so we create a focused plan.'],
+          steps: ['State your current challenge in one sentence.', 'Add your stage and available resources.', 'Define one measurable result and timeline.', 'Pick one domain so we create a focused plan.', 'Confirm if you want a 7-day or 30-day execution plan.'],
           founderTip: 'General questions create general answers; precise inputs create strategic outputs.',
           nextMove: 'Ask a specific question like: "How do I acquire 20 qualified leads in 30 days?"'
         }
