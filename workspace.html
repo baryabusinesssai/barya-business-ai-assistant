@@ -3693,7 +3693,7 @@
       width: 100%;
       height: 26px;
       margin-top: .4rem;
-      opacity: .85;
+      opacity: .72;
     }
     .workspace-sparkline path { fill: none; stroke-width: 2; stroke-linecap: round; }
     #appContainer .workspace-sidebar-nav .tabBtn {
@@ -3720,7 +3720,7 @@
       letter-spacing: .01em;
     }
     .workspace-command-topbar {
-      border-radius: 16px;
+      border-radius: 18px;
       padding: .72rem 1rem;
       border: 1px solid rgba(148, 163, 184, 0.25);
       background: rgba(15, 23, 42, 0.56);
@@ -3738,19 +3738,19 @@
       border: 1px solid rgba(74, 222, 128, 0.45);
       background: rgba(20, 83, 45, 0.34);
       color: #bbf7d0;
-      font-size: .74rem;
+      font-size: .76rem;
       letter-spacing: .08em;
       text-transform: uppercase;
-      box-shadow: 0 0 22px rgba(74, 222, 128, 0.2);
+      box-shadow: 0 0 14px rgba(74, 222, 128, 0.16);
     }
     .encryption-badge .shield {
       filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.7));
     }
     .workspace-neural-shell {
-      margin-top: 1rem;
+      margin-top: 1.25rem;
       border-radius: 24px;
       border: 1px solid rgba(148, 163, 184, 0.24);
-      padding: clamp(1rem, 2vw, 1.6rem);
+      padding: clamp(1.2rem, 2.2vw, 1.9rem);
       background:
         radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14), transparent 40%),
         rgba(2, 6, 23, 0.7);
@@ -3759,7 +3759,7 @@
     }
     .workspace-neural-center {
       max-width: 420px;
-      margin: 1.4rem auto;
+      margin: 1.7rem auto 2rem;
       text-align: center;
       position: relative;
       z-index: 2;
@@ -3799,29 +3799,30 @@
       stroke-dashoffset: 460;
     }
     .workspace-neural-shell.is-animating .neural-network-bg path {
-      animation: drawLines 1.6s ease forwards;
+      animation: drawLines 1.9s cubic-bezier(.22, .61, .36, 1) forwards;
+      animation-delay: .2s;
     }
     .neural-node-grid {
-      margin-top: 1.6rem;
+      margin-top: 1.8rem;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: .9rem;
+      gap: 1.1rem;
       position: relative;
       z-index: 2;
     }
     .neural-node {
-      padding: .85rem;
-      border-radius: 16px;
+      padding: 1rem;
+      border-radius: 18px;
       border: 1px solid currentColor;
       background: color-mix(in oklab, currentColor 12%, transparent);
       opacity: 0;
       transform: translateY(10px) scale(.98);
       box-shadow: 0 0 18px color-mix(in srgb, currentColor 40%, transparent);
     }
-    .neural-node.visible { animation: nodePop .5s ease forwards, nodePulse 2.4s ease-in-out infinite; }
-    .neural-node h4 { font-size: .86rem; font-weight: 700; color: #f8fafc; }
+    .neural-node.visible { animation: nodePop .6s ease forwards, nodePulse 4.8s ease-in-out infinite; }
+    .neural-node h4 { font-size: .95rem; font-weight: 700; color: #f8fafc; }
     .neural-pill-row { margin-top: .5rem; display: flex; flex-wrap: wrap; gap: .4rem; }
-    .neural-pill { border-radius: 999px; font-size: .68rem; padding: .26rem .55rem; background: rgba(2,6,23,.45); border: 1px solid rgba(226,232,240,.22); color: #cbd5e1; }
+    .neural-pill { border-radius: 999px; font-size: .74rem; padding: .34rem .68rem; background: rgba(2,6,23,.45); border: 1px solid rgba(226,232,240,.22); color: #cbd5e1; }
     .node-green { color: #22c55e; }
     .node-blue { color: #38bdf8; }
     .node-purple { color: #a78bfa; }
@@ -3830,9 +3831,79 @@
     @keyframes nodePop { to { opacity: 1; transform: translateY(0) scale(1);} }
     @keyframes nodePulse {
       0%,100% { box-shadow: 0 0 10px color-mix(in srgb, currentColor 20%, transparent); }
-      50% { box-shadow: 0 0 26px color-mix(in srgb, currentColor 45%, transparent); }
+      50% { box-shadow: 0 0 18px color-mix(in srgb, currentColor 32%, transparent); }
     }
-    #appContainer .workspace-utility-rail { display: none; }
+    #appContainer .workspace-sidebar-nav {
+      display: grid;
+      gap: .85rem;
+    }
+    #appContainer .workspace-sidebar-nav .tab-meta {
+      display: block;
+      margin-top: .28rem;
+      font-size: .72rem;
+      color: #94a3b8;
+      letter-spacing: .02em;
+    }
+    #appContainer .workspace-sidebar-group-title {
+      margin-top: 1rem;
+      margin-bottom: .35rem;
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: #64748b;
+      font-weight: 700;
+    }
+    #appContainer .workspace-top-header {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    #appContainer .workspace-main-grid {
+      gap: 1.3rem;
+      align-items: start;
+    }
+    #appContainer .workspace-content-card,
+    #appContainer .workspace-module-card,
+    #appContainer .workspace-utility-card {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+      border-radius: 18px;
+    }
+    #appContainer .workspace-utility-rail {
+      display: grid;
+      gap: 1rem;
+    }
+    #appContainer .workspace-secondary-btn,
+    #appContainer .workspace-primary-btn,
+    #workspaceBlueprintBtn {
+      min-height: 42px;
+      border-radius: 12px !important;
+      transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+    }
+    #appContainer .workspace-secondary-btn:hover,
+    #appContainer .workspace-primary-btn:hover,
+    #workspaceBlueprintBtn:hover {
+      transform: translateY(-2px);
+    }
+    #appContainer .panel.app-view {
+      transition: opacity .28s ease, transform .28s ease;
+    }
+    #appContainer .panel.app-view:not(.hidden) {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (max-width: 1280px) {
+      #appContainer.workspace-dashboard-view { padding: 1rem; }
+      #appContainer .workspace-dashboard-layout { min-height: auto; }
+      #appContainer .workspace-main-grid { gap: 1rem; }
+    }
+    @media (max-width: 900px) {
+      .workspace-command-topbar { flex-wrap: wrap; }
+      .workspace-command-topbar > div:last-child { width: 100%; justify-content: space-between; }
+      .neural-node-grid { grid-template-columns: 1fr; }
+      .workspace-neural-center { margin: 1rem auto 1.3rem; }
+      #appContainer .workspace-sidebar-group-title { margin-top: .55rem; }
+    }
 
 </style>
 </head>
@@ -4193,11 +4264,14 @@
           </div>
         </div>
         <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
-          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Strategy</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 22 L22 18 L38 20 L56 12 L78 14 L96 9 L116 7" stroke="#38bdf8"/></svg></button>
-          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway Tracker</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 24 L20 19 L36 20 L54 16 L72 12 L90 10 L116 6" stroke="#22c55e"/></svg></button>
-          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Startup Guides</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 21 L24 22 L42 17 L60 15 L82 12 L98 14 L116 10" stroke="#a78bfa"/></svg></button>
-          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates</span><span>↗</span></span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 20 L18 16 L34 19 L52 13 L70 16 L88 10 L116 8" stroke="#f472b6"/></svg></button>
-          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Profile / Settings</span><span>•</span></span></button>
+          <p class="workspace-sidebar-group-title">Command</p>
+          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Strategy · Barya AI</span><span>↗</span></span><span class="tab-meta">AI advisor, GTM and execution decisions</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 22 L22 18 L38 20 L56 12 L78 14 L96 9 L116 7" stroke="#38bdf8"/></svg></button>
+          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway Tracker</span><span>↗</span></span><span class="tab-meta">Dashboard + monthly overview + trends</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 24 L20 19 L36 20 L54 16 L72 12 L90 10 L116 6" stroke="#22c55e"/></svg></button>
+          <p class="workspace-sidebar-group-title">Build</p>
+          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Business Planning + Startup Guides</span><span>↗</span></span><span class="tab-meta">Plans, checklists, launch playbooks</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 21 L24 22 L42 17 L60 15 L82 12 L98 14 L116 10" stroke="#a78bfa"/></svg></button>
+          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates + Memory</span><span>↗</span></span><span class="tab-meta">Reusable frameworks and saved context</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 20 L18 16 L34 19 L52 13 L70 16 L88 10 L116 8" stroke="#f472b6"/></svg></button>
+          <p class="workspace-sidebar-group-title">System</p>
+          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Profile / Settings</span><span>•</span></span><span class="tab-meta">Founder profile, preferences, data controls</span></button>
         </nav>
         <div class="sidebar-founder-profile">
           <p class="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold">Navigation Tip</p>
@@ -4707,7 +4781,7 @@
         void neuralShell.offsetWidth;
         neuralShell.classList.add('is-animating');
         nodes.forEach((node, index) => {
-          window.setTimeout(() => node.classList.add('visible'), 280 * (index + 1));
+          window.setTimeout(() => node.classList.add('visible'), 360 * (index + 1));
         });
       };
       animateNodes();
