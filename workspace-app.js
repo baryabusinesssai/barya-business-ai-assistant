@@ -2774,7 +2774,7 @@
     if (backToLandingBtn) {
       backToLandingBtn.addEventListener('click', (event) => {
         event.preventDefault();
-        showLandingPage();
+        window.location.href = 'index.html';
       });
     }
 
