@@ -2232,6 +2232,7 @@
   }
 
   function mountWorkspaceBetweenLandingSections() {
+    if (UNIFIED_SINGLE_PAGE) return;
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
     const workspaceMountPoint = $('workspaceMountPoint');
