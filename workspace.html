@@ -2781,7 +2781,7 @@
       width: 100%;
       max-width: none;
       margin: 0;
-      padding: clamp(1rem, 2vw, 2rem) clamp(1rem, 3.6vw, 3.25rem) 3rem;
+      padding: 1rem 0 3rem;
       min-height: 100vh;
     }
     .workspace-dashboard-layout {
@@ -2799,7 +2799,7 @@
       flex: 0 0 270px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 1.25rem;
+      border-radius: 0 1.25rem 1.25rem 0;
       padding: 1.4rem 1rem 1rem;
       position: sticky;
       top: 6.5rem;
@@ -2894,10 +2894,22 @@
       display: grid;
       gap: 1.8rem;
       margin-top: 1rem;
+      width: 100%;
     }
     #appSection .panel {
       margin: 0;
       padding-top: 0.35rem;
+      width: 100%;
+    }
+    #appSection .workspace-content-card,
+    #appSection .workspace-module-card {
+      width: 100%;
+      max-width: none;
+    }
+    #appContainer .workspace-module-card .max-w-3xl,
+    #appContainer .workspace-module-card .max-w-6xl {
+      max-width: none !important;
+      width: 100%;
     }
     .workspace-card-header {
       color: #64748b !important;
@@ -3080,11 +3092,24 @@
     }
     @media (min-width: 1200px) {
       .workspace-dashboard-view {
-        padding-left: clamp(2rem, 4vw, 4rem);
-        padding-right: clamp(2rem, 4vw, 4rem);
+        padding-top: 1.25rem;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .workspace-main-canvas {
+        padding-right: 40px;
+        padding-left: 1.75rem;
+      }
+      .workspace-dashboard-view {
+        min-height: 100vh;
       }
       .workspace-dashboard-layout {
         gap: 1.5rem;
+        grid-template-columns: 290px minmax(0, 1fr);
+      }
+      .workspace-sidebar {
+        width: 290px;
+        flex-basis: 290px;
       }
       .workspace-main-grid {
         grid-template-columns: minmax(0, 1fr) 340px;
