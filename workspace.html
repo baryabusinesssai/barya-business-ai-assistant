@@ -2776,32 +2776,35 @@
     }
 
     .workspace-dashboard-view {
-      max-width: none;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
+      max-width: 72rem;
+      width: min(100%, 72rem);
+      margin: 2rem auto 3rem;
+      padding: 0 1.5rem;
+      min-height: auto;
     }
     .workspace-dashboard-layout {
       display: flex;
-      min-height: 100vh;
+      min-height: auto;
       position: relative;
-      background: #f8fafc;
+      background: transparent;
+      gap: 1rem;
     }
     .workspace-sidebar {
       width: 270px;
       flex: 0 0 270px;
       background: #ffffff;
-      border-right: 1px solid #e5e7eb;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
       padding: 1.4rem 1rem 1rem;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      z-index: 1000;
+      position: sticky;
+      top: 6.5rem;
+      height: fit-content;
+      z-index: 20;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 1rem;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
     }
     .workspace-sidebar-brand {
       padding: 0.75rem 0.75rem 0.25rem;
@@ -2864,11 +2867,11 @@
     }
     .workspace-main-canvas {
       flex: 1;
-      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-      padding: 1.5rem;
+      background: transparent;
+      padding: 0;
       min-width: 0;
-      padding-bottom: 6rem;
-      margin-left: 270px;
+      padding-bottom: 2rem;
+      margin-left: 0;
     }
     .workspace-module-card {
       background: #ffffff !important;
@@ -2910,9 +2913,7 @@
       color: #475569;
     }
     .workspace-top-header {
-      position: sticky;
-      top: 0.75rem;
-      z-index: 900;
+      position: static;
     }
     .workspace-header-meta {
       display: flex;
@@ -2926,12 +2927,12 @@
     .workspace-main-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 280px;
-      gap: 1rem;
+      gap: 1.2rem;
       align-items: start;
     }
     .workspace-utility-rail {
       position: sticky;
-      top: 8.6rem;
+      top: 6.5rem;
       display: grid;
       gap: 0.8rem;
     }
@@ -3041,7 +3042,9 @@
         display: block;
       }
       .workspace-sidebar {
-        display: none;
+        width: 100%;
+        position: static;
+        margin-bottom: 1rem;
       }
       .workspace-main-canvas {
         padding: 1rem;
@@ -3056,7 +3059,7 @@
         position: static;
       }
       .workspace-mobile-nav {
-        display: flex;
+        display: none;
       }
       #panel-dashboard {
         grid-template-columns: 1fr !important;
@@ -3090,6 +3093,9 @@
       border-bottom: 1px solid #ededed;
       border-radius: 1rem;
       padding: 1.5rem;
+    }
+    .workspace-mode-active .public-page {
+      display: none !important;
     }
     .founder-signature {
       font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
@@ -3793,6 +3799,7 @@
       </article>
     </section>
 
+    <div id="workspaceMountPoint"></div>
     <div class="transparency-bar landing-only">100% Local-First. No Cloud Storage. Your Data, Your Control.</div>
     <footer id="landingFooter" class="site-footer landing-only">
       <div class="footer-minimal">

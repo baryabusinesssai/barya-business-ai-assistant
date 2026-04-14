@@ -2227,22 +2227,21 @@
     });
   }
 
-  function showMainApp(options = {}) {
-    const { tab = 'dashboard', rememberStart = false } = options;
+  function mountWorkspaceBetweenLandingSections() {
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
-    const globalSearchShell = $('globalSearchShell');
+    const workspaceMountPoint = $('workspaceMountPoint');
+    if (!landingPageContainer || !appContainer || !workspaceMountPoint) return;
+    if (appContainer.parentElement === landingPageContainer) return;
+    landingPageContainer.insertBefore(appContainer, workspaceMountPoint);
+  }
 
-    if (landingPageContainer) {
-      landingPageContainer.classList.remove('is-visible');
-      landingPageContainer.classList.add('is-hidden');
-      setTimeout(() => {
-        landingPageContainer.style.display = 'none';
-      }, 280);
-    }
-    document.querySelectorAll('.landing-only').forEach((node) => {
-      node.style.display = 'none';
-    });
+  function showMainApp(options = {}) {
+    const { tab = 'dashboard', rememberStart = false } = options;
+    const appContainer = $('appContainer');
+    const globalSearchShell = $('globalSearchShell');
+    document.body.classList.add('workspace-mode-active');
+    showPublicPage('home');
     if (appContainer) {
       appContainer.style.display = 'block';
       requestAnimationFrame(() => {
@@ -2263,6 +2262,7 @@
     const landingPageContainer = $('landingPageContainer');
     const appContainer = $('appContainer');
     const globalSearchShell = $('globalSearchShell');
+    document.body.classList.remove('workspace-mode-active');
 
     if (appContainer) {
       appContainer.classList.remove('is-visible');
@@ -2272,15 +2272,12 @@
       }, 260);
     }
     if (landingPageContainer) {
-      landingPageContainer.style.display = 'block';
+      landingPageContainer.style.display = '';
       requestAnimationFrame(() => {
         landingPageContainer.classList.remove('is-hidden');
         landingPageContainer.classList.add('is-visible');
       });
     }
-    document.querySelectorAll('.landing-only').forEach((node) => {
-      node.style.display = '';
-    });
     if (globalSearchShell) globalSearchShell.style.display = 'none';
   }
 
@@ -3092,6 +3089,7 @@
   }
 
   function initApp() {
+    mountWorkspaceBetweenLandingSections();
     hydrateState();
     initSelects();
     initTabs();
