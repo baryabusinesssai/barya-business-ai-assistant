@@ -2964,29 +2964,6 @@
       background: #ffffff;
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
     }
-    .workspace-internal-footer {
-      margin-top: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 1.2rem 1.25rem;
-      background: #ffffff;
-      display: grid;
-      gap: 0.85rem;
-    }
-    .workspace-footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem 1.2rem;
-    }
-    .workspace-footer-links a {
-      text-decoration: none;
-      color: #475569;
-      font-weight: 600;
-      font-size: 0.86rem;
-    }
-    .workspace-footer-links a:hover {
-      color: #0f172a;
-    }
     .dashboard-flow-grid {
       display: grid;
       gap: 1rem;
@@ -3206,10 +3183,11 @@
       border: 1.5px solid #c5c5c5;
       background: #ffffff;
     }
-    .site-footer {
-      background: #ffffff !important;
-      border-top: 1px solid #ececec !important;
-      padding: 1.2rem 1rem !important;
+    .global-site-footer {
+      margin-top: 3.5rem;
+      background: #f9f9f9;
+      border-top: 1px solid #ececec;
+      padding: 1rem;
     }
     .footer-minimal {
       max-width: 980px;
@@ -3219,15 +3197,24 @@
       justify-content: space-between;
       align-items: center;
       gap: 0.7rem;
-      color: #8a8a8a !important;
-      font-size: 0.78rem;
+      color: #888888 !important;
+      font-size: 12px;
     }
     .footer-minimal a {
-      color: #8a8a8a !important;
+      color: #888888 !important;
       text-decoration: none;
       margin-left: 0.55rem;
     }
     .footer-minimal a:hover { text-decoration: underline; }
+    @media (max-width: 640px) {
+      .footer-minimal {
+        justify-content: center;
+        text-align: center;
+      }
+      .footer-minimal a:first-child {
+        margin-left: 0;
+      }
+    }
     .hero-beta-proof {
       margin-top: 1rem;
       display: inline-flex;
@@ -3872,17 +3859,6 @@
     </section>
 
     <div id="workspaceMountPoint"></div>
-    <div class="transparency-bar landing-only">100% Local-First. No Cloud Storage. Your Data, Your Control.</div>
-    <footer id="landingFooter" class="site-footer landing-only">
-      <div class="footer-minimal">
-        <p>Barya AI © 2024</p>
-        <p>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <a href="#privacy" data-public-nav="privacy">Privacy</a>
-          <a href="#terms" data-public-nav="terms">Terms</a>
-        </p>
-      </div>
-    </footer>
   </div>
 
   <div id="welcomeModal" class="onboarding-modal hidden" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle">
@@ -4372,19 +4348,6 @@
             </div>
           </aside>
         </div>
-        <footer class="workspace-internal-footer">
-          <div>
-            <p class="text-sm font-semibold text-slate-900">Barya · Founder Workspace</p>
-            <p class="text-xs text-slate-500 mt-1">Local-first · Privacy-first</p>
-          </div>
-          <div class="workspace-footer-links">
-            <a href="#home" data-public-nav="home">Back to Home</a>
-            <a href="#privacy" data-public-nav="privacy">Privacy Policy</a>
-            <a href="#contact" data-public-nav="contact">Contact</a>
-            <a href="#feedback" data-public-nav="feedback">Feedback</a>
-          </div>
-          <p class="text-xs text-slate-500">© 2026 Barya Labs. Built for founders who move with clarity.</p>
-        </footer>
       </div>
     </div>
 
@@ -4396,6 +4359,17 @@
       <button type="button" data-tab="settings" class="tabBtn">Settings</button>
     </footer>
   </div>
+
+  <footer class="global-site-footer">
+    <div class="footer-minimal">
+      <p>Barya AI © 2026</p>
+      <p>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="#privacy" data-public-nav="privacy">Privacy</a>
+        <a href="#terms" data-public-nav="terms">Terms</a>
+      </p>
+    </div>
+  </footer>
   <script defer src="workspace-app.js"></script>
 
 </body>
