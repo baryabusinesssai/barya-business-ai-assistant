@@ -22,77 +22,103 @@
   </script>
   <style>
     :root {
-      --space-1: 8px;
-      --space-2: 16px;
-      --space-3: 24px;
-      --space-4: 32px;
-      --space-5: 48px;
       --surface: #ffffff;
-      --surface-subtle: #f8fafc;
+      --surface-soft: #f8fafc;
       --border-soft: #e2e8f0;
       --text-main: #0f172a;
       --text-muted: #475569;
-      --text-soft: #64748b;
-      --primary: #111827;
-      --primary-hover: #1f2937;
+      --primary: #0f172a;
+      --primary-hover: #1e293b;
     }
+
     html { scroll-behavior: smooth; }
     body {
-      background: #ffffff;
+      background: radial-gradient(circle at top left, #ecfeff 0%, #ffffff 45%, #ffffff 100%);
       color: var(--text-main);
-      line-height: 1.55;
       letter-spacing: -0.01em;
+      line-height: 1.55;
     }
+
     main > section {
-      margin-bottom: var(--space-5) !important;
+      margin-bottom: 4.75rem !important;
       scroll-margin-top: 7rem;
     }
+
     h1, h2, h3 { letter-spacing: -0.02em; }
-    h2 {
-      font-size: clamp(1.8rem, 2vw, 2.35rem);
-      margin-bottom: var(--space-2);
+    p { color: var(--text-muted); }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(6px);
     }
-    p {
-      color: var(--text-muted);
-      max-width: 72ch;
-    }
-    a, button { transition: all .2s ease; }
-    .soft-card {
+
+    .feature-card {
       background: var(--surface);
       border: 1px solid var(--border-soft);
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      transition: transform .2s ease, box-shadow .2s ease;
     }
-    .trust-pill {
-      border: 1px solid #cbd5e1;
-      background: var(--surface-subtle);
-      color: var(--text-soft);
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 36px rgba(15, 23, 42, 0.1);
     }
+
     .primary-btn,
     .secondary-btn {
       min-height: 44px;
       border-radius: 12px;
-      padding-inline: 1.25rem;
+      padding-inline: 1.2rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
-    .primary-btn { background: var(--primary); color: white; }
+
+    .primary-btn { background: var(--primary); color: #fff; }
     .primary-btn:hover { background: var(--primary-hover); }
-    .secondary-btn { border: 1px solid #cbd5e1; color: #0f172a; background: white; }
-    .secondary-btn:hover { border-color: #94a3b8; background: #f8fafc; }
+
+    .secondary-btn {
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .section-label {
+      font-size: .73rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .hero-image {
+      height: min(580px, 75vh);
+      width: 100%;
+      object-fit: cover;
+    }
+
     @media (max-width: 768px) {
-      main { padding-top: 6.75rem !important; }
-      main > section { margin-bottom: var(--space-4) !important; }
-      h1 { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
+      main { padding-top: 6.8rem !important; }
+      main > section { margin-bottom: 3.5rem !important; }
     }
   </style>
 </head>
 <body class="font-sans antialiased">
-  <script>
-    window.location.replace('workspace.html');
-  </script>
-  <header class="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur">
     <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
       <a href="#home" class="text-sm font-semibold tracking-[0.2em] text-slate-900">BARYA</a>
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
@@ -111,124 +137,169 @@
   <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
     <section id="home" class="grid items-center gap-10 lg:grid-cols-2">
       <div>
-        <p class="mb-4 text-xs uppercase tracking-[0.35em] text-slate-500">Founder Growth Platform</p>
-        <h1 class="text-4xl font-bold leading-tight text-slate-900 md:text-6xl">From startup idea to structured execution, in one premium founder flow.</h1>
-        <p class="mt-5 max-w-xl text-lg text-slate-600">Barya helps founders plan clearly, validate quickly, manage operations, and stay focused on real growth.</p>
+        <p class="section-label mb-4">Founder Growth Platform</p>
+        <h1 class="text-4xl font-bold leading-tight text-slate-900 md:text-6xl">From startup idea to structured execution — in one premium founder command center.</h1>
+        <p class="mt-5 max-w-xl text-lg">Plan faster, validate smarter, and run your startup with a visual workflow built for founder momentum.</p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a href="#pricing" class="primary-btn text-sm">See Pricing</a>
           <a href="workspace.html" class="secondary-btn text-sm">Enter Workspace</a>
         </div>
+        <div class="mt-8 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Planning speed</p><p class="mt-1 text-xl font-semibold text-slate-900">2.6x</p></div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Execution rhythm</p><p class="mt-1 text-xl font-semibold text-slate-900">Weekly</p></div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Privacy model</p><p class="mt-1 text-xl font-semibold text-slate-900">Founder-first</p></div>
+        </div>
       </div>
-      <div class="soft-card rounded-3xl p-6">
-        <p class="text-sm text-slate-500">Live Flow</p>
-        <h3 class="mt-2 text-xl font-semibold text-slate-900">Plan → Validate → Build → Track</h3>
-        <div class="mt-6 space-y-3 text-sm text-slate-700">
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Shape the business model and offer</div>
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Validate market demand before spending heavily</div>
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Track revenue, costs, and weekly execution</div>
+      <div class="relative">
+        <div class="overflow-hidden rounded-3xl border border-white/70 shadow-2xl shadow-slate-900/10">
+          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80" alt="Founders planning business growth in a modern startup office" class="hero-image" loading="lazy" />
+        </div>
+        <div class="glass-card absolute -bottom-6 left-5 rounded-2xl p-4 text-sm">
+          <p class="text-slate-500">Live founder flow</p>
+          <p class="mt-1 font-semibold text-slate-900">Plan → Validate → Build → Track</p>
         </div>
       </div>
     </section>
 
-    <section id="what-is-barya" class="soft-card rounded-3xl p-8">
-      <h2>What is Barya</h2>
-      <p>Barya is a premium growth platform for founders, dedicated to clarity and private, structured action. It combines strategy guidance, business planning, and practical execution tools in one place.</p>
+    <section id="what-is-barya" class="glass-card rounded-3xl p-8 lg:p-10">
+      <div class="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+        <div>
+          <p class="section-label">What is Barya</p>
+          <h2 class="section-heading mt-3">A premium operating layer for founder decision-making.</h2>
+          <p class="mt-4 max-w-2xl">Barya combines strategy guidance, business planning, and practical execution tools in one private workspace so founders can move with clarity.</p>
+        </div>
+        <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" alt="Modern startup planning board on a table" class="h-56 w-full rounded-2xl object-cover" loading="lazy" />
+      </div>
     </section>
 
-    <section id="what-you-can-do" class="soft-card rounded-3xl p-8">
-      <h2>What You Can Do with Barya</h2>
-      <div class="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Build a real business plan with milestones</div>
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Validate audience, offer, and pricing assumptions</div>
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Track income, expenses, and runway</div>
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">Use templates to accelerate launch</div>
+    <section id="what-you-can-do">
+      <p class="section-label">What you can do</p>
+      <h2 class="section-heading mt-3">Core founder actions, turned into clear blocks.</h2>
+      <div class="mt-7 grid gap-4 md:grid-cols-2">
+        <article class="feature-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Build a real business plan</h3><p class="mt-2 text-sm">Turn goals into milestones and practical launch sequencing.</p></article>
+        <article class="feature-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Validate demand early</h3><p class="mt-2 text-sm">Pressure-test audience, offer, and pricing assumptions before overbuilding.</p></article>
+        <article class="feature-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Track runway and cash flow</h3><p class="mt-2 text-sm">Monitor income, costs, and growth momentum with less friction.</p></article>
+        <article class="feature-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Use startup templates</h3><p class="mt-2 text-sm">Accelerate execution with ready-to-use workflows and checklists.</p></article>
       </div>
     </section>
 
     <section id="features">
-      <h2 class="mb-8">Features</h2>
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <article class="soft-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">AI Guidance</h3><p class="mt-2 text-sm text-slate-600">Founder-level recommendations for your next best move.</p></article>
-        <article class="soft-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Business Planning</h3><p class="mt-2 text-sm text-slate-600">Structured roadmaps from idea to go-to-market.</p></article>
-        <article class="soft-card rounded-2xl p-5"><h3 class="font-semibold text-slate-900">Templates</h3><p class="mt-2 text-sm text-slate-600">Startup playbooks for services, products, and more.</p></article>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="section-label">Features</p>
+          <h2 class="section-heading mt-2">Visual tools built for founder depth.</h2>
+        </div>
+      </div>
+      <div class="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">AI Guidance</h3><p class="mt-2 text-sm">High-signal recommendations for your next strategic move.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Business Planning</h3><p class="mt-2 text-sm">Positioning, go-to-market, and milestone architecture in one place.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Templates</h3><p class="mt-2 text-sm">Reusable founder playbooks for services, products, and hybrid startups.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Execution Tracking</h3><p class="mt-2 text-sm">Keep weekly accountability visible so plans convert into shipped outcomes.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Financial Visibility</h3><p class="mt-2 text-sm">Understand runway health and spending pressure at a glance.</p></article>
+        <article class="feature-card rounded-2xl p-0 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" alt="Analytics dashboard on a laptop" class="h-44 w-full object-cover" loading="lazy" />
+          <div class="p-6"><h3 class="font-semibold text-slate-900">Founder Dashboard</h3><p class="mt-2 text-sm">A polished view of key business signals, priorities, and wins.</p></div>
+        </article>
       </div>
     </section>
 
-    <section id="how-it-works">
-      <h2>How It Works</h2>
+    <section id="how-it-works" class="glass-card rounded-3xl p-8 lg:p-10">
+      <p class="section-label">How it works</p>
+      <h2 class="section-heading mt-2">A clean, repeatable operating cycle.</h2>
       <div class="mt-6 grid gap-4 md:grid-cols-3">
-        <article class="soft-card rounded-2xl p-6"><p class="text-sm text-slate-500">Step 1</p><h3 class="mt-2 font-semibold text-slate-900">Define your business direction</h3></article>
-        <article class="soft-card rounded-2xl p-6"><p class="text-sm text-slate-500">Step 2</p><h3 class="mt-2 font-semibold text-slate-900">Get a tailored execution plan</h3></article>
-        <article class="soft-card rounded-2xl p-6"><p class="text-sm text-slate-500">Step 3</p><h3 class="mt-2 font-semibold text-slate-900">Execute and track progress</h3></article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-6"><p class="text-xs uppercase tracking-wider text-slate-500">Step 1</p><h3 class="mt-2 font-semibold text-slate-900">Define direction</h3><p class="mt-2 text-sm">Clarify market, offer, and success outcomes.</p></article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-6"><p class="text-xs uppercase tracking-wider text-slate-500">Step 2</p><h3 class="mt-2 font-semibold text-slate-900">Generate plan</h3><p class="mt-2 text-sm">Convert strategy into practical milestones and tasks.</p></article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-6"><p class="text-xs uppercase tracking-wider text-slate-500">Step 3</p><h3 class="mt-2 font-semibold text-slate-900">Execute + review</h3><p class="mt-2 text-sm">Track progress weekly and adjust with confidence.</p></article>
       </div>
     </section>
 
     <section id="trust">
-      <h2>Trust & Social Proof</h2>
-      <div class="mt-6 grid gap-4 md:grid-cols-3">
-        <article class="soft-card rounded-2xl p-6"><p class="text-slate-700">“Barya gave me focus when I had too many ideas.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Early Founder</p></article>
-        <article class="soft-card rounded-2xl p-6"><p class="text-slate-700">“I finally understood how to structure my business plan.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Student Builder</p></article>
-        <article class="soft-card rounded-2xl p-6"><p class="text-slate-700">“Private, clear, and practical. Exactly what I needed.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Solo Entrepreneur</p></article>
+      <div class="grid gap-6 lg:grid-cols-[1fr_1.3fr] lg:items-center">
+        <div>
+          <p class="section-label">Trust & social proof</p>
+          <h2 class="section-heading mt-2">Built for founders who care about quality and privacy.</h2>
+          <p class="mt-3">Designed for practical, private, high-signal startup execution.</p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+          <article class="feature-card rounded-2xl p-6"><p class="text-slate-700">“Barya gave me focus when I had too many ideas.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Early Founder</p></article>
+          <article class="feature-card rounded-2xl p-6"><p class="text-slate-700">“I finally understood how to structure my business plan.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Student Builder</p></article>
+          <article class="feature-card rounded-2xl p-6"><p class="text-slate-700">“Private, clear, and practical. Exactly what I needed.”</p><p class="mt-4 text-sm font-medium text-slate-500">— Solo Entrepreneur</p></article>
+        </div>
       </div>
     </section>
 
-    <section id="business-planning" class="soft-card rounded-3xl p-8">
-      <h2>Business Planning Highlight</h2>
-      <p>From positioning to pricing to launch sequencing, Barya helps you turn strategic thinking into concrete steps, all in your own private workspace.</p>
-      <div class="mt-6">
-        <a href="workspace.html" class="primary-btn text-sm">Open Business Planning Workspace</a>
+    <section id="business-planning" class="glass-card rounded-3xl p-8 lg:p-10">
+      <div class="grid gap-8 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p class="section-label">Business planning highlight</p>
+          <h2 class="section-heading mt-2">From strategy depth to launch clarity.</h2>
+          <p class="mt-4">Map positioning, pricing, launch sequence, and operating priorities inside a structured founder workspace.</p>
+          <div class="mt-6">
+            <a href="workspace.html" class="primary-btn text-sm">Open Business Planning Workspace</a>
+          </div>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Positioning</p><p class="mt-1 font-semibold text-slate-900">Clear category + value thesis</p></div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Pricing model</p><p class="mt-1 font-semibold text-slate-900">Testable offers and tiers</p></div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Go-to-market</p><p class="mt-1 font-semibold text-slate-900">Channel sequencing by stage</p></div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Execution</p><p class="mt-1 font-semibold text-slate-900">Weekly priorities with metrics</p></div>
+        </div>
       </div>
     </section>
 
-    <section id="pricing" class="soft-card rounded-3xl p-8">
-      <h2>Pricing</h2>
+    <section id="pricing" class="glass-card rounded-3xl p-8">
+      <p class="section-label">Pricing</p>
+      <h2 class="section-heading mt-2">Simple now, powerful roadmap ahead.</h2>
       <div class="mt-6 grid gap-5 md:grid-cols-2">
         <article class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
           <h3 class="text-xl font-semibold text-slate-900">Starter</h3>
           <p class="mt-1 text-3xl font-bold text-slate-900">$0</p>
-          <p class="mt-2 text-slate-600">Core planning and workspace access.</p>
+          <p class="mt-2">Core planning and workspace access.</p>
         </article>
         <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <h3 class="text-xl font-semibold text-slate-900">Pro</h3>
           <p class="mt-1 text-3xl font-bold text-slate-900">Coming Soon</p>
-          <p class="mt-2 text-slate-600">Advanced founder workflows and premium tools.</p>
+          <p class="mt-2">Advanced founder workflows and premium tools.</p>
         </article>
       </div>
     </section>
 
     <section id="blog">
-      <h2>Blog</h2>
+      <p class="section-label">Blog</p>
+      <h2 class="section-heading mt-2">Founder insights and practical growth notes.</h2>
       <div class="mt-6 grid gap-4 md:grid-cols-3">
-        <article class="soft-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">How to Validate a Startup Idea</h3><p class="mt-2 text-sm text-slate-600">A practical founder checklist before writing code.</p></article>
-        <article class="soft-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Lean Pricing for First Customers</h3><p class="mt-2 text-sm text-slate-600">Simple pricing tests that improve confidence quickly.</p></article>
-        <article class="soft-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Weekly Founder Review Ritual</h3><p class="mt-2 text-sm text-slate-600">A 30-minute review loop for consistent execution.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">How to Validate a Startup Idea</h3><p class="mt-2 text-sm">A practical founder checklist before writing code.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Lean Pricing for First Customers</h3><p class="mt-2 text-sm">Simple pricing tests that improve confidence quickly.</p></article>
+        <article class="feature-card rounded-2xl p-6"><h3 class="font-semibold text-slate-900">Weekly Founder Review Ritual</h3><p class="mt-2 text-sm">A 30-minute review loop for consistent execution.</p></article>
       </div>
     </section>
 
-    <section id="contact" class="soft-card rounded-3xl p-8">
-      <h2>Contact</h2>
-      <p>Questions, partnerships, or feedback? Reach us at <a class="font-medium text-slate-900" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a>.</p>
+    <section id="contact" class="glass-card rounded-3xl p-8 lg:p-10">
+      <p class="section-label">Contact</p>
+      <h2 class="section-heading mt-2">Let’s build with clarity.</h2>
+      <p class="mt-4">Questions, partnerships, or feedback? Reach us at <a class="font-medium text-slate-900" href="mailto:baryashruti1@gmail.com">baryashruti1@gmail.com</a>.</p>
     </section>
 
-    <section id="faq" class="soft-card rounded-3xl p-8">
-      <h2>FAQ</h2>
-      <div class="space-y-4">
-        <div><h3 class="font-semibold text-slate-900">Is Barya private?</h3><p class="mt-1 text-sm text-slate-600">Yes. Barya is designed for private, structured founder work.</p></div>
-        <div><h3 class="font-semibold text-slate-900">Can I use the workspace directly?</h3><p class="mt-1 text-sm text-slate-600">Yes. Click Enter Workspace anytime to open the app experience.</p></div>
+    <section id="faq" class="glass-card rounded-3xl p-8">
+      <p class="section-label">FAQ</p>
+      <h2 class="section-heading mt-2">Common founder questions.</h2>
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-semibold text-slate-900">Is Barya private?</h3><p class="mt-1 text-sm">Yes. Barya is designed for private, structured founder work.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-semibold text-slate-900">Can I use the workspace directly?</h3><p class="mt-1 text-sm">Yes. Click Enter Workspace anytime to open the app experience.</p></div>
       </div>
     </section>
 
-    <section id="privacy-policy" class="soft-card rounded-3xl p-8">
-      <h2>Privacy Policy</h2>
-      <p>Barya is built with privacy-first principles. We prioritize founder control, minimal data exposure, and transparent product behavior.</p>
+    <section id="privacy-policy" class="glass-card rounded-3xl p-8">
+      <p class="section-label">Privacy Policy</p>
+      <p class="mt-2">Barya is built with privacy-first principles. We prioritize founder control, minimal data exposure, and transparent product behavior.</p>
     </section>
 
-    <section id="terms-of-service" class="soft-card rounded-3xl p-8">
-      <h2>Terms of Service</h2>
-      <p>By using Barya, you agree to use the platform responsibly for lawful business planning and execution activities.</p>
+    <section id="terms-of-service" class="glass-card rounded-3xl p-8">
+      <p class="section-label">Terms of Service</p>
+      <p class="mt-2">By using Barya, you agree to use the platform responsibly for lawful business planning and execution activities.</p>
     </section>
 
-    <section class="soft-card rounded-3xl p-10 text-center">
+    <section class="glass-card rounded-3xl p-10 text-center">
       <h2 class="text-4xl font-bold text-slate-900">Ready to build your startup with clarity?</h2>
       <a href="workspace.html" class="primary-btn mt-6 text-sm">Enter Workspace</a>
       <p class="mt-4 text-sm">Already inside the app? Use the Back to Landing Page button to return here.</p>
