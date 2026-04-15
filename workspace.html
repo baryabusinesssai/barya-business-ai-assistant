@@ -146,6 +146,7 @@
       title: 'Untitled Startup',
       dashboard: {
         metrics: { income: 25000, expenses: 12000, netSavings: 13000, runway: 9 },
+        projectionSettings: { variationSeed: 0.037 },
         expenseCategories: [
           { id: crypto.randomUUID(), name: 'Payroll', amount: 6200 },
           { id: crypto.randomUUID(), name: 'Marketing', amount: 2500 },
@@ -648,6 +649,7 @@
 
     function normalizeDashboardState() {
       const d = state.dashboard;
+      let projectionSettingsChanged = false;
       if (!d.metrics) d.metrics = structuredClone(defaultState.dashboard.metrics);
       d.metrics.income = Number(d.metrics.income || 0);
       d.metrics.expenses = Number(d.metrics.expenses || 0);
@@ -670,6 +672,16 @@
       }));
       if (!Array.isArray(d.recommendations)) d.recommendations = [];
       d.healthScore = Number.isFinite(Number(d.healthScore)) ? Number(d.healthScore) : 0;
+      if (!d.projectionSettings) {
+        d.projectionSettings = structuredClone(defaultState.dashboard.projectionSettings);
+        projectionSettingsChanged = true;
+      }
+      const previousSeed = d.projectionSettings.variationSeed;
+      d.projectionSettings.variationSeed = Number.isFinite(Number(d.projectionSettings.variationSeed))
+        ? Number(d.projectionSettings.variationSeed)
+        : defaultState.dashboard.projectionSettings.variationSeed;
+      if (d.projectionSettings.variationSeed !== previousSeed) projectionSettingsChanged = true;
+      if (projectionSettingsChanged) saveStateRaw();
     }
 
     function computeFinancialHealth() {
@@ -690,20 +702,63 @@
         .slice(0, 3);
     }
 
+    function getFutureMonthLabels(months = 6) {
+      const labels = [];
+      const now = new Date();
+      for (let i = 1; i <= months; i += 1) {
+        const dt = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        labels.push(dt.toLocaleString('en-IN', { month: 'long', year: 'numeric' }));
+      }
+      return labels;
+    }
+
     function getForecast(months = 6) {
-      const { income, expenses, netSavings } = state.dashboard.metrics;
-      const transactions = [...state.dashboard.transactions]
-        .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
-        .slice(0, 20);
-      const recent = transactions.slice(-8);
-      const momentum = recent.length > 1
-        ? recent.reduce((acc, tx, idx) => idx === 0 ? acc : acc + (tx.amount * (tx.type === 'income' ? 1 : -1)), 0) / recent.length
-        : 0;
-      const baseNet = Number(netSavings || income - expenses);
-      return Array.from({ length: months }, (_, i) => {
-        const lift = momentum * (0.15 + i * 0.04);
-        return Math.round(baseNet + lift);
+      const { income, expenses, netSavings, runway } = state.dashboard.metrics;
+      const monthlyNetBase = Number(netSavings || income - expenses);
+      const txs = [...state.dashboard.transactions]
+        .filter(tx => Number.isFinite(Number(tx.amount)) && tx.ts)
+        .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+
+      const monthlyBuckets = new Map();
+      txs.forEach((tx) => {
+        const dt = new Date(tx.ts);
+        if (Number.isNaN(dt.getTime())) return;
+        const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        const signedAmount = Number(tx.amount) * (tx.type === 'income' ? 1 : -1);
+        monthlyBuckets.set(key, (monthlyBuckets.get(key) || 0) + signedAmount);
       });
+
+      const lastThreeMonths = [];
+      const now = new Date();
+      for (let i = 2; i >= 0; i -= 1) {
+        const dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        lastThreeMonths.push(monthlyBuckets.has(key) ? monthlyBuckets.get(key) : monthlyNetBase);
+      }
+
+      const monthOverMonthDeltas = [];
+      for (let i = 1; i < lastThreeMonths.length; i += 1) {
+        monthOverMonthDeltas.push(lastThreeMonths[i] - lastThreeMonths[i - 1]);
+      }
+      const trendDelta = monthOverMonthDeltas.length
+        ? monthOverMonthDeltas.reduce((sum, d) => sum + d, 0) / monthOverMonthDeltas.length
+        : 0;
+
+      const seed = Number(state.dashboard.projectionSettings?.variationSeed || 0.037);
+      const projection = Array.from({ length: months }, (_, i) => {
+        const monthIndex = i + 1;
+        const trendAdjusted = monthlyNetBase + (trendDelta * monthIndex);
+        const variancePct = Math.sin((monthIndex * 1.91) + (seed * 100)) * 0.1;
+        return Math.round(trendAdjusted * (1 + variancePct));
+      });
+
+      return {
+        labels: getFutureMonthLabels(months),
+        values: projection,
+        currentNet: Math.round(monthlyNetBase),
+        trendDelta: Math.round(trendDelta),
+        projectedRunwayMonths: Math.max(0, Math.round(Number(runway || 0)))
+      };
     }
 
     function updateRecommendations() {
@@ -728,6 +783,7 @@
       const d = state.dashboard;
       const { healthScore, runwayScore, profitability, burnRateScore } = computeFinancialHealth();
       const forecast = getForecast(6);
+      const formatINR = (value) => `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
       const topExpenses = getTopExpenseCategories();
 
       el.innerHTML = `
@@ -752,13 +808,19 @@
         </div>
 
         <div class="grid xl:grid-cols-3 gap-4">
-          <div class="xl:col-span-2 bg-[#101217] border border-zinc-800 rounded-xl p-4">
+          <div class="xl:col-span-2 bg-[#111111] border border-zinc-800 rounded-xl p-4 sm:p-5">
             <div class="flex items-center justify-between mb-3">
               <h3 class="font-semibold text-barya-accent">Cash Flow Forecast (Next 6 Months)</h3>
-              <span class="text-xs text-zinc-400">Trend-based projection</span>
+              <span class="text-xs text-zinc-400">Trend-based projection • Auto updates</span>
             </div>
-            <canvas id="cashFlowChart" height="110"></canvas>
-            <p class="text-xs text-zinc-500 mt-2">Projected net cash trend: ${forecast.map(v => money(v)).join(' • ')}</p>
+            <div class="h-64 sm:h-72">
+              <canvas id="cashFlowChart"></canvas>
+            </div>
+            <div class="mt-4 space-y-1.5 text-xs sm:text-sm">
+              <p class="text-zinc-300">Based on current trend of <span class="text-[#00d4ff] font-semibold">${formatINR(forecast.currentNet)}</span> monthly net.</p>
+              <p class="text-zinc-300">Projected Runway: <span class="font-semibold">${forecast.projectedRunwayMonths} months</span></p>
+              <p class="text-zinc-500">This is a trend-based estimate. Actual results may vary.</p>
+            </div>
           </div>
 
           <div class="bg-[#101217] border border-zinc-800 rounded-xl p-4">
@@ -933,29 +995,97 @@
       if (expenseChart) expenseChart.destroy();
       if (cashFlowCtx) {
         const forecast = getForecast(6);
+        const formatINR = (value) => `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
+        const dataLabelPlugin = {
+          id: 'cashflowDataLabels',
+          afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const projectionMeta = chart.getDatasetMeta(1);
+            ctx.save();
+            projectionMeta.data.forEach((point, index) => {
+              const value = chart.data.datasets[1].data[index];
+              ctx.fillStyle = '#d4d4d8';
+              ctx.font = '11px Inter, system-ui, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText(formatINR(value), point.x, point.y - 10);
+            });
+            ctx.restore();
+          }
+        };
         cashflowChart = new Chart(cashFlowCtx, {
           type: 'line',
           data: {
-            labels: forecast.map((_, i) => `Month ${i + 1}`),
-            datasets: [{
-              label: 'Projected Net Cash',
-              data: forecast,
-              borderColor: '#00d4ff',
-              backgroundColor: 'rgba(0, 212, 255, 0.15)',
-              fill: true,
-              tension: 0.35,
-              pointRadius: 3
-            }]
+            labels: forecast.labels,
+            datasets: [
+              {
+                label: 'Current Monthly Net',
+                data: [forecast.currentNet, ...Array(5).fill(null)],
+                borderColor: '#00d4ff',
+                backgroundColor: '#00d4ff',
+                pointRadius: 5,
+                pointHoverRadius: 6,
+                borderWidth: 2,
+                showLine: false
+              },
+              {
+                label: 'Projected Cash Flow (₹)',
+                data: forecast.values,
+                borderColor: '#00d4ff',
+                segment: {
+                  borderColor: (ctx) => {
+                    const y = ctx.p1.parsed.y;
+                    return y >= 0 ? '#22c55e' : '#ef4444';
+                  }
+                },
+                backgroundColor: (ctx) => {
+                  const { chart } = ctx;
+                  const { ctx: context, chartArea } = chart;
+                  if (!chartArea) return 'rgba(0, 212, 255, 0.08)';
+                  const gradient = context.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                  gradient.addColorStop(0, 'rgba(0, 212, 255, 0.22)');
+                  gradient.addColorStop(1, 'rgba(0, 212, 255, 0.02)');
+                  return gradient;
+                },
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: (ctx) => (ctx.raw >= 0 ? '#22c55e' : '#ef4444'),
+                pointBorderColor: '#00d4ff',
+                pointBorderWidth: 1.5
+              }
+            ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#d4d4d8' } } },
+            plugins: {
+              legend: {
+                display: true,
+                labels: { color: '#d4d4d8', usePointStyle: true, boxWidth: 10 }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatINR(ctx.parsed.y)}`
+                }
+              }
+            },
             scales: {
-              x: { ticks: { color: '#a1a1aa' }, grid: { color: '#232323' } },
-              y: { ticks: { color: '#a1a1aa' }, grid: { color: '#232323' } }
+              x: {
+                title: { display: true, text: 'Next 6 Months', color: '#a1a1aa' },
+                ticks: { color: '#a1a1aa' },
+                grid: { color: '#232323' }
+              },
+              y: {
+                title: { display: true, text: 'Projected Cash Flow (₹)', color: '#a1a1aa' },
+                ticks: {
+                  color: '#a1a1aa',
+                  callback: (value) => formatINR(value)
+                },
+                grid: { color: '#232323' }
+              }
             }
-          }
+          },
+          plugins: [dataLabelPlugin]
         });
       }
       if (expenseCtx) {
