@@ -121,10 +121,19 @@
       title: 'Untitled Startup',
       dashboard: {
         metrics: { income: 25000, expenses: 12000, netSavings: 13000, runway: 9 },
-        readinessScore: 68,
-        growth: [12, 17, 23, 28, 36, 45],
-        activities: ['Updated financial model', 'Sent investor update'],
-        recommendations: []
+        expenseCategories: [
+          { id: crypto.randomUUID(), name: 'Payroll', amount: 6200 },
+          { id: crypto.randomUUID(), name: 'Marketing', amount: 2500 },
+          { id: crypto.randomUUID(), name: 'Software', amount: 1400 },
+          { id: crypto.randomUUID(), name: 'Operations', amount: 1900 }
+        ],
+        transactions: [
+          { id: crypto.randomUUID(), type: 'income', category: 'Revenue', amount: 25000, notes: 'Monthly recurring revenue', ts: new Date().toISOString() },
+          { id: crypto.randomUUID(), type: 'expense', category: 'Payroll', amount: 6200, notes: 'Salaries + contractor payouts', ts: new Date().toISOString() },
+          { id: crypto.randomUUID(), type: 'expense', category: 'Marketing', amount: 2500, notes: 'Paid acquisition + content', ts: new Date().toISOString() }
+        ],
+        recommendations: [],
+        healthScore: 72
       },
       ai: {
         history: [
@@ -200,7 +209,8 @@
     };
 
     let state = loadState();
-    let growthChart;
+    let cashflowChart;
+    let expenseChart;
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -295,135 +305,338 @@
 
     function money(v){ return `${state.settings.preferences.currency} ${Number(v || 0).toLocaleString()}`; }
 
-    function updateRecommendations() {
+    function normalizeDashboardState() {
+      const d = state.dashboard;
+      if (!d.metrics) d.metrics = structuredClone(defaultState.dashboard.metrics);
+      d.metrics.income = Number(d.metrics.income || 0);
+      d.metrics.expenses = Number(d.metrics.expenses || 0);
+      d.metrics.netSavings = Number(d.metrics.netSavings || d.metrics.income - d.metrics.expenses);
+      d.metrics.runway = Number(d.metrics.runway || 0);
+      if (!Array.isArray(d.expenseCategories)) d.expenseCategories = [];
+      d.expenseCategories = d.expenseCategories.map(cat => ({
+        id: cat.id || crypto.randomUUID(),
+        name: (cat.name || 'Category').trim(),
+        amount: Number(cat.amount || 0)
+      })).filter(cat => cat.name);
+      if (!Array.isArray(d.transactions)) d.transactions = [];
+      d.transactions = d.transactions.map(tx => ({
+        id: tx.id || crypto.randomUUID(),
+        type: tx.type === 'income' ? 'income' : 'expense',
+        category: tx.category || (tx.type === 'income' ? 'Revenue' : 'General'),
+        amount: Number(tx.amount || 0),
+        notes: tx.notes || '',
+        ts: tx.ts || new Date().toISOString()
+      }));
+      if (!Array.isArray(d.recommendations)) d.recommendations = [];
+      d.healthScore = Number.isFinite(Number(d.healthScore)) ? Number(d.healthScore) : 0;
+    }
+
+    function computeFinancialHealth() {
       const { income, expenses, runway } = state.dashboard.metrics;
-      const score = state.dashboard.readinessScore;
+      const profitabilityRaw = income <= 0 ? (expenses === 0 ? 100 : 0) : ((income - expenses) / income) * 100;
+      const profitability = Math.max(0, Math.min(100, Math.round(profitabilityRaw)));
+      const runwayScore = Math.max(0, Math.min(100, Math.round((runway / 18) * 100)));
+      const burnRatio = income <= 0 ? 100 : Math.min(100, (expenses / income) * 100);
+      const burnRateScore = Math.max(0, Math.min(100, Math.round(100 - burnRatio)));
+      const healthScore = Math.round(runwayScore * 0.4 + profitability * 0.35 + burnRateScore * 0.25);
+      state.dashboard.healthScore = healthScore;
+      return { healthScore, runwayScore, profitability, burnRateScore };
+    }
+
+    function getTopExpenseCategories() {
+      return [...state.dashboard.expenseCategories]
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 3);
+    }
+
+    function getForecast(months = 6) {
+      const { income, expenses, netSavings } = state.dashboard.metrics;
+      const transactions = [...state.dashboard.transactions]
+        .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
+        .slice(0, 20);
+      const recent = transactions.slice(-8);
+      const momentum = recent.length > 1
+        ? recent.reduce((acc, tx, idx) => idx === 0 ? acc : acc + (tx.amount * (tx.type === 'income' ? 1 : -1)), 0) / recent.length
+        : 0;
+      const baseNet = Number(netSavings || income - expenses);
+      return Array.from({ length: months }, (_, i) => {
+        const lift = momentum * (0.15 + i * 0.04);
+        return Math.round(baseNet + lift);
+      });
+    }
+
+    function updateRecommendations() {
+      normalizeDashboardState();
+      const { income, expenses, runway, netSavings } = state.dashboard.metrics;
+      const topExpenses = getTopExpenseCategories();
+      const { healthScore, profitability } = computeFinancialHealth();
       const rec = [];
-      if (expenses > income) rec.push('Cut monthly burn by at least 15% to move cashflow positive.');
-      if (runway < 6) rec.push('Runway below 6 months: prioritize fundraising pipeline this month.');
-      if (score < 70) rec.push('Readiness below 70: tighten ICP, retention loops, and weekly KPI review.');
-      if (!rec.length) rec.push('Healthy trajectory: focus on scalable channel experiments and hiring plan.');
-      state.dashboard.recommendations = rec;
+      rec.push(`You have ${runway.toFixed(1)} months runway — ${runway < 6 ? 'start building a runway buffer now.' : 'keep extending it with strict burn control.'}`);
+      if (expenses > income) rec.push('Monthly burn exceeds income. Reduce expenses by 10-15% or unlock a new revenue stream in the next sprint.');
+      if (profitability < 15) rec.push('Low profitability detected. Re-price weak-margin offerings and cut low-ROI spend.');
+      if (topExpenses[0] && topExpenses[0].amount > expenses * 0.35) rec.push(`${topExpenses[0].name} is your largest cost center. Audit this category for efficiency gains this week.`);
+      if (healthScore < 55) rec.push('Financial health is fragile. Pause discretionary spend and shift focus to cash-collecting activities.');
+      if (netSavings > 0 && runway >= 9 && healthScore >= 70) rec.push('Strong position: build a 2-quarter growth reserve and test one scalable acquisition channel.');
+      state.dashboard.recommendations = rec.slice(0, 5);
     }
 
     function renderDashboard() {
+      normalizeDashboardState();
+      updateRecommendations();
       const el = document.getElementById('section-dashboard');
       const d = state.dashboard;
-      const pct = Math.max(0, Math.min(100, Number(d.readinessScore || 0)));
+      const { healthScore, runwayScore, profitability, burnRateScore } = computeFinancialHealth();
+      const forecast = getForecast(6);
+      const topExpenses = getTopExpenseCategories();
+
       el.innerHTML = `
+        <div class="bg-gradient-to-r from-cyan-500/15 via-cyan-500/5 to-transparent border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-neon">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-barya-accent tracking-wide">Finance Command Center</h2>
+          <p class="text-zinc-300 mt-2 text-sm sm:text-base">Real-time financial operating view for founder decisions: runway, burn, forecast, and transaction intelligence.</p>
+        </div>
+
         <div class="grid xl:grid-cols-4 sm:grid-cols-2 gap-4">
-          ${['income','expenses','netSavings','runway'].map((k) => `
-            <label class="bg-barya-card border border-zinc-800 rounded-xl p-4 block">
-              <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">${k === 'netSavings' ? 'Net Savings' : k}</p>
-              <input data-metric="${k}" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-barya-accent" value="${d.metrics[k]}" />
-              <p class="text-xs text-zinc-500 mt-2">${k === 'runway' ? 'months' : money(d.metrics[k])}</p>
+          ${[
+            { key: 'income', label: 'Income', hint: 'Monthly inflow' },
+            { key: 'expenses', label: 'Expenses', hint: 'Monthly burn' },
+            { key: 'netSavings', label: 'Net Savings', hint: 'Income - Expenses' },
+            { key: 'runway', label: 'Runway', hint: 'In months' }
+          ].map((metric) => `
+            <label class="bg-[#101217] border border-zinc-800 rounded-xl p-4 block hover:border-cyan-500/40 transition">
+              <p class="text-xs uppercase tracking-[0.15em] text-zinc-400 mb-2">${metric.label}</p>
+              <input data-metric="${metric.key}" type="number" step="0.1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-lg font-semibold outline-none focus:border-barya-accent" value="${d.metrics[metric.key]}" />
+              <p class="text-xs text-zinc-500 mt-2">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(1)} months` : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
             </label>
           `).join('')}
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-4">
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-            <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Startup Readiness</h3></div>
-            <div class="flex items-center gap-5">
-              <div class="ring-progress" style="--pct:${pct}%"><div><span class="text-2xl font-bold text-barya-accent">${pct}%</span></div></div>
-              <div class="flex-1">
-                <label class="text-xs text-zinc-400">Edit Score</label>
-                <input id="readinessInput" type="range" min="0" max="100" value="${pct}" class="w-full accent-cyan-400" />
-                <p class="text-xs text-zinc-500 mt-2">Driven by traction, retention, and financial consistency.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="lg:col-span-2 bg-barya-card border border-zinc-800 rounded-xl p-4">
+        <div class="grid xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-2 bg-[#101217] border border-zinc-800 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="font-semibold">Revenue Growth Chart</h3>
-              <button id="addGrowthPoint" class="text-sm px-3 py-1.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Add Month</button>
+              <h3 class="font-semibold text-barya-accent">Cash Flow Forecast (Next 6 Months)</h3>
+              <span class="text-xs text-zinc-400">Trend-based projection</span>
             </div>
-            <canvas id="growthChart" height="100"></canvas>
-          </div>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-4">
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="font-semibold">Recent Activity</h3>
-            </div>
-            <form id="activityForm" class="flex gap-2 mb-3">
-              <input id="activityInput" placeholder="Add activity" class="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-              <button class="px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add</button>
-            </form>
-            <ul class="space-y-2 max-h-56 overflow-auto scrollbar-thin">
-              ${d.activities.map((a,i)=>`<li class="flex justify-between items-center bg-zinc-900 border border-zinc-800 rounded p-2 text-sm"><span>${escapeHTML(a)}</span><button data-del-activity="${i}" class="text-red-400">Delete</button></li>`).join('') || '<li class="text-zinc-500 text-sm">No activity yet.</li>'}
-            </ul>
+            <canvas id="cashFlowChart" height="110"></canvas>
+            <p class="text-xs text-zinc-500 mt-2">Projected net cash trend: ${forecast.map(v => money(v)).join(' • ')}</p>
           </div>
 
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-            <h3 class="font-semibold mb-3">Recommendations</h3>
+          <div class="bg-[#101217] border border-zinc-800 rounded-xl p-4">
+            <h3 class="font-semibold text-barya-accent mb-3">Barya AI Finance Summary</h3>
             <ul class="space-y-2 text-sm">
-              ${d.recommendations.map(r => `<li class="bg-zinc-900 border border-zinc-800 rounded p-2">${escapeHTML(r)}</li>`).join('')}
+              ${d.recommendations.map((r) => `<li class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-2.5">${escapeHTML(r)}</li>`).join('')}
             </ul>
           </div>
         </div>
 
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
-          <button id="exportDashboard" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Dashboard</button>
-          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Dashboard<input id="importDashboard" type="file" accept="application/json" class="hidden"></label>
+        <div class="grid xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-2 bg-[#101217] border border-zinc-800 rounded-xl p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-barya-accent">Expense Breakdown</h3>
+              <span class="text-xs text-zinc-500">${d.expenseCategories.length} categories</span>
+            </div>
+            <canvas id="expenseChart" height="110"></canvas>
+            <form id="expenseCategoryForm" class="grid sm:grid-cols-[1fr_160px_auto] gap-2">
+              <input id="expenseCategoryName" placeholder="Category name" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+              <input id="expenseCategoryAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+              <button class="px-3 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Category</button>
+            </form>
+            <div class="grid sm:grid-cols-3 gap-2">
+              ${topExpenses.map((exp, i) => `
+                <div class="bg-zinc-900 border ${i === 0 ? 'border-cyan-500/40' : 'border-zinc-800'} rounded-lg p-2">
+                  <p class="text-xs text-zinc-400">Top ${i + 1}</p>
+                  <p class="font-medium">${escapeHTML(exp.name)}</p>
+                  <p class="text-sm text-zinc-300">${money(exp.amount)}</p>
+                </div>
+              `).join('') || '<p class="text-sm text-zinc-500 col-span-3">No expense categories yet.</p>'}
+            </div>
+          </div>
+
+          <div class="bg-[#101217] border border-zinc-800 rounded-xl p-4">
+            <h3 class="font-semibold text-barya-accent mb-3">Startup Financial Health Score</h3>
+            <div class="ring-progress mx-auto mb-4" style="--pct:${healthScore}%"><div><span class="text-2xl font-bold text-barya-accent">${healthScore}</span></div></div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Runway Stability</span><span class="text-cyan-300">${runwayScore}/100</span></div>
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Profitability</span><span class="text-cyan-300">${profitability}/100</span></div>
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Burn Rate Control</span><span class="text-cyan-300">${burnRateScore}/100</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid xl:grid-cols-2 gap-4">
+          <div class="bg-[#101217] border border-zinc-800 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-barya-accent">Enhanced Recent Activity</h3>
+              <span class="text-xs text-zinc-500">${d.transactions.length} transactions</span>
+            </div>
+            <form id="transactionForm" class="grid sm:grid-cols-2 gap-2 mb-3">
+              <select id="txType" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+              <input id="txCategory" placeholder="Category (e.g. Payroll)" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+              <input id="txAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+              <input id="txNotes" placeholder="Notes" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+              <button class="sm:col-span-2 px-3 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Transaction</button>
+            </form>
+            <ul class="space-y-2 max-h-64 overflow-auto scrollbar-thin">
+              ${d.transactions.slice().sort((a,b)=>new Date(b.ts)-new Date(a.ts)).map((tx) => `
+                <li class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
+                  <div class="flex justify-between gap-2">
+                    <div>
+                      <p class="text-sm font-medium">${escapeHTML(tx.category)} <span class="text-xs ${tx.type === 'income' ? 'text-emerald-300' : 'text-rose-300'}">${tx.type.toUpperCase()}</span></p>
+                      <p class="text-xs text-zinc-500">${escapeHTML(tx.notes || 'No note')} • ${new Date(tx.ts).toLocaleDateString()}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold ${tx.type === 'income' ? 'text-emerald-300' : 'text-rose-300'}">${tx.type === 'income' ? '+' : '-'}${money(tx.amount)}</p>
+                      <button data-del-tx="${tx.id}" class="text-xs text-zinc-500 hover:text-red-400">Delete</button>
+                    </div>
+                  </div>
+                </li>
+              `).join('') || '<li class="text-zinc-500 text-sm">No transactions yet.</li>'}
+            </ul>
+          </div>
+
+          <div class="bg-[#101217] border border-zinc-800 rounded-xl p-4">
+            <h3 class="font-semibold text-barya-accent mb-3">Safety & Backup</h3>
+            <p class="text-sm text-zinc-400 mb-4">Export or import your complete finance command center data snapshot.</p>
+            <div class="flex flex-wrap gap-2">
+              <button id="exportDashboard" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">Export Finance Data</button>
+              <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40 cursor-pointer">Import Finance Data<input id="importDashboard" type="file" accept="application/json" class="hidden"></label>
+            </div>
+          </div>
         </div>
       `;
 
       el.querySelectorAll('[data-metric]').forEach(input => {
         input.oninput = () => {
           state.dashboard.metrics[input.dataset.metric] = Number(input.value || 0);
-          if (input.dataset.metric !== 'runway') {
+          if (input.dataset.metric === 'income' || input.dataset.metric === 'expenses') {
             state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
           }
           saveState();
         };
       });
-      document.getElementById('readinessInput').oninput = (e) => { state.dashboard.readinessScore = Number(e.target.value); saveState(); };
-      document.getElementById('addGrowthPoint').onclick = () => { state.dashboard.growth.push((state.dashboard.growth.at(-1) || 0) + Math.ceil(Math.random() * 8)); saveState(); };
-      document.getElementById('activityForm').onsubmit = (e) => {
+
+      document.getElementById('expenseCategoryForm').onsubmit = (e) => {
         e.preventDefault();
-        const input = document.getElementById('activityInput');
-        if (!input.value.trim()) return;
-        state.dashboard.activities.unshift(input.value.trim());
-        input.value = '';
+        const nameEl = document.getElementById('expenseCategoryName');
+        const amountEl = document.getElementById('expenseCategoryAmount');
+        const name = nameEl.value.trim();
+        const amount = Number(amountEl.value || 0);
+        if (!name || amount <= 0) return;
+        state.dashboard.expenseCategories.push({ id: crypto.randomUUID(), name, amount });
+        state.dashboard.metrics.expenses = state.dashboard.expenseCategories.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+        state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+        nameEl.value = '';
+        amountEl.value = '';
         saveState();
       };
-      el.querySelectorAll('[data-del-activity]').forEach(btn => btn.onclick = () => { state.dashboard.activities.splice(Number(btn.dataset.delActivity), 1); saveState(); });
-      document.getElementById('exportDashboard').onclick = () => downloadJSON('dashboard-data.json', state.dashboard);
-      document.getElementById('importDashboard').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state.dashboard = deepMerge(structuredClone(defaultState.dashboard), data); saveState(); });
 
-      renderGrowthChart();
+      document.getElementById('transactionForm').onsubmit = (e) => {
+        e.preventDefault();
+        const type = document.getElementById('txType').value;
+        const category = document.getElementById('txCategory').value.trim() || (type === 'income' ? 'Revenue' : 'General');
+        const amount = Number(document.getElementById('txAmount').value || 0);
+        const notes = document.getElementById('txNotes').value.trim();
+        if (amount <= 0) return;
+        state.dashboard.transactions.unshift({
+          id: crypto.randomUUID(),
+          type,
+          category,
+          amount,
+          notes,
+          ts: new Date().toISOString()
+        });
+        if (type === 'income') state.dashboard.metrics.income += amount;
+        if (type === 'expense') {
+          state.dashboard.metrics.expenses += amount;
+          const categoryEntry = state.dashboard.expenseCategories.find(c => c.name.toLowerCase() === category.toLowerCase());
+          if (categoryEntry) categoryEntry.amount += amount;
+          else state.dashboard.expenseCategories.push({ id: crypto.randomUUID(), name: category, amount });
+        }
+        state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+        saveState();
+      };
+
+      el.querySelectorAll('[data-del-tx]').forEach(btn => {
+        btn.onclick = () => {
+          const tx = state.dashboard.transactions.find(item => item.id === btn.dataset.delTx);
+          if (!tx) return;
+          if (tx.type === 'income') state.dashboard.metrics.income = Math.max(0, state.dashboard.metrics.income - tx.amount);
+          if (tx.type === 'expense') {
+            state.dashboard.metrics.expenses = Math.max(0, state.dashboard.metrics.expenses - tx.amount);
+            const cat = state.dashboard.expenseCategories.find(c => c.name.toLowerCase() === tx.category.toLowerCase());
+            if (cat) cat.amount = Math.max(0, cat.amount - tx.amount);
+          }
+          state.dashboard.transactions = state.dashboard.transactions.filter(item => item.id !== tx.id);
+          state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+          saveState();
+        };
+      });
+
+      document.getElementById('exportDashboard').onclick = () => downloadJSON('finance-command-center-data.json', state.dashboard);
+      document.getElementById('importDashboard').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+        state.dashboard = deepMerge(structuredClone(defaultState.dashboard), data);
+        normalizeDashboardState();
+        state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+        saveState();
+      });
+
+      renderDashboardCharts();
     }
 
-    function renderGrowthChart() {
-      const ctx = document.getElementById('growthChart');
-      if (!ctx) return;
-      if (growthChart) growthChart.destroy();
-      growthChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: state.dashboard.growth.map((_, i) => `M${i+1}`),
-          datasets: [{
-            label: 'Revenue (k)',
-            data: state.dashboard.growth,
-            borderColor: '#00d4ff',
-            backgroundColor: 'rgba(0, 212, 255, 0.18)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { labels: { color: '#d4d4d8' } } },
-          scales: {
-            x: { ticks: { color: '#a1a1aa' }, grid: { color: '#262626' } },
-            y: { ticks: { color: '#a1a1aa' }, grid: { color: '#262626' } }
+    function renderDashboardCharts() {
+      const cashFlowCtx = document.getElementById('cashFlowChart');
+      const expenseCtx = document.getElementById('expenseChart');
+      if (cashflowChart) cashflowChart.destroy();
+      if (expenseChart) expenseChart.destroy();
+      if (cashFlowCtx) {
+        const forecast = getForecast(6);
+        cashflowChart = new Chart(cashFlowCtx, {
+          type: 'line',
+          data: {
+            labels: forecast.map((_, i) => `Month ${i + 1}`),
+            datasets: [{
+              label: 'Projected Net Cash',
+              data: forecast,
+              borderColor: '#00d4ff',
+              backgroundColor: 'rgba(0, 212, 255, 0.15)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#d4d4d8' } } },
+            scales: {
+              x: { ticks: { color: '#a1a1aa' }, grid: { color: '#232323' } },
+              y: { ticks: { color: '#a1a1aa' }, grid: { color: '#232323' } }
+            }
           }
-        }
-      });
+        });
+      }
+      if (expenseCtx) {
+        const labels = state.dashboard.expenseCategories.map(cat => cat.name);
+        const data = state.dashboard.expenseCategories.map(cat => cat.amount);
+        expenseChart = new Chart(expenseCtx, {
+          type: 'pie',
+          data: {
+            labels,
+            datasets: [{
+              data,
+              borderColor: '#0a0a0a',
+              backgroundColor: ['#00d4ff', '#1d4ed8', '#3b82f6', '#0284c7', '#155e75', '#0ea5e9']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: '#d4d4d8' } }
+            }
+          }
+        });
+      }
     }
 
 
