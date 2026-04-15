@@ -854,98 +854,440 @@
 
     function renderMemory() {
       const el = document.getElementById('section-memory');
-      const filtered = state.memory.insights.filter(i => `${i.title} ${i.content} ${i.tag}`.toLowerCase().includes(state.memory.search.toLowerCase()));
-      el.innerHTML = `
-        <div class="grid xl:grid-cols-3 gap-4">
-          <div class="xl:col-span-2 bg-barya-card border border-zinc-800 rounded-xl p-4">
-            <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
-              <h3 class="font-semibold">Saved Insights</h3>
-              <input id="memorySearch" placeholder="Search insights" value="${escapeAttr(state.memory.search)}" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm" />
-            </div>
-            <form id="insightForm" class="grid sm:grid-cols-4 gap-2 mb-3">
-              <input id="insightTitle" placeholder="Title" class="sm:col-span-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-              <input id="insightContent" placeholder="Insight" class="sm:col-span-2 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-              <input id="insightTag" placeholder="Category" class="sm:col-span-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-              <button class="sm:col-span-4 px-3 py-2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Add Insight</button>
-            </form>
-            <div class="space-y-2 max-h-[46vh] overflow-auto scrollbar-thin pr-1">
-              ${filtered.map(i => `
-                <div class="bg-zinc-900 border border-zinc-800 rounded p-3">
-                  <div class="flex justify-between items-start gap-2">
-                    <div>
-                      <p class="font-medium">${escapeHTML(i.title)}</p>
-                      <p class="text-xs text-zinc-400">${escapeHTML(i.tag)} • ${new Date(i.ts).toLocaleString()}</p>
-                    </div>
-                    <div class="flex gap-2 text-xs">
-                      <button data-view-insight="${i.id}" class="text-cyan-300">View</button>
-                      <button data-edit-insight="${i.id}" class="text-amber-300">Edit</button>
-                      <button data-del-insight="${i.id}" class="text-red-400">Delete</button>
-                    </div>
-                  </div>
-                  <p class="text-sm text-zinc-300 mt-2 line-clamp-2">${escapeHTML(i.content)}</p>
-                </div>
-              `).join('') || '<p class="text-sm text-zinc-500">No insights found.</p>'}
-            </div>
-          </div>
+      const memory = state.memory || (state.memory = {});
+      if (!Array.isArray(memory.insights)) memory.insights = [];
+      if (!Array.isArray(memory.actions)) memory.actions = [];
+      if (typeof memory.search !== 'string') memory.search = '';
+      if (!memory.viewMode) memory.viewMode = 'list';
+      if (!memory.leftTab) memory.leftTab = 'all';
+      if (!memory.activeNoteId && memory.insights[0]) memory.activeNoteId = memory.insights[0].id;
 
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-            <h3 class="font-semibold mb-3">Recent Actions</h3>
-            <form id="actionForm" class="space-y-2 mb-3">
-              <input id="actionText" placeholder="Action" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-              <select id="actionCategory" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
-                <option>Product</option><option>Customer</option><option>Finance</option><option>Ops</option>
-              </select>
-              <button class="w-full px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Action</button>
-            </form>
-            <ul class="space-y-2 max-h-[40vh] overflow-auto scrollbar-thin pr-1">
-              ${state.memory.actions.map(a => `<li class="bg-zinc-900 border border-zinc-800 rounded p-2 text-sm flex justify-between gap-2"><span>${escapeHTML(a.text)} <span class="text-zinc-500">(${escapeHTML(a.category)})</span></span><button data-del-action="${a.id}" class="text-red-400 text-xs">Delete</button></li>`).join('')}
-            </ul>
+      const normalizeTags = (input) => String(input || '')
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean)
+        .filter((tag, idx, arr) => arr.findIndex(t => t.toLowerCase() === tag.toLowerCase()) === idx);
+      memory.insights.forEach(note => {
+        if (!note.id) note.id = crypto.randomUUID();
+        if (!note.title) note.title = 'Untitled Note';
+        if (typeof note.content !== 'string') note.content = String(note.content || '');
+        if (!note.ts) note.ts = new Date().toISOString();
+        if (!Array.isArray(note.tags)) note.tags = normalizeTags(note.tag || 'General');
+        if (!note.tags.length) note.tags = ['General'];
+        note.tag = note.tags.join(', ');
+        if (typeof note.isDaily !== 'boolean') note.isDaily = /^\d{4}-\d{2}-\d{2}/.test(note.title);
+      });
+
+      const noteByTitle = new Map(memory.insights.map(note => [note.title.toLowerCase(), note]));
+      const extractLinks = (content) => {
+        const links = [];
+        const regex = /\[\[([^\]]+)\]\]/g;
+        let match;
+        while ((match = regex.exec(content || '')) !== null) {
+          const title = match[1].trim();
+          if (title) links.push(title);
+        }
+        return [...new Set(links)];
+      };
+
+      memory.insights.forEach(note => {
+        note.links = extractLinks(note.content)
+          .map(title => noteByTitle.get(title.toLowerCase()))
+          .filter(Boolean)
+          .map(n => n.id);
+      });
+
+      const backlinksMap = {};
+      memory.insights.forEach(note => {
+        note.links.forEach(targetId => {
+          if (!backlinksMap[targetId]) backlinksMap[targetId] = [];
+          backlinksMap[targetId].push(note.id);
+        });
+      });
+
+      let activeNote = memory.insights.find(n => n.id === memory.activeNoteId) || null;
+      if (!activeNote && memory.insights.length) {
+        activeNote = memory.insights[0];
+        memory.activeNoteId = activeNote.id;
+      }
+
+      const q = memory.search.toLowerCase();
+      const filteredNotes = memory.insights.filter(note => {
+        const tags = (note.tags || []).join(' ');
+        return `${note.title} ${note.content} ${tags}`.toLowerCase().includes(q);
+      });
+      const dailyNotes = filteredNotes.filter(note => note.isDaily);
+      const allNotes = filteredNotes;
+      const visibleNotes = memory.leftTab === 'daily' ? dailyNotes : allNotes;
+
+      const dailyISO = new Date().toISOString().slice(0, 10);
+      const graphNodes = filteredNotes.map((note, idx, arr) => {
+        const cx = 300 + 220 * Math.cos((Math.PI * 2 * idx) / Math.max(1, arr.length));
+        const cy = 210 + 160 * Math.sin((Math.PI * 2 * idx) / Math.max(1, arr.length));
+        return { id: note.id, title: note.title, x: cx, y: cy, r: note.id === memory.activeNoteId ? 16 : 11 };
+      });
+      const nodeMap = new Map(graphNodes.map(n => [n.id, n]));
+
+      el.innerHTML = `
+        <section class="bg-gradient-to-br from-[#0e1118] via-[#0a0e14] to-[#080b10] border border-cyan-500/20 rounded-2xl shadow-neon overflow-hidden transition-all duration-300">
+          <div class="grid xl:grid-cols-[250px_1fr] min-h-[72vh]">
+            <aside class="border-r border-zinc-800/80 bg-[#0b0f16] p-4 space-y-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.22em] text-cyan-300/80 mb-2">Memory Vault</p>
+                <h2 class="text-xl font-semibold text-barya-accent">Advanced Memory</h2>
+                <p class="text-xs text-zinc-400 mt-1">Founder's second brain, local-first.</p>
+              </div>
+
+              <div class="space-y-2">
+                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">Daily Notes</button>
+                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">All Notes</button>
+                <button id="memorySidebarGraph" class="w-full text-left px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30">Graph</button>
+              </div>
+
+              <div class="space-y-2">
+                <button id="newDailyNote" class="w-full px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 hover:bg-cyan-500/30 transition">New Daily Note</button>
+                <button id="newMemoryNote" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40 transition">New Note</button>
+              </div>
+
+              <div class="pt-2 border-t border-zinc-800 space-y-2">
+                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30 text-sm">Export Full Memory (JSON)</button>
+                <label class="block w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
+                <button id="clearMemory" class="w-full px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 text-sm">Clear All Memory</button>
+              </div>
+            </aside>
+
+            <div class="p-4 sm:p-5 space-y-4">
+              <div class="flex flex-wrap items-center gap-2 justify-between">
+                <div class="flex items-center gap-2">
+                  <input id="memorySearch" placeholder="Search title, content, tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-cyan-400 outline-none" />
+                  <button id="memoryToggleView" class="px-3 py-2 rounded-lg border ${memory.viewMode === 'graph' ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'} text-sm">${memory.viewMode === 'graph' ? 'Switch to List' : 'Show Graph View'}</button>
+                </div>
+                <p class="text-xs text-zinc-400">${visibleNotes.length} visible · ${memory.insights.length} total notes</p>
+              </div>
+
+              <div class="grid xl:grid-cols-[300px_1fr] gap-4">
+                <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-3 max-h-[62vh] overflow-auto scrollbar-thin">
+                  <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">${memory.leftTab === 'daily' ? 'Daily Notes' : 'All Notes'}</p>
+                  <div class="space-y-2">
+                    ${visibleNotes.map(note => `
+                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2 transition ${note.id === memory.activeNoteId ? 'border-cyan-500/60 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">
+                        <div class="flex items-center justify-between gap-2">
+                          <p class="font-medium truncate">${escapeHTML(note.title)}</p>
+                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200">Daily</span>' : ''}
+                        </div>
+                        <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML((note.tags || []).join(', ') || 'General')}</p>
+                      </button>
+                    `).join('') || '<p class="text-sm text-zinc-500">No notes yet. Create one to get started.</p>'}
+                  </div>
+                </section>
+
+                <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-4">
+                  ${memory.viewMode === 'graph' ? `
+                    <div class="space-y-3">
+                      <h3 class="text-lg font-semibold text-cyan-200">Memory Graph</h3>
+                      <p class="text-xs text-zinc-400">Click a node to open note. Links come from <span class="text-cyan-300">[[Note Title]]</span>.</p>
+                      <canvas id="memoryGraphCanvas" width="620" height="420" class="w-full bg-[#0b111a] border border-zinc-800 rounded-lg"></canvas>
+                    </div>
+                  ` : activeNote ? `
+                    <div class="space-y-3">
+                      <div class="grid sm:grid-cols-2 gap-2">
+                        <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 font-semibold" />
+                        <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+                      </div>
+                      <textarea id="noteContent" rows="13" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-3 font-mono text-sm leading-6 focus:border-cyan-400 outline-none" placeholder="Use [[Note Title]] to link notes...">${escapeHTML(activeNote.content)}</textarea>
+                      <div class="flex flex-wrap items-center gap-2 justify-between">
+                        <p class="text-xs text-zinc-500">Auto-saved · Updated ${new Date(activeNote.ts).toLocaleString()}</p>
+                        <button id="deleteActiveNote" class="px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30">Delete Note</button>
+                      </div>
+
+                      <div class="grid md:grid-cols-2 gap-3 pt-2 border-t border-zinc-800">
+                        <div>
+                          <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Outgoing Links</p>
+                          <div class="space-y-1 max-h-32 overflow-auto scrollbar-thin pr-1">
+                            ${(activeNote.links || []).map(linkedId => {
+                              const linked = memory.insights.find(n => n.id === linkedId);
+                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-cyan-300 hover:text-cyan-200">→ ${escapeHTML(linked.title)}</button>` : '';
+                            }).join('') || '<p class="text-sm text-zinc-500">No links yet.</p>'}
+                          </div>
+                        </div>
+                        <div>
+                          <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Backlinks</p>
+                          <div class="space-y-1 max-h-32 overflow-auto scrollbar-thin pr-1">
+                            ${(backlinksMap[activeNote.id] || []).map(backId => {
+                              const back = memory.insights.find(n => n.id === backId);
+                              return back ? `<button data-open-note="${back.id}" class="block text-left text-sm text-emerald-300 hover:text-emerald-200">← ${escapeHTML(back.title)}</button>` : '';
+                            }).join('') || '<p class="text-sm text-zinc-500">No backlinks yet.</p>'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ` : '<p class="text-zinc-500">Create your first note to start building your memory graph.</p>'}
+                </section>
+              </div>
+
+              <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-4">
+                <h3 class="font-semibold mb-3">Recent Actions</h3>
+                <form id="actionForm" class="grid md:grid-cols-[1fr_140px_170px_auto] gap-2 mb-3">
+                  <input id="actionText" placeholder="Action (e.g. Follow up with investor)" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                  <select id="actionCategory" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
+                    <option>Product</option><option>Customer</option><option>Finance</option><option>Ops</option>
+                  </select>
+                  <select id="actionLink" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
+                    <option value="">Link to note/page</option>
+                    ${memory.insights.slice(0, 30).map(note => `<option value="note:${note.id}">🧠 ${escapeHTML(note.title)}</option>`).join('')}
+                    ${(state.workspace?.pages || []).slice(0, 20).map(page => `<option value="page:${page.id}">📄 ${escapeHTML(page.title)}</option>`).join('')}
+                  </select>
+                  <button class="px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Action</button>
+                </form>
+                <ul class="space-y-2 max-h-[28vh] overflow-auto scrollbar-thin pr-1">
+                  ${memory.actions.map(action => {
+                    const linked = (action.linkRef || '').split(':');
+                    const kind = linked[0];
+                    const id = linked[1];
+                    const linkedLabel = kind === 'note'
+                      ? (memory.insights.find(n => n.id === id)?.title || 'Missing note')
+                      : kind === 'page'
+                        ? ((state.workspace?.pages || []).find(p => p.id === id)?.title || 'Missing page')
+                        : '';
+                    return `
+                      <li class="bg-zinc-900 border border-zinc-800 rounded p-2 text-sm flex justify-between gap-3">
+                        <div>
+                          <p>${escapeHTML(action.text)} <span class="text-zinc-500">(${escapeHTML(action.category)})</span></p>
+                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-cyan-300 hover:text-cyan-200">Linked: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500">Not linked</p>'}
+                        </div>
+                        <button data-del-action="${action.id}" class="text-red-400 text-xs">Delete</button>
+                      </li>
+                    `;
+                  }).join('') || '<li class="text-zinc-500 text-sm">No actions yet.</li>'}
+                </ul>
+              </section>
+            </div>
           </div>
-        </div>
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
-          <button id="exportMemory" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Memory</button>
-          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
-        </div>
+        </section>
       `;
 
-      document.getElementById('memorySearch').oninput = e => { state.memory.search = e.target.value; saveState(); };
-      document.getElementById('insightForm').onsubmit = e => {
-        e.preventDefault();
-        const title = document.getElementById('insightTitle').value.trim();
-        const content = document.getElementById('insightContent').value.trim();
-        const tag = document.getElementById('insightTag').value.trim() || 'General';
-        if (!title || !content) return;
-        state.memory.insights.unshift({ id: crypto.randomUUID(), title, content, tag, ts: new Date().toISOString() });
+      const openNote = (noteId) => {
+        memory.activeNoteId = noteId;
+        memory.viewMode = 'list';
         saveState();
       };
-      el.querySelectorAll('[data-del-insight]').forEach(btn => btn.onclick = () => { state.memory.insights = state.memory.insights.filter(i => i.id !== btn.dataset.delInsight); saveState(); });
-      el.querySelectorAll('[data-view-insight]').forEach(btn => btn.onclick = () => {
-        const i = state.memory.insights.find(x => x.id === btn.dataset.viewInsight);
-        document.getElementById('memoryModalBody').innerHTML = `<h4 class="font-semibold mb-2">${escapeHTML(i.title)}</h4><p class="text-xs text-zinc-400 mb-3">${escapeHTML(i.tag)} • ${new Date(i.ts).toLocaleString()}</p><p>${escapeHTML(i.content)}</p>`;
-        document.getElementById('memoryModal').showModal();
+
+      el.querySelectorAll('[data-memory-tab]').forEach(btn => {
+        btn.onclick = () => {
+          memory.leftTab = btn.dataset.memoryTab;
+          saveState();
+        };
       });
-      el.querySelectorAll('[data-edit-insight]').forEach(btn => btn.onclick = () => {
-        const i = state.memory.insights.find(x => x.id === btn.dataset.editInsight);
-        const title = prompt('Edit title', i.title);
-        if (title === null) return;
-        const content = prompt('Edit content', i.content);
-        if (content === null) return;
-        i.title = title.trim() || i.title;
-        i.content = content.trim() || i.content;
+
+      document.getElementById('memorySidebarGraph').onclick = () => {
+        memory.viewMode = 'graph';
         saveState();
+      };
+
+      document.getElementById('memoryToggleView').onclick = () => {
+        memory.viewMode = memory.viewMode === 'graph' ? 'list' : 'graph';
+        saveState();
+      };
+
+      document.getElementById('memorySearch').oninput = (e) => {
+        memory.search = e.target.value;
+        saveState();
+      };
+
+      document.getElementById('newMemoryNote').onclick = () => {
+        const note = {
+          id: crypto.randomUUID(),
+          title: `Note ${memory.insights.length + 1}`,
+          content: '',
+          tags: ['General'],
+          tag: 'General',
+          ts: new Date().toISOString(),
+          isDaily: false,
+          links: []
+        };
+        memory.insights.unshift(note);
+        memory.activeNoteId = note.id;
+        memory.leftTab = 'all';
+        memory.viewMode = 'list';
+        saveState();
+      };
+
+      document.getElementById('newDailyNote').onclick = () => {
+        const existing = memory.insights.find(n => n.isDaily && n.title === dailyISO);
+        if (existing) {
+          memory.activeNoteId = existing.id;
+          memory.leftTab = 'daily';
+          memory.viewMode = 'list';
+          saveState();
+          return;
+        }
+        const note = {
+          id: crypto.randomUUID(),
+          title: dailyISO,
+          content: `# Daily Note ${dailyISO}\n\n## Priorities\n- \n\n## Wins\n- `,
+          tags: ['Daily', 'Journal'],
+          tag: 'Daily, Journal',
+          ts: new Date().toISOString(),
+          isDaily: true,
+          links: []
+        };
+        memory.insights.unshift(note);
+        memory.activeNoteId = note.id;
+        memory.leftTab = 'daily';
+        memory.viewMode = 'list';
+        saveState();
+      };
+
+      el.querySelectorAll('[data-open-note]').forEach(btn => {
+        btn.onclick = () => openNote(btn.dataset.openNote);
       });
-      document.getElementById('actionForm').onsubmit = e => {
+
+      if (activeNote && memory.viewMode !== 'graph') {
+        document.getElementById('noteTitle').oninput = (e) => {
+          activeNote.title = e.target.value.trim() || 'Untitled Note';
+          activeNote.isDaily = /^\d{4}-\d{2}-\d{2}/.test(activeNote.title);
+          activeNote.ts = new Date().toISOString();
+          saveState();
+        };
+        document.getElementById('noteTags').oninput = (e) => {
+          activeNote.tags = normalizeTags(e.target.value);
+          if (!activeNote.tags.length) activeNote.tags = ['General'];
+          activeNote.tag = activeNote.tags.join(', ');
+          activeNote.ts = new Date().toISOString();
+          saveState();
+        };
+        document.getElementById('noteContent').oninput = (e) => {
+          activeNote.content = e.target.value;
+          activeNote.ts = new Date().toISOString();
+          saveState();
+        };
+        document.getElementById('deleteActiveNote').onclick = () => {
+          memory.insights = memory.insights.filter(note => note.id !== activeNote.id);
+          if (memory.activeNoteId === activeNote.id) memory.activeNoteId = memory.insights[0]?.id || null;
+          memory.actions = memory.actions.filter(action => action.linkRef !== `note:${activeNote.id}`);
+          saveState();
+        };
+      }
+
+      if (memory.viewMode === 'graph') {
+        const canvas = document.getElementById('memoryGraphCanvas');
+        const ctx = canvas?.getContext('2d');
+        if (ctx) {
+          const draw = (hoverId = null) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0b111a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = 1.3;
+            filteredNotes.forEach(note => {
+              const from = nodeMap.get(note.id);
+              (note.links || []).forEach(targetId => {
+                const to = nodeMap.get(targetId);
+                if (!from || !to) return;
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.35)';
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(to.x, to.y);
+                ctx.stroke();
+              });
+            });
+
+            graphNodes.forEach(node => {
+              const isActive = node.id === memory.activeNoteId;
+              const isHover = node.id === hoverId;
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
+              ctx.fillStyle = isActive ? '#00d4ff' : '#1e293b';
+              ctx.fill();
+              ctx.lineWidth = isActive ? 2 : 1;
+              ctx.strokeStyle = isActive ? 'rgba(0, 212, 255, 0.8)' : 'rgba(148, 163, 184, 0.35)';
+              ctx.stroke();
+
+              ctx.fillStyle = isActive ? '#001018' : '#dbeafe';
+              ctx.font = '12px sans-serif';
+              ctx.fillText(node.title.slice(0, 18), node.x + 14, node.y + 4);
+            });
+          };
+
+          const getNodeAt = (evt) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (evt.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (evt.clientY - rect.top) * (canvas.height / rect.height);
+            return graphNodes.find(node => Math.hypot(node.x - x, node.y - y) <= node.r + 4) || null;
+          };
+
+          draw();
+          canvas.onmousemove = (evt) => {
+            const hit = getNodeAt(evt);
+            canvas.style.cursor = hit ? 'pointer' : 'default';
+            draw(hit?.id || null);
+          };
+          canvas.onclick = (evt) => {
+            const hit = getNodeAt(evt);
+            if (!hit) return;
+            memory.activeNoteId = hit.id;
+            memory.viewMode = 'list';
+            saveState();
+          };
+        }
+      }
+
+      document.getElementById('actionForm').onsubmit = (e) => {
         e.preventDefault();
         const text = document.getElementById('actionText').value.trim();
         if (!text) return;
         const category = document.getElementById('actionCategory').value;
-        state.memory.actions.unshift({ id: crypto.randomUUID(), text, category, ts: new Date().toISOString() });
+        const linkRef = document.getElementById('actionLink').value;
+        memory.actions.unshift({
+          id: crypto.randomUUID(),
+          text,
+          category,
+          linkRef,
+          ts: new Date().toISOString()
+        });
         saveState();
       };
-      el.querySelectorAll('[data-del-action]').forEach(btn => btn.onclick = () => { state.memory.actions = state.memory.actions.filter(a => a.id !== btn.dataset.delAction); saveState(); });
-      document.getElementById('exportMemory').onclick = () => downloadJSON('memory-data.json', state.memory);
-      document.getElementById('importMemory').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state.memory = deepMerge(structuredClone(defaultState.memory), data); saveState(); });
+
+      el.querySelectorAll('[data-jump]').forEach(btn => {
+        btn.onclick = () => {
+          const [kind, id] = (btn.dataset.jump || '').split(':');
+          if (kind === 'note' && id) {
+            openNote(id);
+          } else if (kind === 'page' && id) {
+            state.activeSection = 'workspace';
+            if (state.workspace) state.workspace.activePageId = id;
+            renderNav();
+            saveState();
+          }
+        };
+      });
+
+      el.querySelectorAll('[data-del-action]').forEach(btn => {
+        btn.onclick = () => {
+          memory.actions = memory.actions.filter(action => action.id !== btn.dataset.delAction);
+          saveState();
+        };
+      });
+
+      document.getElementById('exportMemory').onclick = () => {
+        downloadJSON('memory-full-export.json', memory);
+      };
+      document.getElementById('importMemory').onchange = (e) => {
+        importJSONFile(e.target.files[0], (data) => {
+          if (!data || typeof data !== 'object') return;
+          state.memory = deepMerge(structuredClone(defaultState.memory), data);
+          if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
+          if (!Array.isArray(state.memory.actions)) state.memory.actions = [];
+          saveState();
+        });
+      };
+      document.getElementById('clearMemory').onclick = () => {
+        if (!confirm('Clear all memory notes, links, and actions? This cannot be undone.')) return;
+        state.memory = structuredClone(defaultState.memory);
+        saveState();
+      };
     }
+
 
     function renderPlanning() {
       const el = document.getElementById('section-planning');
