@@ -49,17 +49,45 @@
     p { color: var(--text-muted); }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(0,0,0,0.05);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      backdrop-filter: blur(6px);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(14,165,233,.28), rgba(99,102,241,.22), rgba(251,146,60,.28));
+      opacity: 0;
+      transition: opacity .28s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before { opacity: 1; }
+
+    .scroll-progress {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 2px;
+      width: 100%;
+      transform-origin: 0 50%;
+      transform: scaleX(0);
+      background: linear-gradient(90deg, #fb923c, #f97316 38%, #f59e0b);
     }
 
     .feature-card {
       background: var(--surface);
       border: 1px solid rgba(0,0,0,0.05);
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      transition: transform .2s ease, box-shadow .2s ease;
+      transition: transform .25s ease, box-shadow .25s ease;
+      transform-style: preserve-3d;
+      will-change: transform;
     }
 
     .feature-card:hover {
@@ -104,8 +132,33 @@
       justify-content: center;
     }
 
-    .primary-btn { background: var(--primary); color: #fff; }
-    .primary-btn:hover { background: var(--primary-hover); }
+    .primary-btn {
+      background: linear-gradient(135deg, #fb923c, #f97316 48%, #ea580c);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .primary-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,.32), transparent 70%);
+      opacity: 0;
+      transition: opacity .24s ease;
+      z-index: -1;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(249, 115, 22, 0.34), inset 0 0 0 1px rgba(255,255,255,0.28);
+    }
+
+    .primary-btn:hover::after { opacity: 1; }
 
     .secondary-btn {
       border: 1px solid #cbd5e1;
@@ -136,6 +189,81 @@
       height: min(580px, 75vh);
       width: 100%;
       object-fit: cover;
+      transition: transform .3s ease;
+      will-change: transform;
+    }
+
+    .float-photo {
+      animation: floatY .38s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .anim-section,
+    .anim-item {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0);
+      transition: transform .34s cubic-bezier(.2,.65,.2,1), opacity .34s ease;
+      will-change: transform, opacity;
+    }
+
+    .is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .hero-letter {
+      display: inline-block;
+      opacity: 0;
+      transform: translate3d(0, 10px, 0) scale(.98);
+      transition: transform .3s ease, opacity .3s ease;
+    }
+
+    .hero-letter.reveal {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    .magic-input {
+      transition: box-shadow .24s ease, transform .24s ease, border-color .24s ease;
+    }
+
+    .magic-input:focus {
+      border-color: rgba(249,115,22,.45);
+      box-shadow: 0 0 0 3px rgba(251,146,60,.16), 0 8px 20px rgba(15,23,42,.08);
+      transform: translateY(-1px);
+      animation: focusPulse .36s ease;
+    }
+
+    @keyframes focusPulse {
+      0% { box-shadow: 0 0 0 0 rgba(251,146,60,.18); }
+      100% { box-shadow: 0 0 0 3px rgba(251,146,60,.16), 0 8px 20px rgba(15,23,42,.08); }
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 999px;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(255,255,255,.5);
+      animation: ripple .38s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .anim-section, .anim-item, .hero-letter { opacity: 1 !important; transform: none !important; }
     }
 
     @media (max-width: 768px) {
@@ -157,19 +285,20 @@
         <a href="#privacy-policy" data-nav-link="privacy-policy" class="hover:text-slate-900">Privacy Policy</a>
         <a href="#terms-of-service" data-nav-link="terms-of-service" class="hover:text-slate-900">Terms of Service</a>
       </div>
-      <a href="workspace.html" class="primary-btn text-sm">Enter Workspace</a>
+      <a href="workspace.html" class="primary-btn magnetic-btn workspace-btn text-sm">Enter Workspace</a>
     </nav>
+    <div id="scroll-progress" class="scroll-progress"></div>
   </header>
 
   <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
-    <section id="home" class="grid items-center gap-10 lg:grid-cols-2">
+    <section id="home" class="anim-section grid items-center gap-10 lg:grid-cols-2">
       <div>
-        <p class="section-label mb-4">Founder Growth Platform</p>
-        <h1 class="text-4xl font-bold leading-tight text-slate-900 md:text-6xl">From startup idea to structured execution — in one premium founder command center.</h1>
-        <p class="mt-5 max-w-xl text-lg">Plan faster, validate smarter, and run your startup with a visual workflow built for founder momentum.</p>
+        <p class="section-label mb-4 anim-item">Founder Growth Platform</p>
+        <h1 id="hero-title" class="text-4xl font-bold leading-tight text-slate-900 md:text-6xl">From startup idea to structured execution — in one premium founder command center.</h1>
+        <p class="anim-item mt-5 max-w-xl text-lg">Plan faster, validate smarter, and run your startup with a visual workflow built for founder momentum.</p>
         <div class="mt-8 flex flex-wrap gap-3">
-          <a href="#pricing" class="primary-btn text-sm">See Pricing</a>
-          <a href="workspace.html" class="secondary-btn text-sm">Enter Workspace</a>
+          <a href="#pricing" class="primary-btn magnetic-btn text-sm">See Pricing</a>
+          <a href="workspace.html" class="secondary-btn workspace-btn text-sm">Enter Workspace</a>
         </div>
         <div class="mt-6 flex items-center gap-3">
           <div class="avatar-stack">
@@ -181,13 +310,17 @@
           </div>
           <p class="text-sm text-slate-600"><span class="font-semibold text-slate-900">Join 200+ founders</span> building with clear weekly momentum.</p>
         </div>
-        <div class="mt-8 grid gap-3 sm:grid-cols-3">
-          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Planning speed</p><p class="mt-1 text-xl font-semibold text-slate-900">2.6x</p></div>
-          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Execution rhythm</p><p class="mt-1 text-xl font-semibold text-slate-900">Weekly</p></div>
-          <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Privacy model</p><p class="mt-1 text-xl font-semibold text-slate-900">Founder-first</p></div>
+        <div class="mt-8 grid gap-3 sm:grid-cols-3" data-stagger>
+          <div class="anim-item rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Planning speed</p><p class="mt-1 text-xl font-semibold text-slate-900"><span data-counter data-target="2.6" data-decimals="1" data-suffix="x">0</span></p></div>
+          <div class="anim-item rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Execution cadence</p><p class="mt-1 text-xl font-semibold text-slate-900"><span data-counter data-target="52" data-suffix="/yr">0</span></p></div>
+          <div class="anim-item rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Founder privacy</p><p class="mt-1 text-xl font-semibold text-slate-900"><span data-counter data-target="100" data-suffix="%">0</span></p></div>
+        </div>
+        <div class="glass-card mt-5 rounded-2xl p-4 anim-item">
+          <p class="text-xs uppercase tracking-[0.15em] text-slate-500">Magic Preview</p>
+          <input id="magic-input" type="text" class="magic-input mt-3 w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none" value="Draft a GTM plan for a niche B2B SaaS..." />
         </div>
       </div>
-      <div class="relative">
+      <div class="relative" id="hero-visual">
         <div class="overflow-hidden rounded-3xl border border-white/70 shadow-2xl shadow-slate-900/10">
           <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80" alt="Founders planning business growth in a modern startup office" class="hero-image" loading="lazy" />
         </div>
@@ -198,7 +331,7 @@
       </div>
     </section>
 
-    <section id="what-is-barya" class="glass-card rounded-3xl p-8 lg:p-10">
+    <section id="what-is-barya" class="anim-section glass-card rounded-3xl p-8 lg:p-10">
       <div class="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
         <div>
           <p class="section-label">What is Barya</p>
@@ -212,7 +345,10 @@
               <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Founder Profile</p>
               <span class="rounded-full border border-sky-100 bg-white/80 px-2.5 py-1 text-xs font-medium text-sky-700">Live</span>
             </div>
-            <h3 class="mt-4 text-3xl text-slate-900" style="font-family: 'Playfair Display', serif;">Shruti Barya</h3>
+            <div class="mt-4 flex items-center gap-3">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=180&q=80" alt="Founder portrait" class="float-photo h-16 w-16 rounded-2xl object-cover ring-2 ring-white/70" loading="lazy" />
+              <h3 class="text-3xl text-slate-900" style="font-family: 'Playfair Display', serif;">Shruti Barya</h3>
+            </div>
             <p class="mt-2 text-sm text-slate-600">Founder, Barya Labs — building a private-first operating system for early-stage founders.</p>
             <div class="mt-5 grid gap-3 sm:grid-cols-2">
               <div class="rounded-xl border border-white/70 bg-white/75 p-3">
