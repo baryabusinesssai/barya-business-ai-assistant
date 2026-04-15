@@ -773,38 +773,178 @@
       };
     }
 
-    function aiStructuredResponse(q) {
-      const lower = q.toLowerCase();
-      const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
-      const runway = state.dashboard.metrics.runway;
-      let answer = 'Focus on one bottleneck and measure weekly outcomes.';
-      if (lower.includes('runway')) answer = `Current net cashflow is ${money(cash)}; extend runway by reducing burn and improving collections.`;
-      if (lower.includes('growth') || lower.includes('revenue')) answer = 'Scale one reliable channel and tighten conversion handoff.';
-      if (lower.includes('hiring')) answer = 'Delay non-critical hires and prioritize revenue-linked roles.';
+    function ensureAIState() {
+      if (!state.ai || typeof state.ai !== 'object') state.ai = {};
+      if (!Array.isArray(state.ai.history)) state.ai.history = [];
+      if (!state.ai.history.length) {
+        state.ai.history.push({
+          role: 'assistant',
+          message: 'Ready to think like your strategic co-founder. What decision are we making today?',
+          structured: {
+            answer: 'I can help with strategy, growth, hiring, product, pricing, and execution.',
+            why: 'Founders win with fast, high-quality decisions under constraints.',
+            steps: ['Share your current goal.', 'Add constraints (time, team, cash).', 'Tell me your target outcome in 30 days.'],
+            tip: 'The tighter your constraints, the sharper my plan.',
+            next: 'Ask: “I have 4 months runway and rising churn—what should I do first?”'
+          },
+          ts: new Date().toISOString()
+        });
+      }
+      if (typeof state.ai.thinkStepByStep !== 'boolean') state.ai.thinkStepByStep = false;
+      if (!Array.isArray(state.ai.promptSuggestions)) state.ai.promptSuggestions = [];
+    }
+
+    function latestFounderContext(limit = 8) {
+      const recent = state.ai.history.slice(-limit);
+      const userTopics = recent
+        .filter(msg => msg.role === 'user')
+        .flatMap(msg => (msg.message.toLowerCase().match(/[a-z]{4,}/g) || []))
+        .filter(word => !['with', 'that', 'this', 'from', 'your', 'what', 'have', 'need', 'want', 'please', 'help', 'about', 'should', 'could'].includes(word));
+      const scores = {};
+      userTopics.forEach(word => { scores[word] = (scores[word] || 0) + 1; });
+      const topKeywords = Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([word]) => word);
       return {
-        answer,
-        why: 'A focused operating rhythm increases execution speed and reduces decision noise.',
-        steps: ['Set one 2-week objective', 'Define 2 leading indicators', 'Review every Friday with owners'],
-        tip: 'Document assumptions before each experiment.',
-        next: 'Want a tailored 30-day sprint? Ask with your current constraints.'
+        lastUserMessage: [...recent].reverse().find(msg => msg.role === 'user')?.message || '',
+        topKeywords
       };
     }
 
+    function parseMultiPartQuestion(input) {
+      return input
+        .split(/\n|(?:\s+\d+[\).\-\:]\s+)|(?:\s+\-\s+)|(?:\s+\?\s+)/g)
+        .map(part => part.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+    }
+
+    function aiTemplateLibrary() {
+      const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+      const runway = Number(state.dashboard.metrics.runway || 0);
+      return [
+        { key: 'runway', match: /(runway|burn|cashflow|cash flow)/i, answer: `You have ${runway} months runway and net monthly cashflow of ${money(cash)}; priority is to reduce burn and accelerate cash collections in parallel.`, why: 'Runway defines optionality. Optionality gives you negotiation power and execution calm.', steps: ['Freeze non-essential expenses today.', 'Renegotiate top 3 vendor contracts this week.', 'Launch one revenue pull-forward offer to existing customers.'], tip: 'Founders who protect runway can choose strategy; founders who don’t are forced into it.', next: 'Want a 30-day runway extension plan mapped by week?' },
+        { key: 'churn', match: /(churn|retention|cancel|renewal)/i, answer: 'Treat churn like a product signal, not just a support problem: fix failed outcomes in first 14 days.', why: 'Retention compounds; acquisition without retention is expensive leakage.', steps: ['Segment churn by persona and first-value time.', 'Interview 5 recent churned users this week.', 'Ship one onboarding change tied to activation.'], tip: 'The fastest churn fix is often expectation-setting before onboarding, not after.', next: 'Share your top churn reason and I’ll convert it into a 2-week experiment.' },
+        { key: 'pricing', match: /(pricing|price|discount|plan)/i, answer: 'Reframe pricing around delivered outcomes and urgency, then test one high-confidence package first.', why: 'Pricing is positioning. Weak pricing attracts low-fit customers and hurts retention.', steps: ['Define one primary buyer outcome.', 'Create a 3-tier offer anchored around that outcome.', 'Test price increase with new leads for 14 days.'], tip: 'Never lower price before increasing clarity of value communication.', next: 'Want me to draft your outcome-based pricing page structure?' },
+        { key: 'gtm', match: /(gtm|go to market|launch|distribution|acquisition|channel)/i, answer: 'Pick one primary channel and build a repeatable weekly cadence before adding others.', why: 'Focus creates signal density; too many channels create random noise.', steps: ['Select one channel with fastest feedback loop.', 'Define weekly input targets (content, outreach, demos).', 'Review conversion funnel every Friday.'], tip: 'A mediocre channel executed consistently beats 5 channels started and abandoned.', next: 'Tell me your audience and I’ll design a 4-week GTM sprint.' },
+        { key: 'fundraise', match: /(fundraise|investor|pitch|round|valuation)/i, answer: 'Fundraise with evidence: show momentum, insight velocity, and disciplined use of capital.', why: 'Investors back execution quality more than storytelling polish.', steps: ['Build a concise 10-slide narrative around traction and plan.', 'Prepare answers for burn, runway, and growth assumptions.', 'Set a tight 3-week investor outreach window.'], tip: 'Control your process timeline or the process controls you.', next: 'Need a founder-ready investor update + outreach tracker template?' },
+        { key: 'hiring', match: /(hire|hiring|team|recruit|talent)/i, answer: 'Hire only for bottlenecks directly tied to revenue, retention, or product velocity.', why: 'Early hiring mistakes create recurring burn and management drag.', steps: ['List current bottlenecks and quantify impact.', 'Write outcome-based role scorecards.', 'Run structured interviews with paid practical tasks.'], tip: 'A clear scorecard avoids charisma bias and speeds up decisions.', next: 'Share the role and I’ll create a practical interview loop.' },
+        { key: 'product', match: /(product|feature|roadmap|build|mvp)/i, answer: 'Prioritize product work by user outcome impact and learning speed, not by request volume.', why: 'Roadmaps should reduce uncertainty and increase paid value delivery.', steps: ['Define top user outcome for this quarter.', 'Cut roadmap to 3 bets max.', 'Tie each bet to one measurable behavior shift.'], tip: 'If a feature has no success metric, it is scope—not strategy.', next: 'Want a prioritization matrix for your current backlog?' },
+        { key: 'sales', match: /(sales|close|pipeline|demo|conversion)/i, answer: 'Tighten your sales pipeline around qualification clarity and objection handling.', why: 'Conversion gains are usually faster and cheaper than top-of-funnel expansion.', steps: ['Document top 5 objections from recent calls.', 'Create response scripts for each objection.', 'Track stage-to-stage conversion daily.'], tip: 'Disqualifying low-fit leads early increases win-rate and founder focus.', next: 'Paste your pipeline stages and I’ll diagnose bottlenecks.' },
+        { key: 'marketing', match: /(marketing|content|brand|seo|campaign)/i, answer: 'Build authority around one sharp narrative linked to a measurable business outcome.', why: 'Consistent narrative increases trust and lowers CAC over time.', steps: ['Define one promise to one persona.', 'Publish 3 high-signal pieces weekly.', 'Recycle winning content into distribution assets.'], tip: 'Educational content works best when it solves one urgent decision.', next: 'Want a 2-week founder content calendar aligned to pipeline goals?' },
+        { key: 'ops', match: /(operations|ops|process|system|workflow)/i, answer: 'Design simple operating rhythms: weekly priorities, daily visibility, clear ownership.', why: 'Operational clarity compounds speed as team size increases.', steps: ['Set weekly company-level priorities.', 'Assign one owner and KPI per priority.', 'Run a 30-minute Friday accountability review.'], tip: 'Speed comes from clear ownership, not more meetings.', next: 'Need a weekly operating cadence template for your team size?' },
+        { key: 'competition', match: /(competitor|competition|positioning|differentiate)/i, answer: 'Win by owning a specific use case and outcome, not by copying broad feature sets.', why: 'Customers buy confident fit, not generic parity.', steps: ['Map top 3 alternatives and where they win.', 'Define your strongest differentiated wedge.', 'Rewrite messaging around that wedge.'], tip: 'Niche dominance often beats broad relevance in early stages.', next: 'Share 2 competitors and I’ll draft your differentiation statement.' },
+        { key: 'time', match: /(time|focus|priority|overwhelm|busy)/i, answer: 'Use ruthless prioritization: one company goal, three weekly bets, daily execution blocks.', why: 'Founder attention is the highest-leverage resource in the business.', steps: ['Pick one north-star objective for this week.', 'List only 3 initiatives that move it.', 'Block 2 deep-work sessions on calendar daily.'], tip: 'If everything is urgent, nothing is strategic.', next: 'Want me to convert your current to-do list into a priority stack?' },
+        { key: 'pmf', match: /(pmf|product market fit|market fit|validation)/i, answer: 'Measure PMF through repeat usage, willingness to pay, and referral intent.', why: 'PMF is behavior, not opinion.', steps: ['Track activation and weekly retention cohorts.', 'Run 10 customer interviews focused on value moments.', 'Test willingness-to-pay with real offers.'], tip: 'PMF appears first in a narrow segment before broad expansion.', next: 'Share your current user behavior metrics and I’ll assess PMF signal strength.' },
+        { key: 'onboarding', match: /(onboarding|activation|first value)/i, answer: 'Compress time-to-first-value so new users experience a win within minutes.', why: 'Activation quality strongly predicts retention and expansion revenue.', steps: ['Identify one critical first success event.', 'Remove friction before that event.', 'Trigger contextual guidance in first session.'], tip: 'Activation is a product + messaging problem, not only UX polish.', next: 'Need a step-by-step onboarding flow for your product type?' },
+        { key: 'support', match: /(support|ticket|nps|csat|customer success)/i, answer: 'Turn support into a structured insight engine that feeds product and onboarding.', why: 'Support data reveals hidden friction faster than analytics dashboards alone.', steps: ['Tag tickets by root cause.', 'Review top pain cluster weekly.', 'Ship one fix per week from support insights.'], tip: 'Fast acknowledgement + clear expectation often matters more than perfect first reply.', next: 'Want a support taxonomy you can adopt immediately?' },
+        { key: 'expansion', match: /(upsell|cross-sell|expansion|enterprise)/i, answer: 'Drive expansion by identifying usage milestones that naturally trigger higher-value needs.', why: 'Expansion revenue improves payback and extends runway without proportional CAC.', steps: ['Define product usage thresholds for upsell triggers.', 'Create milestone-based outreach playbooks.', 'Track expansion conversion monthly.'], tip: 'Customers upgrade when the next tier removes a painful ceiling.', next: 'Share your current plans and I’ll map upgrade trigger moments.' },
+        { key: 'default', match: /.*/i, answer: 'Start with one high-impact decision and execute in focused 7-day cycles.', why: 'Short decision loops reduce risk and increase learning velocity.', steps: ['Define the exact decision in one sentence.', 'Set success criteria for the next 7 days.', 'Review outcomes and choose next move quickly.'], tip: 'Clarity beats intensity—especially under pressure.', next: 'What is the single decision you need to make this week?' }
+      ];
+    }
+
+    function aiStructuredResponse(q) {
+      ensureAIState();
+      const lower = q.toLowerCase();
+      const templates = aiTemplateLibrary();
+      const base = templates.find(template => template.match.test(lower)) || templates.at(-1);
+      const context = latestFounderContext();
+      const multiParts = parseMultiPartQuestion(q);
+      const hasMultiPart = multiParts.length > 1;
+      const reasoning = state.ai.thinkStepByStep
+        ? [
+            `Understand context: recent focus = ${context.topKeywords.join(', ') || 'general strategy'}.`,
+            'Identify the core founder constraint and decision deadline.',
+            'Prioritize actions by highest near-term business impact.',
+            'Convert strategy into immediate execution steps.'
+          ]
+        : [];
+
+      let answer = base.answer;
+      if (context.topKeywords.length) {
+        answer += ` Considering your recent focus on ${context.topKeywords.join(', ')}, this should be prioritized now.`;
+      }
+      if (hasMultiPart) {
+        answer = `You asked ${multiParts.length} connected questions; here is one integrated plan: ${answer}`;
+      }
+
+      const stepPrefix = hasMultiPart ? [`Break down the ${multiParts.length} parts and assign one owner per part.`] : [];
+      const steps = [...stepPrefix, ...base.steps].slice(0, 5);
+      return {
+        answer,
+        why: base.why,
+        steps,
+        tip: base.tip,
+        next: base.next,
+        reasoning,
+        multiParts
+      };
+    }
+
+    function computePromptSuggestions() {
+      const context = latestFounderContext(10);
+      const baseSuggestions = [
+        'Build me a 30-day execution sprint with weekly milestones.',
+        'Audit my founder calendar and remove low-leverage tasks.',
+        'Create a cash preservation plan for the next 60 days.',
+        'Draft a high-signal weekly investor update from my metrics.',
+        'Design a retention rescue plan for users dropping in week 1.'
+      ];
+      const keywordSuggestions = context.topKeywords.map(keyword => `Give me a tactical plan to improve ${keyword} in the next 2 weeks.`);
+      const lastMessageSuggestion = context.lastUserMessage
+        ? [`Continue from my previous question and convert it into an action checklist: "${context.lastUserMessage.slice(0, 70)}..."`]
+        : [];
+      state.ai.promptSuggestions = [...keywordSuggestions, ...lastMessageSuggestion, ...baseSuggestions].slice(0, 6);
+    }
+
     function renderAI() {
+      ensureAIState();
+      computePromptSuggestions();
       const el = document.getElementById('section-ai');
+      const quickActions = [
+        'Cut burn by 15% this month',
+        'Fix onboarding drop-off',
+        'Plan 14-day GTM sprint',
+        'Draft investor update',
+        'Prioritize hiring roadmap',
+        'Design retention experiment'
+      ];
       el.innerHTML = `
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-          <div class="flex flex-wrap gap-2 mb-4">
-            ${['Improve runway', 'Fix churn', 'Plan GTM sprint', 'Investor update outline'].map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded border border-zinc-700 bg-zinc-900 hover:border-cyan-500/40">${q}</button>`).join('')}
+        <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-cyan-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Barya AI · Smart Reasoning Assistant</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Professional founder guidance with context-aware execution plans.</p>
+            </div>
+            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-cyan-500/30">
+              <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-cyan-400">
+              <span class="text-sm text-zinc-200">Think Step-by-Step</span>
+            </label>
           </div>
-          <div id="chatBox" class="space-y-3 max-h-[55vh] overflow-auto scrollbar-thin pr-1 mb-4"></div>
-          <form id="chatForm" class="flex gap-2">
-            <input id="chatInput" placeholder="Ask Barya AI..." class="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-            <button class="px-4 py-2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Send</button>
-          </form>
-          <div class="flex flex-wrap gap-2 mt-4">
-            <button id="exportChat" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Chat</button>
-            <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Chat<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+
+          <div class="grid xl:grid-cols-[1fr_280px] gap-4">
+            <div class="min-w-0 space-y-4">
+              <div class="flex flex-wrap gap-2">
+                ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 bg-[#10151e] hover:border-cyan-400/50 hover:text-cyan-200 transition">${q}</button>`).join('')}
+              </div>
+
+              <div id="chatBox" class="space-y-3 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
+
+              <form id="chatForm" class="space-y-2">
+                <textarea id="chatInput" rows="3" placeholder="Ask complex founder questions (multi-part supported)..." class="w-full bg-[#0d1117] border border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-cyan-400/60 resize-y"></textarea>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button class="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30">Send</button>
+                  <button id="clearChat" type="button" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-300 border border-red-500/30">Clear Chat</button>
+                  <button id="exportChat" type="button" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">Export Chat</button>
+                  <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 cursor-pointer">Import Chat<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+                </div>
+              </form>
+            </div>
+
+            <aside class="bg-[#0d1117] border border-zinc-800 rounded-xl p-3 space-y-3 h-fit">
+              <p class="text-xs uppercase tracking-wide text-cyan-300">Smart Prompt Suggestions</p>
+              <div class="space-y-2">
+                ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-lg p-2 bg-zinc-900/80 border border-zinc-800 hover:border-cyan-500/40">${escapeHTML(s)}</button>`).join('')}
+              </div>
+            </aside>
           </div>
         </div>
       `;
@@ -813,17 +953,31 @@
         const box = document.getElementById('chatBox');
         const wrap = document.createElement('div');
         if (item.role === 'user') {
-          wrap.innerHTML = `<div class="ml-auto max-w-2xl bg-cyan-500/15 border border-cyan-500/25 rounded-xl p-3"><p>${escapeHTML(item.message)}</p></div>`;
-        } else {
           wrap.innerHTML = `
-            <div class="max-w-3xl bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
-              <p class="text-xs uppercase tracking-wide text-barya-accent">Clear Answer</p><p>${escapeHTML(item.structured.answer)}</p>
-              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Why It Matters</p><p>${escapeHTML(item.structured.why)}</p>
-              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Action Steps</p>
-              <ul class="list-disc pl-5">${item.structured.steps.map(s=>`<li>${escapeHTML(s)}</li>`).join('')}</ul>
-              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Founder Tip</p><p>${escapeHTML(item.structured.tip)}</p>
-              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Next Move</p><p>${escapeHTML(item.structured.next)}</p>
-            </div>`;
+            <div class="ml-auto max-w-3xl bg-cyan-500/15 border border-cyan-500/30 rounded-2xl p-3">
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300 mb-1">You</p>
+              <p class="whitespace-pre-wrap">${escapeHTML(item.message)}</p>
+            </div>
+          `;
+        } else {
+          const structured = item.structured || aiStructuredResponse(item.message || '');
+          wrap.innerHTML = `
+            <div class="max-w-4xl bg-[#111722] border border-cyan-500/20 rounded-2xl p-4 space-y-2">
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300">Clear Answer</p>
+              <p>${escapeHTML(structured.answer)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Why It Matters</p>
+              <p>${escapeHTML(structured.why)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Action Steps</p>
+              <ol class="list-decimal pl-5 space-y-1">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol>
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Founder Tip</p>
+              <p>${escapeHTML(structured.tip)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Next Move</p>
+              <p>${escapeHTML(structured.next)}</p>
+              ${(state.ai.thinkStepByStep && structured.reasoning?.length)
+                ? `<details class="pt-2"><summary class="cursor-pointer text-xs text-cyan-200">Reasoning Path</summary><ul class="list-disc pl-5 mt-2 text-sm text-zinc-300">${structured.reasoning.map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul></details>`
+                : ''}
+            </div>
+          `;
         }
         box.appendChild(wrap);
         box.scrollTop = box.scrollHeight;
@@ -831,12 +985,13 @@
 
       state.ai.history.forEach(appendMessage);
 
-      function sendQuestion(question){
+      function sendQuestion(question) {
         const q = question.trim();
         if (!q) return;
-        const userMsg = { role: 'user', message: q, ts: new Date().toISOString() };
+        const nowISO = new Date().toISOString();
+        const userMsg = { role: 'user', message: q, ts: nowISO };
         const structured = aiStructuredResponse(q);
-        const aiMsg = { role: 'assistant', message: structured.answer, structured, ts: new Date().toISOString() };
+        const aiMsg = { role: 'assistant', message: structured.answer, structured, ts: nowISO };
         state.ai.history.push(userMsg, aiMsg);
         saveStateRaw();
         renderAI();
@@ -847,9 +1002,35 @@
         const input = document.getElementById('chatInput');
         sendQuestion(input.value);
       };
+      document.getElementById('thinkToggle').onchange = (e) => {
+        state.ai.thinkStepByStep = !!e.target.checked;
+        saveStateRaw();
+        renderAI();
+      };
+      document.getElementById('clearChat').onclick = () => {
+        if (!confirm('Clear entire Barya AI chat history? This action cannot be undone.')) return;
+        state.ai.history = [];
+        ensureAIState();
+        saveStateRaw();
+        renderAI();
+      };
       el.querySelectorAll('[data-quick]').forEach(btn => btn.onclick = () => sendQuestion(btn.dataset.quick));
+      el.querySelectorAll('[data-suggestion]').forEach(btn => btn.onclick = () => sendQuestion(state.ai.promptSuggestions[Number(btn.dataset.suggestion)] || ''));
       document.getElementById('exportChat').onclick = () => downloadJSON('chat-history.json', state.ai.history);
-      document.getElementById('importChat').onchange = (e) => importJSONFile(e.target.files[0], (data) => { if (Array.isArray(data)) { state.ai.history = data; saveState(); } });
+      document.getElementById('importChat').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+        if (!Array.isArray(data)) return;
+        state.ai.history = data
+          .filter(item => item && (item.role === 'user' || item.role === 'assistant'))
+          .map(item => ({
+            role: item.role,
+            message: String(item.message || ''),
+            structured: item.structured || (item.role === 'assistant' ? aiStructuredResponse(String(item.message || '')) : undefined),
+            ts: item.ts || new Date().toISOString()
+          }));
+        ensureAIState();
+        saveStateRaw();
+        renderAI();
+      });
     }
 
     function renderMemory() {
