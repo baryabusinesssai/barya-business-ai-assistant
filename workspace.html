@@ -85,6 +85,7 @@
       <main class="p-4 sm:p-6 space-y-6">
         <section id="section-dashboard" class="section-panel active space-y-6"></section>
         <section id="section-workspace" class="section-panel space-y-6"></section>
+        <section id="section-tasks" class="section-panel space-y-6"></section>
         <section id="section-ai" class="section-panel space-y-6"></section>
         <section id="section-memory" class="section-panel space-y-6"></section>
         <section id="section-planning" class="section-panel space-y-6"></section>
@@ -108,6 +109,7 @@
     const navItems = [
       { id: 'dashboard', icon: '📊', label: 'Dashboard' },
       { id: 'workspace', icon: '📑', label: 'Workspace' },
+      { id: 'tasks', icon: '✅', label: 'Tasks' },
       { id: 'ai', icon: '🤖', label: 'Barya AI' },
       { id: 'memory', icon: '🧠', label: 'Memory' },
       { id: 'planning', icon: '🗺️', label: 'Business Planning' },
@@ -165,6 +167,17 @@
         activePageId: null,
         databases: [],
         activeDatabaseId: null
+      },
+      tasks: {
+        items: [],
+        sprints: [],
+        leftTab: 'all',
+        view: 'list',
+        search: '',
+        priorityFilter: 'All',
+        statusFilter: 'All',
+        sprintFilter: 'all',
+        selectedTaskId: null
       },
       planning: {
         guides: [
@@ -251,6 +264,7 @@
       document.getElementById(`section-${state.activeSection}`).classList.add('active');
       if (state.activeSection === 'dashboard') renderDashboard();
       if (state.activeSection === 'workspace') renderWorkspace();
+      if (state.activeSection === 'tasks') renderTasks();
       if (state.activeSection === 'ai') renderAI();
       if (state.activeSection === 'memory') renderMemory();
       if (state.activeSection === 'planning') renderPlanning();
@@ -771,6 +785,363 @@
         state.workspace.activeDatabaseId = null;
         saveState();
       };
+    }
+
+    function ensureTasksState() {
+      if (!state.tasks || typeof state.tasks !== 'object') state.tasks = structuredClone(defaultState.tasks);
+      if (!Array.isArray(state.tasks.items)) state.tasks.items = [];
+      if (!Array.isArray(state.tasks.sprints)) state.tasks.sprints = [];
+      if (!state.tasks.leftTab) state.tasks.leftTab = 'all';
+      if (!state.tasks.view) state.tasks.view = 'list';
+      if (typeof state.tasks.search !== 'string') state.tasks.search = '';
+      if (!state.tasks.priorityFilter) state.tasks.priorityFilter = 'All';
+      if (!state.tasks.statusFilter) state.tasks.statusFilter = 'All';
+      if (!state.tasks.sprintFilter) state.tasks.sprintFilter = 'all';
+      state.tasks.items.forEach(task => {
+        if (!task.id) task.id = crypto.randomUUID();
+        task.title = String(task.title || 'Untitled Task');
+        task.description = String(task.description || '');
+        task.dueDate = task.dueDate || '';
+        if (!['High', 'Medium', 'Low'].includes(task.priority)) task.priority = 'Medium';
+        if (!['To Do', 'In Progress', 'Done'].includes(task.status)) task.status = 'To Do';
+        if (!Array.isArray(task.tags)) task.tags = String(task.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+        if (!task.createdAt) task.createdAt = new Date().toISOString();
+        if (!task.updatedAt) task.updatedAt = task.createdAt;
+        if (task.sprintId === undefined) task.sprintId = '';
+        if (task.linkRef === undefined) task.linkRef = '';
+      });
+      state.tasks.sprints.forEach(s => {
+        if (!s.id) s.id = crypto.randomUUID();
+        s.name = String(s.name || 'Untitled Sprint');
+        s.startDate = s.startDate || '';
+        s.endDate = s.endDate || '';
+        if (!s.createdAt) s.createdAt = new Date().toISOString();
+      });
+    }
+
+    function taskDateInRange(date, start, end) {
+      if (!date) return false;
+      const d = new Date(date);
+      if (Number.isNaN(d.getTime())) return false;
+      const s = new Date(start);
+      const e = new Date(end);
+      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return false;
+      return d >= s && d <= e;
+    }
+
+    function taskMatchesLeftTab(task, tab) {
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const now = new Date();
+      const weekEnd = new Date(now);
+      weekEnd.setDate(now.getDate() + 7);
+      if (tab === 'today') return task.dueDate === todayIso;
+      if (tab === 'week') return !!task.dueDate && new Date(task.dueDate) <= weekEnd && new Date(task.dueDate) >= new Date(todayIso);
+      if (tab === 'sprints') return !!task.sprintId;
+      if (tab === 'completed') return task.status === 'Done';
+      return true;
+    }
+
+    function linkedTaskLabel(task) {
+      if (!task.linkRef) return 'Not linked';
+      const [kind, id] = String(task.linkRef).split(':');
+      if (kind === 'note') {
+        const note = (state.memory?.insights || []).find(n => n.id === id);
+        return `🧠 ${note?.title || 'Missing note'}`;
+      }
+      if (kind === 'page') {
+        const page = (state.workspace?.pages || []).find(p => p.id === id);
+        return `📄 ${page?.title || 'Missing page'}`;
+      }
+      return String(task.linkRef);
+    }
+
+    function renderTasks() {
+      ensureTasksState();
+      const el = document.getElementById('section-tasks');
+      const t = state.tasks;
+      const priorities = ['All', 'High', 'Medium', 'Low'];
+      const statuses = ['All', 'To Do', 'In Progress', 'Done'];
+      const leftTabs = [
+        { id: 'all', label: 'All Tasks' },
+        { id: 'today', label: 'Today' },
+        { id: 'week', label: 'This Week' },
+        { id: 'sprints', label: 'Sprints' },
+        { id: 'completed', label: 'Completed' }
+      ];
+      const sprintMap = new Map(t.sprints.map(s => [s.id, s]));
+      const normalizedSearch = t.search.toLowerCase().trim();
+      const filtered = t.items.filter(task => {
+        const searchText = `${task.title} ${task.description} ${(task.tags || []).join(' ')} ${linkedTaskLabel(task)}`.toLowerCase();
+        const bySearch = !normalizedSearch || searchText.includes(normalizedSearch);
+        const byPriority = t.priorityFilter === 'All' || task.priority === t.priorityFilter;
+        const byStatus = t.statusFilter === 'All' || task.status === t.statusFilter;
+        const bySprint = t.sprintFilter === 'all' || task.sprintId === t.sprintFilter;
+        const byLeft = taskMatchesLeftTab(task, t.leftTab);
+        return bySearch && byPriority && byStatus && bySprint && byLeft;
+      });
+      const sorted = [...filtered].sort((a, b) => {
+        if (a.status !== b.status) return ['To Do', 'In Progress', 'Done'].indexOf(a.status) - ['To Do', 'In Progress', 'Done'].indexOf(b.status);
+        if (!!a.dueDate !== !!b.dueDate) return a.dueDate ? -1 : 1;
+        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        return b.updatedAt.localeCompare(a.updatedAt);
+      });
+      const selectedTask = t.items.find(task => task.id === t.selectedTaskId) || null;
+
+      const sprintCards = t.sprints.map(sprint => {
+        const tasks = t.items.filter(task => task.sprintId === sprint.id);
+        const done = tasks.filter(task => task.status === 'Done').length;
+        const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+        return `
+          <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p class="font-medium">${escapeHTML(sprint.name)}</p>
+                <p class="text-xs text-zinc-500">${escapeHTML(sprint.startDate || 'No start')} → ${escapeHTML(sprint.endDate || 'No end')}</p>
+              </div>
+              <button data-delete-sprint="${sprint.id}" class="text-xs text-red-400">Delete</button>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#00d4ff]" style="width:${pct}%"></div></div>
+            <p class="text-xs text-zinc-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p>
+          </div>
+        `;
+      }).join('') || '<p class="text-sm text-zinc-500">No sprints yet.</p>';
+
+      const taskCard = (task) => {
+        const sprint = sprintMap.get(task.sprintId);
+        const prColor = task.priority === 'High' ? 'text-rose-300 border-rose-500/40 bg-rose-500/10' : task.priority === 'Medium' ? 'text-amber-300 border-amber-500/40 bg-amber-500/10' : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10';
+        return `
+          <article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2 ${t.selectedTaskId === task.id ? 'ring-1 ring-cyan-500/50' : ''}">
+            <div class="flex items-start justify-between gap-2">
+              <button data-select-task="${task.id}" class="text-left flex-1">
+                <p class="font-medium">${escapeHTML(task.title)}</p>
+                <p class="text-xs text-zinc-400">${escapeHTML(task.description || 'No description')}</p>
+              </button>
+              <span class="text-[11px] px-2 py-0.5 rounded border ${prColor}">${task.priority}</span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              ${(task.tags || []).map(tag => `<span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-200 border border-cyan-500/25">${escapeHTML(tag)}</span>`).join('') || '<span class="text-[10px] text-zinc-500">No tags</span>'}
+            </div>
+            <div class="text-xs text-zinc-500 flex flex-wrap gap-3">
+              <span>Due: ${escapeHTML(task.dueDate || '—')}</span>
+              <span>Sprint: ${escapeHTML(sprint?.name || 'Backlog')}</span>
+              <button data-jump-link="${task.id}" class="text-cyan-300 hover:text-cyan-200">${escapeHTML(linkedTaskLabel(task))}</button>
+            </div>
+            <div class="flex gap-2">
+              <button data-edit-task="${task.id}" class="text-xs px-2 py-1 rounded bg-zinc-800 border border-zinc-700">Edit</button>
+              <button data-delete-task="${task.id}" class="text-xs px-2 py-1 rounded bg-red-500/15 text-red-300 border border-red-500/30">Delete</button>
+            </div>
+          </article>
+        `;
+      };
+
+      el.innerHTML = `
+        <section class="bg-gradient-to-br from-[#0b0f14] to-[#090b10] border border-cyan-500/20 rounded-2xl shadow-neon overflow-hidden">
+          <div class="grid xl:grid-cols-[220px_1fr] min-h-[76vh]">
+            <aside class="border-r border-zinc-800 bg-[#0b0e13] p-4 space-y-3">
+              <h2 class="text-lg font-semibold text-[#00d4ff]">Task & Sprint Manager</h2>
+              ${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2 rounded-lg border ${t.leftTab === tab.id ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-800 hover:border-cyan-500/30'}">${tab.label}</button>`).join('')}
+              <div class="pt-3 border-t border-zinc-800 space-y-2">
+                <button id="exportTasks" class="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Export Tasks & Sprints</button>
+                <label class="block w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm text-center cursor-pointer">Import Tasks & Sprints<input id="importTasks" type="file" accept="application/json" class="hidden"></label>
+                <button id="clearTasks" class="w-full px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300 text-sm">Clear All Tasks</button>
+              </div>
+            </aside>
+
+            <div class="p-4 sm:p-5 space-y-4">
+              <div class="flex flex-wrap items-center gap-2 justify-between">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/40">+ New Task</button>
+                  <button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">+ New Sprint</button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button data-view="list" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'list' ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'}">List</button>
+                  <button data-view="kanban" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'kanban' ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'}">Kanban</button>
+                </div>
+              </div>
+
+              <div class="grid lg:grid-cols-4 gap-2">
+                <input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm lg:col-span-2" />
+                <select id="taskPriorityFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select>
+                <select id="taskStatusFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select>
+                <select id="taskSprintFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm lg:col-span-2"><option value="all" ${t.sprintFilter==='all'?'selected':''}>All Sprints</option><option value="" ${t.sprintFilter===''?'selected':''}>No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${t.sprintFilter===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select>
+              </div>
+
+              <div class="grid xl:grid-cols-[1fr_340px] gap-4">
+                <section>
+                  ${t.view === 'list' ? `
+                    <div class="space-y-2">${sorted.map(taskCard).join('') || '<p class="text-sm text-zinc-500">No tasks match your filters.</p>'}</div>
+                  ` : `
+                    <div class="grid md:grid-cols-3 gap-3">
+                      ${['To Do','In Progress','Done'].map(status => `
+                        <div data-drop-status="${status}" class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3 min-h-[300px]">
+                          <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-medium">${status}</h3>
+                            <span class="text-xs text-zinc-500">${sorted.filter(task => task.status === status).length}</span>
+                          </div>
+                          <div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="text-xs text-zinc-500">Drop tasks here</p>'}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  `}
+                </section>
+
+                <aside class="space-y-4">
+                  <div class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3">
+                    <h3 class="font-semibold mb-2">Task Editor</h3>
+                    <form id="taskForm" class="space-y-2">
+                      <input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                      <textarea id="taskDescription" rows="3" placeholder="Description" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea>
+                      <div class="grid grid-cols-2 gap-2">
+                        <input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                        <select id="taskPriority" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select>
+                        <select id="taskStatus" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${['To Do','In Progress','Done'].map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select>
+                        <select id="taskSprint" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select>
+                      </div>
+                      <input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                      <select id="taskLinkRef" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
+                        <option value="">Link to note/page (optional)</option>
+                        ${(state.memory?.insights || []).slice(0, 30).map(note => `<option value="note:${note.id}" ${selectedTask?.linkRef===`note:${note.id}`?'selected':''}>🧠 ${escapeHTML(note.title)}</option>`).join('')}
+                        ${(state.workspace?.pages || []).slice(0, 30).map(page => `<option value="page:${page.id}" ${selectedTask?.linkRef===`page:${page.id}`?'selected':''}>📄 ${escapeHTML(page.title)}</option>`).join('')}
+                      </select>
+                      <div class="flex gap-2">
+                        <button class="px-3 py-2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button>
+                        <button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Reset</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3">
+                    <h3 class="font-semibold mb-2">Sprint Mode</h3>
+                    <form id="sprintForm" class="grid grid-cols-1 gap-2 mb-3">
+                      <input id="sprintName" placeholder="Sprint name" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                      <div class="grid grid-cols-2 gap-2">
+                        <input id="sprintStart" type="date" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                        <input id="sprintEnd" type="date" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+                      </div>
+                      <button class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Create Sprint</button>
+                    </form>
+                    <div class="space-y-2 max-h-[260px] overflow-auto scrollbar-thin">${sprintCards}</div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+
+      el.querySelectorAll('[data-task-tab]').forEach(btn => btn.onclick = () => { t.leftTab = btn.dataset.taskTab; saveState(); });
+      el.querySelectorAll('[data-view]').forEach(btn => btn.onclick = () => { t.view = btn.dataset.view; saveState(); });
+      document.getElementById('taskSearch').oninput = (e) => { t.search = e.target.value; saveState(); };
+      document.getElementById('taskPriorityFilter').onchange = (e) => { t.priorityFilter = e.target.value; saveState(); };
+      document.getElementById('taskStatusFilter').onchange = (e) => { t.statusFilter = e.target.value; saveState(); };
+      document.getElementById('taskSprintFilter').onchange = (e) => { t.sprintFilter = e.target.value; saveState(); };
+
+      document.getElementById('newTaskBtn').onclick = () => { t.selectedTaskId = null; renderTasks(); };
+      document.getElementById('newSprintBtn').onclick = () => document.getElementById('sprintName').focus();
+      el.querySelectorAll('[data-select-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.selectTask; renderTasks(); });
+      el.querySelectorAll('[data-edit-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.editTask; renderTasks(); });
+      el.querySelectorAll('[data-delete-task]').forEach(btn => btn.onclick = () => {
+        t.items = t.items.filter(task => task.id !== btn.dataset.deleteTask);
+        if (t.selectedTaskId === btn.dataset.deleteTask) t.selectedTaskId = null;
+        saveState();
+      });
+
+      el.querySelectorAll('[data-jump-link]').forEach(btn => btn.onclick = () => {
+        const task = t.items.find(item => item.id === btn.dataset.jumpLink);
+        if (!task?.linkRef) return;
+        const [kind, id] = task.linkRef.split(':');
+        if (kind === 'note') {
+          state.activeSection = 'memory';
+          if (state.memory) state.memory.activeNoteId = id;
+          renderNav();
+          saveState();
+        } else if (kind === 'page') {
+          state.activeSection = 'workspace';
+          if (state.workspace) state.workspace.activePageId = id;
+          renderNav();
+          saveState();
+        }
+      });
+
+      document.getElementById('taskForm').onsubmit = (e) => {
+        e.preventDefault();
+        const title = document.getElementById('taskTitle').value.trim();
+        if (!title) return;
+        const payload = {
+          title,
+          description: document.getElementById('taskDescription').value.trim(),
+          dueDate: document.getElementById('taskDueDate').value,
+          priority: document.getElementById('taskPriority').value,
+          status: document.getElementById('taskStatus').value,
+          sprintId: document.getElementById('taskSprint').value,
+          tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean),
+          linkRef: document.getElementById('taskLinkRef').value,
+          updatedAt: new Date().toISOString()
+        };
+        if (t.selectedTaskId) {
+          const idx = t.items.findIndex(task => task.id === t.selectedTaskId);
+          if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload };
+        } else {
+          const now = new Date().toISOString();
+          const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload };
+          t.items.unshift(newTask);
+          t.selectedTaskId = newTask.id;
+        }
+        saveState();
+      };
+      document.getElementById('taskFormReset').onclick = () => { t.selectedTaskId = null; renderTasks(); };
+
+      document.getElementById('sprintForm').onsubmit = (e) => {
+        e.preventDefault();
+        const name = document.getElementById('sprintName').value.trim();
+        if (!name) return;
+        t.sprints.unshift({
+          id: crypto.randomUUID(),
+          name,
+          startDate: document.getElementById('sprintStart').value,
+          endDate: document.getElementById('sprintEnd').value,
+          createdAt: new Date().toISOString()
+        });
+        document.getElementById('sprintForm').reset();
+        saveState();
+      };
+      el.querySelectorAll('[data-delete-sprint]').forEach(btn => btn.onclick = () => {
+        const sid = btn.dataset.deleteSprint;
+        t.sprints = t.sprints.filter(s => s.id !== sid);
+        t.items.forEach(task => { if (task.sprintId === sid) task.sprintId = ''; });
+        saveState();
+      });
+
+      document.getElementById('exportTasks').onclick = () => downloadJSON('tasks-sprints-export.json', { items: t.items, sprints: t.sprints });
+      document.getElementById('importTasks').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+        if (!data || typeof data !== 'object') return;
+        t.items = Array.isArray(data.items) ? data.items : [];
+        t.sprints = Array.isArray(data.sprints) ? data.sprints : [];
+        t.selectedTaskId = null;
+        ensureTasksState();
+        saveState();
+      });
+      document.getElementById('clearTasks').onclick = () => {
+        if (!confirm('Clear all tasks and sprints? This cannot be undone.')) return;
+        state.tasks = structuredClone(defaultState.tasks);
+        saveState();
+      };
+
+      el.querySelectorAll('[data-drop-status]').forEach(zone => {
+        zone.ondragover = (evt) => evt.preventDefault();
+        zone.ondrop = (evt) => {
+          evt.preventDefault();
+          const taskId = evt.dataTransfer.getData('text/task-id');
+          const task = t.items.find(item => item.id === taskId);
+          if (!task) return;
+          task.status = zone.dataset.dropStatus;
+          task.updatedAt = new Date().toISOString();
+          saveState();
+        };
+      });
+      el.querySelectorAll('.task-card').forEach(card => {
+        card.ondragstart = (evt) => evt.dataTransfer.setData('text/task-id', card.dataset.taskId || '');
+      });
     }
 
     function ensureAIState() {
@@ -1489,6 +1860,7 @@
                   <label class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded p-2 text-sm">
                     <input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done[ti] ? 'checked' : ''} class="accent-cyan-400" />
                     <span>${escapeHTML(t)}</span>
+                    <button type="button" data-plan-task="${gi}:${ti}" class="ml-auto text-[11px] px-2 py-1 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-200">Add to Task Manager</button>
                   </label>
                 `).join('')}
               </div>
@@ -1516,6 +1888,30 @@
       el.querySelectorAll('[data-template]').forEach(t => t.oninput = () => {
         state.planning.templates[t.dataset.template] = t.value;
         saveStateRaw();
+      });
+      el.querySelectorAll('[data-plan-task]').forEach(btn => btn.onclick = () => {
+        ensureTasksState();
+        const [gi, ti] = btn.dataset.planTask.split(':').map(Number);
+        const guide = state.planning.guides[gi];
+        const taskText = guide?.tasks?.[ti];
+        if (!taskText) return;
+        state.tasks.items.unshift({
+          id: crypto.randomUUID(),
+          title: taskText,
+          description: `From Business Planning → ${guide.title}`,
+          dueDate: '',
+          priority: 'Medium',
+          status: 'To Do',
+          tags: ['Planning', guide.title],
+          sprintId: '',
+          linkRef: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        state.tasks.selectedTaskId = state.tasks.items[0].id;
+        state.activeSection = 'tasks';
+        renderNav();
+        saveState();
       });
     }
 
