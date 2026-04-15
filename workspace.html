@@ -1098,7 +1098,32 @@
       const { healthScore, runwayScore, profitability, burnRateScore } = computeFinancialHealth();
       const forecast = getForecast(6);
       const formatINR = (value) => `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
-      const topExpenses = getTopExpenseCategories();
+      const categoryIcons = {
+        payroll: '👥',
+        salaries: '👥',
+        marketing: '📣',
+        rent: '🏢',
+        office: '🏢',
+        tools: '🛠️',
+        software: '💻',
+        subscriptions: '📦',
+        travel: '✈️',
+        logistics: '🚚',
+        operations: '⚙️',
+        utility: '💡',
+        utilities: '💡',
+        tax: '🧾',
+        legal: '⚖️',
+        finance: '💳'
+      };
+      const getCategoryIcon = (name = '') => {
+        const normalized = String(name).toLowerCase();
+        const match = Object.keys(categoryIcons).find((key) => normalized.includes(key));
+        return match ? categoryIcons[match] : '📌';
+      };
+      const expenseTotal = d.expenseCategories.reduce((sum, cat) => sum + Number(cat.amount || 0), 0);
+      const sortedExpenses = [...d.expenseCategories].sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0));
+      const biggestExpenseId = sortedExpenses[0]?.id;
 
       el.innerHTML = `
         <div class="bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent border border-orange-500/30 rounded-xl p-4 sm:p-5 shadow-neon">
@@ -1193,22 +1218,52 @@
               <h3 class="font-semibold text-barya-accent">Expense Breakdown</h3>
               <span class="text-xs text-zinc-500">${d.expenseCategories.length} categories</span>
             </div>
-            <div class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
-              <canvas id="expenseChart" height="96"></canvas>
+            <div class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-4">
+              <div class="rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 to-white px-4 py-3">
+                <p class="text-xs uppercase tracking-[0.14em] text-zinc-500">Total Expenses</p>
+                <p class="text-2xl sm:text-3xl font-bold text-orange-600 mt-1">${formatINR(expenseTotal)}</p>
+              </div>
+              <div class="grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4 items-start">
+                <div class="bg-barya-soft/70 border border-gray-200 rounded-xl p-3">
+                  <div class="h-60 sm:h-72">
+                    <canvas id="expenseChart"></canvas>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  ${sortedExpenses.map((cat) => {
+                    const amount = Number(cat.amount || 0);
+                    const percentage = expenseTotal > 0 ? (amount / expenseTotal) * 100 : 0;
+                    const isBiggest = cat.id === biggestExpenseId && amount > 0;
+                    return `
+                    <div class="rounded-xl border ${isBiggest ? 'border-orange-300 bg-orange-50/80' : 'border-gray-200 bg-white'} p-3">
+                      <div class="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p class="font-semibold text-zinc-800 flex items-center gap-2">${getCategoryIcon(cat.name)} ${escapeHTML(cat.name)}</p>
+                          <p class="text-xs ${isBiggest ? 'text-orange-600' : 'text-zinc-500'} mt-1">${isBiggest ? 'Biggest Expense' : 'Category Spend'}</p>
+                        </div>
+                        <div class="text-right">
+                          <p class="font-semibold ${isBiggest ? 'text-orange-600' : 'text-zinc-700'}">${formatINR(amount)}</p>
+                          <p class="text-xs text-zinc-500">${percentage.toFixed(1)}%</p>
+                        </div>
+                      </div>
+                      <div class="mt-2 h-2 rounded-full bg-orange-100 overflow-hidden">
+                        <div class="h-full ${isBiggest ? 'bg-orange-500' : 'bg-orange-300'}" style="width:${Math.min(100, percentage).toFixed(1)}%"></div>
+                      </div>
+                      <div class="mt-2 grid sm:grid-cols-[1fr_130px_auto] gap-2">
+                        <input data-expense-name="${cat.id}" value="${escapeHTML(cat.name)}" placeholder="Category" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                        <input data-expense-amount="${cat.id}" type="number" min="0" step="0.01" value="${Number(amount)}" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                        <button type="button" data-del-expense="${cat.id}" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-sm">Delete</button>
+                      </div>
+                    </div>
+                  `;
+                  }).join('') || emptyStateMarkup('💸', 'No expense categories yet', 'Add your first expense category to unlock better burn insights.')}
+                </div>
+              </div>
               <form id="expenseCategoryForm" class="grid sm:grid-cols-[1fr_140px_auto] gap-2">
                 <input id="expenseCategoryName" placeholder="Category name" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5" />
                 <input id="expenseCategoryAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5" />
                 <button class="px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-300 text-orange-600">Add Category</button>
               </form>
-              <div class="grid sm:grid-cols-3 gap-2">
-                ${topExpenses.map((exp, i) => `
-                  <div class="bg-barya-soft border ${i === 0 ? 'border-orange-300' : 'border-gray-200'} rounded-lg p-2">
-                    <p class="text-xs text-zinc-500">Top ${i + 1}</p>
-                    <p class="font-medium">${escapeHTML(exp.name)}</p>
-                    <p class="text-sm text-zinc-600">${money(exp.amount)}</p>
-                  </div>
-                `).join('') || emptyStateMarkup('💸', 'No expense categories yet', 'Add your first expense category to unlock better burn insights.', 'col-span-3')}
-              </div>
             </div>
           </section>
 
@@ -1286,6 +1341,35 @@
         amountEl.value = '';
         saveState();
       };
+
+      el.querySelectorAll('[data-expense-amount], [data-expense-name]').forEach((input) => {
+        input.onchange = () => {
+          const categoryId = input.dataset.expenseAmount || input.dataset.expenseName;
+          const category = state.dashboard.expenseCategories.find((cat) => cat.id === categoryId);
+          if (!category) return;
+          if (input.dataset.expenseName) {
+            const nextName = input.value.trim();
+            if (nextName) category.name = nextName;
+            else input.value = category.name;
+          } else {
+            const nextAmount = Number(input.value || 0);
+            if (nextAmount >= 0) category.amount = nextAmount;
+            else input.value = Number(category.amount || 0);
+          }
+          state.dashboard.metrics.expenses = state.dashboard.expenseCategories.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+          state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+          saveState();
+        };
+      });
+
+      el.querySelectorAll('[data-del-expense]').forEach((btn) => {
+        btn.onclick = () => {
+          state.dashboard.expenseCategories = state.dashboard.expenseCategories.filter((cat) => cat.id !== btn.dataset.delExpense);
+          state.dashboard.metrics.expenses = state.dashboard.expenseCategories.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+          state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+          saveState();
+        };
+      });
 
       document.getElementById('transactionForm').onsubmit = (e) => {
         e.preventDefault();
@@ -1442,22 +1526,43 @@
       }
       if (expenseCtx) {
         const labels = state.dashboard.expenseCategories.map(cat => cat.name);
-        const data = state.dashboard.expenseCategories.map(cat => cat.amount);
+        const data = state.dashboard.expenseCategories.map(cat => Number(cat.amount || 0));
+        const totalExpenses = data.reduce((sum, value) => sum + value, 0);
         expenseChart = new Chart(expenseCtx, {
-          type: 'pie',
+          type: 'doughnut',
           data: {
             labels,
             datasets: [{
               data,
-              borderColor: '#f8f9fa',
-              backgroundColor: ['#f97316', '#fb923c', '#fdba74', '#ea580c', '#c2410c', '#ffedd5']
+              borderColor: '#fff',
+              borderWidth: 2,
+              hoverOffset: 6,
+              backgroundColor: ['#f97316', '#fb923c', '#fdba74', '#ea580c', '#c2410c', '#fed7aa', '#fb7185', '#f59e0b']
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '56%',
             plugins: {
-              legend: { labels: { color: '#d4d4d8' } }
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#52525b',
+                  usePointStyle: true,
+                  boxWidth: 10,
+                  padding: 16
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const value = Number(ctx.parsed || 0);
+                    const pct = totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : '0.0';
+                    return `${ctx.label}: ₹${Math.round(value).toLocaleString('en-IN')} (${pct}%)`;
+                  }
+                }
+              }
             }
           }
         });
