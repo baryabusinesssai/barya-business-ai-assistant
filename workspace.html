@@ -201,33 +201,41 @@
 
           <!-- Barya AI -->
           <section id="barya-ai" class="tab-panel hidden">
-            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
-              <div class="mb-5">
-                <h3 class="text-xl font-semibold">Barya AI Chat</h3>
-                <p class="text-sm text-zinc-400 mt-1">Ask for strategic guidance, market sizing, or GTM planning.</p>
-              </div>
-
-              <div class="space-y-4 max-h-[420px] overflow-y-auto pr-2 scrollbar-thin">
-                <div class="rounded-xl border border-zinc-700 bg-zinc-900/60 p-4">
-                  <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">You</p>
-                  <p class="mt-2 text-sm">What should be our wedge into manufacturing procurement?</p>
+            <div class="rounded-2xl border border-accent/20 bg-[#0a0a0a] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-6">
+              <div class="mb-4 flex flex-col gap-4 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 class="text-2xl font-semibold tracking-tight text-zinc-100">Barya <span class="text-[#00d4ff]">AI</span></h3>
+                  <p class="mt-1 text-sm text-zinc-400">Local-first founder copilot with private, in-browser memory.</p>
                 </div>
-                <div class="rounded-xl border border-accent/30 bg-accent/10 p-4">
-                  <p class="text-xs uppercase tracking-[0.12em] text-accent">Barya AI</p>
-                  <div class="mt-2 space-y-2 text-sm text-zinc-100">
-                    <p><strong>Recommended wedge:</strong> Start with supplier quote normalization and negotiation prep.</p>
-                    <ul class="list-disc space-y-1 pl-5 text-zinc-300">
-                      <li>Immediate ROI: 5–9% sourcing savings in 90 days.</li>
-                      <li>Low integration friction: ingest emails, PDFs, and ERP exports.</li>
-                      <li>Expand into contract intelligence and reorder forecasting.</li>
-                    </ul>
-                  </div>
+
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:justify-items-end">
+                  <button id="exportBaryaChatBtn" class="rounded-xl border border-accent/40 bg-white/5 px-3 py-2 text-xs font-semibold text-accent backdrop-blur-md transition hover:bg-accent/20">Export Chat History</button>
+                  <label for="importBaryaChatInput" class="cursor-pointer rounded-xl border border-accent/40 bg-white/5 px-3 py-2 text-center text-xs font-semibold text-accent backdrop-blur-md transition hover:bg-accent/20">Import Chat History</label>
+                  <input id="importBaryaChatInput" type="file" accept="application/json" class="hidden" />
+                  <button id="clearAllBaryaChatBtn" class="rounded-xl border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 backdrop-blur-md transition hover:bg-red-500/20">Clear All Chat History</button>
                 </div>
               </div>
 
-              <div class="mt-5 flex gap-3">
-                <input type="text" placeholder="Ask Barya AI anything..." class="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                <button class="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-black hover:brightness-110">Send</button>
+              <div class="mb-4 rounded-2xl border border-accent/25 bg-white/5 p-3 backdrop-blur-md">
+                <p class="mb-3 text-xs uppercase tracking-[0.12em] text-zinc-500">Quick Actions</p>
+                <div id="baryaQuickActions" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  <button data-prompt="Validate my idea" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Validate my idea</button>
+                  <button data-prompt="Create a launch plan" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Create a launch plan</button>
+                  <button data-prompt="Find my first customers" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Find my first customers</button>
+                  <button data-prompt="Improve pricing" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Improve pricing</button>
+                  <button data-prompt="Reduce expenses" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Reduce expenses</button>
+                  <button data-prompt="Improve growth" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Improve growth</button>
+                  <button data-prompt="Give business idea" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Give business idea</button>
+                  <button data-prompt="How to start?" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">How to start?</button>
+                </div>
+              </div>
+
+              <div id="baryaChatMessages" class="max-h-[460px] space-y-3 overflow-y-auto rounded-2xl border border-zinc-800 bg-[#111111] p-3 pr-2 scrollbar-thin sm:p-4"></div>
+
+              <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                <input id="baryaChatInput" type="text" placeholder="Ask Barya AI anything..." class="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
+                <button id="sendBaryaChatBtn" class="rounded-xl border border-accent/40 bg-accent px-5 py-3 text-sm font-semibold text-black shadow-[0_10px_30px_rgba(0,212,255,0.25)] transition hover:brightness-110">Send</button>
+                <button id="clearBaryaChatBtn" class="rounded-xl border border-zinc-600 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-200 backdrop-blur-md transition hover:bg-white/10">Clear Chat</button>
               </div>
             </div>
           </section>
@@ -439,6 +447,187 @@
 
       deepAnalysisBtn.addEventListener('click', () => runStrategyGeneration('deep'));
       quickBlueprintBtn.addEventListener('click', () => runStrategyGeneration('quick'));
+
+      const baryaStorageKey = 'barya_ai_chat_history_v1';
+      const baryaChatMessages = document.getElementById('baryaChatMessages');
+      const baryaChatInput = document.getElementById('baryaChatInput');
+      const sendBaryaChatBtn = document.getElementById('sendBaryaChatBtn');
+      const clearBaryaChatBtn = document.getElementById('clearBaryaChatBtn');
+      const exportBaryaChatBtn = document.getElementById('exportBaryaChatBtn');
+      const importBaryaChatInput = document.getElementById('importBaryaChatInput');
+      const clearAllBaryaChatBtn = document.getElementById('clearAllBaryaChatBtn');
+      const baryaQuickActionBtns = document.querySelectorAll('#baryaQuickActions button');
+
+      function saveBaryaChat(history) {
+        localStorage.setItem(baryaStorageKey, JSON.stringify(history));
+      }
+
+      function getBaryaChat() {
+        try {
+          const raw = localStorage.getItem(baryaStorageKey);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function escapeHtml(value) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(value).replace(/[&<>"']/g, (char) => map[char]);
+      }
+
+      function createReplyTemplate(reply) {
+        return `
+          <div class="space-y-2 text-sm leading-relaxed text-zinc-100">
+            <p><span class="font-semibold text-accent">1. Clear Answer:</span> ${escapeHtml(reply.answer)}</p>
+            <p><span class="font-semibold text-accent">2. Why It Matters:</span> ${escapeHtml(reply.why)}</p>
+            <div>
+              <p class="font-semibold text-accent">3. Action Steps:</p>
+              <ol class="mt-1 list-decimal space-y-1 pl-5 text-zinc-200">
+                ${reply.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+              </ol>
+            </div>
+            <p><span class="font-semibold text-accent">4. Founder Tip:</span> ${escapeHtml(reply.tip)}</p>
+            <p><span class="font-semibold text-accent">5. Next Move:</span> ${escapeHtml(reply.next)}</p>
+          </div>
+        `;
+      }
+
+      function renderBaryaChat() {
+        const history = getBaryaChat();
+        if (!history.length) {
+          baryaChatMessages.innerHTML = `
+            <div class="rounded-2xl border border-accent/25 bg-white/5 p-4 text-sm text-zinc-300 backdrop-blur-md">
+              Start by asking a business question or tap a quick action above. Your chat stays on this device.
+            </div>
+          `;
+          return;
+        }
+
+        baryaChatMessages.innerHTML = history
+          .map((item) => {
+            if (item.role === 'user') {
+              return `
+                <div class="ml-auto w-full max-w-2xl rounded-2xl border border-accent/30 bg-accent/10 p-4 backdrop-blur-md">
+                  <p class="text-right text-[11px] uppercase tracking-[0.12em] text-accent">You</p>
+                  <p class="mt-2 text-sm text-zinc-100">${escapeHtml(item.message)}</p>
+                </div>
+              `;
+            }
+
+            return `
+              <div class="mr-auto flex w-full max-w-2xl gap-3">
+                <div class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-accent/35 bg-accent/20 text-xs font-semibold text-accent">AI</div>
+                <div class="w-full rounded-2xl border border-zinc-700 bg-white/5 p-4 backdrop-blur-md">
+                  <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Barya AI</p>
+                  <div class="mt-2">${createReplyTemplate(item.reply)}</div>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        baryaChatMessages.scrollTo({ top: baryaChatMessages.scrollHeight, behavior: 'smooth' });
+      }
+
+      function buildSmartReply(message) {
+        const text = message.toLowerCase();
+        const templates = [
+          { keyword: ['validate', 'idea'], answer: 'Your idea is promising if it solves a painful, frequent problem for one narrow customer segment first.', why: 'Validation prevents building features people praise but never pay for.', steps: ['Interview 10 exact target users this week.', 'Score each pain by urgency (1-5) and budget readiness.', 'Test one landing page with a clear ROI promise.'], tip: 'Never ask “Do you like this idea?”—ask “Would you pay now?”', next: 'Ask: “Can you help me craft 10 validation interview questions?”' },
+          { keyword: ['launch', 'plan'], answer: 'Use a 30-day micro-launch focused on one core outcome and one ideal customer profile.', why: 'Tight launches speed up learning and avoid diluted positioning.', steps: ['Define one success metric for day 30.', 'Create a weekly launch calendar with one channel per week.', 'Publish proof each week: demo, case note, or customer quote.'], tip: 'Momentum beats perfection—ship in public with measurable milestones.', next: 'Ask: “Build me a week-by-week launch sprint.”' },
+          { keyword: ['first customers', 'customer'], answer: 'Your first customers come fastest from warm networks and problem-focused communities, not broad ads.', why: 'Early customers buy trust and relevance more than polished branding.', steps: ['List 30 likely buyers from LinkedIn and existing contacts.', 'Send personalized pain-based outreach messages.', 'Offer a pilot with a specific success target and timeline.'], tip: 'Sell the transformation, not the tool.', next: 'Ask: “Write my first 5 outreach messages.”' },
+          { keyword: ['pricing', 'price'], answer: 'Start with value-based pricing tied to measurable outcomes, then add tiers as usage grows.', why: 'Outcome pricing aligns your revenue with customer wins and reduces discount pressure.', steps: ['Estimate financial value your solution creates monthly.', 'Set starter price at 10-20% of delivered value.', 'Create 3 tiers: Starter, Growth, and Scale.'], tip: 'Anchor pricing with ROI examples before showing numbers.', next: 'Ask: “Design 3 pricing tiers for my startup.”' },
+          { keyword: ['expense', 'cost', 'reduce expenses'], answer: 'Cut fixed costs first, then renegotiate variable spend with usage-based controls.', why: 'Reducing burn rate extends runway and buying time improves decision quality.', steps: ['Audit all recurring tools and remove low-usage subscriptions.', 'Renegotiate top 5 vendor contracts this month.', 'Set monthly spend caps per team or function.'], tip: 'Run a weekly “spend to value” review for every major cost.', next: 'Ask: “Create a 30-day expense reduction checklist.”' },
+          { keyword: ['growth', 'improve growth'], answer: 'Focus on one growth loop where acquisition naturally feeds retention and referrals.', why: 'Compounding loops scale better than isolated channel experiments.', steps: ['Choose one primary growth channel for 4 weeks.', 'Instrument activation and retention metrics in the same funnel.', 'Add referral triggers right after user success moments.'], tip: 'If retention is weak, pause acquisition and fix onboarding first.', next: 'Ask: “Help me design one high-retention growth loop.”' },
+          { keyword: ['give business idea', 'business idea', 'idea for'], answer: 'A strong opportunity: AI compliance copilot for small logistics firms handling contracts and audits.', why: 'Compliance pain is urgent, expensive, and repeated—ideal for recurring revenue.', steps: ['Interview 8 logistics operators about audit bottlenecks.', 'Build an MVP that flags missing contract clauses.', 'Offer monthly compliance reports as premium upsell.'], tip: 'Pick ideas where buyers already spend money to solve the pain manually.', next: 'Ask: “Give me 5 more business ideas for my skills.”' },
+          { keyword: ['how to start', 'start', 'begin'], answer: 'Start with a narrow customer problem, validate demand quickly, and ship a tiny paid solution.', why: 'Early focus converts uncertainty into evidence and revenue.', steps: ['Define one customer persona and one painful workflow.', 'Run customer calls and pre-sell a pilot.', 'Launch MVP in 14 days with one measurable outcome.'], tip: 'Speed to first paying user is your most important startup metric.', next: 'Ask: “Create my first 14-day startup execution plan.”' },
+          { keyword: ['market', 'position'], answer: 'Win by owning a niche category message with clear before-vs-after outcomes.', why: 'Positioning clarity improves conversion across marketing and sales.', steps: ['Choose one niche where urgency and budget are both high.', 'Craft a one-line category statement.', 'Align homepage, pitch, and outreach with the same narrative.'], tip: 'If your message fits everyone, it persuades no one.', next: 'Ask: “Refine my positioning statement.”' },
+          { keyword: ['sales', 'close', 'pipeline'], answer: 'Build a simple sales pipeline with discovery, value proof, pilot, and close stages.', why: 'A repeatable pipeline turns random wins into predictable revenue.', steps: ['Create qualification criteria for every new lead.', 'Use discovery calls to capture problem cost and urgency.', 'Present proposals with timeline, ROI, and decision deadline.'], tip: 'Always finish calls with a scheduled next step on calendar.', next: 'Ask: “Draft my discovery call structure.”' },
+          { keyword: ['product', 'feature', 'roadmap'], answer: 'Prioritize product roadmap by customer pain frequency and willingness to pay.', why: 'The right roadmap increases retention and prevents feature bloat.', steps: ['Collect top 10 feature requests and map to business outcomes.', 'Score each item by impact, effort, and revenue link.', 'Ship in 2-week cycles with usage feedback checkpoints.'], tip: 'Remove one weak feature for every new feature added.', next: 'Ask: “Help me prioritize my next sprint roadmap.”' },
+          { keyword: ['funding', 'investor', 'raise'], answer: 'Prepare for funding by proving traction, repeatability, and capital-efficient growth.', why: 'Investors back evidence of momentum more than polished storytelling.', steps: ['Track monthly growth, retention, and net revenue metrics.', 'Document your repeatable customer acquisition process.', 'Build a concise data room with financial and product proof.'], tip: 'Fundraise from strength: start conversations before you need cash.', next: 'Ask: “Create my investor readiness checklist.”' }
+        ];
+
+        const matched = templates.find((template) => template.keyword.some((word) => text.includes(word)));
+        return matched || {
+          answer: 'Great question. Focus on solving a measurable customer pain with a small, fast experiment this week.',
+          why: 'Fast experiments reduce risk and reveal what people will actually pay for.',
+          steps: ['Define one clear business hypothesis to test.', 'Run one customer-facing experiment within 72 hours.', 'Capture outcomes and double down on what worked.'],
+          tip: 'Execution clarity beats complex planning in early stages.',
+          next: 'Ask: “What experiment should I run this week based on my idea?”'
+        };
+      }
+
+      function sendBaryaMessage(rawMessage) {
+        const message = rawMessage.trim();
+        if (!message) return;
+
+        const history = getBaryaChat();
+        history.push({ role: 'user', message, createdAt: Date.now() });
+        history.push({ role: 'assistant', reply: buildSmartReply(message), createdAt: Date.now() });
+        saveBaryaChat(history);
+        renderBaryaChat();
+        baryaChatInput.value = '';
+      }
+
+      sendBaryaChatBtn.addEventListener('click', () => sendBaryaMessage(baryaChatInput.value));
+      baryaChatInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          sendBaryaMessage(baryaChatInput.value);
+        }
+      });
+
+      clearBaryaChatBtn.addEventListener('click', () => {
+        if (!confirm('Clear current visible chat?')) return;
+        localStorage.removeItem(baryaStorageKey);
+        renderBaryaChat();
+      });
+
+      clearAllBaryaChatBtn.addEventListener('click', () => {
+        if (!confirm('Clear all Barya AI chat history from this browser?')) return;
+        localStorage.removeItem(baryaStorageKey);
+        renderBaryaChat();
+      });
+
+      exportBaryaChatBtn.addEventListener('click', () => {
+        const history = getBaryaChat();
+        const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `barya-chat-history-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      importBaryaChatInput.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          if (!Array.isArray(parsed)) throw new Error('Invalid format');
+          saveBaryaChat(parsed);
+          renderBaryaChat();
+          alert('Chat history imported successfully.');
+        } catch {
+          alert('Import failed. Please upload a valid Barya chat JSON export.');
+        } finally {
+          importBaryaChatInput.value = '';
+        }
+      });
+
+      baryaQuickActionBtns.forEach((button) => {
+        button.addEventListener('click', () => {
+          const prompt = button.dataset.prompt || '';
+          baryaChatInput.value = prompt;
+          sendBaryaMessage(prompt);
+        });
+      });
+
+      renderBaryaChat();
 
       function openSidebar() {
         sidebar.classList.remove('-translate-x-full');
