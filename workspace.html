@@ -648,77 +648,116 @@
     }
 
 
+    const WORKSPACE_RELATION_KEYS = ['Linked Tasks', 'Linked Notes', 'Related Ideas', 'Linked Research'];
+    const WORKSPACE_OBJECT_TYPES = ['Page', 'Note', 'Task List', 'Database', 'Research', 'Idea'];
+    const workspaceBlockMenu = [
+      { type: 'text', label: 'Text' },
+      { type: 'heading', label: 'Heading' },
+      { type: 'todo', label: 'To-do' },
+      { type: 'bullet', label: 'Bullet' },
+      { type: 'numbered', label: 'Numbered' },
+      { type: 'toggle', label: 'Toggle' },
+      { type: 'relation', label: 'Relation' },
+      { type: 'database', label: 'Database (inline table)' }
+    ];
+
     const workspaceTemplates = {
       startupOnePager: {
         label: 'Startup One-Pager',
+        objectType: 'Research',
+        relations: {
+          'Linked Tasks': [],
+          'Linked Notes': [],
+          'Related Ideas': [],
+          'Linked Research': []
+        },
         blocks: [
-          { type: 'h1', text: 'Startup One-Pager' },
-          { type: 'h2', text: 'Problem' },
-          { type: 'paragraph', text: 'What urgent pain are you solving?' },
-          { type: 'h2', text: 'Solution' },
-          { type: 'paragraph', text: 'Describe your core product in plain language.' },
-          { type: 'bullet', text: 'Target user segment' },
-          { type: 'bullet', text: 'Unique value proposition' },
-          { type: 'numbered', text: 'Top KPI this month' }
+          { type: 'heading', level: 1, text: 'Startup One-Pager' },
+          { type: 'text', text: 'Capture your core thesis, then link execution objects below.' },
+          { type: 'toggle', text: 'Problem', content: 'What painful, frequent, expensive problem exists?' },
+          { type: 'toggle', text: 'Solution', content: 'How your product removes that pain uniquely.' },
+          { type: 'relation', relationKey: 'Linked Tasks', targets: [] },
+          { type: 'relation', relationKey: 'Linked Research', targets: [] }
         ]
       },
-      weeklyReview: {
-        label: 'Weekly Review',
+      founderOperatingSystem: {
+        label: 'Founder Operating System',
+        objectType: 'Task List',
+        relations: {
+          'Linked Tasks': [],
+          'Linked Notes': [],
+          'Related Ideas': [],
+          'Linked Research': []
+        },
         blocks: [
-          { type: 'h1', text: 'Weekly Review' },
-          { type: 'h2', text: 'Wins' },
-          { type: 'bullet', text: 'Major progress achieved' },
-          { type: 'h2', text: 'Challenges' },
-          { type: 'bullet', text: 'Main blocker this week' },
-          { type: 'h2', text: 'Next Week Plan' },
-          { type: 'todo', text: 'One critical priority', checked: false }
+          { type: 'heading', level: 1, text: 'Founder Operating System' },
+          { type: 'todo', text: 'Define one weekly growth goal', checked: false },
+          { type: 'todo', text: 'Review [[Startup One-Pager]] assumptions', checked: false },
+          { type: 'database', columns: ['Initiative', 'Owner', 'Status', 'Due'], rows: [['Activation improvement', 'Founder', 'In Progress', ''], ['User interviews', 'Research lead', 'To Do', '']] }
         ]
       },
-      businessPlan: {
-        label: 'Business Plan',
+      researchNotebook: {
+        label: 'Research Notebook',
+        objectType: 'Research',
+        relations: {
+          'Linked Tasks': [],
+          'Linked Notes': [],
+          'Related Ideas': [],
+          'Linked Research': []
+        },
         blocks: [
-          { type: 'h1', text: 'Business Plan' },
-          { type: 'h2', text: 'Market Opportunity' },
-          { type: 'paragraph', text: 'Total market, segment, and why now.' },
-          { type: 'h2', text: 'Go-To-Market' },
-          { type: 'numbered', text: 'Acquisition channel 1' },
-          { type: 'numbered', text: 'Acquisition channel 2' },
-          { type: 'h3', text: 'Financial Targets' },
-          { type: 'paragraph', text: 'Revenue, burn, and runway goals.' }
-        ]
-      },
-      customerInterview: {
-        label: 'Customer Interview Notes',
-        blocks: [
-          { type: 'h1', text: 'Customer Interview Notes' },
-          { type: 'h2', text: 'Participant Details' },
-          { type: 'paragraph', text: 'Role, company, and context.' },
-          { type: 'h2', text: 'Pain Points' },
-          { type: 'bullet', text: 'Pain point #1' },
-          { type: 'bullet', text: 'Pain point #2' },
-          { type: 'h2', text: 'Quotes' },
-          { type: 'paragraph', text: 'Most important direct quote.' }
-        ]
-      },
-      ideaValidation: {
-        label: 'Idea Validation Tracker',
-        blocks: [
-          { type: 'h1', text: 'Idea Validation Tracker' },
-          { type: 'h2', text: 'Hypothesis' },
-          { type: 'paragraph', text: 'If we build X for Y, then Z outcome should happen.' },
-          { type: 'h2', text: 'Experiments' },
-          { type: 'todo', text: 'Launch test landing page', checked: false },
-          { type: 'todo', text: 'Run 5 discovery calls', checked: false },
-          { type: 'h3', text: 'Decision' },
-          { type: 'paragraph', text: 'Continue, iterate, or stop.' }
+          { type: 'heading', level: 1, text: 'Research Notebook' },
+          { type: 'text', text: 'Store evidence, references, and linked execution items.' },
+          { type: 'bullet', text: 'Source #1' },
+          { type: 'bullet', text: 'Source #2' },
+          { type: 'relation', relationKey: 'Related Ideas', targets: [] }
         ]
       }
     };
 
+    function normalizeWorkspaceBlock(block) {
+      const legacyMap = { paragraph: 'text', h1: 'heading', h2: 'heading', h3: 'heading' };
+      const normalizedType = legacyMap[block.type] || block.type || 'text';
+      const levelFromLegacy = block.type === 'h1' ? 1 : block.type === 'h2' ? 2 : block.type === 'h3' ? 3 : 2;
+      const normalized = {
+        id: block.id || crypto.randomUUID(),
+        type: normalizedType,
+        text: String(block.text || ''),
+        checked: !!block.checked,
+        level: Number(block.level || levelFromLegacy || 2),
+        relationKey: block.relationKey || WORKSPACE_RELATION_KEYS[0],
+        targets: Array.isArray(block.targets) ? block.targets : [],
+        open: block.open !== false,
+        content: String(block.content || ''),
+        columns: Array.isArray(block.columns) && block.columns.length ? block.columns.map(c => String(c || 'Column')) : ['Name', 'Status', 'Notes'],
+        rows: Array.isArray(block.rows) ? block.rows.map(row => Array.isArray(row) ? row.map(cell => String(cell || '')) : []) : []
+      };
+      if (!['text', 'heading', 'todo', 'bullet', 'numbered', 'database', 'relation', 'toggle'].includes(normalized.type)) normalized.type = 'text';
+      return normalized;
+    }
+
+    function createWorkspaceBlock(type = 'text') {
+      return normalizeWorkspaceBlock({ id: crypto.randomUUID(), type });
+    }
+
     function ensureWorkspaceState() {
+      if (!state.workspace || typeof state.workspace !== 'object') state.workspace = structuredClone(defaultState.workspace);
       if (!Array.isArray(state.workspace.pages)) state.workspace.pages = [];
-      if (!Array.isArray(state.workspace.databases)) state.workspace.databases = [];
+      state.workspace.pages.forEach(page => {
+        if (!page.id) page.id = crypto.randomUUID();
+        page.title = String(page.title || 'Untitled Page');
+        page.objectType = WORKSPACE_OBJECT_TYPES.includes(page.objectType) ? page.objectType : 'Page';
+        page.updatedAt = page.updatedAt || new Date().toISOString();
+        if (!Array.isArray(page.blocks)) page.blocks = [createWorkspaceBlock('text')];
+        page.blocks = page.blocks.map(normalizeWorkspaceBlock);
+        if (!page.relations || typeof page.relations !== 'object') page.relations = {};
+        WORKSPACE_RELATION_KEYS.forEach(key => {
+          if (!Array.isArray(page.relations[key])) page.relations[key] = [];
+          page.relations[key] = page.relations[key].filter(Boolean);
+        });
+      });
       if (!state.workspace.activePageId && state.workspace.pages[0]) state.workspace.activePageId = state.workspace.pages[0].id;
+      if (!Array.isArray(state.workspace.databases)) state.workspace.databases = [];
       if (!state.workspace.activeDatabaseId && state.workspace.databases[0]) state.workspace.activeDatabaseId = state.workspace.databases[0].id;
     }
 
@@ -728,268 +767,292 @@
     }
 
     function blockTypeLabel(type) {
-      return ({ h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', paragraph: 'Paragraph', todo: 'To-do', bullet: 'Bullet', numbered: 'Numbered' })[type] || 'Paragraph';
+      return ({ text: 'Text', heading: 'Heading', todo: 'To-do', bullet: 'Bullet', numbered: 'Numbered', database: 'Database', relation: 'Relation', toggle: 'Toggle' })[type] || 'Text';
     }
 
     function pagePreview(page) {
-      const first = page.blocks.find(b => (b.text || '').trim());
-      return first ? first.text.slice(0, 80) : 'Empty page';
+      const first = (page.blocks || []).find(b => (b.text || '').trim());
+      return first ? first.text.slice(0, 90) : 'Empty page';
     }
 
-    function createWorkspacePage(title='Untitled Page', blocks=null) {
+    function workspacePageMap() {
+      return new Map((state.workspace.pages || []).map(p => [p.id, p]));
+    }
+
+    function resolveMentionedPageIds(text, currentPageId = '') {
+      const ids = [];
+      const pages = state.workspace.pages || [];
+      const pattern = /\[\[([^\]]+)\]\]/g;
+      let match;
+      while ((match = pattern.exec(String(text || '')))) {
+        const name = match[1].trim().toLowerCase();
+        const found = pages.find(page => page.title.trim().toLowerCase() === name);
+        if (found && found.id !== currentPageId && !ids.includes(found.id)) ids.push(found.id);
+      }
+      return ids;
+    }
+
+    function computeWorkspaceConnections() {
+      ensureWorkspaceState();
+      const backlinks = new Map((state.workspace.pages || []).map(p => [p.id, []]));
+      const related = new Map((state.workspace.pages || []).map(p => [p.id, new Set()]));
+
+      (state.workspace.pages || []).forEach(page => {
+        (page.blocks || []).forEach(block => {
+          if (['text', 'heading', 'todo', 'bullet', 'numbered', 'toggle'].includes(block.type)) {
+            resolveMentionedPageIds(`${block.text || ''} ${block.content || ''}`, page.id).forEach(targetId => {
+              backlinks.get(targetId)?.push({ fromId: page.id, via: 'smart-link' });
+              related.get(page.id)?.add(targetId);
+              related.get(targetId)?.add(page.id);
+            });
+          }
+          if (block.type === 'relation') {
+            (block.targets || []).forEach(targetId => {
+              if (!targetId || targetId === page.id) return;
+              backlinks.get(targetId)?.push({ fromId: page.id, via: block.relationKey || 'Relation block' });
+              related.get(page.id)?.add(targetId);
+              related.get(targetId)?.add(page.id);
+            });
+          }
+        });
+        WORKSPACE_RELATION_KEYS.forEach(key => {
+          (page.relations[key] || []).forEach(targetId => {
+            if (!targetId || targetId === page.id) return;
+            backlinks.get(targetId)?.push({ fromId: page.id, via: key });
+            related.get(page.id)?.add(targetId);
+            related.get(targetId)?.add(page.id);
+          });
+        });
+      });
+
+      return {
+        backlinks,
+        related: new Map(Array.from(related.entries()).map(([k, set]) => [k, Array.from(set)]))
+      };
+    }
+
+    function createWorkspacePage(title='Untitled Page', blocks=null, objectType='Page', relations=null) {
       const page = {
         id: crypto.randomUUID(),
         title,
+        objectType: WORKSPACE_OBJECT_TYPES.includes(objectType) ? objectType : 'Page',
         updatedAt: new Date().toISOString(),
-        blocks: (blocks || [{ id: crypto.randomUUID(), type: 'paragraph', text: '' }]).map(b => ({ id: crypto.randomUUID(), type: b.type || 'paragraph', text: b.text || '', checked: !!b.checked }))
+        relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, Array.isArray(relations?.[key]) ? relations[key] : []])),
+        blocks: (blocks || [createWorkspaceBlock('text')]).map(b => normalizeWorkspaceBlock({ ...b, id: crypto.randomUUID() }))
       };
       state.workspace.pages.unshift(page);
       state.workspace.activePageId = page.id;
       saveState();
     }
 
-    function createWorkspaceDatabase() {
-      const db = {
-        id: crypto.randomUUID(),
-        name: `Database ${state.workspace.databases.length + 1}`,
-        rows: []
-      };
-      state.workspace.databases.unshift(db);
-      state.workspace.activeDatabaseId = db.id;
-      saveState();
+    function updatePageUpdatedAt(page) {
+      page.updatedAt = new Date().toISOString();
     }
 
     function renderWorkspace() {
       ensureWorkspaceState();
       const el = document.getElementById('section-workspace');
       const activePage = getActiveWorkspacePage();
-      const activeDb = state.workspace.databases.find(d => d.id === state.workspace.activeDatabaseId) || null;
+      const connections = computeWorkspaceConnections();
+      const pageMap = workspacePageMap();
+      const backlinks = activePage ? (connections.backlinks.get(activePage.id) || []) : [];
+      const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
 
       el.innerHTML = `
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-4">
+        <div class="bg-[#0e1015] border border-cyan-500/20 rounded-2xl p-4 sm:p-5 space-y-4 shadow-neon">
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-xl font-semibold text-barya-accent">Flexible Workspace</h2>
+            <div>
+              <h2 class="text-xl font-semibold text-barya-accent">Workspace · Connected Block Editor</h2>
+              <p class="text-xs text-zinc-400">Anytype-style local-first editor with relations, backlinks, and smart object types.</p>
+            </div>
             <div class="flex flex-wrap gap-2">
-              <button id="workspaceTemplatesBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">Ready Templates</button>
-              <button id="workspaceNewDatabase" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">New Database</button>
-              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-base font-semibold">New Page</button>
+              <button id="workspaceTemplatesBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-400/70 transition">Templates</button>
+              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/50 font-semibold hover:bg-cyan-500/30 transition">New Object</button>
             </div>
           </div>
 
           <div id="workspaceTemplates" class="hidden grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             ${Object.entries(workspaceTemplates).map(([key, tpl]) => `
-              <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-                <p class="font-medium mb-2">${escapeHTML(tpl.label)}</p>
-                <button data-template-key="${key}" class="w-full px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Use Template</button>
+              <div class="bg-zinc-900/70 border border-cyan-500/20 rounded-xl p-3">
+                <p class="font-medium">${escapeHTML(tpl.label)}</p>
+                <p class="text-xs text-zinc-400 mt-1">Type: ${escapeHTML(tpl.objectType || 'Page')}</p>
+                <button data-template-key="${key}" class="mt-3 w-full px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/30 transition">Use Template</button>
               </div>
             `).join('')}
           </div>
 
-          <div class="grid xl:grid-cols-[320px_1fr] gap-4">
-            <aside class="bg-[#0f0f0f] border border-zinc-800 rounded-xl p-3 space-y-4 max-h-[75vh] overflow-auto scrollbar-thin">
-              <div>
-                <h3 class="text-sm uppercase tracking-wide text-zinc-400 mb-2">Pages</h3>
-                <div class="space-y-2">
-                  ${state.workspace.pages.map(page => `
-                    <button data-open-page="${page.id}" class="w-full text-left p-3 rounded-lg border ${page.id === state.workspace.activePageId ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900'}">
-                      <p class="font-medium truncate">${escapeHTML(page.title || 'Untitled Page')}</p>
-                      <p class="text-xs text-zinc-400">${new Date(page.updatedAt).toLocaleString()}</p>
-                      <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML(pagePreview(page))}</p>
-                    </button>
-                  `).join('') || '<p class="text-sm text-zinc-500">No pages yet.</p>'}
-                </div>
-              </div>
-
-              <div>
-                <h3 class="text-sm uppercase tracking-wide text-zinc-400 mb-2">Databases</h3>
-                <div class="space-y-2">
-                  ${state.workspace.databases.map(db => `
-                    <button data-open-db="${db.id}" class="w-full text-left p-2 rounded-lg border ${db.id === state.workspace.activeDatabaseId ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900'}">
-                      <p class="text-sm font-medium">${escapeHTML(db.name)}</p>
-                      <p class="text-xs text-zinc-500">${db.rows.length} row(s)</p>
-                    </button>
-                  `).join('') || '<p class="text-sm text-zinc-500">No databases yet.</p>'}
-                </div>
-              </div>
+          <div class="grid xl:grid-cols-[300px_1fr] gap-4">
+            <aside class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
+              <h3 class="text-xs uppercase tracking-[0.2em] text-zinc-400 px-1">Objects</h3>
+              ${(state.workspace.pages || []).map(page => `
+                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-cyan-400/60 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/35'}">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="font-medium truncate">${escapeHTML(page.title || 'Untitled')}</p>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-200">${escapeHTML(page.objectType || 'Page')}</span>
+                  </div>
+                  <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
+                  <p class="text-[11px] text-zinc-500 mt-1">${new Date(page.updatedAt).toLocaleString()}</p>
+                </button>
+              `).join('') || '<p class="text-sm text-zinc-500">No objects yet.</p>'}
             </aside>
 
-            <div class="space-y-4 min-w-0">
-              <section class="bg-[#0f0f0f] border border-zinc-800 rounded-xl p-4">
-                ${activePage ? `
-                  <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
-                    <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" placeholder="Untitled Page" class="flex-1 min-w-[220px] bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-lg font-semibold" />
-                    <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Delete Page</button>
-                  </div>
-                  <div class="space-y-2" id="workspaceBlocks">
-                    ${activePage.blocks.map(block => `
-                      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-                        <div class="flex flex-wrap gap-2 items-center mb-2">
-                          <select data-block-type="${block.id}" class="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs">
-                            ${['h1','h2','h3','paragraph','todo','bullet','numbered'].map(type => `<option value="${type}" ${block.type===type?'selected':''}>${blockTypeLabel(type)}</option>`).join('')}
+            <section class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-4 space-y-4">
+              ${activePage ? `
+                <div class="flex flex-wrap gap-2 items-center">
+                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xl font-semibold focus:border-cyan-400/70 outline-none" placeholder="Untitled object" />
+                  <select id="workspaceObjectType" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                    ${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}
+                  </select>
+                  <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/40 text-red-300">Delete</button>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-3">
+                  <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
+                    <div class="flex items-center justify-between"><h4 class="font-semibold text-cyan-200">Relations</h4><span class="text-xs text-zinc-500">Notion-style properties</span></div>
+                    ${WORKSPACE_RELATION_KEYS.map(key => `
+                      <div class="space-y-2" data-relation-key-wrap="${escapeAttr(key)}">
+                        <p class="text-xs text-zinc-400">${escapeHTML(key)}</p>
+                        <div class="flex flex-wrap gap-1">${(activePage.relations[key]||[]).map(id => `<span class="text-xs px-2 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30">${escapeHTML(pageMap.get(id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">None</span>'}</div>
+                        <div class="flex gap-2">
+                          <select data-relation-select="${escapeAttr(key)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">
+                            <option value="">Select object…</option>
+                            ${(state.workspace.pages || []).filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType || 'Page')}</option>`).join('')}
                           </select>
-                          <button data-delete-block="${block.id}" class="ml-auto text-xs text-red-400">Remove</button>
+                          <button data-relation-add="${escapeAttr(key)}" class="px-3 py-1 rounded border border-cyan-500/40 text-cyan-200 bg-cyan-500/10">Add</button>
                         </div>
-                        ${block.type === 'todo' ? `
-                          <label class="flex items-center gap-2">
-                            <input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-cyan-400"/>
-                            <input data-block-text="${block.id}" value="${escapeAttr(block.text)}" placeholder="To-do item" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" />
-                          </label>
-                        ` : `
-                          <input data-block-text="${block.id}" value="${escapeAttr(block.text)}" placeholder="${blockTypeLabel(block.type)}" class="w-full ${block.type==='h1'?'text-2xl font-bold':block.type==='h2'?'text-xl font-semibold':block.type==='h3'?'text-lg font-semibold':'text-sm'} bg-zinc-950 border border-zinc-700 rounded px-2 py-2" />
-                        `}
                       </div>
                     `).join('')}
                   </div>
-                  <div class="flex flex-wrap gap-2 mt-3">
-                    <button id="workspaceAddParagraph" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Add Paragraph</button>
-                    <button id="workspaceAddTodo" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Add To-do</button>
-                  </div>
-                ` : '<p class="text-zinc-500">Create a page to start writing.</p>'}
-              </section>
 
-              <section class="bg-[#0f0f0f] border border-zinc-800 rounded-xl p-4 overflow-auto">
-                <div class="flex items-center justify-between mb-3 gap-2">
-                  <h3 class="font-semibold">Database Table</h3>
-                  ${activeDb ? `<input id="workspaceDbName" value="${escapeAttr(activeDb.name)}" class="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm" />` : ''}
+                  <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
+                    <h4 class="font-semibold text-cyan-200">Backlinks & Related Objects</h4>
+                    <div>
+                      <p class="text-xs uppercase text-zinc-500 mb-1">Backlinks</p>
+                      <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-800 hover:border-cyan-500/40 bg-zinc-950">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')} <span class="text-zinc-500 text-xs">via ${escapeHTML(link.via)}</span></button>`).join('') || '<p class="text-sm text-zinc-600">No backlinks yet.</p>'}</div>
+                    </div>
+                    <div>
+                      <p class="text-xs uppercase text-zinc-500 mb-1">Related Objects</p>
+                      <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 hover:bg-cyan-500/25 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-600">No related objects.</p>'}</div>
+                    </div>
+                  </div>
                 </div>
-                ${activeDb ? `
-                  <div class="overflow-auto">
-                    <table class="min-w-full text-sm border border-zinc-800">
-                      <thead class="bg-zinc-900">
-                        <tr>
-                          <th class="p-2 border border-zinc-800 text-left">Name</th>
-                          <th class="p-2 border border-zinc-800 text-left">Status</th>
-                          <th class="p-2 border border-zinc-800 text-left">Due Date</th>
-                          <th class="p-2 border border-zinc-800 text-left">Notes</th>
-                          <th class="p-2 border border-zinc-800">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${activeDb.rows.map(row => `
-                          <tr>
-                            <td class="border border-zinc-800 p-1"><input data-db-row-name="${row.id}" value="${escapeAttr(row.name)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-1"/></td>
-                            <td class="border border-zinc-800 p-1">
-                              <select data-db-row-status="${row.id}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-1">
-                                ${['To Do','In Progress','Done'].map(s=>`<option ${row.status===s?'selected':''}>${s}</option>`).join('')}
-                              </select>
-                            </td>
-                            <td class="border border-zinc-800 p-1"><input type="date" data-db-row-due="${row.id}" value="${escapeAttr(row.dueDate || '')}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-1"/></td>
-                            <td class="border border-zinc-800 p-1"><input data-db-row-notes="${row.id}" value="${escapeAttr(row.notes)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-1"/></td>
-                            <td class="border border-zinc-800 p-1 text-center"><button data-db-row-delete="${row.id}" class="text-red-400 text-xs">Delete</button></td>
-                          </tr>
-                        `).join('')}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="flex flex-wrap gap-2 mt-3">
-                    <button id="workspaceAddDbRow" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Add Row</button>
-                    <button id="workspaceDeleteDb" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Delete Database</button>
-                  </div>
-                ` : '<p class="text-zinc-500">Create a database to track structured work.</p>'}
-              </section>
 
-              <section class="bg-[#0f0f0f] border border-zinc-800 rounded-xl p-4">
-                <h3 class="font-semibold mb-3">Safety & Backup</h3>
-                <div class="flex flex-wrap gap-2">
-                  <button id="workspaceExport" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export All Workspace Data</button>
-                  <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Workspace Data<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label>
-                  <button id="workspaceClear" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear All Workspace Data</button>
+                <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-semibold text-cyan-200">Blocks</h4>
+                    <p class="text-xs text-zinc-500">Type <span class="text-cyan-300">/</span> at start of a block for commands · Drag handle to reorder</p>
+                  </div>
+                  <div id="workspaceBlocks" class="space-y-2">
+                    ${(activePage.blocks || []).map((block, idx) => {
+                      const cmdOpen = block.commandOpen ? '' : 'hidden';
+                      const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase()));
+                      return `
+                      <article class="workspace-block group border border-zinc-800 rounded-lg bg-[#080a0f] p-2 transition hover:border-cyan-500/35" draggable="true" data-block-id="${block.id}">
+                        <div class="flex items-center gap-2 mb-2">
+                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-cyan-300" data-drag-handle="${block.id}">⋮⋮</button>
+                          <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-400">${blockTypeLabel(block.type)}</span>
+                          <button data-delete-block="${block.id}" class="ml-auto text-xs text-red-400">Remove</button>
+                        </div>
+                        ${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}
+                      </article>`;
+                    }).join('')}
+                  </div>
+                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20 transition">+ Add Block</button>
                 </div>
-              </section>
-            </div>
+
+                <section class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                  <h3 class="font-semibold mb-3">Safety & Backup</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <button id="workspaceExport" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export All Workspace</button>
+                    <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label>
+                    <button id="workspaceClear" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear Workspace</button>
+                  </div>
+                </section>
+              ` : '<p class="text-zinc-500">Create an object to start writing.</p>'}
+            </section>
           </div>
         </div>
       `;
 
       document.getElementById('workspaceTemplatesBtn').onclick = () => document.getElementById('workspaceTemplates').classList.toggle('hidden');
       document.getElementById('workspaceNewPage').onclick = () => createWorkspacePage();
-      document.getElementById('workspaceNewDatabase').onclick = () => createWorkspaceDatabase();
 
       el.querySelectorAll('[data-template-key]').forEach(btn => btn.onclick = () => {
         const tpl = workspaceTemplates[btn.dataset.templateKey];
-        createWorkspacePage(tpl.label, tpl.blocks);
+        createWorkspacePage(tpl.label, tpl.blocks, tpl.objectType || 'Page', tpl.relations || null);
       });
 
       el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
         state.workspace.activePageId = btn.dataset.openPage;
         saveState();
       });
-      el.querySelectorAll('[data-open-db]').forEach(btn => btn.onclick = () => {
-        state.workspace.activeDatabaseId = btn.dataset.openDb;
+
+      if (!activePage) return;
+
+      document.getElementById('workspacePageTitle').oninput = (e) => {
+        activePage.title = e.target.value || 'Untitled Page';
+        updatePageUpdatedAt(activePage);
+        saveStateRaw();
+      };
+      document.getElementById('workspaceObjectType').onchange = (e) => {
+        activePage.objectType = e.target.value;
+        updatePageUpdatedAt(activePage);
+        saveState();
+      };
+      document.getElementById('workspaceDeletePage').onclick = () => {
+        if (!confirm('Delete this object?')) return;
+        state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
+        state.workspace.activePageId = state.workspace.pages[0]?.id || null;
+        saveState();
+      };
+
+      el.querySelectorAll('[data-relation-add]').forEach(btn => btn.onclick = () => {
+        const key = btn.dataset.relationAdd;
+        const select = el.querySelector(`[data-relation-select="${CSS.escape(key)}"]`);
+        const id = select?.value;
+        if (!id) return;
+        if (!activePage.relations[key].includes(id)) activePage.relations[key].push(id);
+        updatePageUpdatedAt(activePage);
         saveState();
       });
 
-      if (activePage) {
-        document.getElementById('workspacePageTitle').oninput = (e) => {
-          activePage.title = e.target.value || 'Untitled Page';
-          activePage.updatedAt = new Date().toISOString();
-          saveStateRaw();
-        };
-        document.getElementById('workspaceDeletePage').onclick = () => {
-          if (!confirm('Delete this page?')) return;
-          state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
-          state.workspace.activePageId = state.workspace.pages[0]?.id || null;
-          saveState();
-        };
-        document.getElementById('workspaceAddParagraph').onclick = () => {
-          activePage.blocks.push({ id: crypto.randomUUID(), type: 'paragraph', text: '' });
-          activePage.updatedAt = new Date().toISOString();
-          saveState();
-        };
-        document.getElementById('workspaceAddTodo').onclick = () => {
-          activePage.blocks.push({ id: crypto.randomUUID(), type: 'todo', text: '', checked: false });
-          activePage.updatedAt = new Date().toISOString();
-          saveState();
-        };
+      document.getElementById('workspaceAddBlock').onclick = () => {
+        activePage.blocks.push(createWorkspaceBlock('text'));
+        updatePageUpdatedAt(activePage);
+        saveState();
+      };
 
-        el.querySelectorAll('[data-block-text]').forEach(input => input.oninput = () => {
-          const block = activePage.blocks.find(b => b.id === input.dataset.blockText);
-          if (!block) return;
-          block.text = input.value;
-          activePage.updatedAt = new Date().toISOString();
-          saveStateRaw();
+      let dragId = null;
+      el.querySelectorAll('.workspace-block').forEach(blockEl => {
+        blockEl.addEventListener('dragstart', () => {
+          dragId = blockEl.dataset.blockId;
+          blockEl.classList.add('opacity-60');
         });
-        el.querySelectorAll('[data-block-check]').forEach(input => input.onchange = () => {
-          const block = activePage.blocks.find(b => b.id === input.dataset.blockCheck);
-          if (!block) return;
-          block.checked = input.checked;
-          activePage.updatedAt = new Date().toISOString();
-          saveStateRaw();
+        blockEl.addEventListener('dragend', () => {
+          dragId = null;
+          blockEl.classList.remove('opacity-60');
         });
-        el.querySelectorAll('[data-block-type]').forEach(select => select.onchange = () => {
-          const block = activePage.blocks.find(b => b.id === select.dataset.blockType);
-          if (!block) return;
-          block.type = select.value;
-          if (block.type !== 'todo') delete block.checked;
-          activePage.updatedAt = new Date().toISOString();
+        blockEl.addEventListener('dragover', (evt) => evt.preventDefault());
+        blockEl.addEventListener('drop', () => {
+          const targetId = blockEl.dataset.blockId;
+          if (!dragId || dragId === targetId) return;
+          const fromIndex = activePage.blocks.findIndex(b => b.id === dragId);
+          const toIndex = activePage.blocks.findIndex(b => b.id === targetId);
+          if (fromIndex < 0 || toIndex < 0) return;
+          const [moved] = activePage.blocks.splice(fromIndex, 1);
+          activePage.blocks.splice(toIndex, 0, moved);
+          updatePageUpdatedAt(activePage);
           saveState();
         });
-        el.querySelectorAll('[data-delete-block]').forEach(btn => btn.onclick = () => {
-          activePage.blocks = activePage.blocks.filter(b => b.id !== btn.dataset.deleteBlock);
-          activePage.updatedAt = new Date().toISOString();
-          saveState();
-        });
-      }
+      });
 
-      if (activeDb) {
-        document.getElementById('workspaceDbName').oninput = (e) => { activeDb.name = e.target.value || 'Untitled Database'; saveStateRaw(); };
-        document.getElementById('workspaceAddDbRow').onclick = () => {
-          activeDb.rows.push({ id: crypto.randomUUID(), name: '', status: 'To Do', dueDate: '', notes: '' });
-          saveState();
-        };
-        document.getElementById('workspaceDeleteDb').onclick = () => {
-          if (!confirm('Delete this database?')) return;
-          state.workspace.databases = state.workspace.databases.filter(d => d.id !== activeDb.id);
-          state.workspace.activeDatabaseId = state.workspace.databases[0]?.id || null;
-          saveState();
-        };
+      el.querySelectorAll('[data-delete-block]').forEach(btn => btn.onclick = () => {
+        activePage.blocks = activePage.blocks.filter(b => b.id !== btn.dataset.deleteBlock);
+        updatePageUpdatedAt(activePage);
+        saveState();
+      });
 
-        el.querySelectorAll('[data-db-row-name]').forEach(i => i.oninput = () => { const r = activeDb.rows.find(x => x.id === i.dataset.dbRowName); if (r) { r.name = i.value; saveStateRaw(); } });
-        el.querySelectorAll('[data-db-row-status]').forEach(i => i.onchange = () => { const r = activeDb.rows.find(x => x.id === i.dataset.dbRowStatus); if (r) { r.status = i.value; saveStateRaw(); } });
-        el.querySelectorAll('[data-db-row-due]').forEach(i => i.oninput = () => { const r = activeDb.rows.find(x => x.id === i.dataset.dbRowDue); if (r) { r.dueDate = i.value; saveStateRaw(); } });
-        el.querySelectorAll('[data-db-row-notes]').forEach(i => i.oninput = () => { const r = activeDb.rows.find(x => x.id === i.dataset.dbRowNotes); if (r) { r.notes = i.value; saveStateRaw(); } });
-        el.querySelectorAll('[data-db-row-delete]').forEach(btn => btn.onclick = () => { activeDb.rows = activeDb.rows.filter(r => r.id !== btn.dataset.dbRowDelete); saveState(); });
-      }
+      bindWorkspaceBlockEvents(el, activePage);
 
       document.getElementById('workspaceExport').onclick = () => downloadJSON('workspace-data.json', state.workspace);
       document.getElementById('workspaceImport').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
@@ -998,14 +1061,159 @@
         saveState();
       });
       document.getElementById('workspaceClear').onclick = () => {
-        if (!confirm('Clear all workspace pages and databases?')) return;
+        if (!confirm('Clear all workspace objects?')) return;
         state.workspace = structuredClone(defaultState.workspace);
         state.workspace.pages = [];
         state.workspace.activePageId = null;
-        state.workspace.databases = [];
-        state.workspace.activeDatabaseId = null;
         saveState();
       };
+    }
+
+    function renderWorkspaceBlockBody(block, idx, currentPageId, filteredMenu, cmdOpenClass) {
+      const headingClass = block.level === 1 ? 'text-2xl font-bold' : block.level === 2 ? 'text-xl font-semibold' : 'text-lg font-semibold';
+      const mentionIds = resolveMentionedPageIds(`${block.text || ''} ${block.content || ''}`, currentPageId);
+      const mentionPills = mentionIds.map(id => {
+        const page = (state.workspace.pages || []).find(p => p.id === id);
+        return `<span class="text-[11px] px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10">[[${escapeHTML(page?.title || 'Unknown')}]]</span>`;
+      }).join('');
+
+      const slashMenu = `
+        <div class="${cmdOpenClass} mt-2 rounded-lg border border-cyan-500/40 bg-[#06080d] p-2 space-y-1" data-command-menu="${block.id}">
+          ${(filteredMenu.length ? filteredMenu : workspaceBlockMenu).map(item => `<button data-command-type="${item.type}" data-command-for="${block.id}" class="w-full text-left px-2 py-1 rounded hover:bg-cyan-500/15 text-sm">/${item.type} · ${item.label}</button>`).join('')}
+        </div>
+      `;
+
+      if (block.type === 'todo') {
+        return `<label class="flex items-center gap-2"><input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-cyan-400" /><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="To-do" /></label>${mentionPills ? `<div class="flex gap-1 flex-wrap mt-2">${mentionPills}</div>`:''}${slashMenu}`;
+      }
+      if (block.type === 'heading') {
+        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-level="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs">${[1,2,3].map(level=>`<option value="${level}" ${block.level===level?'selected':''}>H${level}</option>`).join('')}</select><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="${headingClass} flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Heading" /></div>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+      }
+      if (block.type === 'bullet' || block.type === 'numbered') {
+        const marker = block.type === 'bullet' ? '•' : `${idx + 1}.`;
+        return `<div class="flex items-start gap-2"><span class="text-zinc-500 mt-2">${marker}</span><div class="flex-1 space-y-2"><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="List item" />${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div></div>`;
+      }
+      if (block.type === 'toggle') {
+        return `<div class="space-y-2"><button data-toggle-open="${block.id}" class="text-sm px-2 py-1 rounded border border-zinc-700 bg-zinc-950">${block.open ? '▼' : '▶'} Toggle</button><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle title" />${block.open ? `<textarea data-block-content="${block.id}" class="w-full h-20 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle content">${escapeHTML(block.content || '')}</textarea>` : ''}${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+      }
+      if (block.type === 'relation') {
+        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-relation-key="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">${WORKSPACE_RELATION_KEYS.map(key => `<option value="${key}" ${block.relationKey===key?'selected':''}>${key}</option>`).join('')}</select><select data-block-relation-target="${block.id}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm"><option value="">Select object…</option>${(state.workspace.pages || []).filter(p => p.id !== currentPageId).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType||'Page')}</option>`).join('')}</select><button data-block-relation-add="${block.id}" class="px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/40 text-cyan-200">Add</button></div><div class="flex flex-wrap gap-1">${(block.targets || []).map(id => `<span class="text-xs px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10">${escapeHTML((state.workspace.pages || []).find(p => p.id === id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">No linked objects</span>'}</div>${slashMenu}</div>`;
+      }
+      if (block.type === 'database') {
+        const cols = block.columns.length || 1;
+        return `<div class="space-y-2"><div class="overflow-auto"><table class="min-w-full text-xs border border-zinc-800"><thead><tr>${block.columns.map((col, cIdx) => `<th class="p-1 border border-zinc-800"><input data-block-db-col="${block.id}:${cIdx}" value="${escapeAttr(col)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1" /></th>`).join('')}<th class="p-1 border border-zinc-800"><button data-block-db-add-col="${block.id}" class="text-cyan-300">+ Col</button></th></tr></thead><tbody>${(block.rows || []).map((row, rIdx) => `<tr>${Array.from({length: cols}).map((_, cIdx) => `<td class="border border-zinc-800 p-1"><input data-block-db-cell="${block.id}:${rIdx}:${cIdx}" value="${escapeAttr(row[cIdx] || '')}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1"/></td>`).join('')}<td class="border border-zinc-800 p-1 text-center"><button data-block-db-del-row="${block.id}:${rIdx}" class="text-red-400">✕</button></td></tr>`).join('')}</tbody></table></div><div class="flex gap-2"><button data-block-db-add-row="${block.id}" class="px-2 py-1 rounded border border-zinc-700 bg-zinc-950 text-xs">+ Row</button></div>${slashMenu}</div>`;
+      }
+      return `<div class="space-y-2"><textarea data-block-text="${block.id}" class="w-full min-h-[74px] bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Write something...">${escapeHTML(block.text)}</textarea>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+    }
+
+    function bindWorkspaceBlockEvents(el, activePage) {
+      const findBlock = (id) => activePage.blocks.find(b => b.id === id);
+      const touchPage = () => { updatePageUpdatedAt(activePage); saveStateRaw(); };
+
+      el.querySelectorAll('[data-block-text]').forEach(input => input.oninput = () => {
+        const block = findBlock(input.dataset.blockText);
+        if (!block) return;
+        block.text = input.value;
+        const trimmed = block.text.trimStart();
+        block.commandOpen = trimmed.startsWith('/');
+        block.commandQuery = block.commandOpen ? trimmed.replace(/^\//, '').trim() : '';
+        touchPage();
+        if (block.commandOpen) renderWorkspace();
+      });
+      el.querySelectorAll('[data-block-content]').forEach(input => input.oninput = () => {
+        const block = findBlock(input.dataset.blockContent);
+        if (!block) return;
+        block.content = input.value;
+        touchPage();
+      });
+      el.querySelectorAll('[data-block-check]').forEach(input => input.onchange = () => {
+        const block = findBlock(input.dataset.blockCheck);
+        if (!block) return;
+        block.checked = input.checked;
+        touchPage();
+      });
+      el.querySelectorAll('[data-block-level]').forEach(select => select.onchange = () => {
+        const block = findBlock(select.dataset.blockLevel);
+        if (!block) return;
+        block.level = Number(select.value || 2);
+        touchPage();
+        renderWorkspace();
+      });
+      el.querySelectorAll('[data-toggle-open]').forEach(btn => btn.onclick = () => {
+        const block = findBlock(btn.dataset.toggleOpen);
+        if (!block) return;
+        block.open = !block.open;
+        touchPage();
+        renderWorkspace();
+      });
+
+      el.querySelectorAll('[data-command-type]').forEach(btn => btn.onclick = () => {
+        const block = findBlock(btn.dataset.commandFor);
+        if (!block) return;
+        const converted = normalizeWorkspaceBlock({ ...block, type: btn.dataset.commandType, commandOpen: false, commandQuery: '' });
+        Object.assign(block, converted);
+        touchPage();
+        saveState();
+      });
+
+      el.querySelectorAll('[data-block-relation-key]').forEach(select => select.onchange = () => {
+        const block = findBlock(select.dataset.blockRelationKey);
+        if (!block) return;
+        block.relationKey = select.value;
+        touchPage();
+      });
+      el.querySelectorAll('[data-block-relation-add]').forEach(btn => btn.onclick = () => {
+        const id = btn.dataset.blockRelationAdd;
+        const block = findBlock(id);
+        const select = el.querySelector(`[data-block-relation-target="${id}"]`);
+        if (!block || !select?.value) return;
+        if (!block.targets.includes(select.value)) block.targets.push(select.value);
+        touchPage();
+        saveState();
+      });
+
+      el.querySelectorAll('[data-block-db-add-row]').forEach(btn => btn.onclick = () => {
+        const block = findBlock(btn.dataset.blockDbAddRow);
+        if (!block) return;
+        block.rows.push(Array.from({ length: block.columns.length }, () => ''));
+        touchPage();
+        saveState();
+      });
+      el.querySelectorAll('[data-block-db-del-row]').forEach(btn => btn.onclick = () => {
+        const [id, rowIdxRaw] = btn.dataset.blockDbDelRow.split(':');
+        const block = findBlock(id);
+        const rowIdx = Number(rowIdxRaw);
+        if (!block || Number.isNaN(rowIdx)) return;
+        block.rows.splice(rowIdx, 1);
+        touchPage();
+        saveState();
+      });
+      el.querySelectorAll('[data-block-db-add-col]').forEach(btn => btn.onclick = () => {
+        const block = findBlock(btn.dataset.blockDbAddCol);
+        if (!block) return;
+        block.columns.push(`Column ${block.columns.length + 1}`);
+        block.rows.forEach(row => row.push(''));
+        touchPage();
+        saveState();
+      });
+      el.querySelectorAll('[data-block-db-col]').forEach(input => input.oninput = () => {
+        const [id, colRaw] = input.dataset.blockDbCol.split(':');
+        const colIdx = Number(colRaw);
+        const block = findBlock(id);
+        if (!block || Number.isNaN(colIdx)) return;
+        block.columns[colIdx] = input.value || `Column ${colIdx + 1}`;
+        touchPage();
+      });
+      el.querySelectorAll('[data-block-db-cell]').forEach(input => input.oninput = () => {
+        const [id, rowRaw, colRaw] = input.dataset.blockDbCell.split(':');
+        const rowIdx = Number(rowRaw);
+        const colIdx = Number(colRaw);
+        const block = findBlock(id);
+        if (!block || Number.isNaN(rowIdx) || Number.isNaN(colIdx)) return;
+        if (!Array.isArray(block.rows[rowIdx])) block.rows[rowIdx] = [];
+        block.rows[rowIdx][colIdx] = input.value;
+        touchPage();
+      });
     }
 
     function ensureTasksState() {
