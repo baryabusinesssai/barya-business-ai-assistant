@@ -1,2542 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Barya Business AI Assistant Workspace</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya Business AI Workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            barya: {
               bg: '#0a0a0a',
-              panel: '#111111',
-              muted: '#171717',
-              accent: '#00d4ff'
-            },
-            boxShadow: {
-              glow: '0 0 0 1px rgba(0,212,255,0.35), 0 12px 30px rgba(0,212,255,0.08)'
-            },
-            animation: {
-              pulseSoft: 'pulseSoft 2s ease-in-out infinite'
-            },
-            keyframes: {
-              pulseSoft: {
-                '0%, 100%': { opacity: 0.72 },
-                '50%': { opacity: 1 }
-              }
+              card: '#111111',
+              accent: '#00d4ff',
+              soft: '#1a1a1a'
             }
-          }
-        }
-      };
-    </script>
-    <style>
-      .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
-      .scrollbar-thin::-webkit-scrollbar-track { background: #0f0f0f; }
-      .scrollbar-thin::-webkit-scrollbar-thumb { background: #272727; border-radius: 9999px; }
-      .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #3b3b3b; }
-      .strategy-card {
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(39, 39, 42, 0.38));
-        backdrop-filter: blur(16px);
-      }
-      .step-dot-active {
-        box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.15), 0 0 20px rgba(0, 212, 255, 0.35);
-      }
-      .progress-shimmer::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.22) 45%, transparent 100%);
-        transform: translateX(-120%);
-        animation: shimmer 1.6s ease-in-out infinite;
-      }
-      @keyframes shimmer {
-        100% { transform: translateX(120%); }
-      }
-
-      body.theme-light {
-        background: #f3f4f6 !important;
-        color: #111827;
-      }
-      body.theme-light #sidebar,
-      body.theme-light header {
-        background: rgba(255, 255, 255, 0.96) !important;
-        color: #111827;
-        border-color: rgba(209, 213, 219, 0.9) !important;
-      }
-      body.theme-light .tab-panel > div,
-      body.theme-light .tab-panel article,
-      body.theme-light .tab-panel section,
-      body.theme-light .tab-panel aside {
-        border-color: rgba(209, 213, 219, 0.9) !important;
-      }
-    </style>
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body class="bg-bg text-zinc-100 antialiased">
-    <div class="min-h-screen">
-      <!-- Mobile Sidebar Backdrop -->
-      <div id="sidebarBackdrop" class="fixed inset-0 z-30 hidden bg-black/60 lg:hidden"></div>
-
-      <!-- Sidebar -->
-      <aside
-        id="sidebar"
-        class="fixed left-0 top-0 z-40 flex h-full w-[270px] -translate-x-full flex-col bg-panel border-r border-zinc-800/80 p-5 transition-transform duration-300 lg:translate-x-0"
-      >
-        <div>
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold tracking-tight">Barya</h1>
-            <p class="text-xs text-zinc-400 mt-1 uppercase tracking-[0.18em]">Business AI</p>
-          </div>
-
-          <nav class="space-y-2" id="navTabs">
-            <button data-target="dashboard" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition">
-              <span class="text-base">📊</span>
-              <span>Dashboard</span>
-            </button>
-            <button data-target="barya-ai" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
-              <span class="text-base">🤖</span>
-              <span>Barya AI</span>
-            </button>
-            <button data-target="memory" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
-              <span class="text-base">🧠</span>
-              <span>Memory</span>
-            </button>
-            <button data-target="planning" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
-              <span class="text-base">🗺️</span>
-              <span>Business Planning</span>
-            </button>
-            <button data-target="settings" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
-              <span class="text-base">⚙️</span>
-              <span>Settings</span>
-            </button>
-          </nav>
-        </div>
-
-        <div class="mt-auto">
-          <div class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-300 animate-pulseSoft">
-            <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 mr-2 align-middle"></span>
-            Local-First • On Device
-          </div>
-        </div>
-      </aside>
-
-      <!-- Main Wrapper -->
-      <div class="lg:pl-[270px]">
-        <!-- Header -->
-        <header class="fixed right-0 top-0 z-20 flex h-16 w-full items-center justify-between border-b border-zinc-800/80 bg-bg/95 px-4 backdrop-blur lg:w-[calc(100%-270px)] lg:px-8">
-          <div class="flex items-center gap-3">
-            <button id="menuBtn" class="rounded-lg border border-zinc-800 p-2 text-zinc-300 hover:text-white hover:border-zinc-700 lg:hidden" aria-label="Open menu">
-              ☰
-            </button>
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Project</p>
-              <h2 id="projectTitle" contenteditable="true" class="outline-none text-lg font-semibold leading-tight focus:text-accent">Untitled Startup</h2>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <span class="hidden sm:inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300">Local-First</span>
-            <div class="text-right hidden sm:block">
-              <p class="text-sm font-medium">Shruti Barya</p>
-              <p class="text-xs text-zinc-500">Founder Workspace</p>
-            </div>
-            <div class="grid h-9 w-9 place-items-center rounded-full bg-zinc-800 text-sm font-semibold text-accent ring-1 ring-zinc-700">SB</div>
-          </div>
-        </header>
-
-        <!-- Content -->
-        <main class="px-4 pb-8 pt-20 lg:px-8">
-          <!-- Dashboard -->
-          <section id="dashboard" class="tab-panel space-y-6">
-            <div class="grid gap-4 xl:grid-cols-3">
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Total Income</p>
-                <p class="mt-2 text-3xl font-semibold text-emerald-300">
-                  <span class="metric-editable outline-none" contenteditable="true" data-key="totalIncome" data-type="currency">$0</span>
-                </p>
-                <p class="mt-1 text-xs text-zinc-500">Click value to edit • autosaves locally</p>
-              </article>
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Total Expenses</p>
-                <p class="mt-2 text-3xl font-semibold text-rose-300">
-                  <span class="metric-editable outline-none" contenteditable="true" data-key="totalExpenses" data-type="currency">$0</span>
-                </p>
-                <p class="mt-1 text-xs text-zinc-500">Click value to edit • autosaves locally</p>
-              </article>
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Net Savings</p>
-                    <p class="mt-2 text-3xl font-semibold text-accent" id="netSavingsDisplay">$0</p>
-                    <p class="mt-1 text-xs text-zinc-500" id="netSavingsPercent">0% change</p>
-                  </div>
-                  <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-right">
-                    <p class="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Runway</p>
-                    <p class="text-lg font-semibold text-zinc-100"><span class="metric-editable outline-none" contenteditable="true" data-key="runwayMonths" data-type="number">0</span>m</p>
-                  </div>
-                </div>
-              </article>
-            </div>
-
-            <div class="grid gap-4 xl:grid-cols-3">
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-1">
-                <div class="flex items-start justify-between">
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Startup Readiness Score</p>
-                    <p class="mt-2 text-sm text-zinc-400">Local-only progress tracker</p>
-                  </div>
-                  <button id="downloadReportBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/20">Download PDF Report</button>
-                </div>
-                <div class="mt-5 flex items-center gap-5">
-                  <div class="relative h-28 w-28">
-                    <svg class="h-28 w-28 -rotate-90" viewBox="0 0 120 120">
-                      <circle cx="60" cy="60" r="50" stroke="#1f1f1f" stroke-width="12" fill="none"></circle>
-                      <circle id="readinessCircle" cx="60" cy="60" r="50" stroke="#00d4ff" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="314" stroke-dashoffset="94"></circle>
-                    </svg>
-                    <div id="readinessText" class="absolute inset-0 grid place-items-center text-xl font-semibold text-accent">0%</div>
-                  </div>
-                  <div class="flex-1">
-                    <label class="text-xs uppercase tracking-[0.16em] text-zinc-500" for="readinessRange">Readiness %</label>
-                    <input id="readinessRange" type="range" min="0" max="100" class="mt-2 w-full accent-[#00d4ff]" />
-                    <input id="readinessInput" type="number" min="0" max="100" class="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
-                  </div>
-                </div>
-              </article>
-
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-2">
-                <div class="flex items-center justify-between gap-3">
-                  <h3 class="text-lg font-semibold">Monthly Overview</h3>
-                  <p class="text-xs text-zinc-500">Editable and persistent</p>
-                </div>
-                <div class="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
-                    <p class="text-xs text-zinc-500">Income</p>
-                    <p class="mt-1 text-xl font-semibold text-emerald-300"><span class="monthly-editable outline-none" contenteditable="true" data-key="income" data-type="currency">$0</span></p>
-                    <p id="incomeTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
-                  </div>
-                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
-                    <p class="text-xs text-zinc-500">Expenses</p>
-                    <p class="mt-1 text-xl font-semibold text-rose-300"><span class="monthly-editable outline-none" contenteditable="true" data-key="expenses" data-type="currency">$0</span></p>
-                    <p id="expenseTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
-                  </div>
-                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
-                    <p class="text-xs text-zinc-500">Net</p>
-                    <p id="monthlyNet" class="mt-1 text-xl font-semibold text-accent">$0</p>
-                    <p id="netTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
-                  </div>
-                </div>
-              </article>
-            <div class="rounded-2xl border border-zinc-700/80 bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-5 shadow-glow sm:p-6">
-              <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h3 class="text-2xl font-bold tracking-tight text-zinc-100">Strategy <span class="text-accent">Generator</span></h3>
-                <button id="reloadIdeaBtn" class="rounded-lg border border-accent/45 bg-slate-950/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-zinc-200 hover:-translate-y-0.5 hover:border-accent hover:bg-slate-900 transition-all duration-300">Reload Saved Idea</button>
-              </div>
-
-              <label for="ideaInput" class="mb-2 block text-sm font-semibold text-zinc-200">Describe your startup idea</label>
-              <textarea id="ideaInput" rows="8" class="w-full rounded-2xl border border-zinc-700/90 bg-zinc-950/85 px-5 py-4 text-sm leading-relaxed text-zinc-100 placeholder-zinc-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition duration-300 focus:border-accent focus:ring-2 focus:ring-accent/30" placeholder="AI-native procurement copilot for mid-market manufacturing companies...">AI-native procurement copilot for mid-market manufacturing companies...</textarea>
-
-              <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                <button id="deepAnalysisBtn" class="rounded-2xl bg-[#00d4ff] px-5 py-4 text-base font-bold text-black shadow-[0_10px_30px_rgba(0,212,255,0.28)] hover:-translate-y-0.5 hover:brightness-110 transition-all duration-300">Deep Analysis (AI)</button>
-                <button id="quickBlueprintBtn" class="rounded-2xl border border-zinc-500 bg-zinc-900/70 px-5 py-4 text-base font-semibold text-zinc-100 hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-800/90 transition-all duration-300">Quick Blueprint</button>
-              </div>
-
-              <div id="strategyProgressWrap" class="mt-6 hidden rounded-2xl border border-zinc-700/80 bg-zinc-900/50 p-4">
-                <p id="strategyProgressLabel" class="mb-4 text-sm font-medium text-zinc-300">Preparing strategic intelligence...</p>
-                <div class="relative h-2 overflow-hidden rounded-full bg-zinc-800">
-                  <div id="strategyProgressBar" class="progress-shimmer relative h-full w-0 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"></div>
-                </div>
-                <div id="strategyStepper" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
-              </div>
-
-              <div id="strategyResults" class="mt-6 hidden">
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <article class="strategy-card rounded-2xl border border-white/10 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Competitive Edge</p>
-                    <p id="edgeText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
-                  </article>
-                  <article class="strategy-card rounded-2xl border border-white/10 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Marketing Hack</p>
-                    <p id="marketingText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
-                  </article>
-                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-1">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Tech Stack Suggestion</p>
-                    <p id="techText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
-                  </article>
-                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-2">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">GTM Roadmap</p>
-                    <ul id="roadmapList" class="mt-2 list-disc space-y-2 pl-5 text-sm text-zinc-100"></ul>
-                  </article>
-                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-1">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Immediate Founder Actions</p>
-                    <ul id="actionsList" class="mt-2 list-disc space-y-2 pl-5 text-sm text-zinc-100"></ul>
-                  </article>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid gap-4 xl:grid-cols-3">
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-2">
-                <div class="mb-3 flex items-center justify-between">
-                  <h3 class="text-lg font-semibold">Revenue Growth Chart</h3>
-                  <p class="text-xs text-zinc-500">Chart.js + localStorage</p>
-                </div>
-                <div class="h-72">
-                  <canvas id="revenueChart"></canvas>
-                </div>
-              </article>
-
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <h3 class="text-lg font-semibold">Recommendations</h3>
-                <div id="recommendations" class="mt-3 space-y-2 text-sm text-zinc-300"></div>
-              </article>
-            </div>
-
-            <div class="grid gap-4 xl:grid-cols-2">
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg font-semibold">Recent Activity</h3>
-                  <span class="text-xs text-zinc-500">Saved locally</span>
-                </div>
-                <form id="activityForm" class="mt-4 grid gap-3 sm:grid-cols-3">
-                  <input id="activityDesc" required placeholder="Description" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent sm:col-span-2" />
-                  <input id="activityAmount" required type="number" step="0.01" placeholder="Amount" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
-                  <input id="activityDate" required type="date" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
-                  <button class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black hover:brightness-110 sm:col-span-2" type="submit">Add Activity</button>
-                </form>
-                <ul id="activityList" class="mt-4 space-y-2 max-h-56 overflow-y-auto pr-1 scrollbar-thin"></ul>
-              </article>
-
-              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
-                <h3 class="text-lg font-semibold">Safety & Backup</h3>
-                <p class="mt-1 text-sm text-zinc-400">Export/import complete dashboard data as JSON.</p>
-                <div class="mt-4 flex flex-wrap gap-3">
-                  <button id="exportDataBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/20">Export All Data</button>
-                  <label class="cursor-pointer rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800">
-                    Import Data
-                    <input id="importDataInput" type="file" accept="application/json" class="hidden" />
-                  </label>
-                  <button id="clearDataBtn" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/20">Clear All Data</button>
-                </div>
-                <p id="backupMessage" class="mt-3 text-xs text-zinc-500"></p>
-              </article>
-            </div>
-          </section>
-
-          <!-- Barya AI -->
-          <section id="barya-ai" class="tab-panel hidden">
-            <div class="rounded-2xl border border-accent/20 bg-[#0a0a0a] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-6">
-              <div class="mb-4 flex flex-col gap-4 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 class="text-2xl font-semibold tracking-tight text-zinc-100">Barya <span class="text-[#00d4ff]">AI</span></h3>
-                  <p class="mt-1 text-sm text-zinc-400">Local-first founder copilot with private, in-browser memory.</p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:justify-items-end">
-                  <button id="exportBaryaChatBtn" class="rounded-xl border border-accent/40 bg-white/5 px-3 py-2 text-xs font-semibold text-accent backdrop-blur-md transition hover:bg-accent/20">Export Chat History</button>
-                  <label for="importBaryaChatInput" class="cursor-pointer rounded-xl border border-accent/40 bg-white/5 px-3 py-2 text-center text-xs font-semibold text-accent backdrop-blur-md transition hover:bg-accent/20">Import Chat History</label>
-                  <input id="importBaryaChatInput" type="file" accept="application/json" class="hidden" />
-                  <button id="clearAllBaryaChatBtn" class="rounded-xl border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 backdrop-blur-md transition hover:bg-red-500/20">Clear All Chat History</button>
-                </div>
-              </div>
-
-              <div class="mb-4 rounded-2xl border border-accent/25 bg-white/5 p-3 backdrop-blur-md">
-                <p class="mb-3 text-xs uppercase tracking-[0.12em] text-zinc-500">Quick Actions</p>
-                <div id="baryaQuickActions" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                  <button data-prompt="Validate my idea" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Validate my idea</button>
-                  <button data-prompt="Create a launch plan" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Create a launch plan</button>
-                  <button data-prompt="Find my first customers" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Find my first customers</button>
-                  <button data-prompt="Improve pricing" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Improve pricing</button>
-                  <button data-prompt="Reduce expenses" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Reduce expenses</button>
-                  <button data-prompt="Improve growth" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Improve growth</button>
-                  <button data-prompt="Give business idea" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">Give business idea</button>
-                  <button data-prompt="How to start?" class="rounded-lg border border-accent/35 bg-white/5 px-3 py-2 text-left text-xs font-medium text-zinc-200 transition hover:border-accent hover:bg-accent/15">How to start?</button>
-                </div>
-              </div>
-
-              <div id="baryaChatMessages" class="max-h-[460px] space-y-3 overflow-y-auto rounded-2xl border border-zinc-800 bg-[#111111] p-3 pr-2 scrollbar-thin sm:p-4"></div>
-
-              <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-                <input id="baryaChatInput" type="text" placeholder="Ask Barya AI anything..." class="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                <button id="sendBaryaChatBtn" class="rounded-xl border border-accent/40 bg-accent px-5 py-3 text-sm font-semibold text-black shadow-[0_10px_30px_rgba(0,212,255,0.25)] transition hover:brightness-110">Send</button>
-                <button id="clearBaryaChatBtn" class="rounded-xl border border-zinc-600 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-200 backdrop-blur-md transition hover:bg-white/10">Clear Chat</button>
-              </div>
-            </div>
-          </section>
-
-          <!-- Memory -->
-          <section id="memory" class="tab-panel hidden">
-            <div class="rounded-2xl border border-accent/30 bg-[#0a0a0a] p-5 shadow-glow sm:p-6">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 class="text-2xl font-semibold tracking-tight text-zinc-100">Memory <span class="text-accent">System</span></h3>
-                  <p class="mt-1 text-sm text-zinc-400">Private founder intelligence vault. Everything stays in this browser.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-                  <button id="memoryExportBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition hover:-translate-y-0.5 hover:bg-accent/20">Export Memory</button>
-                  <label class="cursor-pointer rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:-translate-y-0.5 hover:border-accent/60 hover:text-accent">
-                    Import Memory
-                    <input id="memoryImportInput" type="file" accept="application/json" class="hidden" />
-                  </label>
-                  <button id="memoryClearBtn" class="rounded-lg border border-rose-500/50 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 transition hover:-translate-y-0.5 hover:bg-rose-500/20">Clear All Memory</button>
-                </div>
-              </div>
-
-              <div id="memoryToast" class="mt-3 min-h-[1.25rem] text-xs text-zinc-500"></div>
-
-              <div class="mt-5 grid gap-5 xl:grid-cols-2">
-                <article class="rounded-2xl border border-zinc-700/80 bg-[#111111]/80 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
-                  <div class="mb-4 flex items-center justify-between gap-3">
-                    <h4 class="text-lg font-semibold text-zinc-100">Saved Insights</h4>
-                    <span class="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent" id="memoryInsightCount">0 items</span>
-                  </div>
-
-                  <form id="insightForm" class="space-y-3 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
-                    <input id="insightTitle" type="text" maxlength="120" required placeholder="Insight title" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                    <textarea id="insightNote" rows="3" required placeholder="Detailed note..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <input id="insightDate" type="date" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                      <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/25">Add Insight</button>
-                    </div>
-                  </form>
-
-                  <div class="mt-4">
-                    <input id="insightSearch" type="text" placeholder="Search insights in real time..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                  </div>
-
-                  <ul id="insightList" class="mt-4 max-h-[25rem] space-y-3 overflow-y-auto pr-1 scrollbar-thin"></ul>
-                  <div id="insightEmptyState" class="mt-4 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/50 p-4 text-sm text-zinc-400">
-                    No insights yet. Start capturing your decisions...
-                  </div>
-                </article>
-
-                <article class="rounded-2xl border border-zinc-700/80 bg-[#111111]/80 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
-                  <div class="mb-4 flex items-center justify-between gap-3">
-                    <h4 class="text-lg font-semibold text-zinc-100">Recent Actions</h4>
-                    <span class="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent" id="memoryActionCount">0 actions</span>
-                  </div>
-
-                  <form id="actionForm" class="space-y-3 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
-                    <textarea id="actionDescription" rows="3" maxlength="240" required placeholder="Action description..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                      <select id="actionCategory" required class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30">
-                        <option value="Strategy">Strategy</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Validation">Validation</option>
-                        <option value="Customer">Customer</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <input id="actionDate" type="date" required class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/25">Add Action</button>
-                  </form>
-
-                  <ul id="actionList" class="mt-4 max-h-[31rem] space-y-3 overflow-y-auto pr-1 scrollbar-thin"></ul>
-                  <div id="actionEmptyState" class="mt-4 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/50 p-4 text-sm text-zinc-400">
-                    No actions yet. Start capturing your decisions...
-                  </div>
-                </article>
-            <div class="rounded-2xl border border-accent/30 bg-panel/75 p-5 shadow-glow backdrop-blur-xl sm:p-6">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 class="text-2xl font-semibold tracking-tight text-zinc-100">Mem<span class="text-accent">ory</span></h3>
-                  <p class="mt-1 text-sm text-zinc-400">Private founder intelligence. 100% local-first and saved only in your browser.</p>
-                </div>
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center">
-                  <button id="memoryExportBtn" class="rounded-lg border border-accent/35 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition hover:bg-accent/20">Export Memory</button>
-                  <label class="cursor-pointer rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2 text-center text-xs font-semibold text-zinc-200 transition hover:border-accent/50 hover:text-accent">
-                    Import Memory
-                    <input id="memoryImportInput" type="file" accept="application/json" class="hidden" />
-                  </label>
-                  <button id="memoryClearBtn" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20">Clear All Memory</button>
-                </div>
-              </div>
-              <p id="memoryStatus" class="mt-3 text-xs text-zinc-500"></p>
-
-              <div class="mt-5 flex rounded-xl border border-zinc-800 bg-zinc-950/70 p-1">
-                <button data-memory-tab="insights" class="memory-tab-btn flex-1 rounded-lg px-3 py-2 text-sm font-medium text-zinc-100 transition">Saved Insights</button>
-                <button data-memory-tab="actions" class="memory-tab-btn flex-1 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition hover:text-zinc-100">Recent Actions</button>
-              </div>
-
-              <div id="memoryInsightsPanel" class="mt-5 space-y-4">
-                <form id="insightForm" class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
-                  <div class="mb-3 flex items-center justify-between">
-                    <h4 class="text-sm font-semibold uppercase tracking-[0.12em] text-accent">Add New Insight</h4>
-                    <span class="text-xs text-zinc-500">Auto-saved locally</span>
-                  </div>
-                  <div class="grid gap-3 md:grid-cols-2">
-                    <input id="insightTitle" type="text" placeholder="Insight title" class="rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" required />
-                    <input id="insightDate" type="date" class="rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" required />
-                  </div>
-                  <textarea id="insightNote" rows="3" placeholder="Detailed founder note..." class="mt-3 w-full rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" required></textarea>
-                  <div class="mt-3 flex justify-end">
-                    <button type="submit" class="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110">Add Insight</button>
-                  </div>
-                </form>
-
-                <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
-                  <input id="insightSearch" type="search" placeholder="Search insights in real-time..." class="w-full rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  <ul id="insightList" class="mt-4 space-y-3"></ul>
-                </div>
-              </div>
-
-              <div id="memoryActionsPanel" class="mt-5 hidden space-y-4">
-                <form id="actionForm" class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
-                  <div class="mb-3 flex items-center justify-between">
-                    <h4 class="text-sm font-semibold uppercase tracking-[0.12em] text-accent">Add New Action</h4>
-                    <span class="text-xs text-zinc-500">Newest first</span>
-                  </div>
-                  <div class="grid gap-3 md:grid-cols-3">
-                    <input id="actionDescription" type="text" placeholder="Action description" class="md:col-span-2 rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" required />
-                    <select id="actionCategory" class="rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" required>
-                      <option value="Strategy">Strategy</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="Validation">Validation</option>
-                      <option value="Customer">Customer</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <input id="actionDate" type="date" class="w-full rounded-xl border border-zinc-700 bg-zinc-950/90 px-4 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 sm:w-64" required />
-                    <button type="submit" class="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110">Add Action</button>
-                  </div>
-                </form>
-
-                <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
-                  <ul id="actionList" class="space-y-3"></ul>
-                </div>
-              </div>
-            </div>
-
-            <div id="insightModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-              <div class="w-full max-w-2xl rounded-2xl border border-accent/35 bg-panel p-5 shadow-glow">
-                <div class="mb-3 flex items-start justify-between gap-3">
-                  <h4 id="insightModalHeading" class="text-lg font-semibold text-accent">Insight Detail</h4>
-                  <button id="insightModalClose" class="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300 hover:border-zinc-500">Close</button>
-                </div>
-                <form id="insightEditForm" class="space-y-3">
-                  <input id="modalInsightTitle" type="text" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" required />
-                  <input id="modalInsightDate" type="date" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" required />
-                  <textarea id="modalInsightNote" rows="8" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" required></textarea>
-                  <div class="flex justify-end gap-2">
-                    <button type="button" id="modalDeleteInsight" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20">Delete</button>
-                    <button type="submit" class="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-black hover:brightness-110">Save Changes</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            <div id="insightModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 px-4 py-8">
-              <div class="w-full max-w-2xl rounded-2xl border border-accent/35 bg-[#111111]/95 p-5 shadow-[0_20px_60px_rgba(0,212,255,0.08)] backdrop-blur-xl sm:p-6">
-                <div class="flex items-start justify-between gap-4">
-                  <h5 class="text-lg font-semibold text-zinc-100">Insight Details</h5>
-                  <button id="closeInsightModal" class="rounded-lg border border-zinc-700 px-2.5 py-1 text-sm text-zinc-300 transition hover:border-accent hover:text-accent">✕</button>
-                </div>
-                <form id="insightEditForm" class="mt-4 space-y-3">
-                  <input id="modalInsightTitle" type="text" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                  <textarea id="modalInsightNote" rows="7" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
-                  <input id="modalInsightDate" type="date" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
-                  <div class="flex flex-wrap justify-end gap-2 pt-2">
-                    <button type="button" id="deleteInsightFromModal" class="rounded-lg border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20">Delete</button>
-                    <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/25">Save Changes</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </section>
-
-          <!-- Planning -->
-          <section id="planning" class="tab-panel hidden">
-            <div class="rounded-2xl border border-zinc-800 bg-[#0a0a0a] p-4 sm:p-6">
-              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <h3 class="text-2xl font-semibold">Business <span class="text-[#00d4ff]">Planning</span></h3>
-                  <p class="mt-1 text-sm text-zinc-400">Private founder planning system. Everything is stored locally in this browser only.</p>
-                </div>
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto">
-                  <button id="planningExportBtn" class="rounded-xl border border-[#00d4ff]/40 bg-[#00d4ff]/10 px-4 py-2 text-xs font-semibold text-[#00d4ff] transition hover:bg-[#00d4ff]/20">Export Business Plans</button>
-                  <label class="cursor-pointer rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-center text-xs font-semibold text-zinc-200 transition hover:border-zinc-500">
-                    Import Business Plans
-                    <input id="planningImportInput" type="file" accept="application/json" class="hidden" />
-                  </label>
-                  <button id="planningClearBtn" class="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20">Clear All Progress</button>
-                </div>
-              </div>
-              <p id="planningMessage" class="mt-3 text-xs text-zinc-500"></p>
-
-              <div class="mt-6 grid gap-5 xl:grid-cols-3">
-                <div class="space-y-5 xl:col-span-2">
-                  <div>
-                    <h4 class="text-lg font-semibold text-zinc-100">Startup Guides</h4>
-                    <p class="text-sm text-zinc-400">Complete all Action Sprint steps to build execution momentum.</p>
-                  </div>
-                  <div id="planningGuides" class="space-y-4"></div>
-                </div>
-
-                <aside class="space-y-4 xl:sticky xl:top-24 xl:h-fit">
-                  <div class="rounded-2xl border border-zinc-700/80 bg-[#111111] p-4">
-                    <h4 class="text-base font-semibold text-zinc-100">Business Plan Templates</h4>
-                    <p class="mt-1 text-xs text-zinc-400">Choose a template to open your private editor.</p>
-                    <div id="planningTemplateList" class="mt-3 space-y-2"></div>
-                  </div>
-
-                  <div id="planningTemplateEditor" class="rounded-2xl border border-zinc-700/80 bg-[#111111] p-4 hidden">
-                    <div class="flex items-center justify-between gap-2">
-                      <h5 id="planningEditorHeading" class="text-sm font-semibold text-[#00d4ff]"></h5>
-                      <button id="planningCloseEditorBtn" class="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300 hover:border-zinc-500">Close</button>
-                    </div>
-                    <input id="planningTemplateTitle" type="text" class="mt-3 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-[#00d4ff]" placeholder="Plan title" />
-                    <div id="planningTemplateSections" class="mt-3 space-y-3"></div>
-                    <div class="mt-4 flex items-center justify-between gap-2">
-                      <p id="planningEditorStatus" class="text-xs text-zinc-500">Auto-save enabled.</p>
-                      <button id="planningSaveTemplateBtn" class="rounded-lg border border-[#00d4ff]/50 bg-[#00d4ff]/10 px-3 py-2 text-xs font-semibold text-[#00d4ff] hover:bg-[#00d4ff]/20">Save Template</button>
-                    </div>
-                  </div>
-
-                  <div id="planningTemplateEmpty" class="rounded-2xl border border-dashed border-zinc-700 bg-[#111111]/70 p-4 text-sm text-zinc-400">
-                    Select a template to start writing. Your draft saves instantly and never leaves your device.
-                  </div>
-                </aside>
-              </div>
-            </div>
-          </section>
-
-          <!-- Settings -->
-          <section id="settings" class="tab-panel hidden space-y-5">
-            <div class="rounded-2xl border border-[#00d4ff]/40 bg-gradient-to-r from-[#0f1720] to-[#0b0f14] p-5 shadow-glow sm:p-6">
-              <h3 class="text-2xl font-semibold tracking-tight">Settings <span class="text-[#00d4ff]">●</span></h3>
-              <p class="mt-1 text-sm text-zinc-400">Private founder control center. 100% local-first, always saved in your browser.</p>
-            </div>
-
-            <div class="grid gap-5 xl:grid-cols-2">
-              <article class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 class="text-lg font-semibold text-white">Founder Profile</h4>
-                    <p class="mt-1 text-xs text-zinc-400">Identity and narrative visible across your workspace.</p>
-                  </div>
-                  <a href="#" class="inline-flex items-center rounded-lg border border-[#00d4ff]/40 bg-[#00d4ff]/10 px-3 py-2 text-xs font-semibold text-[#00d4ff] hover:bg-[#00d4ff]/20">Connect on LinkedIn</a>
-                </div>
-                <div class="mt-4 space-y-4">
-                  <div>
-                    <label for="settingsFounderName" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Name</label>
-                    <input id="settingsFounderName" type="text" value="Shruti Barya" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]" />
-                  </div>
-                  <div>
-                    <label for="settingsFounderBio" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Bio / About</label>
-                    <textarea id="settingsFounderBio" rows="4" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm leading-relaxed outline-none focus:border-[#00d4ff]">Building Barya to help founders make clear decisions with confidence and speed.</textarea>
-                  </div>
-                </div>
-              </article>
-
-              <article class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <h4 class="text-lg font-semibold text-white">Business Profile</h4>
-                <p class="mt-1 text-xs text-zinc-400">Set your company context once and keep every workflow aligned.</p>
-                <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div class="sm:col-span-1">
-                    <label for="settingsBusinessType" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Business Type</label>
-                    <select id="settingsBusinessType" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]">
-                      <option value="SaaS">SaaS</option>
-                      <option value="Agency">Agency</option>
-                      <option value="E-commerce">E-commerce</option>
-                      <option value="Services">Services</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div class="sm:col-span-1">
-                    <label for="settingsCommPref" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Communication Preference</label>
-                    <select id="settingsCommPref" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]">
-                      <option value="Professional">Professional</option>
-                      <option value="Friendly">Friendly</option>
-                      <option value="Direct">Direct</option>
-                      <option value="Motivational">Motivational</option>
-                    </select>
-                  </div>
-                  <div class="sm:col-span-2">
-                    <label for="settingsTargetAudience" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Target Audience</label>
-                    <input id="settingsTargetAudience" type="text" placeholder="Founders, operators, early-stage teams..." class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]" />
-                  </div>
-                </div>
-                <div class="mt-4 flex items-center justify-between gap-3">
-                  <p id="settingsBusinessSaveStatus" class="text-xs text-zinc-500">Changes auto-save instantly.</p>
-                  <button id="settingsBusinessSaveBtn" class="rounded-lg border border-[#00d4ff]/50 bg-[#00d4ff]/10 px-4 py-2 text-xs font-semibold text-[#00d4ff] hover:bg-[#00d4ff]/20">Save Business Profile</button>
-                </div>
-              </article>
-
-              <article class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <h4 class="text-lg font-semibold text-white">Application Preferences</h4>
-                <p class="mt-1 text-xs text-zinc-400">Personalize workspace behavior while staying fully local.</p>
-                <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label for="settingsCurrency" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Currency</label>
-                    <select id="settingsCurrency" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]">
-                      <option value="INR">INR</option>
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="GBP">GBP</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="settingsLanguage" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Language</label>
-                    <select id="settingsLanguage" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]">
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Roman Urdu">Roman Urdu</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="mt-4 rounded-xl border border-zinc-700 bg-black/25 p-3">
-                  <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <p class="text-sm font-medium text-zinc-200">Dark Mode</p>
-                      <p class="text-xs text-zinc-500">Toggle workspace appearance and persist it locally.</p>
-                    </div>
-                    <button id="settingsDarkModeToggle" type="button" role="switch" aria-checked="true" class="relative inline-flex h-7 w-12 items-center rounded-full border border-zinc-600 bg-zinc-800 transition-colors duration-300">
-                      <span id="settingsDarkModeKnob" class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white transition-transform duration-300"></span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <article class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <h4 class="text-lg font-semibold text-white">Workspace Data & Safety</h4>
-                <p class="mt-1 text-xs text-zinc-400">Backup, restore, and reset all local workspace data safely.</p>
-                <div class="mt-4">
-                  <label for="settingsCurrentGoal" class="text-xs uppercase tracking-[0.14em] text-zinc-500">Current Business Goal</label>
-                  <textarea id="settingsCurrentGoal" rows="4" class="mt-2 w-full rounded-xl border border-zinc-700 bg-[#0c0c0c] px-4 py-3 text-sm outline-none focus:border-[#00d4ff]" placeholder="e.g., reach first 25 paying customers with 90-day retention > 80%"></textarea>
-                </div>
-                <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                  <button id="settingsExportAllBtn" class="rounded-xl border border-[#00d4ff]/50 bg-[#00d4ff]/10 px-4 py-3 text-sm font-semibold text-[#00d4ff] hover:bg-[#00d4ff]/20">Export All Workspace Data</button>
-                  <label class="cursor-pointer rounded-xl border border-zinc-600 bg-zinc-900/80 px-4 py-3 text-center text-sm font-semibold text-zinc-200 hover:bg-zinc-800">Import Workspace Data
-                    <input id="settingsImportAllInput" type="file" accept="application/json" class="hidden" />
-                  </label>
-                  <button id="settingsClearAllBtn" class="rounded-xl border border-rose-400/50 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300 hover:bg-rose-500/20 sm:col-span-2">Clear All Workspace Data</button>
-                </div>
-                <p id="settingsSafetyStatus" class="mt-3 text-xs text-zinc-500">Your data stays on-device only.</p>
-              </article>
-            </div>
-          </section>
-        </main>
-      </div>
-    </div>
-
-    <script>
-      const navButtons = document.querySelectorAll('.nav-item');
-      const panels = document.querySelectorAll('.tab-panel');
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebarBackdrop');
-      const menuBtn = document.getElementById('menuBtn');
-
-      const STORAGE_KEY = 'barya-dashboard-v1';
-      const DASHBOARD_DEFAULTS = {
-        totalIncome: 128400,
-        totalExpenses: 61250,
-        runwayMonths: 11,
-        readinessScore: 68,
-        monthlyOverview: {
-          income: 45200,
-          expenses: 27100,
-          previousIncome: 41800,
-          previousExpenses: 24900
-        },
-        revenueChart: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          values: [32000, 36000, 39500, 42000, 46800, 50200]
-        },
-        activities: [
-          { id: crypto.randomUUID(), description: 'Closed design partner pilot', amount: 12000, date: '2026-03-21' },
-          { id: crypto.randomUUID(), description: 'Cloud infrastructure renewal', amount: -1800, date: '2026-03-28' }
-        ]
-      };
-
-      let dashboardState = loadDashboardState();
-      let revenueChart;
-
-      function activateTab(targetId) {
-        panels.forEach((panel) => {
-          panel.classList.toggle('hidden', panel.id !== targetId);
-        });
-
-        navButtons.forEach((button) => {
-          const isActive = button.dataset.target === targetId;
-          button.classList.toggle('bg-zinc-800', isActive);
-          button.classList.toggle('text-white', isActive);
-          button.classList.toggle('text-zinc-300', !isActive);
-          button.classList.toggle('hover:bg-zinc-800/70', !isActive);
-        });
-      }
-
-      const planningStorageKey = 'barya_business_planning_v1';
-      const planningGuidesData = [
-        {
-          id: 'guide-not-start',
-          title: 'Core Guide 1: When NOT to Start a Business',
-          intro: 'Starting too early can drain time, confidence, and capital. This guide helps founders avoid launching into avoidable chaos.',
-          keyConcepts: [
-            'A startup should solve a real, expensive problem—not just a cool idea.',
-            'Founder energy, focus, and runway are strategic assets. Protect them.',
-            'Timing matters: weak demand and weak commitment is a dangerous mix.'
-          ],
-          warningSigns: [
-            'You cannot clearly describe the customer pain in one sentence.',
-            'You are building mainly to escape your current job, not solve a market problem.',
-            'You have no plan for validation, money runway, or execution cadence.'
-          ],
-          actionSteps: [
-            'Write a “Do Not Start Yet” memo with your top 3 unresolved risks.',
-            'Interview 5 potential customers and confirm urgency before building.',
-            'Define your minimum runway target and current personal capacity.',
-            'Set one clear “Go / No-Go” date with objective validation criteria.'
-          ],
-          founderInsight: "Smart founders don't just ask ‘Can I build this?’ They ask ‘Should I build this right now?’"
-        },
-        {
-          id: 'guide-how-start',
-          title: 'Core Guide 2: How to Start a Business (Step-by-Step)',
-          intro: 'Execution beats overthinking. This guide breaks startup launch into practical, sequential moves.',
-          keyConcepts: [
-            'Start narrow: one customer segment, one painful workflow, one measurable outcome.',
-            'Sell before scaling. Revenue or pre-commitment is stronger than compliments.',
-            'Operate in short cycles: validate, build, test, improve.'
-          ],
-          warningSigns: [
-            'You are spending months on branding before talking to customers.',
-            'Your launch scope keeps expanding every week.',
-            'You track activity but not outcomes (calls, pilots, conversions).'
-          ],
-          actionSteps: [
-            'Define your target customer profile and core pain statement.',
-            'Create a lightweight offer and pre-sell a pilot to real buyers.',
-            'Launch an MVP with one core feature tied to ROI.',
-            'Review results weekly and prioritize only high-impact improvements.'
-          ],
-          founderInsight: 'Momentum compounds. Small weekly wins outperform perfect quarterly plans.'
-        },
-        {
-          id: 'guide-market-research',
-          title: 'Core Guide 3: Market Research & Validation',
-          intro: 'Market research should produce decisions, not documents. Validation means evidence people will pay.',
-          keyConcepts: [
-            'Use qualitative interviews to understand pain, then quantify market demand.',
-            'Segment by urgency and budget, not just demographics.',
-            'Validation requires behavior signals (time, introductions, deposits, pilots).'
-          ],
-          warningSigns: [
-            'You rely only on friends/family feedback.',
-            'You have data but no clear customer segment priority.',
-            'Prospects praise the product but avoid commitments.'
-          ],
-          actionSteps: [
-            'Run 10 customer interviews using the same structured question set.',
-            'Score each segment by pain severity, frequency, and willingness to pay.',
-            'Test one clear value proposition via landing page or outreach.',
-            'Capture conversion metrics and update your segment focus.'
-          ],
-          founderInsight: 'Validation is not agreement. Validation is commitment.'
-        },
-        {
-          id: 'guide-branding',
-          title: 'Core Guide 4: Branding & Positioning Basics',
-          intro: 'Branding is trust at scale. Positioning is choosing what you want to be known for in one category.',
-          keyConcepts: [
-            'Strong brands communicate a clear before-and-after transformation.',
-            'Positioning works when your message is specific, relevant, and repeatable.',
-            'Consistency across site, pitch, and outreach multiplies conversion.'
-          ],
-          warningSigns: [
-            'Your tagline could describe dozens of competitors.',
-            'Different team members explain the product in different ways.',
-            'Marketing focuses on features instead of customer outcomes.'
-          ],
-          actionSteps: [
-            'Write a one-line positioning statement for one target segment.',
-            'Define 3 proof points (results, credibility, differentiation).',
-            'Align homepage hero, pitch deck, and outreach copy.',
-            'Test message clarity by asking prospects to repeat your value in their own words.'
-          ],
-          founderInsight: 'If your story is unclear, your sales cycle gets longer.'
-        }
-      ];
-      const planningTemplates = [
-        { id: 'saas', name: 'SaaS', sections: ['Executive Summary', 'Problem & Solution', 'Pricing Model', 'Go-To-Market', 'KPIs & Milestones'] },
-        { id: 'ecommerce', name: 'E-commerce', sections: ['Executive Summary', 'Target Audience', 'Product Catalog Strategy', 'Operations & Fulfillment', 'Marketing Channels'] },
-        { id: 'service', name: 'Service Business', sections: ['Executive Summary', 'Service Offer', 'Ideal Client Profile', 'Delivery Workflow', 'Revenue Forecast'] },
-        { id: 'marketplace', name: 'Marketplace', sections: ['Executive Summary', 'Supply & Demand Strategy', 'Trust & Safety', 'Liquidity Plan', 'Unit Economics'] },
-        { id: 'agency', name: 'Agency', sections: ['Executive Summary', 'Niche Positioning', 'Offer Ladder', 'Acquisition Strategy', 'Capacity Plan'] }
-      ];
-
-      const planningElements = {
-        guides: document.getElementById('planningGuides'),
-        templateList: document.getElementById('planningTemplateList'),
-        templateEditor: document.getElementById('planningTemplateEditor'),
-        templateEmpty: document.getElementById('planningTemplateEmpty'),
-        editorHeading: document.getElementById('planningEditorHeading'),
-        editorStatus: document.getElementById('planningEditorStatus'),
-        templateTitle: document.getElementById('planningTemplateTitle'),
-        templateSections: document.getElementById('planningTemplateSections'),
-        saveTemplateBtn: document.getElementById('planningSaveTemplateBtn'),
-        closeEditorBtn: document.getElementById('planningCloseEditorBtn'),
-        exportBtn: document.getElementById('planningExportBtn'),
-        importInput: document.getElementById('planningImportInput'),
-        clearBtn: document.getElementById('planningClearBtn'),
-        message: document.getElementById('planningMessage')
-      };
-
-      function defaultPlanningState() {
-        return {
-          expandedGuideId: planningGuidesData[0].id,
-          guideProgress: Object.fromEntries(planningGuidesData.map((guide) => [guide.id, [false, false, false, false]])),
-          templates: Object.fromEntries(planningTemplates.map((template) => [template.id, {
-            title: `${template.name} Business Plan`,
-            sections: Object.fromEntries(template.sections.map((section) => [section, '']))
-          }]))
-        };
-      }
-
-      function loadPlanningState() {
-        const fallback = defaultPlanningState();
-        try {
-          const raw = localStorage.getItem(planningStorageKey);
-          if (!raw) return fallback;
-          const parsed = JSON.parse(raw);
-          return deepMerge(fallback, parsed);
-        } catch {
-          return fallback;
-        }
-      }
-
-      let planningState = loadPlanningState();
-      let activeTemplateId = null;
-
-      function savePlanningState() {
-        localStorage.setItem(planningStorageKey, JSON.stringify(planningState));
-      }
-
-      function setPlanningMessage(message, tone = 'text-zinc-500') {
-        planningElements.message.textContent = message;
-        planningElements.message.className = `mt-3 text-xs ${tone}`;
-      }
-
-      function guideProgressPercent(guideId) {
-        const steps = planningState.guideProgress[guideId] || [];
-        const completed = steps.filter(Boolean).length;
-        return Math.round((completed / 4) * 100);
-      }
-
-      function renderPlanningGuides() {
-        planningElements.guides.innerHTML = planningGuidesData.map((guide) => {
-          const isOpen = planningState.expandedGuideId === guide.id;
-          const progress = guideProgressPercent(guide.id);
-          const steps = planningState.guideProgress[guide.id] || [false, false, false, false];
-
-          return `
-            <article class="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(17,17,17,0.85),rgba(17,25,40,0.45))] p-4 backdrop-blur-xl shadow-[0_0_0_1px_rgba(0,212,255,0.12),0_20px_40px_rgba(0,0,0,0.35)]">
-              <button data-guide-toggle="${guide.id}" class="flex w-full items-center justify-between gap-3 text-left">
-                <div>
-                  <h5 class="text-sm font-semibold text-zinc-100 sm:text-base">${guide.title}</h5>
-                  <p class="mt-1 text-xs text-zinc-400">Action Sprint Completion: <span class="font-semibold text-[#00d4ff]">${progress}%</span></p>
-                </div>
-                <span class="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-300">${isOpen ? '−' : '+'}</span>
-              </button>
-
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
-                <div class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-500" style="width:${progress}%"></div>
-              </div>
-
-              <div class="${isOpen ? 'mt-4 block' : 'hidden'} space-y-4" data-guide-content="${guide.id}">
-                <section>
-                  <p class="text-xs uppercase tracking-[0.14em] text-[#00d4ff]">Introduction</p>
-                  <p class="mt-1 text-sm text-zinc-200">${guide.intro}</p>
-                </section>
-                <section>
-                  <p class="text-xs uppercase tracking-[0.14em] text-[#00d4ff]">Key Concepts</p>
-                  <ul class="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-300">${guide.keyConcepts.map((item) => `<li>${item}</li>`).join('')}</ul>
-                </section>
-                <section>
-                  <p class="text-xs uppercase tracking-[0.14em] text-[#00d4ff]">Warning Signs</p>
-                  <ul class="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-300">${guide.warningSigns.map((item) => `<li>${item}</li>`).join('')}</ul>
-                </section>
-                <section>
-                  <p class="text-xs uppercase tracking-[0.14em] text-[#00d4ff]">Action Sprint</p>
-                  <div class="mt-2 space-y-2">${guide.actionSteps.map((step, index) => `
-                    <label class="flex items-start gap-2 rounded-lg border border-zinc-700 bg-zinc-950/70 px-3 py-2 text-sm text-zinc-200 transition hover:border-zinc-500">
-                      <input type="checkbox" data-guide-step="${guide.id}" data-step-index="${index}" class="mt-0.5 h-4 w-4 accent-[#00d4ff]" ${steps[index] ? 'checked' : ''} />
-                      <span>${step}</span>
-                    </label>
-                  `).join('')}</div>
-                </section>
-                <section>
-                  <p class="text-xs uppercase tracking-[0.14em] text-[#00d4ff]">Founder Insights</p>
-                  <p class="mt-1 rounded-lg border border-[#00d4ff]/20 bg-[#00d4ff]/10 px-3 py-2 text-sm text-zinc-100">${guide.founderInsight}</p>
-                </section>
-                <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                  <button data-guide-action="task" class="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-zinc-500">Add to Task Manager</button>
-                  <button data-guide-action="barya-ai" class="rounded-lg border border-[#00d4ff]/40 bg-[#00d4ff]/10 px-3 py-2 text-xs font-semibold text-[#00d4ff] hover:bg-[#00d4ff]/20">Open Barya AI</button>
-                  <button data-guide-action="dashboard" class="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-zinc-500">Open Idea Generator</button>
-                  <button data-guide-action="memory" class="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-zinc-500">Open Memory</button>
-                </div>
-              </div>
-            </article>
-          `;
-        }).join('');
-      }
-
-      function renderTemplateList() {
-        planningElements.templateList.innerHTML = planningTemplates.map((template) => {
-          const current = planningState.templates[template.id];
-          const filled = Object.values(current.sections).filter((value) => String(value || '').trim()).length;
-          const percent = Math.round((filled / template.sections.length) * 100);
-          return `
-            <button data-template-open="${template.id}" class="w-full rounded-xl border ${activeTemplateId === template.id ? 'border-[#00d4ff]/70 bg-[#00d4ff]/10' : 'border-zinc-700 bg-zinc-900/70'} px-3 py-2 text-left transition hover:border-[#00d4ff]/60">
-              <div class="flex items-center justify-between gap-2">
-                <p class="text-sm font-medium text-zinc-100">${template.name}</p>
-                <span class="text-xs font-semibold ${percent === 100 ? 'text-emerald-300' : 'text-zinc-400'}">${percent}%</span>
-              </div>
-              <p class="mt-1 text-xs text-zinc-400">${filled}/${template.sections.length} sections completed</p>
-            </button>
-          `;
-        }).join('');
-      }
-
-      function openTemplateEditor(templateId) {
-        activeTemplateId = templateId;
-        const templateConfig = planningTemplates.find((template) => template.id === templateId);
-        const data = planningState.templates[templateId];
-        if (!templateConfig || !data) return;
-
-        planningElements.templateEditor.classList.remove('hidden');
-        planningElements.templateEmpty.classList.add('hidden');
-        planningElements.editorHeading.textContent = `${templateConfig.name} Template`;
-        planningElements.templateTitle.value = data.title;
-        planningElements.templateSections.innerHTML = templateConfig.sections.map((section) => `
-          <div>
-            <label class="text-xs uppercase tracking-[0.12em] text-zinc-400">${section}</label>
-            <textarea data-template-field="${section}" rows="3" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#00d4ff]" placeholder="Write ${section.toLowerCase()}...">${data.sections[section] || ''}</textarea>
-          </div>
-        `).join('');
-
-        renderTemplateList();
-      }
-
-      function saveActiveTemplate() {
-        if (!activeTemplateId) return;
-        const current = planningState.templates[activeTemplateId];
-        if (!current) return;
-
-        current.title = planningElements.templateTitle.value.trim() || 'Untitled Business Plan';
-        planningElements.templateSections.querySelectorAll('[data-template-field]').forEach((field) => {
-          current.sections[field.dataset.templateField] = field.value;
-        });
-
-        savePlanningState();
-        renderTemplateList();
-        planningElements.editorStatus.textContent = `Saved locally at ${new Date().toLocaleTimeString()}`;
-      }
-
-      function wirePlanningEvents() {
-        planningElements.guides.addEventListener('click', (event) => {
-          const toggle = event.target.closest('[data-guide-toggle]');
-          if (toggle) {
-            const guideId = toggle.dataset.guideToggle;
-            planningState.expandedGuideId = planningState.expandedGuideId === guideId ? '' : guideId;
-            savePlanningState();
-            renderPlanningGuides();
-            return;
-          }
-
-          const actionBtn = event.target.closest('[data-guide-action]');
-          if (actionBtn) {
-            const target = actionBtn.dataset.guideAction;
-            if (target === 'task') {
-              setPlanningMessage('Task Manager tab is not available yet in this workspace. Action noted locally.', 'text-amber-300');
-              return;
-            }
-            activateTab(target);
-            if (window.innerWidth < 1024) closeSidebar();
-          }
-        });
-
-        planningElements.guides.addEventListener('change', (event) => {
-          const checkbox = event.target.closest('[data-guide-step]');
-          if (!checkbox) return;
-          const guideId = checkbox.dataset.guideStep;
-          const stepIndex = Number(checkbox.dataset.stepIndex);
-          if (!planningState.guideProgress[guideId]) planningState.guideProgress[guideId] = [false, false, false, false];
-          planningState.guideProgress[guideId][stepIndex] = checkbox.checked;
-          savePlanningState();
-          renderPlanningGuides();
-        });
-
-        planningElements.templateList.addEventListener('click', (event) => {
-          const button = event.target.closest('[data-template-open]');
-          if (!button) return;
-          openTemplateEditor(button.dataset.templateOpen);
-        });
-
-        planningElements.templateTitle.addEventListener('input', saveActiveTemplate);
-        planningElements.templateSections.addEventListener('input', (event) => {
-          if (event.target.matches('[data-template-field]')) saveActiveTemplate();
-        });
-
-        planningElements.saveTemplateBtn.addEventListener('click', () => {
-          saveActiveTemplate();
-          setPlanningMessage('Template saved locally.', 'text-emerald-300');
-        });
-
-        planningElements.closeEditorBtn.addEventListener('click', () => {
-          activeTemplateId = null;
-          planningElements.templateEditor.classList.add('hidden');
-          planningElements.templateEmpty.classList.remove('hidden');
-          renderTemplateList();
-        });
-
-        planningElements.exportBtn.addEventListener('click', () => {
-          const payload = JSON.stringify(planningState, null, 2);
-          const blob = new Blob([payload], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `business-plans-${new Date().toISOString().slice(0, 10)}.json`;
-          link.click();
-          URL.revokeObjectURL(url);
-          setPlanningMessage('Business plans exported successfully.', 'text-emerald-300');
-        });
-
-        planningElements.importInput.addEventListener('change', async (event) => {
-          const file = event.target.files?.[0];
-          if (!file) return;
-          try {
-            const parsed = JSON.parse(await file.text());
-            planningState = deepMerge(defaultPlanningState(), parsed);
-            savePlanningState();
-            activeTemplateId = null;
-            planningElements.templateEditor.classList.add('hidden');
-            planningElements.templateEmpty.classList.remove('hidden');
-            renderPlanningGuides();
-            renderTemplateList();
-            setPlanningMessage('Business plans imported successfully.', 'text-emerald-300');
-          } catch {
-            setPlanningMessage('Invalid file. Please import a valid business planning JSON backup.', 'text-rose-300');
-          }
-          event.target.value = '';
-        });
-
-        planningElements.clearBtn.addEventListener('click', () => {
-          if (!window.confirm('Clear all Business Planning progress in this browser? This cannot be undone.')) return;
-          localStorage.removeItem(planningStorageKey);
-          planningState = defaultPlanningState();
-          activeTemplateId = null;
-          planningElements.templateEditor.classList.add('hidden');
-          planningElements.templateEmpty.classList.remove('hidden');
-          savePlanningState();
-          renderPlanningGuides();
-          renderTemplateList();
-          setPlanningMessage('All Business Planning progress cleared.', 'text-amber-300');
-        });
-      }
-
-      function initPlanningSection() {
-        renderPlanningGuides();
-        renderTemplateList();
-        wirePlanningEvents();
-      }
-
-      const ideaInput = document.getElementById('ideaInput');
-      const reloadIdeaBtn = document.getElementById('reloadIdeaBtn');
-      const deepAnalysisBtn = document.getElementById('deepAnalysisBtn');
-      const quickBlueprintBtn = document.getElementById('quickBlueprintBtn');
-      const strategyProgressWrap = document.getElementById('strategyProgressWrap');
-      const strategyProgressLabel = document.getElementById('strategyProgressLabel');
-      const strategyProgressBar = document.getElementById('strategyProgressBar');
-      const strategyStepper = document.getElementById('strategyStepper');
-      const strategyResults = document.getElementById('strategyResults');
-      const edgeText = document.getElementById('edgeText');
-      const marketingText = document.getElementById('marketingText');
-      const techText = document.getElementById('techText');
-      const roadmapList = document.getElementById('roadmapList');
-      const actionsList = document.getElementById('actionsList');
-      let progressTimer = null;
-
-      const savedIdeaKey = 'barya_saved_idea';
-      const stepLabels = [
-        'Mapping Market Gaps...',
-        'Competitive Analysis...',
-        'Building GTM Roadmap...',
-        'Generating Actionable Strategy...'
-      ];
-
-      function buildStepMarkup(activeStep) {
-        strategyStepper.innerHTML = stepLabels
-          .map((label, index) => {
-            const isActive = index <= activeStep;
-            const dotClass = isActive ? 'bg-accent step-dot-active border-transparent' : 'bg-zinc-800 border-zinc-600';
-            const textClass = isActive ? 'text-zinc-100' : 'text-zinc-500';
-            return `
-              <div class="rounded-xl border ${isActive ? 'border-accent/40 bg-accent/10' : 'border-zinc-700 bg-zinc-900/70'} p-3 transition-all duration-300">
-                <div class="flex items-center gap-2">
-                  <span class="h-2.5 w-2.5 rounded-full border ${dotClass} transition-all duration-300"></span>
-                  <p class="text-xs font-medium ${textClass}">${label}</p>
-                </div>
-              </div>
-            `;
-          })
-          .join('');
-      }
-
-      function fillResults(mode) {
-        const idea = ideaInput.value.trim() || 'AI startup concept';
-        const focus = mode === 'deep' ? 'defensible depth' : 'rapid go-to-market experiments';
-        edgeText.textContent = `Position as the fastest way for operations leaders to convert fragmented supplier data into savings decisions. Your edge is ${focus} anchored to measurable procurement cycle reduction for "${idea}".`;
-        marketingText.textContent = mode === 'deep'
-          ? 'Launch a benchmarking report showing hidden costs of manual procurement workflows; gate by role and company size, then trigger founder-led teardown calls.'
-          : 'Ship a 7-day blueprint challenge: upload three supplier quotes, receive one board-ready comparison, then upsell to pilot.'
-        techText.textContent = mode === 'deep'
-          ? 'Use a retrieval pipeline (OCR + embeddings), workflow orchestration, and human-in-the-loop approval inside a secure multi-tenant architecture.'
-          : 'Start with OCR + rules engine + lightweight LLM summarization, then layer forecasting and negotiation copilots after proof of ROI.'
-        roadmapList.innerHTML = [
-          'Weeks 1-2: Interview 12 procurement managers and score pains by urgency and spend impact.',
-          'Weeks 3-4: Build pilot MVP for quote normalization with exportable savings dashboard.',
-          'Month 2: Close 2 paid design partners with success metric of 15% cycle-time reduction.',
-          'Month 3: Productize onboarding playbook and case-study driven outbound sequence.'
-        ].map((item) => `<li>${item}</li>`).join('');
-        actionsList.innerHTML = [
-          'Define one-sentence wedge and add it to homepage hero.',
-          'Create ROI calculator for first sales call.',
-          'Pre-schedule 5 founder demos with target logos this week.'
-        ].map((item) => `<li>${item}</li>`).join('');
-      }
-
-      function runStrategyGeneration(mode) {
-        if (progressTimer) clearInterval(progressTimer);
-        localStorage.setItem(savedIdeaKey, ideaInput.value.trim());
-        strategyResults.classList.add('hidden');
-        strategyProgressWrap.classList.remove('hidden');
-        strategyProgressBar.style.width = '0%';
-        buildStepMarkup(-1);
-
-        let step = 0;
-        strategyProgressLabel.textContent = stepLabels[step];
-        progressTimer = setInterval(() => {
-          buildStepMarkup(step);
-          strategyProgressBar.style.width = `${((step + 1) / stepLabels.length) * 100}%`;
-          strategyProgressLabel.textContent = stepLabels[step];
-          step += 1;
-
-          if (step === stepLabels.length) {
-            clearInterval(progressTimer);
-            setTimeout(() => {
-              fillResults(mode);
-              strategyResults.classList.remove('hidden');
-            }, 350);
-          }
-        }, 750);
-      }
-
-      reloadIdeaBtn.addEventListener('click', () => {
-        const saved = localStorage.getItem(savedIdeaKey);
-        if (saved) ideaInput.value = saved;
-        reloadIdeaBtn.textContent = saved ? 'Idea Reloaded' : 'No Saved Idea';
-        setTimeout(() => {
-          reloadIdeaBtn.textContent = 'Reload Saved Idea';
-        }, 1200);
-      });
-
-      deepAnalysisBtn.addEventListener('click', () => runStrategyGeneration('deep'));
-      quickBlueprintBtn.addEventListener('click', () => runStrategyGeneration('quick'));
-
-      const baryaStorageKey = 'barya_ai_chat_history_v1';
-      const baryaChatMessages = document.getElementById('baryaChatMessages');
-      const baryaChatInput = document.getElementById('baryaChatInput');
-      const sendBaryaChatBtn = document.getElementById('sendBaryaChatBtn');
-      const clearBaryaChatBtn = document.getElementById('clearBaryaChatBtn');
-      const exportBaryaChatBtn = document.getElementById('exportBaryaChatBtn');
-      const importBaryaChatInput = document.getElementById('importBaryaChatInput');
-      const clearAllBaryaChatBtn = document.getElementById('clearAllBaryaChatBtn');
-      const baryaQuickActionBtns = document.querySelectorAll('#baryaQuickActions button');
-
-      function saveBaryaChat(history) {
-        localStorage.setItem(baryaStorageKey, JSON.stringify(history));
-      }
-
-      function getBaryaChat() {
-        try {
-          const raw = localStorage.getItem(baryaStorageKey);
-          const parsed = raw ? JSON.parse(raw) : [];
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
-      function escapeHtml(value) {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return String(value).replace(/[&<>"']/g, (char) => map[char]);
-      }
-
-      function createReplyTemplate(reply) {
-        return `
-          <div class="space-y-2 text-sm leading-relaxed text-zinc-100">
-            <p><span class="font-semibold text-accent">1. Clear Answer:</span> ${escapeHtml(reply.answer)}</p>
-            <p><span class="font-semibold text-accent">2. Why It Matters:</span> ${escapeHtml(reply.why)}</p>
-            <div>
-              <p class="font-semibold text-accent">3. Action Steps:</p>
-              <ol class="mt-1 list-decimal space-y-1 pl-5 text-zinc-200">
-                ${reply.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
-              </ol>
-            </div>
-            <p><span class="font-semibold text-accent">4. Founder Tip:</span> ${escapeHtml(reply.tip)}</p>
-            <p><span class="font-semibold text-accent">5. Next Move:</span> ${escapeHtml(reply.next)}</p>
-          </div>
-        `;
-      }
-
-      function renderBaryaChat() {
-        const history = getBaryaChat();
-        if (!history.length) {
-          baryaChatMessages.innerHTML = `
-            <div class="rounded-2xl border border-accent/25 bg-white/5 p-4 text-sm text-zinc-300 backdrop-blur-md">
-              Start by asking a business question or tap a quick action above. Your chat stays on this device.
-            </div>
-          `;
-          return;
-        }
-
-        baryaChatMessages.innerHTML = history
-          .map((item) => {
-            if (item.role === 'user') {
-              return `
-                <div class="ml-auto w-full max-w-2xl rounded-2xl border border-accent/30 bg-accent/10 p-4 backdrop-blur-md">
-                  <p class="text-right text-[11px] uppercase tracking-[0.12em] text-accent">You</p>
-                  <p class="mt-2 text-sm text-zinc-100">${escapeHtml(item.message)}</p>
-                </div>
-              `;
-            }
-
-            return `
-              <div class="mr-auto flex w-full max-w-2xl gap-3">
-                <div class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-accent/35 bg-accent/20 text-xs font-semibold text-accent">AI</div>
-                <div class="w-full rounded-2xl border border-zinc-700 bg-white/5 p-4 backdrop-blur-md">
-                  <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Barya AI</p>
-                  <div class="mt-2">${createReplyTemplate(item.reply)}</div>
-                </div>
-              </div>
-            `;
-          })
-          .join('');
-
-        baryaChatMessages.scrollTo({ top: baryaChatMessages.scrollHeight, behavior: 'smooth' });
-      }
-
-      function buildSmartReply(message) {
-        const text = message.toLowerCase();
-        const templates = [
-          { keyword: ['validate', 'idea'], answer: 'Your idea is promising if it solves a painful, frequent problem for one narrow customer segment first.', why: 'Validation prevents building features people praise but never pay for.', steps: ['Interview 10 exact target users this week.', 'Score each pain by urgency (1-5) and budget readiness.', 'Test one landing page with a clear ROI promise.'], tip: 'Never ask “Do you like this idea?”—ask “Would you pay now?”', next: 'Ask: “Can you help me craft 10 validation interview questions?”' },
-          { keyword: ['launch', 'plan'], answer: 'Use a 30-day micro-launch focused on one core outcome and one ideal customer profile.', why: 'Tight launches speed up learning and avoid diluted positioning.', steps: ['Define one success metric for day 30.', 'Create a weekly launch calendar with one channel per week.', 'Publish proof each week: demo, case note, or customer quote.'], tip: 'Momentum beats perfection—ship in public with measurable milestones.', next: 'Ask: “Build me a week-by-week launch sprint.”' },
-          { keyword: ['first customers', 'customer'], answer: 'Your first customers come fastest from warm networks and problem-focused communities, not broad ads.', why: 'Early customers buy trust and relevance more than polished branding.', steps: ['List 30 likely buyers from LinkedIn and existing contacts.', 'Send personalized pain-based outreach messages.', 'Offer a pilot with a specific success target and timeline.'], tip: 'Sell the transformation, not the tool.', next: 'Ask: “Write my first 5 outreach messages.”' },
-          { keyword: ['pricing', 'price'], answer: 'Start with value-based pricing tied to measurable outcomes, then add tiers as usage grows.', why: 'Outcome pricing aligns your revenue with customer wins and reduces discount pressure.', steps: ['Estimate financial value your solution creates monthly.', 'Set starter price at 10-20% of delivered value.', 'Create 3 tiers: Starter, Growth, and Scale.'], tip: 'Anchor pricing with ROI examples before showing numbers.', next: 'Ask: “Design 3 pricing tiers for my startup.”' },
-          { keyword: ['expense', 'cost', 'reduce expenses'], answer: 'Cut fixed costs first, then renegotiate variable spend with usage-based controls.', why: 'Reducing burn rate extends runway and buying time improves decision quality.', steps: ['Audit all recurring tools and remove low-usage subscriptions.', 'Renegotiate top 5 vendor contracts this month.', 'Set monthly spend caps per team or function.'], tip: 'Run a weekly “spend to value” review for every major cost.', next: 'Ask: “Create a 30-day expense reduction checklist.”' },
-          { keyword: ['growth', 'improve growth'], answer: 'Focus on one growth loop where acquisition naturally feeds retention and referrals.', why: 'Compounding loops scale better than isolated channel experiments.', steps: ['Choose one primary growth channel for 4 weeks.', 'Instrument activation and retention metrics in the same funnel.', 'Add referral triggers right after user success moments.'], tip: 'If retention is weak, pause acquisition and fix onboarding first.', next: 'Ask: “Help me design one high-retention growth loop.”' },
-          { keyword: ['give business idea', 'business idea', 'idea for'], answer: 'A strong opportunity: AI compliance copilot for small logistics firms handling contracts and audits.', why: 'Compliance pain is urgent, expensive, and repeated—ideal for recurring revenue.', steps: ['Interview 8 logistics operators about audit bottlenecks.', 'Build an MVP that flags missing contract clauses.', 'Offer monthly compliance reports as premium upsell.'], tip: 'Pick ideas where buyers already spend money to solve the pain manually.', next: 'Ask: “Give me 5 more business ideas for my skills.”' },
-          { keyword: ['how to start', 'start', 'begin'], answer: 'Start with a narrow customer problem, validate demand quickly, and ship a tiny paid solution.', why: 'Early focus converts uncertainty into evidence and revenue.', steps: ['Define one customer persona and one painful workflow.', 'Run customer calls and pre-sell a pilot.', 'Launch MVP in 14 days with one measurable outcome.'], tip: 'Speed to first paying user is your most important startup metric.', next: 'Ask: “Create my first 14-day startup execution plan.”' },
-          { keyword: ['market', 'position'], answer: 'Win by owning a niche category message with clear before-vs-after outcomes.', why: 'Positioning clarity improves conversion across marketing and sales.', steps: ['Choose one niche where urgency and budget are both high.', 'Craft a one-line category statement.', 'Align homepage, pitch, and outreach with the same narrative.'], tip: 'If your message fits everyone, it persuades no one.', next: 'Ask: “Refine my positioning statement.”' },
-          { keyword: ['sales', 'close', 'pipeline'], answer: 'Build a simple sales pipeline with discovery, value proof, pilot, and close stages.', why: 'A repeatable pipeline turns random wins into predictable revenue.', steps: ['Create qualification criteria for every new lead.', 'Use discovery calls to capture problem cost and urgency.', 'Present proposals with timeline, ROI, and decision deadline.'], tip: 'Always finish calls with a scheduled next step on calendar.', next: 'Ask: “Draft my discovery call structure.”' },
-          { keyword: ['product', 'feature', 'roadmap'], answer: 'Prioritize product roadmap by customer pain frequency and willingness to pay.', why: 'The right roadmap increases retention and prevents feature bloat.', steps: ['Collect top 10 feature requests and map to business outcomes.', 'Score each item by impact, effort, and revenue link.', 'Ship in 2-week cycles with usage feedback checkpoints.'], tip: 'Remove one weak feature for every new feature added.', next: 'Ask: “Help me prioritize my next sprint roadmap.”' },
-          { keyword: ['funding', 'investor', 'raise'], answer: 'Prepare for funding by proving traction, repeatability, and capital-efficient growth.', why: 'Investors back evidence of momentum more than polished storytelling.', steps: ['Track monthly growth, retention, and net revenue metrics.', 'Document your repeatable customer acquisition process.', 'Build a concise data room with financial and product proof.'], tip: 'Fundraise from strength: start conversations before you need cash.', next: 'Ask: “Create my investor readiness checklist.”' }
-        ];
-
-        const matched = templates.find((template) => template.keyword.some((word) => text.includes(word)));
-        return matched || {
-          answer: 'Great question. Focus on solving a measurable customer pain with a small, fast experiment this week.',
-          why: 'Fast experiments reduce risk and reveal what people will actually pay for.',
-          steps: ['Define one clear business hypothesis to test.', 'Run one customer-facing experiment within 72 hours.', 'Capture outcomes and double down on what worked.'],
-          tip: 'Execution clarity beats complex planning in early stages.',
-          next: 'Ask: “What experiment should I run this week based on my idea?”'
-        };
-      }
-
-      function sendBaryaMessage(rawMessage) {
-        const message = rawMessage.trim();
-        if (!message) return;
-
-        const history = getBaryaChat();
-        history.push({ role: 'user', message, createdAt: Date.now() });
-        history.push({ role: 'assistant', reply: buildSmartReply(message), createdAt: Date.now() });
-        saveBaryaChat(history);
-        renderBaryaChat();
-        baryaChatInput.value = '';
-      }
-
-      sendBaryaChatBtn.addEventListener('click', () => sendBaryaMessage(baryaChatInput.value));
-      baryaChatInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          sendBaryaMessage(baryaChatInput.value);
-        }
-      });
-
-      clearBaryaChatBtn.addEventListener('click', () => {
-        if (!confirm('Clear current visible chat?')) return;
-        localStorage.removeItem(baryaStorageKey);
-        renderBaryaChat();
-      });
-
-      clearAllBaryaChatBtn.addEventListener('click', () => {
-        if (!confirm('Clear all Barya AI chat history from this browser?')) return;
-        localStorage.removeItem(baryaStorageKey);
-        renderBaryaChat();
-      });
-
-      exportBaryaChatBtn.addEventListener('click', () => {
-        const history = getBaryaChat();
-        const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `barya-chat-history-${new Date().toISOString().slice(0, 10)}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-      });
-
-      importBaryaChatInput.addEventListener('change', async (event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        try {
-          const text = await file.text();
-          const parsed = JSON.parse(text);
-          if (!Array.isArray(parsed)) throw new Error('Invalid format');
-          saveBaryaChat(parsed);
-          renderBaryaChat();
-          alert('Chat history imported successfully.');
-        } catch {
-          alert('Import failed. Please upload a valid Barya chat JSON export.');
-        } finally {
-          importBaryaChatInput.value = '';
-        }
-      });
-
-      baryaQuickActionBtns.forEach((button) => {
-        button.addEventListener('click', () => {
-          const prompt = button.dataset.prompt || '';
-          baryaChatInput.value = prompt;
-          sendBaryaMessage(prompt);
-        });
-      });
-
-      renderBaryaChat();
-
-      const MEMORY_STORAGE_KEY = 'barya_memory_v1';
-      const MEMORY_DEFAULTS = { insights: [], actions: [] };
-      let memoryState = loadMemoryState();
-      let activeInsightId = null;
-
-      const insightForm = document.getElementById('insightForm');
-      const insightTitle = document.getElementById('insightTitle');
-      const insightNote = document.getElementById('insightNote');
-      const insightDate = document.getElementById('insightDate');
-      const insightSearch = document.getElementById('insightSearch');
-      const insightList = document.getElementById('insightList');
-      const insightEmptyState = document.getElementById('insightEmptyState');
-      const memoryInsightCount = document.getElementById('memoryInsightCount');
-
-      const actionForm = document.getElementById('actionForm');
-      const actionDescription = document.getElementById('actionDescription');
-      const actionCategory = document.getElementById('actionCategory');
-      const actionDate = document.getElementById('actionDate');
-      const actionList = document.getElementById('actionList');
-      const actionEmptyState = document.getElementById('actionEmptyState');
-      const memoryActionCount = document.getElementById('memoryActionCount');
-
-      const memoryToast = document.getElementById('memoryToast');
-      const memoryExportBtn = document.getElementById('memoryExportBtn');
-      const memoryImportInput = document.getElementById('memoryImportInput');
-      const memoryClearBtn = document.getElementById('memoryClearBtn');
-
-      const insightModal = document.getElementById('insightModal');
-      const closeInsightModal = document.getElementById('closeInsightModal');
-      const insightEditForm = document.getElementById('insightEditForm');
-      const modalInsightTitle = document.getElementById('modalInsightTitle');
-      const modalInsightNote = document.getElementById('modalInsightNote');
-      const modalInsightDate = document.getElementById('modalInsightDate');
-      const deleteInsightFromModal = document.getElementById('deleteInsightFromModal');
-
-      function todayISODate() {
-        return new Date().toISOString().slice(0, 10);
-      }
-
-      function loadMemoryState() {
-        try {
-          const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
-          if (!raw) return structuredClone(MEMORY_DEFAULTS);
-          const parsed = JSON.parse(raw);
-          return {
-            insights: Array.isArray(parsed?.insights) ? parsed.insights : [],
-            actions: Array.isArray(parsed?.actions) ? parsed.actions : []
-          };
-        } catch {
-          return structuredClone(MEMORY_DEFAULTS);
-        }
-      }
-
-      function saveMemoryState() {
-        localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(memoryState));
-      }
-
-      function setMemoryToast(message, tone = 'text-zinc-500') {
-        memoryToast.textContent = message;
-        memoryToast.className = `mt-3 min-h-[1.25rem] text-xs ${tone}`;
-      }
-
-      function previewText(text, limit = 90) {
-        if (!text) return '';
-        return text.length > limit ? `${text.slice(0, limit).trim()}…` : text;
-      }
-
-      function renderInsights() {
-        const searchTerm = insightSearch.value.trim().toLowerCase();
-        const insights = memoryState.insights
-          .filter((item) => item.title.toLowerCase().includes(searchTerm) || item.note.toLowerCase().includes(searchTerm))
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        memoryInsightCount.textContent = `${memoryState.insights.length} item${memoryState.insights.length === 1 ? '' : 's'}`;
-        insightList.innerHTML = '';
-
-        if (!insights.length) {
-          insightEmptyState.classList.remove('hidden');
-          return;
-        }
-
-        insightEmptyState.classList.add('hidden');
-        insights.forEach((item) => {
-          const li = document.createElement('li');
-          li.className = 'rounded-xl border border-zinc-700 bg-zinc-950/70 p-3 transition hover:border-accent/35 hover:bg-zinc-900/80';
-          li.innerHTML = `
-            <div class="flex items-start justify-between gap-3">
-              <button data-action="open-insight" data-id="${item.id}" class="min-w-0 text-left">
-                <p class="truncate text-sm font-semibold text-zinc-100">${escapeHtml(item.title)}</p>
-                <p class="mt-1 text-xs text-zinc-400">${escapeHtml(previewText(item.note))}</p>
-                <p class="mt-2 text-[11px] uppercase tracking-[0.12em] text-zinc-500">${escapeHtml(item.date)}</p>
-              </button>
-              <div class="flex shrink-0 items-center gap-2">
-                <button data-action="open-insight" data-id="${item.id}" class="rounded-md border border-accent/40 px-2 py-1 text-xs text-accent transition hover:bg-accent/15">Edit</button>
-                <button data-action="delete-insight" data-id="${item.id}" class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/15">Delete</button>
-              </div>
-            </div>
-          `;
-          insightList.appendChild(li);
-        });
-      }
-
-      function renderActions() {
-        const actions = memoryState.actions.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
-        memoryActionCount.textContent = `${memoryState.actions.length} action${memoryState.actions.length === 1 ? '' : 's'}`;
-        actionList.innerHTML = '';
-
-        if (!actions.length) {
-          actionEmptyState.classList.remove('hidden');
-          return;
-        }
-
-        actionEmptyState.classList.add('hidden');
-        actions.forEach((item) => {
-          const li = document.createElement('li');
-          li.className = 'rounded-xl border border-zinc-700 bg-zinc-950/70 p-3';
-          li.innerHTML = `
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <p class="text-sm text-zinc-100">${escapeHtml(item.description)}</p>
-                <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.11em]">
-                  <span class="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-accent">${escapeHtml(item.category)}</span>
-                  <span class="text-zinc-500">${escapeHtml(item.date)}</span>
-                </div>
-              </div>
-              <button data-action="delete-action" data-id="${item.id}" class="shrink-0 rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/15">Delete</button>
-            </div>
-          `;
-          actionList.appendChild(li);
-        });
-      }
-
-      function renderMemory() {
-        renderInsights();
-        renderActions();
-      }
-
-      function openInsightModal(insightId) {
-        const insight = memoryState.insights.find((item) => item.id === insightId);
-        if (!insight) return;
-        activeInsightId = insightId;
-        modalInsightTitle.value = insight.title;
-        modalInsightNote.value = insight.note;
-        modalInsightDate.value = insight.date || todayISODate();
-        insightModal.classList.remove('hidden');
-        insightModal.classList.add('flex');
-      }
-
-      function closeInsightModalView() {
-        activeInsightId = null;
-        insightModal.classList.add('hidden');
-        insightModal.classList.remove('flex');
-      }
-
-      insightForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const title = insightTitle.value.trim();
-        const note = insightNote.value.trim();
-        const date = insightDate.value || todayISODate();
-        if (!title || !note) return;
-
-        memoryState.insights.push({ id: crypto.randomUUID(), title, note, date, updatedAt: Date.now() });
-        saveMemoryState();
-        renderInsights();
-        insightForm.reset();
-        insightDate.value = todayISODate();
-        setMemoryToast('Insight saved locally.', 'text-emerald-300');
-      });
-
-      insightSearch.addEventListener('input', renderInsights);
-
-      insightList.addEventListener('click', (event) => {
-        const openButton = event.target.closest('[data-action="open-insight"]');
-        if (openButton) {
-          openInsightModal(openButton.dataset.id);
-          return;
-        }
-
-        const deleteButton = event.target.closest('[data-action="delete-insight"]');
-        if (!deleteButton) return;
-
-        memoryState.insights = memoryState.insights.filter((item) => item.id !== deleteButton.dataset.id);
-        saveMemoryState();
-        renderInsights();
-        setMemoryToast('Insight deleted.', 'text-amber-300');
-      });
-
-      actionForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const description = actionDescription.value.trim();
-        const category = actionCategory.value;
-        const date = actionDate.value || todayISODate();
-        if (!description || !category) return;
-
-        memoryState.actions.push({ id: crypto.randomUUID(), description, category, date, createdAt: Date.now() });
-        saveMemoryState();
-        renderActions();
-        actionForm.reset();
-        actionCategory.value = 'Strategy';
-        actionDate.value = todayISODate();
-        setMemoryToast('Action saved locally.', 'text-emerald-300');
-      });
-
-      actionList.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-action="delete-action"]');
-        if (!button) return;
-        memoryState.actions = memoryState.actions.filter((item) => item.id !== button.dataset.id);
-        saveMemoryState();
-        renderActions();
-        setMemoryToast('Action deleted.', 'text-amber-300');
-      });
-
-      insightEditForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (!activeInsightId) return;
-
-        const insight = memoryState.insights.find((item) => item.id === activeInsightId);
-        if (!insight) return;
-
-        insight.title = modalInsightTitle.value.trim();
-        insight.note = modalInsightNote.value.trim();
-        insight.date = modalInsightDate.value || todayISODate();
-        insight.updatedAt = Date.now();
-
-        saveMemoryState();
-        renderInsights();
-        closeInsightModalView();
-        setMemoryToast('Insight updated.', 'text-emerald-300');
-      });
-
-      deleteInsightFromModal.addEventListener('click', () => {
-        if (!activeInsightId) return;
-        memoryState.insights = memoryState.insights.filter((item) => item.id !== activeInsightId);
-        saveMemoryState();
-        renderInsights();
-        closeInsightModalView();
-        setMemoryToast('Insight deleted.', 'text-amber-300');
-      });
-
-      closeInsightModal.addEventListener('click', closeInsightModalView);
-      insightModal.addEventListener('click', (event) => {
-        if (event.target === insightModal) closeInsightModalView();
-      });
-
-      memoryExportBtn.addEventListener('click', () => {
-        const payload = {
-          exportedAt: new Date().toISOString(),
-          schemaVersion: 1,
-          memory: memoryState
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `barya-memory-${todayISODate()}.json`;
-        anchor.click();
-        URL.revokeObjectURL(url);
-        setMemoryToast('Memory export complete.', 'text-emerald-300');
-      });
-
-      memoryImportInput.addEventListener('change', async (event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        try {
-          const parsed = JSON.parse(await file.text());
-          const incoming = parsed?.memory || parsed;
-          if (!incoming || !Array.isArray(incoming.insights) || !Array.isArray(incoming.actions)) {
-            throw new Error('Invalid format');
-          }
-
-          memoryState = {
-            insights: incoming.insights,
-            actions: incoming.actions
-          };
-          saveMemoryState();
-          renderMemory();
-          setMemoryToast('Memory imported successfully.', 'text-emerald-300');
-        } catch {
-          setMemoryToast('Import failed. Please use a valid memory JSON file.', 'text-rose-300');
-        } finally {
-          memoryImportInput.value = '';
-        }
-      });
-
-      memoryClearBtn.addEventListener('click', () => {
-        if (!window.confirm('Clear all Memory data from this browser? This cannot be undone.')) return;
-        memoryState = structuredClone(MEMORY_DEFAULTS);
-        saveMemoryState();
-        renderMemory();
-        closeInsightModalView();
-        setMemoryToast('All memory data cleared.', 'text-amber-300');
-      });
-
-      insightDate.value = todayISODate();
-      actionDate.value = todayISODate();
-      renderMemory();
-
-      function openSidebar() {
-        sidebar.classList.remove('-translate-x-full');
-        backdrop.classList.remove('hidden');
-      }
-
-      function closeSidebar() {
-        sidebar.classList.add('-translate-x-full');
-        backdrop.classList.add('hidden');
-      }
-
-      function safeNumber(value, fallback = 0) {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) ? parsed : fallback;
-      }
-
-      function deepMerge(base, incoming) {
-        const merged = structuredClone(base);
-        Object.entries(incoming || {}).forEach(([key, value]) => {
-          if (value && typeof value === 'object' && !Array.isArray(value) && key in merged) {
-            merged[key] = deepMerge(merged[key], value);
-          } else {
-            merged[key] = value;
-          }
-        });
-        return merged;
-      }
-
-      function loadDashboardState() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return structuredClone(DASHBOARD_DEFAULTS);
-        try {
-          return deepMerge(DASHBOARD_DEFAULTS, JSON.parse(raw));
-        } catch {
-          return structuredClone(DASHBOARD_DEFAULTS);
-        }
-      }
-
-      function saveDashboardState() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dashboardState));
-      }
-
-      function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(safeNumber(value));
-      }
-
-      function parseEditableNumber(text) {
-        return safeNumber(String(text).replace(/[^0-9.-]/g, ''), 0);
-      }
-
-      function updateMetricDisplays() {
-        document.querySelectorAll('.metric-editable').forEach((el) => {
-          const key = el.dataset.key;
-          const value = safeNumber(dashboardState[key]);
-          el.textContent = el.dataset.type === 'currency' ? formatCurrency(value) : value.toString();
-        });
-
-        const netSavings = safeNumber(dashboardState.totalIncome) - safeNumber(dashboardState.totalExpenses);
-        const netPercent = dashboardState.totalIncome > 0 ? (netSavings / dashboardState.totalIncome) * 100 : 0;
-        const netSavingsDisplay = document.getElementById('netSavingsDisplay');
-        const netSavingsPercent = document.getElementById('netSavingsPercent');
-        netSavingsDisplay.textContent = formatCurrency(netSavings);
-        netSavingsPercent.textContent = `${netPercent >= 0 ? '▲' : '▼'} ${Math.abs(netPercent).toFixed(1)}% change`;
-        netSavingsPercent.className = `mt-1 text-xs ${netPercent >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
-      }
-
-      function updateReadinessDisplay() {
-        const score = Math.min(100, Math.max(0, safeNumber(dashboardState.readinessScore)));
-        dashboardState.readinessScore = score;
-        const circumference = 314;
-        const offset = circumference - (score / 100) * circumference;
-
-        document.getElementById('readinessCircle').style.strokeDashoffset = offset;
-        document.getElementById('readinessText').textContent = `${Math.round(score)}%`;
-        document.getElementById('readinessRange').value = score;
-        document.getElementById('readinessInput').value = Math.round(score);
-      }
-
-      function trendText(current, previous, inverse = false) {
-        if (current === previous) return { icon: '→', text: 'Flat', tone: 'text-zinc-400' };
-        const up = current > previous;
-        const positive = inverse ? !up : up;
-        return {
-          icon: up ? '▲' : '▼',
-          text: `${Math.abs(((current - previous) / (previous || 1)) * 100).toFixed(1)}%`,
-          tone: positive ? 'text-emerald-300' : 'text-rose-300'
-        };
-      }
-
-      function updateMonthlyOverview() {
-        const m = dashboardState.monthlyOverview;
-        document.querySelectorAll('.monthly-editable').forEach((el) => {
-          const value = safeNumber(m[el.dataset.key]);
-          el.textContent = formatCurrency(value);
-        });
-
-        const net = safeNumber(m.income) - safeNumber(m.expenses);
-        const previousNet = safeNumber(m.previousIncome) - safeNumber(m.previousExpenses);
-
-        const incomeTrend = trendText(m.income, m.previousIncome);
-        const expenseTrend = trendText(m.expenses, m.previousExpenses, true);
-        const netTrend = trendText(net, previousNet);
-
-        const incomeTrendEl = document.getElementById('incomeTrend');
-        incomeTrendEl.textContent = `${incomeTrend.icon} ${incomeTrend.text}`;
-        incomeTrendEl.className = `mt-1 text-xs ${incomeTrend.tone}`;
-
-        const expenseTrendEl = document.getElementById('expenseTrend');
-        expenseTrendEl.textContent = `${expenseTrend.icon} ${expenseTrend.text}`;
-        expenseTrendEl.className = `mt-1 text-xs ${expenseTrend.tone}`;
-
-        const netTrendEl = document.getElementById('netTrend');
-        netTrendEl.textContent = `${netTrend.icon} ${netTrend.text}`;
-        netTrendEl.className = `mt-1 text-xs ${netTrend.tone}`;
-
-        document.getElementById('monthlyNet').textContent = formatCurrency(net);
-      }
-
-      function renderRecommendations() {
-        const recommendations = [];
-        const runway = safeNumber(dashboardState.runwayMonths);
-        const net = safeNumber(dashboardState.totalIncome) - safeNumber(dashboardState.totalExpenses);
-        const readiness = safeNumber(dashboardState.readinessScore);
-
-        if (runway < 6) {
-          recommendations.push('⚠️ Runway is under 6 months. Reduce burn or secure new funding soon.');
-        } else {
-          recommendations.push('✅ Runway is healthy. Keep at least 6+ months buffer while scaling.');
-        }
-
-        if (net < 0) {
-          recommendations.push('⚠️ You are net negative. Prioritize margin improvements and expense control.');
-        } else {
-          recommendations.push('✅ Positive net savings. Consider reinvesting in customer acquisition.');
-        }
-
-        if (readiness < 70) {
-          recommendations.push('ℹ️ Readiness score is below 70%. Focus on market validation and repeatable GTM motion.');
-        } else {
-          recommendations.push('🚀 Readiness is strong. You can accelerate pilots and fundraising prep.');
-        }
-
-        document.getElementById('recommendations').innerHTML = recommendations
-          .map((item) => `<p class="rounded-lg border border-zinc-800 bg-zinc-950/70 px-3 py-2">${item}</p>`)
-          .join('');
-      }
-
-      function renderActivities() {
-        const list = document.getElementById('activityList');
-        list.innerHTML = '';
-
-        if (!dashboardState.activities.length) {
-          list.innerHTML = '<li class="rounded-lg border border-dashed border-zinc-700 px-3 py-4 text-sm text-zinc-500">No activities yet.</li>';
-          return;
-        }
-
-        dashboardState.activities
-          .slice()
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .forEach((activity) => {
-            const li = document.createElement('li');
-            li.className = 'flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2';
-            li.innerHTML = `
-              <div>
-                <p class="text-sm text-zinc-100">${activity.description}</p>
-                <p class="text-xs text-zinc-500">${activity.date} • ${formatCurrency(activity.amount)}</p>
-              </div>
-              <button class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-rose-500/20" data-action="delete-activity" data-id="${activity.id}">Delete</button>
-            `;
-            list.appendChild(li);
-          });
-      }
-
-      function syncChartFromState() {
-        if (!revenueChart) return;
-        revenueChart.data.labels = dashboardState.revenueChart.labels;
-        revenueChart.data.datasets[0].data = dashboardState.revenueChart.values;
-        revenueChart.update();
-      }
-
-      function initChart() {
-        const ctx = document.getElementById('revenueChart');
-        revenueChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: dashboardState.revenueChart.labels,
-            datasets: [{
-              label: 'Revenue',
-              data: dashboardState.revenueChart.values,
-              borderColor: '#00d4ff',
-              backgroundColor: 'rgba(0,212,255,0.15)',
-              fill: true,
-              tension: 0.35,
-              pointRadius: 4,
-              pointBackgroundColor: '#00d4ff'
-            }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#d4d4d8' } } },
-            scales: {
-              x: { ticks: { color: '#a1a1aa' }, grid: { color: '#242424' } },
-              y: { ticks: { color: '#a1a1aa' }, grid: { color: '#242424' } }
-            }
+          boxShadow: {
+            neon: '0 0 0 1px rgba(0, 212, 255, 0.3), 0 0 30px rgba(0, 212, 255, 0.12)'
           }
-        });
-      }
-
-      function renderDashboard() {
-        updateMetricDisplays();
-        updateReadinessDisplay();
-        updateMonthlyOverview();
-        renderRecommendations();
-        renderActivities();
-        syncChartFromState();
-      }
-
-      function showBackupMessage(message, tone = 'text-zinc-500') {
-        const msg = document.getElementById('backupMessage');
-        msg.textContent = message;
-        msg.className = `mt-3 text-xs ${tone}`;
-      }
-
-      const MEMORY_STORAGE_KEY = 'barya-memory-v1';
-      const MEMORY_DEFAULTS = {
-        insights: [],
-        actions: []
-      };
-      let memoryState = loadMemoryState();
-      let activeMemoryTab = 'insights';
-      let selectedInsightId = null;
-      let insightSearchQuery = '';
-
-      function loadMemoryState() {
-        const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
-        if (!raw) return structuredClone(MEMORY_DEFAULTS);
-        try {
-          const parsed = JSON.parse(raw);
-          return {
-            insights: Array.isArray(parsed.insights) ? parsed.insights : [],
-            actions: Array.isArray(parsed.actions) ? parsed.actions : []
-          };
-        } catch {
-          return structuredClone(MEMORY_DEFAULTS);
         }
       }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body { background: #0a0a0a; }
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+    .active-nav { background: rgba(0, 212, 255, 0.14); color: #00d4ff; border-color: rgba(0, 212, 255, 0.25); }
+    .ring-progress {
+      width: 132px;
+      height: 132px;
+      border-radius: 999px;
+      background: conic-gradient(#00d4ff var(--pct), #202020 0);
+      display: grid;
+      place-items: center;
+    }
+    .ring-progress > div {
+      width: 98px;
+      height: 98px;
+      border-radius: 999px;
+      background: #111111;
+      display: grid;
+      place-items: center;
+      border: 1px solid #2b2b2b;
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #2c2c2c; border-radius: 10px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #131313; }
+  </style>
+</head>
+<body class="text-zinc-100 min-h-screen">
+  <div class="min-h-screen flex">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#0d0d0d] border-r border-zinc-800 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-lg font-semibold text-barya-accent">Barya Workspace</h1>
+          <p class="text-xs text-zinc-400">Business AI Operating System</p>
+        </div>
+        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-zinc-700 text-zinc-300">✕</button>
+      </div>
+      <nav class="space-y-2" id="mainNav"></nav>
+    </aside>
 
-      function saveMemoryState() {
-        localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(memoryState));
-      }
+    <div class="flex-1 lg:ml-0 w-full">
+      <header class="sticky top-0 z-30 backdrop-blur bg-[#0a0a0a]/90 border-b border-zinc-800 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
+          <input id="workspaceTitle" class="bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
+          <div class="text-right">
+            <p class="text-sm font-medium">Shruti Barya</p>
+            <p class="text-xs text-zinc-400">Founder</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-black font-bold grid place-items-center">SB</div>
+        </div>
+      </header>
 
-      function formatFriendlyDate(dateValue) {
-        if (!dateValue) return 'No date';
-        const date = new Date(dateValue);
-        if (Number.isNaN(date.getTime())) return dateValue;
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-      }
+      <main class="p-4 sm:p-6 space-y-6">
+        <section id="section-dashboard" class="section-panel active space-y-6"></section>
+        <section id="section-ai" class="section-panel space-y-6"></section>
+        <section id="section-memory" class="section-panel space-y-6"></section>
+        <section id="section-planning" class="section-panel space-y-6"></section>
+        <section id="section-settings" class="section-panel space-y-6"></section>
+      </main>
+    </div>
+  </div>
 
-      function getInsightPreview(note) {
-        if (!note) return '';
-        return note.length > 120 ? `${note.slice(0, 120)}...` : note;
-      }
+  <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
 
-      function setMemoryStatus(message, tone = 'text-zinc-500') {
-        const status = document.getElementById('memoryStatus');
-        status.textContent = message;
-        status.className = `mt-3 text-xs ${tone}`;
-      }
+  <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-[#111] border border-zinc-700 rounded-xl p-0 text-zinc-100">
+    <div class="p-5 border-b border-zinc-800 flex justify-between items-center">
+      <h3 class="text-lg font-semibold">Insight</h3>
+      <button id="closeMemoryModal" class="text-zinc-400 hover:text-zinc-100">✕</button>
+    </div>
+    <div class="p-5" id="memoryModalBody"></div>
+  </dialog>
 
-      function renderInsightList() {
-        const list = document.getElementById('insightList');
-        const query = insightSearchQuery.trim().toLowerCase();
-        const items = memoryState.insights
-          .filter((insight) => {
-            if (!query) return true;
-            return insight.title.toLowerCase().includes(query) || insight.note.toLowerCase().includes(query);
-          })
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
+  <script>
+    const STORAGE_KEY = 'baryaWorkspaceV2';
+    const navItems = [
+      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+      { id: 'ai', icon: '🤖', label: 'Barya AI' },
+      { id: 'memory', icon: '🧠', label: 'Memory' },
+      { id: 'planning', icon: '🗺️', label: 'Business Planning' },
+      { id: 'settings', icon: '⚙️', label: 'Settings' }
+    ];
 
-        list.innerHTML = '';
-
-        if (!items.length) {
-          list.innerHTML = '<li class="rounded-xl border border-dashed border-zinc-700 bg-zinc-950/40 px-4 py-5 text-sm text-zinc-500">No insights yet. Start capturing your decisions...</li>';
-          return;
+    const defaultState = {
+      activeSection: 'dashboard',
+      title: 'Untitled Startup',
+      dashboard: {
+        metrics: { income: 25000, expenses: 12000, netSavings: 13000, runway: 9 },
+        readinessScore: 68,
+        growth: [12, 17, 23, 28, 36, 45],
+        activities: ['Updated financial model', 'Sent investor update'],
+        recommendations: []
+      },
+      ai: {
+        history: [
+          {
+            role: 'assistant',
+            message: 'Welcome! Ask me about growth, runway, product, or hiring priorities.',
+            structured: {
+              answer: 'I can help you make practical founder decisions quickly.',
+              why: 'You need clear decisions, not generic advice.',
+              steps: ['Pick one challenge', 'Share current numbers', 'Define desired outcome'],
+              tip: 'Specific context improves response quality.',
+              next: 'Try asking: How do I improve runway in 60 days?'
+            },
+            ts: new Date().toISOString()
+          }
+        ]
+      },
+      memory: {
+        insights: [
+          { id: crypto.randomUUID(), title: 'ICP clarity', content: 'Top segment is B2B SaaS founders at pre-seed.', tag: 'Strategy', ts: new Date().toISOString() }
+        ],
+        actions: [
+          { id: crypto.randomUUID(), text: 'Call 3 churned customers', category: 'Customer', ts: new Date().toISOString() }
+        ],
+        search: ''
+      },
+      planning: {
+        guides: [
+          { title: 'Market Validation', tasks: ['Interview 10 users', 'Test pricing', 'Confirm top pain'], done: [false, false, false] },
+          { title: 'Go-To-Market', tasks: ['Define channel mix', 'Launch weekly content', 'Set CAC target'], done: [false, false, false] },
+          { title: 'Financial Discipline', tasks: ['Set burn cap', 'Track runway weekly', 'Review budget monthly'], done: [false, false, false] },
+          { title: 'Team Execution', tasks: ['Define roles', 'Set weekly goals', 'Run retro every Friday'], done: [false, false, false] }
+        ],
+        templates: {
+          onePager: 'Vision, customer, problem, solution, moat.',
+          fundraise: 'Round goal, use of funds, milestones.',
+          ops: 'Quarter goals, KPI owners, weekly cadence.'
         }
+      },
+      settings: {
+        founder: { name: 'Shruti Barya', role: 'Founder', email: 'shruti@barya.ai' },
+        business: { name: 'Untitled Startup', stage: 'Pre-Seed', industry: 'B2B SaaS' },
+        preferences: { currency: 'USD', language: 'English', darkMode: true }
+      }
+    };
 
-        items.forEach((insight) => {
-          const li = document.createElement('li');
-          li.className = 'group rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 transition hover:border-accent/40 hover:bg-zinc-950';
-          li.innerHTML = `
-            <div class="flex items-start justify-between gap-3">
-              <button type="button" data-action="view-insight" data-id="${insight.id}" class="text-left">
-                <p class="text-sm font-semibold text-zinc-100">${insight.title}</p>
-                <p class="mt-2 text-sm text-zinc-300">${getInsightPreview(insight.note)}</p>
-                <p class="mt-2 text-xs text-zinc-500">${formatFriendlyDate(insight.date)}</p>
-              </button>
-              <div class="flex shrink-0 gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                <button type="button" data-action="edit-insight" data-id="${insight.id}" class="rounded-md border border-accent/40 px-2 py-1 text-xs text-accent hover:bg-accent/20">Edit</button>
-                <button type="button" data-action="delete-insight" data-id="${insight.id}" class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-rose-500/20">Delete</button>
+    let state = loadState();
+    let growthChart;
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(defaultState);
+      try {
+        const parsed = JSON.parse(raw);
+        return deepMerge(structuredClone(defaultState), parsed);
+      } catch {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function deepMerge(target, source) {
+      for (const key in source) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]) && target[key]) {
+          deepMerge(target[key], source[key]);
+        } else {
+          target[key] = source[key];
+        }
+      }
+      return target;
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateRecommendations();
+      renderActiveSection();
+    }
+
+    function init() {
+      renderNav();
+      setupBaseEvents();
+      updateRecommendations();
+      renderActiveSection();
+      document.getElementById('workspaceTitle').value = state.title;
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('mainNav');
+      nav.innerHTML = navItems.map(item => `
+        <button data-section="${item.id}" class="w-full border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2 text-left hover:border-cyan-500/40 ${state.activeSection === item.id ? 'active-nav' : ''}">
+          <span>${item.icon}</span><span class="text-sm font-medium">${item.label}</span>
+        </button>
+      `).join('');
+
+      nav.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          state.activeSection = btn.dataset.section;
+          renderNav();
+          renderActiveSection();
+          closeSidebar();
+          saveStateRaw();
+        };
+      });
+    }
+
+    function saveStateRaw(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function renderActiveSection() {
+      document.querySelectorAll('.section-panel').forEach(el => el.classList.remove('active'));
+      document.getElementById(`section-${state.activeSection}`).classList.add('active');
+      if (state.activeSection === 'dashboard') renderDashboard();
+      if (state.activeSection === 'ai') renderAI();
+      if (state.activeSection === 'memory') renderMemory();
+      if (state.activeSection === 'planning') renderPlanning();
+      if (state.activeSection === 'settings') renderSettings();
+    }
+
+    function setupBaseEvents() {
+      const titleInput = document.getElementById('workspaceTitle');
+      titleInput.addEventListener('input', (e) => {
+        state.title = e.target.value || 'Untitled Startup';
+        state.settings.business.name = state.title;
+        saveStateRaw();
+      });
+      document.getElementById('openSidebar').onclick = openSidebar;
+      document.getElementById('closeSidebar').onclick = closeSidebar;
+      document.getElementById('overlay').onclick = closeSidebar;
+      document.getElementById('closeMemoryModal').onclick = () => document.getElementById('memoryModal').close();
+    }
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('overlay').classList.add('hidden');
+    }
+
+    function money(v){ return `${state.settings.preferences.currency} ${Number(v || 0).toLocaleString()}`; }
+
+    function updateRecommendations() {
+      const { income, expenses, runway } = state.dashboard.metrics;
+      const score = state.dashboard.readinessScore;
+      const rec = [];
+      if (expenses > income) rec.push('Cut monthly burn by at least 15% to move cashflow positive.');
+      if (runway < 6) rec.push('Runway below 6 months: prioritize fundraising pipeline this month.');
+      if (score < 70) rec.push('Readiness below 70: tighten ICP, retention loops, and weekly KPI review.');
+      if (!rec.length) rec.push('Healthy trajectory: focus on scalable channel experiments and hiring plan.');
+      state.dashboard.recommendations = rec;
+    }
+
+    function renderDashboard() {
+      const el = document.getElementById('section-dashboard');
+      const d = state.dashboard;
+      const pct = Math.max(0, Math.min(100, Number(d.readinessScore || 0)));
+      el.innerHTML = `
+        <div class="grid xl:grid-cols-4 sm:grid-cols-2 gap-4">
+          ${['income','expenses','netSavings','runway'].map((k) => `
+            <label class="bg-barya-card border border-zinc-800 rounded-xl p-4 block">
+              <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">${k === 'netSavings' ? 'Net Savings' : k}</p>
+              <input data-metric="${k}" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-barya-accent" value="${d.metrics[k]}" />
+              <p class="text-xs text-zinc-500 mt-2">${k === 'runway' ? 'months' : money(d.metrics[k])}</p>
+            </label>
+          `).join('')}
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-4">
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Startup Readiness</h3></div>
+            <div class="flex items-center gap-5">
+              <div class="ring-progress" style="--pct:${pct}%"><div><span class="text-2xl font-bold text-barya-accent">${pct}%</span></div></div>
+              <div class="flex-1">
+                <label class="text-xs text-zinc-400">Edit Score</label>
+                <input id="readinessInput" type="range" min="0" max="100" value="${pct}" class="w-full accent-cyan-400" />
+                <p class="text-xs text-zinc-500 mt-2">Driven by traction, retention, and financial consistency.</p>
               </div>
             </div>
-          `;
-          list.appendChild(li);
-        });
-      }
+          </div>
 
-      function renderActionList() {
-        const list = document.getElementById('actionList');
-        const items = memoryState.actions
-          .slice()
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        list.innerHTML = '';
-
-        if (!items.length) {
-          list.innerHTML = '<li class="rounded-xl border border-dashed border-zinc-700 bg-zinc-950/40 px-4 py-5 text-sm text-zinc-500">No insights yet. Start capturing your decisions...</li>';
-          return;
-        }
-
-        items.forEach((action) => {
-          const li = document.createElement('li');
-          li.className = 'flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 sm:flex-row sm:items-center sm:justify-between';
-          li.innerHTML = `
-            <div>
-              <p class="text-sm text-zinc-100">${action.description}</p>
-              <p class="mt-1 text-xs text-zinc-500">${formatFriendlyDate(action.date)} • <span class="text-accent">${action.category}</span></p>
+          <div class="lg:col-span-2 bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold">Revenue Growth Chart</h3>
+              <button id="addGrowthPoint" class="text-sm px-3 py-1.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Add Month</button>
             </div>
-            <button type="button" data-action="delete-memory-action" data-id="${action.id}" class="self-start rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-rose-500/20 sm:self-auto">Delete</button>
-          `;
-          list.appendChild(li);
-        });
-      }
+            <canvas id="growthChart" height="100"></canvas>
+          </div>
+        </div>
 
-      function renderMemoryTabState() {
-        const insightsPanel = document.getElementById('memoryInsightsPanel');
-        const actionsPanel = document.getElementById('memoryActionsPanel');
-        const tabButtons = document.querySelectorAll('.memory-tab-btn');
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold">Recent Activity</h3>
+            </div>
+            <form id="activityForm" class="flex gap-2 mb-3">
+              <input id="activityInput" placeholder="Add activity" class="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+              <button class="px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add</button>
+            </form>
+            <ul class="space-y-2 max-h-56 overflow-auto scrollbar-thin">
+              ${d.activities.map((a,i)=>`<li class="flex justify-between items-center bg-zinc-900 border border-zinc-800 rounded p-2 text-sm"><span>${escapeHTML(a)}</span><button data-del-activity="${i}" class="text-red-400">Delete</button></li>`).join('') || '<li class="text-zinc-500 text-sm">No activity yet.</li>'}
+            </ul>
+          </div>
 
-        insightsPanel.classList.toggle('hidden', activeMemoryTab !== 'insights');
-        actionsPanel.classList.toggle('hidden', activeMemoryTab !== 'actions');
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <h3 class="font-semibold mb-3">Recommendations</h3>
+            <ul class="space-y-2 text-sm">
+              ${d.recommendations.map(r => `<li class="bg-zinc-900 border border-zinc-800 rounded p-2">${escapeHTML(r)}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
 
-        tabButtons.forEach((btn) => {
-          const isActive = btn.dataset.memoryTab === activeMemoryTab;
-          btn.classList.toggle('bg-accent/20', isActive);
-          btn.classList.toggle('text-accent', isActive);
-          btn.classList.toggle('shadow-glow', isActive);
-          btn.classList.toggle('text-zinc-400', !isActive);
-        });
-      }
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
+          <button id="exportDashboard" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Dashboard</button>
+          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Dashboard<input id="importDashboard" type="file" accept="application/json" class="hidden"></label>
+        </div>
+      `;
 
-      function openInsightModal(insightId) {
-        const insight = memoryState.insights.find((item) => item.id === insightId);
-        if (!insight) return;
-        selectedInsightId = insight.id;
-        document.getElementById('modalInsightTitle').value = insight.title;
-        document.getElementById('modalInsightDate').value = insight.date;
-        document.getElementById('modalInsightNote').value = insight.note;
-        document.getElementById('insightModal').classList.remove('hidden');
-        document.getElementById('insightModal').classList.add('flex');
-      }
-
-      function closeInsightModal() {
-        selectedInsightId = null;
-        document.getElementById('insightModal').classList.add('hidden');
-        document.getElementById('insightModal').classList.remove('flex');
-      }
-
-      function renderMemory() {
-        renderMemoryTabState();
-        renderInsightList();
-        renderActionList();
-      }
-
-      function initMemorySection() {
-        const today = new Date().toISOString().slice(0, 10);
-        document.getElementById('insightDate').value = today;
-        document.getElementById('actionDate').value = today;
-
-        document.querySelectorAll('.memory-tab-btn').forEach((button) => {
-          button.addEventListener('click', () => {
-            activeMemoryTab = button.dataset.memoryTab;
-            renderMemoryTabState();
-          });
-        });
-
-        document.getElementById('insightForm').addEventListener('submit', (event) => {
-          event.preventDefault();
-          const title = document.getElementById('insightTitle').value.trim();
-          const note = document.getElementById('insightNote').value.trim();
-          const date = document.getElementById('insightDate').value;
-          if (!title || !note || !date) return;
-
-          memoryState.insights.push({ id: crypto.randomUUID(), title, note, date, createdAt: new Date().toISOString() });
-          saveMemoryState();
-          renderInsightList();
-          event.target.reset();
-          document.getElementById('insightDate').value = today;
-          setMemoryStatus('Insight saved locally.', 'mt-3 text-xs text-emerald-300');
-        });
-
-        document.getElementById('insightSearch').addEventListener('input', (event) => {
-          insightSearchQuery = event.target.value;
-          renderInsightList();
-        });
-
-        document.getElementById('insightList').addEventListener('click', (event) => {
-          const button = event.target.closest('button[data-action]');
-          if (!button) return;
-          const id = button.dataset.id;
-          if (button.dataset.action === 'view-insight' || button.dataset.action === 'edit-insight') {
-            openInsightModal(id);
-            return;
+      el.querySelectorAll('[data-metric]').forEach(input => {
+        input.oninput = () => {
+          state.dashboard.metrics[input.dataset.metric] = Number(input.value || 0);
+          if (input.dataset.metric !== 'runway') {
+            state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
           }
-          if (button.dataset.action === 'delete-insight') {
-            memoryState.insights = memoryState.insights.filter((item) => item.id !== id);
-            saveMemoryState();
-            renderInsightList();
-            setMemoryStatus('Insight deleted from local memory.', 'mt-3 text-xs text-amber-300');
-          }
-        });
-
-        document.getElementById('actionForm').addEventListener('submit', (event) => {
-          event.preventDefault();
-          const description = document.getElementById('actionDescription').value.trim();
-          const category = document.getElementById('actionCategory').value;
-          const date = document.getElementById('actionDate').value;
-          if (!description || !category || !date) return;
-
-          memoryState.actions.push({ id: crypto.randomUUID(), description, category, date, createdAt: new Date().toISOString() });
-          saveMemoryState();
-          renderActionList();
-          event.target.reset();
-          document.getElementById('actionCategory').value = 'Strategy';
-          document.getElementById('actionDate').value = today;
-          setMemoryStatus('Action saved locally.', 'mt-3 text-xs text-emerald-300');
-        });
-
-        document.getElementById('actionList').addEventListener('click', (event) => {
-          const button = event.target.closest('[data-action="delete-memory-action"]');
-          if (!button) return;
-          memoryState.actions = memoryState.actions.filter((item) => item.id !== button.dataset.id);
-          saveMemoryState();
-          renderActionList();
-          setMemoryStatus('Action deleted from local memory.', 'mt-3 text-xs text-amber-300');
-        });
-
-        document.getElementById('insightModalClose').addEventListener('click', closeInsightModal);
-        document.getElementById('insightModal').addEventListener('click', (event) => {
-          if (event.target.id === 'insightModal') closeInsightModal();
-        });
-
-        document.getElementById('insightEditForm').addEventListener('submit', (event) => {
-          event.preventDefault();
-          if (!selectedInsightId) return;
-          const title = document.getElementById('modalInsightTitle').value.trim();
-          const date = document.getElementById('modalInsightDate').value;
-          const note = document.getElementById('modalInsightNote').value.trim();
-          if (!title || !date || !note) return;
-
-          memoryState.insights = memoryState.insights.map((item) => (
-            item.id === selectedInsightId ? { ...item, title, date, note, updatedAt: new Date().toISOString() } : item
-          ));
-          saveMemoryState();
-          renderInsightList();
-          closeInsightModal();
-          setMemoryStatus('Insight updated locally.', 'mt-3 text-xs text-emerald-300');
-        });
-
-        document.getElementById('modalDeleteInsight').addEventListener('click', () => {
-          if (!selectedInsightId) return;
-          memoryState.insights = memoryState.insights.filter((item) => item.id !== selectedInsightId);
-          saveMemoryState();
-          renderInsightList();
-          closeInsightModal();
-          setMemoryStatus('Insight deleted from local memory.', 'mt-3 text-xs text-amber-300');
-        });
-
-        document.getElementById('memoryExportBtn').addEventListener('click', () => {
-          const payload = JSON.stringify({ exportedAt: new Date().toISOString(), memory: memoryState }, null, 2);
-          const blob = new Blob([payload], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `barya-memory-${new Date().toISOString().slice(0, 10)}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-          setMemoryStatus('Memory exported successfully.', 'mt-3 text-xs text-emerald-300');
-        });
-
-        document.getElementById('memoryImportInput').addEventListener('change', async (event) => {
-          const file = event.target.files?.[0];
-          if (!file) return;
-          try {
-            const imported = JSON.parse(await file.text());
-            const root = imported?.memory && typeof imported.memory === 'object' ? imported.memory : imported;
-            memoryState = {
-              insights: Array.isArray(root.insights) ? root.insights : [],
-              actions: Array.isArray(root.actions) ? root.actions : []
-            };
-            saveMemoryState();
-            renderMemory();
-            setMemoryStatus('Memory imported and restored locally.', 'mt-3 text-xs text-emerald-300');
-          } catch {
-            setMemoryStatus('Invalid memory file. Import failed.', 'mt-3 text-xs text-rose-300');
-          }
-          event.target.value = '';
-        });
-
-        document.getElementById('memoryClearBtn').addEventListener('click', () => {
-          const confirmed = window.confirm('Clear all Memory insights and actions from this browser? This cannot be undone.');
-          if (!confirmed) return;
-          memoryState = structuredClone(MEMORY_DEFAULTS);
-          saveMemoryState();
-          renderMemory();
-          closeInsightModal();
-          setMemoryStatus('All memory cleared from this browser.', 'mt-3 text-xs text-amber-300');
-        });
-
-        renderMemory();
-      }
-
-      const SETTINGS_STORAGE_KEY = 'barya_settings_v1';
-      const SETTINGS_DEFAULTS = {
-        founderName: 'Shruti Barya',
-        founderBio: 'Building Barya to help founders make clear decisions with confidence and speed.',
-        businessType: 'SaaS',
-        targetAudience: '',
-        communicationPreference: 'Professional',
-        currency: 'INR',
-        language: 'English',
-        darkMode: true,
-        currentBusinessGoal: ''
+          saveState();
+        };
+      });
+      document.getElementById('readinessInput').oninput = (e) => { state.dashboard.readinessScore = Number(e.target.value); saveState(); };
+      document.getElementById('addGrowthPoint').onclick = () => { state.dashboard.growth.push((state.dashboard.growth.at(-1) || 0) + Math.ceil(Math.random() * 8)); saveState(); };
+      document.getElementById('activityForm').onsubmit = (e) => {
+        e.preventDefault();
+        const input = document.getElementById('activityInput');
+        if (!input.value.trim()) return;
+        state.dashboard.activities.unshift(input.value.trim());
+        input.value = '';
+        saveState();
       };
+      el.querySelectorAll('[data-del-activity]').forEach(btn => btn.onclick = () => { state.dashboard.activities.splice(Number(btn.dataset.delActivity), 1); saveState(); });
+      document.getElementById('exportDashboard').onclick = () => downloadJSON('dashboard-data.json', state.dashboard);
+      document.getElementById('importDashboard').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state.dashboard = deepMerge(structuredClone(defaultState.dashboard), data); saveState(); });
 
-      function loadSettingsState() {
-        try {
-          const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-          if (!raw) return structuredClone(SETTINGS_DEFAULTS);
-          const parsed = JSON.parse(raw);
-          return deepMerge(SETTINGS_DEFAULTS, parsed);
-        } catch {
-          return structuredClone(SETTINGS_DEFAULTS);
+      renderGrowthChart();
+    }
+
+    function renderGrowthChart() {
+      const ctx = document.getElementById('growthChart');
+      if (!ctx) return;
+      if (growthChart) growthChart.destroy();
+      growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: state.dashboard.growth.map((_, i) => `M${i+1}`),
+          datasets: [{
+            label: 'Revenue (k)',
+            data: state.dashboard.growth,
+            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(0, 212, 255, 0.18)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#d4d4d8' } } },
+          scales: {
+            x: { ticks: { color: '#a1a1aa' }, grid: { color: '#262626' } },
+            y: { ticks: { color: '#a1a1aa' }, grid: { color: '#262626' } }
+          }
         }
-      }
-
-      function saveSettingsState(state) {
-        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(state));
-      }
-
-      function applyThemePreference(isDarkMode) {
-        document.body.classList.toggle('theme-light', !isDarkMode);
-      }
-
-      function setSettingsStatus(message, className = 'text-zinc-500') {
-        const statusEl = document.getElementById('settingsSafetyStatus');
-        if (!statusEl) return;
-        statusEl.className = `mt-3 text-xs ${className}`;
-        statusEl.textContent = message;
-      }
-
-      function updateDarkModeToggleVisual(isDarkMode) {
-        const toggle = document.getElementById('settingsDarkModeToggle');
-        const knob = document.getElementById('settingsDarkModeKnob');
-        if (!toggle || !knob) return;
-        toggle.setAttribute('aria-checked', String(isDarkMode));
-        toggle.classList.toggle('bg-zinc-800', isDarkMode);
-        toggle.classList.toggle('bg-zinc-300', !isDarkMode);
-        knob.classList.toggle('translate-x-1', isDarkMode);
-        knob.classList.toggle('translate-x-6', !isDarkMode);
-        knob.classList.toggle('bg-white', isDarkMode);
-        knob.classList.toggle('bg-zinc-900', !isDarkMode);
-      }
-
-      function collectAllLocalStorage() {
-        const snapshot = {};
-        Object.keys(localStorage).forEach((key) => {
-          snapshot[key] = localStorage.getItem(key);
-        });
-        return snapshot;
-      }
-
-      function initSettingsSection() {
-        const settingsState = loadSettingsState();
-        const fields = {
-          founderName: document.getElementById('settingsFounderName'),
-          founderBio: document.getElementById('settingsFounderBio'),
-          businessType: document.getElementById('settingsBusinessType'),
-          targetAudience: document.getElementById('settingsTargetAudience'),
-          communicationPreference: document.getElementById('settingsCommPref'),
-          currency: document.getElementById('settingsCurrency'),
-          language: document.getElementById('settingsLanguage'),
-          currentBusinessGoal: document.getElementById('settingsCurrentGoal')
-        };
-
-        Object.entries(fields).forEach(([key, el]) => {
-          if (!el) return;
-          el.value = settingsState[key] ?? SETTINGS_DEFAULTS[key];
-        });
-
-        applyThemePreference(settingsState.darkMode);
-        updateDarkModeToggleVisual(settingsState.darkMode);
-
-        const autosave = () => {
-          Object.entries(fields).forEach(([key, el]) => {
-            if (!el) return;
-            settingsState[key] = el.value;
-          });
-          saveSettingsState(settingsState);
-          setSettingsStatus('Auto-saved locally. Nothing leaves your browser.', 'text-emerald-300');
-        };
-
-        Object.values(fields).forEach((el) => {
-          if (!el) return;
-          el.addEventListener('input', autosave);
-          el.addEventListener('change', autosave);
-        });
-
-        const businessSaveBtn = document.getElementById('settingsBusinessSaveBtn');
-        const businessStatus = document.getElementById('settingsBusinessSaveStatus');
-        businessSaveBtn?.addEventListener('click', () => {
-          autosave();
-          if (businessStatus) {
-            businessStatus.className = 'text-xs text-emerald-300';
-            businessStatus.textContent = 'Business profile saved to local storage.';
-          }
-        });
-
-        document.getElementById('settingsDarkModeToggle')?.addEventListener('click', () => {
-          settingsState.darkMode = !settingsState.darkMode;
-          applyThemePreference(settingsState.darkMode);
-          updateDarkModeToggleVisual(settingsState.darkMode);
-          saveSettingsState(settingsState);
-          setSettingsStatus(`Dark mode ${settingsState.darkMode ? 'enabled' : 'disabled'} and saved locally.`, 'text-emerald-300');
-        });
-
-        document.getElementById('settingsExportAllBtn')?.addEventListener('click', () => {
-          autosave();
-          const payload = {
-            version: 1,
-            exportedAt: new Date().toISOString(),
-            workspaceTitle: document.getElementById('projectTitle')?.textContent?.trim() || 'Untitled Startup',
-            localStorage: collectAllLocalStorage()
-          };
-          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `barya-workspace-backup-${new Date().toISOString().slice(0, 10)}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-          setSettingsStatus('Workspace backup exported successfully.', 'text-emerald-300');
-        });
-
-        document.getElementById('settingsImportAllInput')?.addEventListener('change', async (event) => {
-          const file = event.target.files?.[0];
-          if (!file) return;
-          try {
-            const imported = JSON.parse(await file.text());
-            if (!imported || typeof imported !== 'object' || !imported.localStorage || typeof imported.localStorage !== 'object') {
-              throw new Error('Invalid payload');
-            }
-            localStorage.clear();
-            Object.entries(imported.localStorage).forEach(([key, value]) => {
-              if (typeof value === 'string') localStorage.setItem(key, value);
-            });
-            if (typeof imported.workspaceTitle === 'string' && imported.workspaceTitle.trim()) {
-              document.getElementById('projectTitle').textContent = imported.workspaceTitle.trim();
-            }
-            setSettingsStatus('Backup imported. Reloading workspace...', 'text-emerald-300');
-            setTimeout(() => window.location.reload(), 450);
-          } catch {
-            setSettingsStatus('Import failed. Please upload a valid workspace backup JSON.', 'text-rose-300');
-          }
-          event.target.value = '';
-        });
-
-        document.getElementById('settingsClearAllBtn')?.addEventListener('click', () => {
-          const confirmation = window.prompt('Type CLEAR to erase all local workspace data from this browser.');
-          if (confirmation !== 'CLEAR') {
-            setSettingsStatus('Data clear canceled. Confirmation keyword did not match.', 'text-amber-300');
-            return;
-          }
-          localStorage.clear();
-          setSettingsStatus('All local workspace data cleared. Reloading clean workspace...', 'text-amber-300');
-          setTimeout(() => window.location.reload(), 450);
-        });
-      }
-
-      document.querySelectorAll('.metric-editable').forEach((el) => {
-        el.addEventListener('blur', () => {
-          dashboardState[el.dataset.key] = parseEditableNumber(el.textContent);
-          saveDashboardState();
-          renderDashboard();
-        });
       });
+    }
 
-      document.querySelectorAll('.monthly-editable').forEach((el) => {
-        el.addEventListener('blur', () => {
-          dashboardState.monthlyOverview[el.dataset.key] = parseEditableNumber(el.textContent);
-          saveDashboardState();
-          renderDashboard();
-        });
-      });
+    function aiStructuredResponse(q) {
+      const lower = q.toLowerCase();
+      const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+      const runway = state.dashboard.metrics.runway;
+      let answer = 'Focus on one bottleneck and measure weekly outcomes.';
+      if (lower.includes('runway')) answer = `Current net cashflow is ${money(cash)}; extend runway by reducing burn and improving collections.`;
+      if (lower.includes('growth') || lower.includes('revenue')) answer = 'Scale one reliable channel and tighten conversion handoff.';
+      if (lower.includes('hiring')) answer = 'Delay non-critical hires and prioritize revenue-linked roles.';
+      return {
+        answer,
+        why: 'A focused operating rhythm increases execution speed and reduces decision noise.',
+        steps: ['Set one 2-week objective', 'Define 2 leading indicators', 'Review every Friday with owners'],
+        tip: 'Document assumptions before each experiment.',
+        next: 'Want a tailored 30-day sprint? Ask with your current constraints.'
+      };
+    }
 
-      const readinessRange = document.getElementById('readinessRange');
-      const readinessInput = document.getElementById('readinessInput');
-      [readinessRange, readinessInput].forEach((input) => {
-        input.addEventListener('input', (event) => {
-          dashboardState.readinessScore = Math.min(100, Math.max(0, safeNumber(event.target.value)));
-          saveDashboardState();
-          renderDashboard();
-        });
-      });
+    function renderAI() {
+      const el = document.getElementById('section-ai');
+      el.innerHTML = `
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+          <div class="flex flex-wrap gap-2 mb-4">
+            ${['Improve runway', 'Fix churn', 'Plan GTM sprint', 'Investor update outline'].map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded border border-zinc-700 bg-zinc-900 hover:border-cyan-500/40">${q}</button>`).join('')}
+          </div>
+          <div id="chatBox" class="space-y-3 max-h-[55vh] overflow-auto scrollbar-thin pr-1 mb-4"></div>
+          <form id="chatForm" class="flex gap-2">
+            <input id="chatInput" placeholder="Ask Barya AI..." class="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+            <button class="px-4 py-2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Send</button>
+          </form>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button id="exportChat" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Chat</button>
+            <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Chat<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+          </div>
+        </div>
+      `;
 
-      document.getElementById('downloadReportBtn').addEventListener('click', () => {
-        const reportData = {
-          generatedAt: new Date().toISOString(),
-          readinessScore: dashboardState.readinessScore,
-          summary: 'Local mock PDF report payload'
-        };
-        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'startup-readiness-report.pdf';
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-
-      document.getElementById('activityForm').addEventListener('submit', (event) => {
-        event.preventDefault();
-        const description = document.getElementById('activityDesc').value.trim();
-        const amount = safeNumber(document.getElementById('activityAmount').value);
-        const date = document.getElementById('activityDate').value;
-        if (!description || !date) return;
-
-        dashboardState.activities.push({ id: crypto.randomUUID(), description, amount, date });
-        saveDashboardState();
-        renderDashboard();
-        event.target.reset();
-      });
-
-      document.getElementById('activityList').addEventListener('click', (event) => {
-        const button = event.target.closest('[data-action="delete-activity"]');
-        if (!button) return;
-        dashboardState.activities = dashboardState.activities.filter((item) => item.id !== button.dataset.id);
-        saveDashboardState();
-        renderDashboard();
-      });
-
-      document.getElementById('exportDataBtn').addEventListener('click', () => {
-        const payload = JSON.stringify(dashboardState, null, 2);
-        const blob = new Blob([payload], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showBackupMessage('Export complete. Backup downloaded.', 'text-emerald-300');
-      });
-
-      document.getElementById('importDataInput').addEventListener('change', async (event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        try {
-          const imported = JSON.parse(await file.text());
-          dashboardState = deepMerge(DASHBOARD_DEFAULTS, imported);
-          saveDashboardState();
-          renderDashboard();
-          showBackupMessage('Import successful. Local data restored.', 'text-emerald-300');
-        } catch {
-          showBackupMessage('Invalid JSON file. Import failed.', 'text-rose-300');
-        }
-        event.target.value = '';
-      });
-
-      document.getElementById('clearDataBtn').addEventListener('click', () => {
-        const confirmed = window.confirm('Clear all dashboard data from this browser? This cannot be undone.');
-        if (!confirmed) return;
-        localStorage.removeItem(STORAGE_KEY);
-        dashboardState = structuredClone(DASHBOARD_DEFAULTS);
-        saveDashboardState();
-        renderDashboard();
-        showBackupMessage('All local dashboard data cleared and reset.', 'text-amber-300');
-      });
-
-      navButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          activateTab(button.dataset.target);
-          if (window.innerWidth < 1024) closeSidebar();
-        });
-      });
-
-      menuBtn.addEventListener('click', openSidebar);
-      backdrop.addEventListener('click', closeSidebar);
-      window.addEventListener('resize', () => {
-        if (window.innerWidth >= 1024) {
-          backdrop.classList.add('hidden');
-          sidebar.classList.remove('-translate-x-full');
+      function appendMessage(item) {
+        const box = document.getElementById('chatBox');
+        const wrap = document.createElement('div');
+        if (item.role === 'user') {
+          wrap.innerHTML = `<div class="ml-auto max-w-2xl bg-cyan-500/15 border border-cyan-500/25 rounded-xl p-3"><p>${escapeHTML(item.message)}</p></div>`;
         } else {
-          sidebar.classList.add('-translate-x-full');
+          wrap.innerHTML = `
+            <div class="max-w-3xl bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+              <p class="text-xs uppercase tracking-wide text-barya-accent">Clear Answer</p><p>${escapeHTML(item.structured.answer)}</p>
+              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Why It Matters</p><p>${escapeHTML(item.structured.why)}</p>
+              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Action Steps</p>
+              <ul class="list-disc pl-5">${item.structured.steps.map(s=>`<li>${escapeHTML(s)}</li>`).join('')}</ul>
+              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Founder Tip</p><p>${escapeHTML(item.structured.tip)}</p>
+              <p class="text-xs uppercase tracking-wide text-barya-accent pt-2">Next Move</p><p>${escapeHTML(item.structured.next)}</p>
+            </div>`;
         }
-      });
+        box.appendChild(wrap);
+        box.scrollTop = box.scrollHeight;
+      }
 
-      initPlanningSection();
-      initSettingsSection();
-      activateTab('dashboard');
-      initChart();
-      initMemorySection();
-      renderDashboard();
-    </script>
-  </body>
+      state.ai.history.forEach(appendMessage);
+
+      function sendQuestion(question){
+        const q = question.trim();
+        if (!q) return;
+        const userMsg = { role: 'user', message: q, ts: new Date().toISOString() };
+        const structured = aiStructuredResponse(q);
+        const aiMsg = { role: 'assistant', message: structured.answer, structured, ts: new Date().toISOString() };
+        state.ai.history.push(userMsg, aiMsg);
+        saveStateRaw();
+        renderAI();
+      }
+
+      document.getElementById('chatForm').onsubmit = (e) => {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        sendQuestion(input.value);
+      };
+      el.querySelectorAll('[data-quick]').forEach(btn => btn.onclick = () => sendQuestion(btn.dataset.quick));
+      document.getElementById('exportChat').onclick = () => downloadJSON('chat-history.json', state.ai.history);
+      document.getElementById('importChat').onchange = (e) => importJSONFile(e.target.files[0], (data) => { if (Array.isArray(data)) { state.ai.history = data; saveState(); } });
+    }
+
+    function renderMemory() {
+      const el = document.getElementById('section-memory');
+      const filtered = state.memory.insights.filter(i => `${i.title} ${i.content} ${i.tag}`.toLowerCase().includes(state.memory.search.toLowerCase()));
+      el.innerHTML = `
+        <div class="grid xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-2 bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
+              <h3 class="font-semibold">Saved Insights</h3>
+              <input id="memorySearch" placeholder="Search insights" value="${escapeAttr(state.memory.search)}" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm" />
+            </div>
+            <form id="insightForm" class="grid sm:grid-cols-4 gap-2 mb-3">
+              <input id="insightTitle" placeholder="Title" class="sm:col-span-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+              <input id="insightContent" placeholder="Insight" class="sm:col-span-2 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+              <input id="insightTag" placeholder="Category" class="sm:col-span-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+              <button class="sm:col-span-4 px-3 py-2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Add Insight</button>
+            </form>
+            <div class="space-y-2 max-h-[46vh] overflow-auto scrollbar-thin pr-1">
+              ${filtered.map(i => `
+                <div class="bg-zinc-900 border border-zinc-800 rounded p-3">
+                  <div class="flex justify-between items-start gap-2">
+                    <div>
+                      <p class="font-medium">${escapeHTML(i.title)}</p>
+                      <p class="text-xs text-zinc-400">${escapeHTML(i.tag)} • ${new Date(i.ts).toLocaleString()}</p>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                      <button data-view-insight="${i.id}" class="text-cyan-300">View</button>
+                      <button data-edit-insight="${i.id}" class="text-amber-300">Edit</button>
+                      <button data-del-insight="${i.id}" class="text-red-400">Delete</button>
+                    </div>
+                  </div>
+                  <p class="text-sm text-zinc-300 mt-2 line-clamp-2">${escapeHTML(i.content)}</p>
+                </div>
+              `).join('') || '<p class="text-sm text-zinc-500">No insights found.</p>'}
+            </div>
+          </div>
+
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+            <h3 class="font-semibold mb-3">Recent Actions</h3>
+            <form id="actionForm" class="space-y-2 mb-3">
+              <input id="actionText" placeholder="Action" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
+              <select id="actionCategory" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
+                <option>Product</option><option>Customer</option><option>Finance</option><option>Ops</option>
+              </select>
+              <button class="w-full px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Action</button>
+            </form>
+            <ul class="space-y-2 max-h-[40vh] overflow-auto scrollbar-thin pr-1">
+              ${state.memory.actions.map(a => `<li class="bg-zinc-900 border border-zinc-800 rounded p-2 text-sm flex justify-between gap-2"><span>${escapeHTML(a.text)} <span class="text-zinc-500">(${escapeHTML(a.category)})</span></span><button data-del-action="${a.id}" class="text-red-400 text-xs">Delete</button></li>`).join('')}
+            </ul>
+          </div>
+        </div>
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
+          <button id="exportMemory" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export Memory</button>
+          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
+        </div>
+      `;
+
+      document.getElementById('memorySearch').oninput = e => { state.memory.search = e.target.value; saveState(); };
+      document.getElementById('insightForm').onsubmit = e => {
+        e.preventDefault();
+        const title = document.getElementById('insightTitle').value.trim();
+        const content = document.getElementById('insightContent').value.trim();
+        const tag = document.getElementById('insightTag').value.trim() || 'General';
+        if (!title || !content) return;
+        state.memory.insights.unshift({ id: crypto.randomUUID(), title, content, tag, ts: new Date().toISOString() });
+        saveState();
+      };
+      el.querySelectorAll('[data-del-insight]').forEach(btn => btn.onclick = () => { state.memory.insights = state.memory.insights.filter(i => i.id !== btn.dataset.delInsight); saveState(); });
+      el.querySelectorAll('[data-view-insight]').forEach(btn => btn.onclick = () => {
+        const i = state.memory.insights.find(x => x.id === btn.dataset.viewInsight);
+        document.getElementById('memoryModalBody').innerHTML = `<h4 class="font-semibold mb-2">${escapeHTML(i.title)}</h4><p class="text-xs text-zinc-400 mb-3">${escapeHTML(i.tag)} • ${new Date(i.ts).toLocaleString()}</p><p>${escapeHTML(i.content)}</p>`;
+        document.getElementById('memoryModal').showModal();
+      });
+      el.querySelectorAll('[data-edit-insight]').forEach(btn => btn.onclick = () => {
+        const i = state.memory.insights.find(x => x.id === btn.dataset.editInsight);
+        const title = prompt('Edit title', i.title);
+        if (title === null) return;
+        const content = prompt('Edit content', i.content);
+        if (content === null) return;
+        i.title = title.trim() || i.title;
+        i.content = content.trim() || i.content;
+        saveState();
+      });
+      document.getElementById('actionForm').onsubmit = e => {
+        e.preventDefault();
+        const text = document.getElementById('actionText').value.trim();
+        if (!text) return;
+        const category = document.getElementById('actionCategory').value;
+        state.memory.actions.unshift({ id: crypto.randomUUID(), text, category, ts: new Date().toISOString() });
+        saveState();
+      };
+      el.querySelectorAll('[data-del-action]').forEach(btn => btn.onclick = () => { state.memory.actions = state.memory.actions.filter(a => a.id !== btn.dataset.delAction); saveState(); });
+      document.getElementById('exportMemory').onclick = () => downloadJSON('memory-data.json', state.memory);
+      document.getElementById('importMemory').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state.memory = deepMerge(structuredClone(defaultState.memory), data); saveState(); });
+    }
+
+    function renderPlanning() {
+      const el = document.getElementById('section-planning');
+      const guideProgress = state.planning.guides.map(g => {
+        const done = g.done.filter(Boolean).length;
+        return Math.round((done / g.done.length) * 100);
+      });
+      el.innerHTML = `
+        <div class="grid lg:grid-cols-2 gap-4">
+          ${state.planning.guides.map((g, gi) => `
+            <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold">${escapeHTML(g.title)}</h3>
+                <span class="text-xs text-cyan-300">${guideProgress[gi]}%</span>
+              </div>
+              <div class="space-y-2">
+                ${g.tasks.map((t, ti) => `
+                  <label class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded p-2 text-sm">
+                    <input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done[ti] ? 'checked' : ''} class="accent-cyan-400" />
+                    <span>${escapeHTML(t)}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-4">
+          <h3 class="font-semibold">Business Plan Templates</h3>
+          ${Object.entries(state.planning.templates).map(([k,v]) => `
+            <label class="block">
+              <p class="text-xs uppercase text-zinc-400 mb-1">${k.replace(/([A-Z])/g, ' $1')}</p>
+              <textarea data-template="${k}" class="w-full h-24 bg-zinc-900 border border-zinc-700 rounded p-2">${escapeHTML(v)}</textarea>
+            </label>
+          `).join('')}
+        </div>
+      `;
+
+      el.querySelectorAll('[data-guide]').forEach(cb => cb.onchange = () => {
+        const gi = Number(cb.dataset.guide);
+        const ti = Number(cb.dataset.task);
+        state.planning.guides[gi].done[ti] = cb.checked;
+        saveState();
+      });
+      el.querySelectorAll('[data-template]').forEach(t => t.oninput = () => {
+        state.planning.templates[t.dataset.template] = t.value;
+        saveStateRaw();
+      });
+    }
+
+    function renderSettings() {
+      const s = state.settings;
+      const el = document.getElementById('section-settings');
+      el.innerHTML = `
+        <div class="grid lg:grid-cols-3 gap-4">
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
+            <h3 class="font-semibold mb-2">Founder Profile</h3>
+            ${inputField('Founder Name','founder.name',s.founder.name)}
+            ${inputField('Role','founder.role',s.founder.role)}
+            ${inputField('Email','founder.email',s.founder.email,'email')}
+          </div>
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
+            <h3 class="font-semibold mb-2">Business Profile</h3>
+            ${inputField('Business Name','business.name',s.business.name)}
+            ${inputField('Stage','business.stage',s.business.stage)}
+            ${inputField('Industry','business.industry',s.business.industry)}
+          </div>
+          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
+            <h3 class="font-semibold mb-2">Preferences</h3>
+            <label class="block text-sm">Currency<select data-setting="preferences.currency" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.currency==='USD'?'selected':''}>USD</option><option ${s.preferences.currency==='INR'?'selected':''}>INR</option><option ${s.preferences.currency==='EUR'?'selected':''}>EUR</option></select></label>
+            <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option></select></label>
+            <label class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded px-3 py-2 mt-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-cyan-400" /></label>
+          </div>
+        </div>
+
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
+          <button id="exportAll" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export All Data</button>
+          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import All Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>
+          <button id="clearAll" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear All Data</button>
+        </div>
+      `;
+
+      el.querySelectorAll('[data-setting]').forEach(input => {
+        input.oninput = () => {
+          const path = input.dataset.setting.split('.');
+          let ref = state.settings;
+          for (let i = 0; i < path.length - 1; i++) ref = ref[path[i]];
+          ref[path.at(-1)] = input.type === 'checkbox' ? input.checked : input.value;
+          if (input.dataset.setting === 'business.name') {
+            state.title = input.value;
+            document.getElementById('workspaceTitle').value = input.value;
+          }
+          document.documentElement.style.colorScheme = state.settings.preferences.darkMode ? 'dark' : 'light';
+          saveState();
+        };
+      });
+      document.getElementById('exportAll').onclick = () => downloadJSON('barya-all-data.json', state);
+      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state = deepMerge(structuredClone(defaultState), data); saveState(); renderNav(); document.getElementById('workspaceTitle').value = state.title; });
+      document.getElementById('clearAll').onclick = () => {
+        if (!confirm('Clear all local data and reset workspace?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state = structuredClone(defaultState);
+        saveState();
+        renderNav();
+        document.getElementById('workspaceTitle').value = state.title;
+      };
+    }
+
+    function inputField(label, settingPath, value, type='text') {
+      return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2" /></label>`;
+    }
+
+    function downloadJSON(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function importJSONFile(file, cb) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          cb(data);
+        } catch {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function escapeHTML(str='') {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttr(str='') { return escapeHTML(str).replaceAll('`',''); }
+
+    init();
+  </script>
+</body>
 </html>
