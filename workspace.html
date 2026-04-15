@@ -56,6 +56,13 @@
       display: block;
       min-height: 100vh;
     }
+    #appContainer .workspace-sidebar-nav .tabBtn.active {
+      background: linear-gradient(130deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
+      border-color: rgba(125, 211, 252, 0.7);
+      color: #eff6ff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.22);
+    }
+    #appContainer .workspace-sidebar-nav .tab-label {
     #appContainer.workspace-shell-revamp .workspace-sidebar {
       position: fixed;
       top: 0;
@@ -71,6 +78,17 @@
       transform: translateX(0);
       transition: transform .24s ease;
     }
+    .workspace-command-topbar {
+      border-radius: 18px;
+      padding: .72rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.56);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .encryption-badge {
     #appContainer.workspace-shell-revamp .workspace-logo { font-size: 1.4rem; font-weight: 800; color: #fff !important; }
     #appContainer.workspace-shell-revamp .workspace-tagline { color: #9ca3af !important; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
     #appContainer.workspace-shell-revamp .workspace-sidebar-nav { margin-top: 1.1rem; display: flex; flex-direction: column; gap: .45rem; }
@@ -98,6 +116,123 @@
       align-items: center;
       gap: .45rem;
       border-radius: 999px;
+      padding: .4rem .8rem;
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      background: rgba(20, 83, 45, 0.34);
+      color: #bbf7d0;
+      font-size: .76rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 14px rgba(74, 222, 128, 0.16);
+    }
+    .encryption-badge .shield {
+      filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.7));
+    }
+    .workspace-neural-shell {
+      margin-top: 1.25rem;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      padding: clamp(1.2rem, 2.2vw, 1.9rem);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14), transparent 40%),
+        rgba(2, 6, 23, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+    .workspace-neural-center {
+      max-width: 420px;
+      margin: 1.7rem auto 2rem;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .workspace-neural-input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.7);
+      color: #e2e8f0;
+      padding: 0.9rem 1rem;
+    }
+    .workspace-neural-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,189,248,0.4); }
+    .workspace-generate-btn {
+      margin-top: .7rem;
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(59, 130, 246, 0.8);
+      background: linear-gradient(120deg, #2563eb, #7c3aed);
+      color: white;
+      font-weight: 700;
+      padding: .8rem 1rem;
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+    }
+    .neural-network-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: .45;
+    }
+    .neural-network-bg path {
+      stroke: rgba(148, 163, 184, 0.7);
+      stroke-width: 1.2;
+      stroke-dasharray: 460;
+      stroke-dashoffset: 460;
+    }
+    .workspace-neural-shell.is-animating .neural-network-bg path {
+      animation: drawLines 1.9s cubic-bezier(.22, .61, .36, 1) forwards;
+      animation-delay: .2s;
+    }
+    .neural-node-grid {
+      margin-top: 1.8rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem;
+      position: relative;
+      z-index: 2;
+    }
+    .neural-node {
+      padding: 1rem;
+      border-radius: 18px;
+      border: 1px solid currentColor;
+      background: color-mix(in oklab, currentColor 12%, transparent);
+      opacity: 0;
+      transform: translateY(10px) scale(.98);
+      box-shadow: 0 0 18px color-mix(in srgb, currentColor 40%, transparent);
+    }
+    .neural-node.visible { animation: nodePop .6s ease forwards, nodePulse 4.8s ease-in-out infinite; }
+    .neural-node h4 { font-size: .95rem; font-weight: 700; color: #f8fafc; }
+    .neural-pill-row { margin-top: .5rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .neural-pill { border-radius: 999px; font-size: .74rem; padding: .34rem .68rem; background: rgba(2,6,23,.45); border: 1px solid rgba(226,232,240,.22); color: #cbd5e1; }
+    .node-green { color: #22c55e; }
+    .node-blue { color: #38bdf8; }
+    .node-purple { color: #a78bfa; }
+    .node-pink { color: #f472b6; }
+    @keyframes drawLines { to { stroke-dashoffset: 0; } }
+    @keyframes nodePop { to { opacity: 1; transform: translateY(0) scale(1);} }
+    @keyframes nodePulse {
+      0%,100% { box-shadow: 0 0 10px color-mix(in srgb, currentColor 20%, transparent); }
+      50% { box-shadow: 0 0 18px color-mix(in srgb, currentColor 32%, transparent); }
+    }
+    #appContainer .workspace-sidebar-nav {
+      display: grid;
+      gap: .85rem;
+    }
+    #appContainer .workspace-sidebar-nav .tab-meta {
+      display: block;
+      margin-top: .28rem;
+      font-size: .72rem;
+      color: #94a3b8;
+      letter-spacing: .02em;
+    }
+    #appContainer .workspace-sidebar-group-title {
+      margin-top: 1rem;
+      margin-bottom: .35rem;
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: #64748b;
       background: rgba(34, 197, 94, .12);
       color: #86efac;
       border: 1px solid rgba(34, 197, 94, .35);
@@ -128,6 +263,56 @@
       max-width: 250px;
       padding: .35rem .5rem !important;
     }
+    #appContainer .workspace-top-header {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    #appContainer .workspace-main-grid {
+      gap: 1.3rem;
+      align-items: start;
+    }
+    #appContainer .workspace-content-card,
+    #appContainer .workspace-module-card,
+    #appContainer .workspace-utility-card {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+      border-radius: 18px;
+    }
+    #appContainer .workspace-utility-rail {
+      display: grid;
+      gap: 1rem;
+    }
+    #appContainer .workspace-secondary-btn,
+    #appContainer .workspace-primary-btn,
+    #workspaceBlueprintBtn {
+      min-height: 42px;
+      border-radius: 12px !important;
+      transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+    }
+    #appContainer .workspace-secondary-btn:hover,
+    #appContainer .workspace-primary-btn:hover,
+    #workspaceBlueprintBtn:hover {
+      transform: translateY(-2px);
+    }
+    #appContainer .panel.app-view {
+      transition: opacity .28s ease, transform .28s ease;
+    }
+    #appContainer .panel.app-view:not(.hidden) {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (max-width: 1280px) {
+      #appContainer.workspace-dashboard-view { padding: 1rem; }
+      #appContainer .workspace-dashboard-layout { min-height: auto; }
+      #appContainer .workspace-main-grid { gap: 1rem; }
+    }
+    @media (max-width: 900px) {
+      .workspace-command-topbar { flex-wrap: wrap; }
+      .workspace-command-topbar > div:last-child { width: 100%; justify-content: space-between; }
+      .neural-node-grid { grid-template-columns: 1fr; }
+      .workspace-neural-center { margin: 1rem auto 1.3rem; }
+      #appContainer .workspace-sidebar-group-title { margin-top: .55rem; }
     #appContainer.workspace-shell-revamp .workspace-project-title:focus { border-color: #00d4ff !important; }
     #appContainer.workspace-shell-revamp .workspace-header-badge { border: 1px solid rgba(0, 212, 255, .35); color: #00d4ff; border-radius: 999px; padding: .2rem .55rem; font-size: .72rem; font-weight: 700; }
     #appContainer.workspace-shell-revamp .workspace-user-pill { margin-left: auto; display: inline-flex; align-items: center; gap: .5rem; color: #d1d5db; font-size: .84rem; }
@@ -149,6 +334,34 @@
     @keyframes pulseGlow {
       0%, 100% { opacity: .65; box-shadow: 0 0 0 0 rgba(34, 197, 94, .3); }
       50% { opacity: 1; box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+    }
+    .app-nav-item {
+      width: 100%;
+      text-align: left;
+      border-radius: 12px;
+      padding: .7rem .9rem;
+      border: 1px solid transparent;
+      color: #d1d5db;
+      background: transparent;
+      font-size: .92rem;
+      transition: background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .app-nav-item:hover {
+      background: rgba(255,255,255,.06);
+      color: #f8fafc;
+      transform: none;
+      box-shadow: none;
+    }
+    .app-nav-item.is-active {
+      background: rgba(0, 212, 255, .12);
+      border-color: rgba(0, 212, 255, .5);
+      color: #d9fbff;
+    }
+    .app-main-section { min-height: calc(100vh - 56px); }
+    #layoutMain #publicNavbar { top: 56px; z-index: 1100; }
+    #layoutMain #publicNavbar .public-navbar-inner { max-width: 1200px; }
+    @media (max-width: 767px) {
+      #layoutMain #publicNavbar { top: 56px; }
     }
 
 </style>
@@ -220,6 +433,28 @@
     <div class="workspace-dashboard-layout">
       <aside id="workspaceSidebar" class="workspace-sidebar" aria-label="Workspace navigation">
         <div class="workspace-sidebar-brand">
+          <p class="text-xs uppercase tracking-[0.22em] text-slate-500 font-semibold">Barya</p>
+          <h2 class="text-lg font-semibold text-slate-900 mt-1">Founder Workspace</h2>
+          <p class="text-xs text-slate-500 mt-1">Local-first execution system</p>
+          <div class="workspace-status-pills">
+            <span class="workspace-status-pill">Live</span>
+            <span class="workspace-status-pill">Private</span>
+            <span class="workspace-status-pill">Focused</span>
+          </div>
+        </div>
+        <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
+          <p class="workspace-sidebar-group-title">Command</p>
+          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Strategy · Barya AI</span><span>↗</span></span><span class="tab-meta">AI advisor, GTM and execution decisions</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 22 L22 18 L38 20 L56 12 L78 14 L96 9 L116 7" stroke="#38bdf8"/></svg></button>
+          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway Tracker</span><span>↗</span></span><span class="tab-meta">Dashboard + monthly overview + trends</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 24 L20 19 L36 20 L54 16 L72 12 L90 10 L116 6" stroke="#22c55e"/></svg></button>
+          <p class="workspace-sidebar-group-title">Build</p>
+          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Business Planning + Startup Guides</span><span>↗</span></span><span class="tab-meta">Plans, checklists, launch playbooks</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 21 L24 22 L42 17 L60 15 L82 12 L98 14 L116 10" stroke="#a78bfa"/></svg></button>
+          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates + Memory</span><span>↗</span></span><span class="tab-meta">Reusable frameworks and saved context</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 20 L18 16 L34 19 L52 13 L70 16 L88 10 L116 8" stroke="#f472b6"/></svg></button>
+          <p class="workspace-sidebar-group-title">System</p>
+          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Profile / Settings</span><span>•</span></span><span class="tab-meta">Founder profile, preferences, data controls</span></button>
+        </nav>
+        <div class="sidebar-founder-profile">
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold">Navigation Tip</p>
+          <p class="text-sm text-slate-600 mt-2">Only one section is active at a time so you can stay focused on execution.</p>
           <p class="workspace-logo">Barya</p>
           <p class="workspace-tagline">Business AI</p>
         </div>
@@ -239,6 +474,15 @@
       <div class="workspace-main-canvas">
         <header class="workspace-top-header">
           <div class="workspace-command-topbar">
+            <div class="flex items-center gap-3">
+              <p class="text-xs font-semibold tracking-[0.28em]">BARYA AI</p>
+              <span class="text-slate-500">|</span>
+              <h1 class="text-sm md:text-base font-semibold">Founder Command Center</h1>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="encryption-badge"><span class="shield">🛡</span>Local-First Encryption Active</span>
+              <select id="languageSelect" class="border border-slate-700 rounded-xl px-3 py-2 text-xs bg-slate-900/80" aria-label="Language" data-i18n-aria-label="language"></select>
+              <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">Back to Landing</button>
             <button id="workspaceSidebarToggle" class="workspace-menu-btn" type="button" aria-label="Toggle navigation">☰</button>
             <input id="projectTitleInput" type="text" class="workspace-project-title" value="Untitled Startup" aria-label="Project title" />
             <span class="workspace-header-badge">Local-First</span>
@@ -277,6 +521,124 @@
           <h2 class="public-section-title mt-2">Dashboard</h2>
           <p class="muted mt-2">Monitor revenue, expenses, and key founder actions in one clean financial command center.</p>
         </div>
+        <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
+          <div class="dashboard-empty-card">
+            <div class="text-5xl" aria-hidden="true">✦</div>
+            <h3 class="text-2xl font-semibold mt-3">No data yet. Start by adding your first entry.</h3>
+            <p class="text-slate-500 mt-2">Pick one action to begin.</p>
+            <div class="grid md:grid-cols-3 gap-4 mt-6 text-left">
+              <button type="button" class="get-started-card" data-guided-entry="build">
+                <span class="get-started-icon" aria-hidden="true">▦</span>
+                <p class="text-base font-semibold mt-3 text-slate-900">Business Planning</p>
+                <p class="text-sm text-slate-500 mt-1">Open templates and start building.</p>
+              </button>
+              <button type="button" class="get-started-card" data-guided-entry="track">
+                <span class="get-started-icon" aria-hidden="true">▤</span>
+                <p class="text-base font-semibold mt-3 text-slate-900">Dashboard</p>
+                <p class="text-sm text-slate-500 mt-1">Track income, expenses, and savings.</p>
+              </button>
+              <button type="button" class="get-started-card" data-guided-entry="grow">
+                <span class="get-started-icon" aria-hidden="true">✦</span>
+                <p class="text-base font-semibold mt-3 text-slate-900">Barya AI</p>
+                <p class="text-sm text-slate-500 mt-1">Get advice and next-step prompts.</p>
+              </button>
+            </div>
+            <button id="viewSampleDashboardBtn" type="button" class="premium-hover mt-5 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 font-semibold text-white">View Sample Dashboard</button>
+          </div>
+        </article>
+        <article id="dashboardTourTarget" class="dashboard-data-block workspace-content-card workspace-module-card xl:col-span-3 premium-hover">
+          <p class="workspace-card-header">SYSTEM / AI_ASSISTANT_V1</p>
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Finance</p>
+              <h2 class="font-semibold text-2xl mt-2" data-i18n="dashboard">Dashboard</h2>
+              <p class="text-slate-300 mt-2">Track your numbers and immediate priorities.</p>
+            </div>
+            <div class="soft-card rounded-2xl px-4 py-3">
+              <p class="text-xs text-slate-400 uppercase tracking-[0.2em]">Workspace Status</p>
+              <p class="font-semibold mt-1">Active</p>
+            </div>
+          </div>
+
+          <div class="dashboard-flow-grid mt-5">
+          <div id="dashboardSummary" class="text-slate-300"></div>
+          <div id="startupReadinessCard" class="soft-card rounded-2xl p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold">Startup Readiness Score</h3>
+              <span id="startupReadinessValue" class="text-sm font-semibold">0%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3 mt-3 overflow-hidden">
+              <div id="startupReadinessProgress" class="h-3 bg-emerald-600 transition-all duration-300" style="width: 0%;"></div>
+            </div>
+            <p id="startupReadinessMessage" class="text-sm text-slate-500 mt-2">Complete key tasks to build launch readiness.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="downloadPdfBtn" type="button" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium">Download PDF Report</button>
+            <p id="downloadPdfStatus" class="text-xs text-slate-400"></p>
+          </div>
+          <div id="aiInsights" class="space-y-2"></div>
+
+          <div id="executiveSummaryCard" class="executive-summary-card rounded-2xl p-4">
+            <div class="flex items-start gap-3">
+              <span class="executive-summary-icon" aria-hidden="true">◉</span>
+              <div>
+                <p class="text-xs uppercase tracking-[0.2em] text-indigo-600 font-semibold">Founder Workspace Insight</p>
+                <h3 class="font-semibold text-lg mt-1">Executive Summary</h3>
+                <p id="executiveSummaryText" class="text-sm text-slate-700 mt-2 leading-relaxed">Add income and expenses to generate your executive summary.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="monthlyOverviewCard" class="soft-card rounded-2xl p-4">
+            <p class="text-sm text-slate-400 uppercase tracking-[0.2em]" data-i18n="monthlyOverview">Monthly Overview</p>
+            <div class="dashboard-summary-row mt-3">
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400" data-i18n="monthlyIncome">Monthly Income</p>
+                <p class="text-xl font-semibold mt-1" id="overviewIncome">$0.00</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400" data-i18n="totalExpenses">Total Expenses</p>
+                <p class="text-xl font-semibold mt-1" id="overviewExpenses">$0.00</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                <p class="text-xs text-slate-400" data-i18n="netSavings">Net Savings</p>
+                <p class="text-xl font-semibold mt-1" id="overviewSavings">$0.00</p>
+              </div>
+            </div>
+            <p id="savingsStatus" class="text-sm text-slate-300 mt-3"></p>
+            <p id="topCategoryOutput" class="text-sm text-slate-300 mt-1"></p>
+          </div>
+
+          <div class="dashboard-secondary-grid">
+            <div class="soft-card rounded-2xl p-4">
+              <h3 class="font-semibold">Financial Charts</h3>
+              <p class="text-xs text-slate-400 mt-1">Expense category split and monthly comparison</p>
+              <div class="grid md:grid-cols-2 gap-4 mt-4">
+                <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+                  <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Expense Categories</p>
+                  <canvas id="expenseChart"></canvas>
+                  <div id="expenseChartEmptyState" class="chart-empty-state">No chart data yet. Add expenses to see category insights.</div>
+                </div>
+                <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+                  <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Income vs Expenses</p>
+                  <canvas id="comparisonChart"></canvas>
+                  <div id="comparisonChartEmptyState" class="chart-empty-state">No totals available yet. Save income or add expenses to visualize this chart.</div>
+                </div>
+              </div>
+            </div>
+            <div class="soft-card rounded-2xl p-4">
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="font-semibold" data-i18n="recentExpenses">Recent Expenses</h3>
+                <span class="text-xs text-slate-400">Last 5 added</span>
+              </div>
+              <ul id="recentExpensesList" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
+            </div>
+          </div>
+
+          <div class="soft-card rounded-2xl p-4">
+            <h3 class="font-semibold text-lg" data-i18n="recommendations">Recommendations</h3>
+            <ul id="autoRecommendations" class="list-disc list-inside text-slate-300 mt-3 space-y-2"></ul>
+          </div>
       </div>
     </header>
 
@@ -374,6 +736,18 @@
             <button type="button" class="tabBtn rounded-xl px-4 py-2 text-sm font-medium" data-planning-section="templates">Business Plan Templates</button>
           </div>
 
+          <section id="planningGuidesSection" class="planning-section active">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
+                <h2 class="font-semibold text-2xl mt-2">Startup Guides <span class="text-sm font-medium text-emerald-300">• Learn</span></h2>
+                <p class="text-slate-300 mt-2 max-w-3xl">Learn the foundations of business with structured, beginner-friendly guides.</p>
+              </div>
+              <div class="soft-card rounded-2xl px-4 py-3">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning Track</p>
+                <p class="font-semibold mt-1">4 Core Guides</p>
+              </div>
+            </div>
     startupIdea.addEventListener('input', saveIdea);
 
     reloadIdeaBtn.addEventListener('click', () => {
@@ -547,6 +921,33 @@
       </p>
     </div>
   </footer>
+    </section>
+
+    <section id="barya-ai-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Barya AI Workspace</p>
+      </div>
+    </section>
+
+    <section id="memory-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Memory Workspace</p>
+      </div>
+    </section>
+
+    <section id="planning-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Business Planning Workspace</p>
+      </div>
+    </section>
+
+    <section id="settings-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Settings Workspace</p>
+      </div>
+    </section>
+  </main>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const appContainer = document.getElementById('appContainer');
