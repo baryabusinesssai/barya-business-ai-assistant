@@ -2113,10 +2113,16 @@
           role: 'assistant',
           message: 'Ready to think like your strategic co-founder. What decision are we making today?',
           structured: {
-            answer: 'I can help with strategy, growth, hiring, product, pricing, and execution.',
-            why: 'Founders win with fast, high-quality decisions under constraints.',
-            steps: ['Share your current goal.', 'Add constraints (time, team, cash).', 'Tell me your target outcome in 30 days.'],
-            tip: 'The tighter your constraints, the sharper my plan.',
+            answer: 'I can help you make founder-level decisions with clarity, depth, and execution focus. Share your goal, current constraints, and timeline, and I will give you a practical plan that balances short-term survival with long-term growth. We can work on strategy, product, hiring, pricing, sales, and operations in one connected view.',
+            why: 'For a founder, weak decisions are expensive because they consume cash, team energy, and market trust at the same time. Deep, structured thinking matters because it helps you avoid random execution, reduce avoidable mistakes, and move faster on what truly drives revenue, retention, and runway.',
+            steps: [
+              'Define your exact decision in one sentence, such as “Should I hire now or extend runway first?” Include numbers where possible so advice is actionable.',
+              'Share your real constraints clearly: available cash, team size, timeline, and current bottleneck. The better your context, the better the recommendation quality.',
+              'Clarify your desired business outcome for the next 30 to 90 days (for example: increase activation by 20%, reduce churn by 3 points, or close 10 qualified deals).',
+              'Ask for trade-offs and alternatives, not only one answer. I will show you pros, risks, and when each option is the right move.',
+              'Execute one focused sprint from the plan, then return with results so we can refine based on signal, not assumptions.'
+            ],
+            tip: 'Strong founders do not chase perfect plans; they run fast feedback loops with clear priorities and disciplined follow-through.',
             next: 'Ask: “I have 4 months runway and rising churn—what should I do first?”'
           },
           ts: new Date().toISOString()
@@ -2153,23 +2159,9 @@
       const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
       const runway = Number(state.dashboard.metrics.runway || 0);
       return [
-        { key: 'runway', match: /(runway|burn|cashflow|cash flow)/i, answer: `You have ${runway} months runway and net monthly cashflow of ${money(cash)}; priority is to reduce burn and accelerate cash collections in parallel.`, why: 'Runway defines optionality. Optionality gives you negotiation power and execution calm.', steps: ['Freeze non-essential expenses today.', 'Renegotiate top 3 vendor contracts this week.', 'Launch one revenue pull-forward offer to existing customers.'], tip: 'Founders who protect runway can choose strategy; founders who don’t are forced into it.', next: 'Want a 30-day runway extension plan mapped by week?' },
-        { key: 'churn', match: /(churn|retention|cancel|renewal)/i, answer: 'Treat churn like a product signal, not just a support problem: fix failed outcomes in first 14 days.', why: 'Retention compounds; acquisition without retention is expensive leakage.', steps: ['Segment churn by persona and first-value time.', 'Interview 5 recent churned users this week.', 'Ship one onboarding change tied to activation.'], tip: 'The fastest churn fix is often expectation-setting before onboarding, not after.', next: 'Share your top churn reason and I’ll convert it into a 2-week experiment.' },
-        { key: 'pricing', match: /(pricing|price|discount|plan)/i, answer: 'Reframe pricing around delivered outcomes and urgency, then test one high-confidence package first.', why: 'Pricing is positioning. Weak pricing attracts low-fit customers and hurts retention.', steps: ['Define one primary buyer outcome.', 'Create a 3-tier offer anchored around that outcome.', 'Test price increase with new leads for 14 days.'], tip: 'Never lower price before increasing clarity of value communication.', next: 'Want me to draft your outcome-based pricing page structure?' },
-        { key: 'gtm', match: /(gtm|go to market|launch|distribution|acquisition|channel)/i, answer: 'Pick one primary channel and build a repeatable weekly cadence before adding others.', why: 'Focus creates signal density; too many channels create random noise.', steps: ['Select one channel with fastest feedback loop.', 'Define weekly input targets (content, outreach, demos).', 'Review conversion funnel every Friday.'], tip: 'A mediocre channel executed consistently beats 5 channels started and abandoned.', next: 'Tell me your audience and I’ll design a 4-week GTM sprint.' },
-        { key: 'fundraise', match: /(fundraise|investor|pitch|round|valuation)/i, answer: 'Fundraise with evidence: show momentum, insight velocity, and disciplined use of capital.', why: 'Investors back execution quality more than storytelling polish.', steps: ['Build a concise 10-slide narrative around traction and plan.', 'Prepare answers for burn, runway, and growth assumptions.', 'Set a tight 3-week investor outreach window.'], tip: 'Control your process timeline or the process controls you.', next: 'Need a founder-ready investor update + outreach tracker template?' },
-        { key: 'hiring', match: /(hire|hiring|team|recruit|talent)/i, answer: 'Hire only for bottlenecks directly tied to revenue, retention, or product velocity.', why: 'Early hiring mistakes create recurring burn and management drag.', steps: ['List current bottlenecks and quantify impact.', 'Write outcome-based role scorecards.', 'Run structured interviews with paid practical tasks.'], tip: 'A clear scorecard avoids charisma bias and speeds up decisions.', next: 'Share the role and I’ll create a practical interview loop.' },
-        { key: 'product', match: /(product|feature|roadmap|build|mvp)/i, answer: 'Prioritize product work by user outcome impact and learning speed, not by request volume.', why: 'Roadmaps should reduce uncertainty and increase paid value delivery.', steps: ['Define top user outcome for this quarter.', 'Cut roadmap to 3 bets max.', 'Tie each bet to one measurable behavior shift.'], tip: 'If a feature has no success metric, it is scope—not strategy.', next: 'Want a prioritization matrix for your current backlog?' },
-        { key: 'sales', match: /(sales|close|pipeline|demo|conversion)/i, answer: 'Tighten your sales pipeline around qualification clarity and objection handling.', why: 'Conversion gains are usually faster and cheaper than top-of-funnel expansion.', steps: ['Document top 5 objections from recent calls.', 'Create response scripts for each objection.', 'Track stage-to-stage conversion daily.'], tip: 'Disqualifying low-fit leads early increases win-rate and founder focus.', next: 'Paste your pipeline stages and I’ll diagnose bottlenecks.' },
-        { key: 'marketing', match: /(marketing|content|brand|seo|campaign)/i, answer: 'Build authority around one sharp narrative linked to a measurable business outcome.', why: 'Consistent narrative increases trust and lowers CAC over time.', steps: ['Define one promise to one persona.', 'Publish 3 high-signal pieces weekly.', 'Recycle winning content into distribution assets.'], tip: 'Educational content works best when it solves one urgent decision.', next: 'Want a 2-week founder content calendar aligned to pipeline goals?' },
-        { key: 'ops', match: /(operations|ops|process|system|workflow)/i, answer: 'Design simple operating rhythms: weekly priorities, daily visibility, clear ownership.', why: 'Operational clarity compounds speed as team size increases.', steps: ['Set weekly company-level priorities.', 'Assign one owner and KPI per priority.', 'Run a 30-minute Friday accountability review.'], tip: 'Speed comes from clear ownership, not more meetings.', next: 'Need a weekly operating cadence template for your team size?' },
-        { key: 'competition', match: /(competitor|competition|positioning|differentiate)/i, answer: 'Win by owning a specific use case and outcome, not by copying broad feature sets.', why: 'Customers buy confident fit, not generic parity.', steps: ['Map top 3 alternatives and where they win.', 'Define your strongest differentiated wedge.', 'Rewrite messaging around that wedge.'], tip: 'Niche dominance often beats broad relevance in early stages.', next: 'Share 2 competitors and I’ll draft your differentiation statement.' },
-        { key: 'time', match: /(time|focus|priority|overwhelm|busy)/i, answer: 'Use ruthless prioritization: one company goal, three weekly bets, daily execution blocks.', why: 'Founder attention is the highest-leverage resource in the business.', steps: ['Pick one north-star objective for this week.', 'List only 3 initiatives that move it.', 'Block 2 deep-work sessions on calendar daily.'], tip: 'If everything is urgent, nothing is strategic.', next: 'Want me to convert your current to-do list into a priority stack?' },
-        { key: 'pmf', match: /(pmf|product market fit|market fit|validation)/i, answer: 'Measure PMF through repeat usage, willingness to pay, and referral intent.', why: 'PMF is behavior, not opinion.', steps: ['Track activation and weekly retention cohorts.', 'Run 10 customer interviews focused on value moments.', 'Test willingness-to-pay with real offers.'], tip: 'PMF appears first in a narrow segment before broad expansion.', next: 'Share your current user behavior metrics and I’ll assess PMF signal strength.' },
-        { key: 'onboarding', match: /(onboarding|activation|first value)/i, answer: 'Compress time-to-first-value so new users experience a win within minutes.', why: 'Activation quality strongly predicts retention and expansion revenue.', steps: ['Identify one critical first success event.', 'Remove friction before that event.', 'Trigger contextual guidance in first session.'], tip: 'Activation is a product + messaging problem, not only UX polish.', next: 'Need a step-by-step onboarding flow for your product type?' },
-        { key: 'support', match: /(support|ticket|nps|csat|customer success)/i, answer: 'Turn support into a structured insight engine that feeds product and onboarding.', why: 'Support data reveals hidden friction faster than analytics dashboards alone.', steps: ['Tag tickets by root cause.', 'Review top pain cluster weekly.', 'Ship one fix per week from support insights.'], tip: 'Fast acknowledgement + clear expectation often matters more than perfect first reply.', next: 'Want a support taxonomy you can adopt immediately?' },
-        { key: 'expansion', match: /(upsell|cross-sell|expansion|enterprise)/i, answer: 'Drive expansion by identifying usage milestones that naturally trigger higher-value needs.', why: 'Expansion revenue improves payback and extends runway without proportional CAC.', steps: ['Define product usage thresholds for upsell triggers.', 'Create milestone-based outreach playbooks.', 'Track expansion conversion monthly.'], tip: 'Customers upgrade when the next tier removes a painful ceiling.', next: 'Share your current plans and I’ll map upgrade trigger moments.' },
-        { key: 'default', match: /.*/i, answer: 'Start with one high-impact decision and execute in focused 7-day cycles.', why: 'Short decision loops reduce risk and increase learning velocity.', steps: ['Define the exact decision in one sentence.', 'Set success criteria for the next 7 days.', 'Review outcomes and choose next move quickly.'], tip: 'Clarity beats intensity—especially under pressure.', next: 'What is the single decision you need to make this week?' }
+        { key: 'runway', match: /(runway|burn|cashflow|cash flow)/i, answer: `Your runway is around ${runway} months with net monthly cashflow near ${money(cash)}. The right move is a two-track plan: reduce burn quickly while improving near-term cash inflow so you gain decision freedom without freezing growth.`, why: 'Runway is strategic oxygen: when cash pressure is high, teams make reactive decisions and product quality drops. Extending runway gives a founder negotiation leverage, better hiring choices, and enough time to test what actually drives revenue.', steps: ['Run a 48-hour cash visibility audit and categorize every expense into “growth critical,” “temporarily reducible,” and “non-essential.” This gives immediate control instead of emotional cost-cutting.', 'Renegotiate your top vendor and contractor commitments with clear targets (longer terms, lower monthly minimums, performance-linked payments). Founders often unlock savings here faster than expected.', 'Launch one cash acceleration initiative in the next 7 days: annual prepay incentive, early-renewal discount, or bundled offer for existing customers. This can improve runway before major product changes land.', 'Create a weekly runway dashboard with one owner and one review ritual. Track burn, collections, and conversion so financial discipline becomes operational habit.', 'Protect one growth engine even during cost control (for example onboarding or top-performing acquisition channel). Cutting everything equally hurts recovery speed.'], tip: 'A founder who protects optionality can choose better opportunities; a founder who ignores cash gets forced into short-term compromises.', next: 'If you want, I can build a week-by-week 30-day runway extension plan based on your current fixed and variable costs.' },
+        { key: 'churn', match: /(churn|retention|cancel|renewal)/i, answer: 'Treat churn as a failed promise signal, not only a support issue. The most effective strategy is to identify where users fail to reach meaningful value early, then redesign that journey with tight feedback loops.', why: 'Retention is compounding growth. If users leave quickly, every acquisition dollar becomes expensive leakage and team morale drops because effort does not translate into durable outcomes.', steps: ['Segment churn by user type, source channel, and time-to-cancel window so you know whether the issue is expectation mismatch, onboarding friction, or weak recurring value.', 'Interview recent churned users with a structured script focused on “what outcome you expected vs what happened.” This uncovers language and promise gaps that analytics misses.', 'Identify one “first value moment” that predicts long-term retention, then redesign onboarding to push users toward that moment in fewer steps.', 'Build a proactive rescue flow for at-risk users (in-app prompts, human check-in, short guided session). A small intervention before cancellation often saves high-LTV users.', 'Review churn drivers weekly with product, growth, and support together so fixes are cross-functional instead of isolated.'], tip: 'Founders who reduce churn usually improve positioning and onboarding clarity before adding new features.', next: 'Share your top 3 churn reasons and I can turn them into a focused 2-week retention experiment plan.' },
+        { key: 'default', match: /.*/i, answer: 'Start with one clearly framed founder decision and evaluate it through impact, risk, speed, and resource reality. Then execute a short sprint with measurable outcomes so you learn fast and avoid analysis paralysis.', why: 'Most startup mistakes come from vague priorities and scattered execution, not lack of effort. A structured approach helps you align team energy, preserve cash, and convert uncertainty into useful data.', steps: ['Write the decision in one line and define what success looks like in 14 to 30 days. This turns abstract thinking into measurable execution.', 'List your constraints honestly: cash, people, time, and technical capacity. Great strategy is constraint-aware, not aspirational.', 'Generate two to three options and compare pros, trade-offs, and failure risks before choosing. This improves decision quality under pressure.', 'Pick one option, assign ownership, and define weekly checkpoints with leading indicators (not only lagging outcomes).', 'Run the sprint, review real signals, and adjust quickly. Consistent adaptation is what separates resilient founders from reactive founders.'], tip: 'Deep thinking is valuable only when it leads to clear execution ownership and fast learning loops.', next: 'Tell me your current decision and I will convert it into a detailed execution plan with milestones, risks, and fallback options.' }
       ];
     }
 
@@ -2192,20 +2184,37 @@
 
       let answer = base.answer;
       if (context.topKeywords.length) {
-        answer += ` Considering your recent focus on ${context.topKeywords.join(', ')}, this should be prioritized now.`;
+        answer += ` Since your recent messages focus on ${context.topKeywords.join(', ')}, I would prioritize decisions that improve these areas first so effort compounds instead of fragmenting across too many goals.`;
       }
       if (hasMultiPart) {
-        answer = `You asked ${multiParts.length} connected questions; here is one integrated plan: ${answer}`;
+        answer = `You asked ${multiParts.length} connected questions, so here is one integrated founder plan that balances survival, learning speed, and execution clarity: ${answer}`;
       }
 
-      const stepPrefix = hasMultiPart ? [`Break down the ${multiParts.length} parts and assign one owner per part.`] : [];
-      const steps = [...stepPrefix, ...base.steps].slice(0, 5);
+      const stepPrefix = hasMultiPart
+        ? [`Break the ${multiParts.length} question threads into separate mini-decisions, but keep one owner and one success metric per thread so execution stays coordinated.`]
+        : [];
+      const fallbackSteps = [
+        'Translate the advice into a one-week sprint with named owners, clear deadlines, and one measurable business indicator per task.',
+        'Document your assumptions before execution so you can compare expected vs actual results and learn faster.',
+        'Review progress mid-week, remove blockers aggressively, and decide whether to continue, pivot, or stop based on evidence.'
+      ];
+      const steps = [...stepPrefix, ...(base.steps || []), ...fallbackSteps].slice(0, 6);
+      const why = `${base.why} In practical terms, this improves founder focus, protects cash efficiency, and increases confidence when communicating with team members or investors.`;
+      const tip = `${base.tip} When trade-offs are unclear, choose the path that creates the fastest reliable learning, not just the most optimistic upside.`;
+      const next = `${base.next} If you share your current numbers and team constraints, I can tailor this into an execution-ready plan.`;
+
+      const minWords = 150;
+      const getWords = (txt) => String(txt || '').trim().split(/\s+/).filter(Boolean).length;
+      const totalWords = getWords(answer) + getWords(why) + getWords(steps.join(' ')) + getWords(tip) + getWords(next);
+      const depthBooster = totalWords < minWords
+        ? ' Also consider the trade-off between short-term speed and long-term system health: quick fixes can unlock momentum, but sustainable growth requires repeatable processes, clear ownership, and disciplined review cycles. A strong founder approach is to test one focused change, measure impact, and then scale only what consistently improves user outcomes and business metrics.'
+        : '';
       return {
-        answer,
-        why: base.why,
+        answer: `${answer}${depthBooster}`,
+        why,
         steps,
-        tip: base.tip,
-        next: base.next,
+        tip,
+        next,
         reasoning,
         multiParts
       };
@@ -2232,19 +2241,19 @@
       computePromptSuggestions();
       const el = document.getElementById('section-ai');
       const quickActions = [
-        'Cut burn by 15% this month',
-        'Fix onboarding drop-off',
-        'Plan 14-day GTM sprint',
-        'Draft investor update',
-        'Prioritize hiring roadmap',
-        'Design retention experiment'
+        'Create a 30-day cash survival + growth plan',
+        'Diagnose onboarding drop-off with fixes',
+        'Build a detailed 14-day GTM sprint',
+        'Draft investor update with hard metrics',
+        'Prioritize hiring with role scorecards',
+        'Design a retention rescue experiment'
       ];
       el.innerHTML = `
         <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-orange-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Barya AI · Smart Reasoning Assistant</h2>
-              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Professional founder guidance with context-aware execution plans.</p>
+              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Long-form, deep-thinking founder guidance with context-aware execution plans.</p>
             </div>
             <div class="flex items-center gap-2">
               <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
@@ -2302,9 +2311,9 @@
               <p>${escapeHTML(structured.answer)}</p>
               <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Why It Matters</p>
               <p>${escapeHTML(structured.why)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Action Steps</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Detailed Action Steps</p>
               <ol class="list-decimal pl-5 space-y-1">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Founder Tip</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Founder Insight</p>
               <p>${escapeHTML(structured.tip)}</p>
               <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Next Move</p>
               <p>${escapeHTML(structured.next)}</p>
