@@ -90,6 +90,7 @@
         <section id="section-memory" class="section-panel space-y-6"></section>
         <section id="section-planning" class="section-panel space-y-6"></section>
         <section id="section-settings" class="section-panel space-y-6"></section>
+        <section id="section-knowledge-graph" class="section-panel space-y-6"></section>
       </main>
     </div>
   </div>
@@ -113,7 +114,8 @@
       { id: 'ai', icon: '🤖', label: 'Barya AI' },
       { id: 'memory', icon: '🧠', label: 'Memory' },
       { id: 'planning', icon: '🗺️', label: 'Business Planning' },
-      { id: 'settings', icon: '⚙️', label: 'Settings' }
+      { id: 'settings', icon: '⚙️', label: 'Settings' },
+      { id: 'knowledge-graph', icon: '🔗', label: 'Knowledge Graph' }
     ];
 
     const defaultState = {
@@ -213,6 +215,12 @@
         founder: { name: 'Shruti Barya', role: 'Founder', email: 'shruti@barya.ai' },
         business: { name: 'Untitled Startup', stage: 'Pre-Seed', industry: 'B2B SaaS' },
         preferences: { currency: 'USD', language: 'English', darkMode: true }
+      },
+      knowledgeGraph: {
+        search: '',
+        filter: 'all',
+        focusRef: '',
+        mentions: []
       }
     };
 
@@ -249,6 +257,7 @@
     }
 
     function init() {
+      ensureKnowledgeGraphState();
       renderNav();
       setupBaseEvents();
       updateRecommendations();
@@ -287,6 +296,7 @@
       if (state.activeSection === 'memory') renderMemory();
       if (state.activeSection === 'planning') renderPlanning();
       if (state.activeSection === 'settings') renderSettings();
+      if (state.activeSection === 'knowledge-graph') renderKnowledgeGraph();
     }
 
     function setupBaseEvents() {
@@ -312,6 +322,203 @@
     }
 
     function money(v){ return `${state.settings.preferences.currency} ${Number(v || 0).toLocaleString()}`; }
+
+    function ensureKnowledgeGraphState() {
+      if (!state.knowledgeGraph || typeof state.knowledgeGraph !== 'object') state.knowledgeGraph = {};
+      if (typeof state.knowledgeGraph.search !== 'string') state.knowledgeGraph.search = '';
+      if (!state.knowledgeGraph.filter) state.knowledgeGraph.filter = 'all';
+      if (typeof state.knowledgeGraph.focusRef !== 'string') state.knowledgeGraph.focusRef = '';
+      if (!Array.isArray(state.knowledgeGraph.mentions)) state.knowledgeGraph.mentions = [];
+    }
+
+    function wikiLinkTitles(text) {
+      const titles = [];
+      const pattern = /\[\[([^\]]+)\]\]/g;
+      let match;
+      while ((match = pattern.exec(String(text || '')))) {
+        const t = match[1].trim();
+        if (t && !titles.includes(t)) titles.push(t);
+      }
+      return titles;
+    }
+
+    function findRefByTitle(title) {
+      const q = String(title || '').trim().toLowerCase();
+      if (!q) return '';
+      const page = (state.workspace?.pages || []).find(p => String(p.title || '').trim().toLowerCase() === q);
+      if (page) return `page:${page.id}`;
+      const note = (state.memory?.insights || []).find(n => String(n.title || '').trim().toLowerCase() === q);
+      if (note) return `note:${note.id}`;
+      const task = (state.tasks?.items || []).find(t => String(t.title || '').trim().toLowerCase() === q);
+      if (task) return `task:${task.id}`;
+      const research = (state.planning?.strategy?.sessions || []).find(r => String(r.query || '').trim().toLowerCase() === q);
+      if (research) return `research:${research.id}`;
+      return '';
+    }
+
+    function refMeta(ref) {
+      const [kind, id] = String(ref || '').split(':');
+      if (kind === 'page') {
+        const page = (state.workspace?.pages || []).find(p => p.id === id);
+        return page ? { title: page.title, type: page.objectType || 'Page', section: 'workspace', id } : null;
+      }
+      if (kind === 'note') {
+        const note = (state.memory?.insights || []).find(n => n.id === id);
+        return note ? { title: note.title, type: note.isDaily ? 'Daily Note' : 'Note', section: 'memory', id } : null;
+      }
+      if (kind === 'task') {
+        const task = (state.tasks?.items || []).find(t => t.id === id);
+        return task ? { title: task.title, type: 'Task', section: 'tasks', id } : null;
+      }
+      if (kind === 'research') {
+        const session = (state.planning?.strategy?.sessions || []).find(s => s.id === id);
+        return session ? { title: `Research: ${session.query.slice(0, 54)}`, type: 'Research', section: 'planning', id } : null;
+      }
+      if (kind === 'mention') {
+        const m = (state.knowledgeGraph?.mentions || []).find(x => x.id === id);
+        return m ? { title: m.title, type: 'Mention', section: 'ai', id } : null;
+      }
+      return null;
+    }
+
+    function addGraphMention(title, context = 'ai') {
+      ensureKnowledgeGraphState();
+      const normalized = String(title || '').trim();
+      if (!normalized || normalized.length < 3) return;
+      const existing = state.knowledgeGraph.mentions.find(m => m.title.toLowerCase() === normalized.toLowerCase());
+      if (existing) {
+        existing.lastSeenAt = new Date().toISOString();
+        existing.count = Number(existing.count || 1) + 1;
+        existing.context = context;
+      } else {
+        state.knowledgeGraph.mentions.push({ id: crypto.randomUUID(), title: normalized, context, count: 1, ts: new Date().toISOString(), lastSeenAt: new Date().toISOString() });
+      }
+    }
+
+    function registerMentionsFromText(text, context = 'ai') {
+      const wiki = wikiLinkTitles(text);
+      wiki.forEach(title => addGraphMention(title, context));
+      const proper = String(text || '').match(/\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,3})\b/g) || [];
+      proper.slice(0, 8).forEach(token => { if (!findRefByTitle(token)) addGraphMention(token, context); });
+    }
+
+    function openReference(ref) {
+      const [kind, id] = String(ref || '').split(':');
+      if (!kind || !id) return;
+      if (kind === 'page') {
+        state.activeSection = 'workspace';
+        if (state.workspace) state.workspace.activePageId = id;
+      }
+      if (kind === 'note') {
+        state.activeSection = 'memory';
+        if (state.memory) state.memory.activeNoteId = id;
+      }
+      if (kind === 'task') {
+        state.activeSection = 'tasks';
+        if (state.tasks) state.tasks.selectedTaskId = id;
+      }
+      if (kind === 'research') {
+        state.activeSection = 'planning';
+        if (state.planning?.strategy) state.planning.strategy.activeSessionId = id;
+      }
+      if (kind === 'mention') {
+        state.activeSection = 'ai';
+      }
+      renderNav();
+      saveState();
+    }
+
+    function showRelated(ref) {
+      ensureKnowledgeGraphState();
+      state.knowledgeGraph.focusRef = ref;
+      state.activeSection = 'knowledge-graph';
+      renderNav();
+      saveState();
+    }
+
+    function buildKnowledgeGraph() {
+      ensureKnowledgeGraphState();
+      ensureWorkspaceState();
+      ensureTasksState();
+      const nodes = [];
+      const edges = [];
+      const nodeByRef = new Map();
+      const addNode = (ref, label, type, section) => {
+        if (!ref || nodeByRef.has(ref)) return;
+        const node = { ref, label: label || 'Untitled', type, section, connected: 0 };
+        nodeByRef.set(ref, node);
+        nodes.push(node);
+      };
+      const addEdge = (from, to, relation = 'link') => {
+        if (!from || !to || from === to || !nodeByRef.has(from) || !nodeByRef.has(to)) return;
+        const key = [from, to].sort().join('::');
+        if (edges.find(e => e.key === key)) return;
+        edges.push({ key, from, to, relation });
+      };
+
+      (state.workspace?.pages || []).forEach(p => addNode(`page:${p.id}`, p.title, p.objectType || 'Page', 'workspace'));
+      (state.memory?.insights || []).forEach(n => addNode(`note:${n.id}`, n.title, n.isDaily ? 'Daily Note' : 'Note', 'memory'));
+      (state.tasks?.items || []).forEach(t => addNode(`task:${t.id}`, t.title, 'Task', 'tasks'));
+      (state.planning?.strategy?.sessions || []).forEach(s => addNode(`research:${s.id}`, `Research: ${s.query.slice(0, 50)}`, 'Research', 'planning'));
+      (state.knowledgeGraph?.mentions || []).forEach(m => addNode(`mention:${m.id}`, m.title, 'Mention', 'ai'));
+
+      (state.workspace?.pages || []).forEach(p => {
+        const from = `page:${p.id}`;
+        (p.blocks || []).forEach(block => {
+          wikiLinkTitles(`${block.text || ''} ${block.content || ''}`).forEach(title => {
+            const to = findRefByTitle(title);
+            if (to) addEdge(from, to, '[[link]]');
+          });
+          (block.targets || []).forEach(targetId => addEdge(from, `page:${targetId}`, block.relationKey || 'relation'));
+        });
+        Object.values(p.relations || {}).forEach(list => (list || []).forEach(id => addEdge(from, `page:${id}`, 'relation')));
+      });
+
+      (state.memory?.insights || []).forEach(note => {
+        const from = `note:${note.id}`;
+        wikiLinkTitles(note.content || '').forEach(title => {
+          const to = findRefByTitle(title);
+          if (to) addEdge(from, to, '[[link]]');
+        });
+        const text = `${note.title} ${note.content || ''}`.toLowerCase();
+        (state.tasks?.items || []).forEach(task => { if (text.includes((task.title || '').toLowerCase()) && task.title) addEdge(from, `task:${task.id}`, 'auto'); });
+      });
+
+      (state.tasks?.items || []).forEach(task => {
+        const from = `task:${task.id}`;
+        if (task.linkRef) addEdge(from, task.linkRef, 'linkRef');
+        wikiLinkTitles(`${task.title} ${task.description}`).forEach(title => { const to = findRefByTitle(title); if (to) addEdge(from, to, '[[link]]'); });
+      });
+
+      (state.planning?.strategy?.sessions || []).forEach(session => {
+        const from = `research:${session.id}`;
+        wikiLinkTitles(`${session.query} ${session.followUp || ''} ${session.deep?.summary || ''}`).forEach(title => {
+          const to = findRefByTitle(title);
+          if (to) addEdge(from, to, 'research');
+        });
+      });
+
+      (state.ai?.history || []).forEach(msg => {
+        if (!msg?.message) return;
+        const linked = wikiLinkTitles(msg.message);
+        linked.forEach(title => {
+          const target = findRefByTitle(title);
+          if (target) {
+            const mention = (state.knowledgeGraph.mentions || []).find(m => m.title.toLowerCase() === title.toLowerCase());
+            if (mention) addEdge(`mention:${mention.id}`, target, 'mention');
+          }
+        });
+      });
+
+      edges.forEach(edge => {
+        const a = nodeByRef.get(edge.from);
+        const b = nodeByRef.get(edge.to);
+        if (a) a.connected += 1;
+        if (b) b.connected += 1;
+      });
+
+      return { nodes, edges, nodeByRef };
+    }
 
     function normalizeDashboardState() {
       const d = state.dashboard;
@@ -903,6 +1110,7 @@
                   <select id="workspaceObjectType" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
                     ${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}
                   </select>
+                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-cyan-500/15 border border-cyan-500/40 text-cyan-200">Show Related</button>
                   <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/40 text-red-300">Delete</button>
                 </div>
 
@@ -999,6 +1207,7 @@
         updatePageUpdatedAt(activePage);
         saveState();
       };
+      document.getElementById('workspaceShowRelated').onclick = () => showRelated(`page:${activePage.id}`);
       document.getElementById('workspaceDeletePage').onclick = () => {
         if (!confirm('Delete this object?')) return;
         state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
@@ -1356,6 +1565,7 @@
               <button data-jump-link="${task.id}" class="text-cyan-300 hover:text-cyan-200">${escapeHTML(linkedTaskLabel(task))}</button>
             </div>
             <div class="flex gap-2">
+              <button data-show-related="task:${task.id}" class="text-xs px-2 py-1 rounded bg-cyan-500/15 text-cyan-200 border border-cyan-500/30">Show Related</button>
               <button data-edit-task="${task.id}" class="text-xs px-2 py-1 rounded bg-zinc-800 border border-zinc-700">Edit</button>
               <button data-delete-task="${task.id}" class="text-xs px-2 py-1 rounded bg-red-500/15 text-red-300 border border-red-500/30">Delete</button>
             </div>
@@ -1469,6 +1679,7 @@
       document.getElementById('newSprintBtn').onclick = () => document.getElementById('sprintName').focus();
       el.querySelectorAll('[data-select-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.selectTask; renderTasks(); });
       el.querySelectorAll('[data-edit-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.editTask; renderTasks(); });
+      el.querySelectorAll('[data-show-related]').forEach(btn => btn.onclick = () => showRelated(btn.dataset.showRelated));
       el.querySelectorAll('[data-delete-task]').forEach(btn => btn.onclick = () => {
         t.items = t.items.filter(task => task.id !== btn.dataset.deleteTask);
         if (t.selectedTaskId === btn.dataset.deleteTask) t.selectedTaskId = null;
@@ -1714,10 +1925,13 @@
               <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Barya AI · Smart Reasoning Assistant</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Professional founder guidance with context-aware execution plans.</p>
             </div>
-            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-cyan-500/30">
-              <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-cyan-400">
-              <span class="text-sm text-zinc-200">Think Step-by-Step</span>
-            </label>
+            <div class="flex items-center gap-2">
+              <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/35 text-cyan-200 text-sm">Show Related</button>
+              <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-cyan-500/30">
+                <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-cyan-400">
+                <span class="text-sm text-zinc-200">Think Step-by-Step</span>
+              </label>
+            </div>
           </div>
 
           <div class="grid xl:grid-cols-[1fr_280px] gap-4">
@@ -1790,8 +2004,10 @@
         if (!q) return;
         const nowISO = new Date().toISOString();
         const userMsg = { role: 'user', message: q, ts: nowISO };
+        registerMentionsFromText(q, 'ai-user');
         const structured = aiStructuredResponse(q);
         const aiMsg = { role: 'assistant', message: structured.answer, structured, ts: nowISO };
+        registerMentionsFromText(`${structured.answer} ${(structured.steps || []).join(' ')}`, 'ai-assistant');
         state.ai.history.push(userMsg, aiMsg);
         saveStateRaw();
         renderAI();
@@ -1801,6 +2017,12 @@
         e.preventDefault();
         const input = document.getElementById('chatInput');
         sendQuestion(input.value);
+      };
+      document.getElementById('aiShowRelated').onclick = () => {
+        const latestUser = [...state.ai.history].reverse().find(msg => msg.role === 'user');
+        const hinted = latestUser ? (wikiLinkTitles(latestUser.message)[0] || '') : '';
+        const ref = findRefByTitle(hinted) || (buildKnowledgeGraph().nodes.find(node => node.section === 'ai')?.ref || '');
+        if (ref) showRelated(ref);
       };
       document.getElementById('thinkToggle').onchange = (e) => {
         state.ai.thinkStepByStep = !!e.target.checked;
@@ -1974,6 +2196,7 @@
                       <div class="grid sm:grid-cols-2 gap-2">
                         <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 font-semibold" />
                         <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
+                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/35 text-cyan-200 text-sm">Show Related</button>
                       </div>
                       <textarea id="noteContent" rows="13" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-3 font-mono text-sm leading-6 focus:border-cyan-400 outline-none" placeholder="Use [[Note Title]] to link notes...">${escapeHTML(activeNote.content)}</textarea>
                       <div class="flex flex-wrap items-center gap-2 justify-between">
@@ -2124,6 +2347,8 @@
       });
 
       if (activeNote && memory.viewMode !== 'graph') {
+        const showRelatedBtn = document.getElementById('memoryShowRelated');
+        if (showRelatedBtn) showRelatedBtn.onclick = () => showRelated(`note:${activeNote.id}`);
         document.getElementById('noteTitle').oninput = (e) => {
           activeNote.title = e.target.value.trim() || 'Untitled Note';
           activeNote.isDaily = /^\d{4}-\d{2}-\d{2}/.test(activeNote.title);
@@ -2300,8 +2525,9 @@
               <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Strategy Generator + Research Mode</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Perplexity-style founder research cockpit with local-first persistence.</p>
             </div>
-            <div class="text-xs text-zinc-400">
+            <div class="text-xs text-zinc-400 flex items-center gap-2">
               Sessions: <span class="text-cyan-300 font-semibold">${strategy.sessions.length}</span>
+              <button id="planningShowRelated" class="px-2 py-1 rounded bg-cyan-500/15 border border-cyan-500/35 text-cyan-200">Show Related</button>
             </div>
           </div>
 
@@ -2518,6 +2744,11 @@
         strategy.idea = e.target.value;
         saveStateRaw();
       };
+      const planningShowRelated = document.getElementById('planningShowRelated');
+      if (planningShowRelated) planningShowRelated.onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (session) showRelated(`research:${session.id}`);
+      };
       el.querySelectorAll('[data-strategy-mode]').forEach(btn => btn.onclick = () => {
         strategy.mode = btn.dataset.strategyMode;
         saveStrategyState();
@@ -2535,6 +2766,7 @@
         renderPlanning();
         setTimeout(() => {
           const session = buildResearchSession(query, follow);
+          registerMentionsFromText(`${session.query} ${session.deep.summary} ${(session.cards.opportunities || []).join(' ')}`, 'research');
           strategy.sessions.unshift(session);
           strategy.activeSessionId = session.id;
           strategy.loading = false;
@@ -2570,6 +2802,7 @@
           updatedAt: new Date().toISOString(),
           blocks: [
             { id: crypto.randomUUID(), type: 'h1', text: 'Research Report' },
+            { id: crypto.randomUUID(), type: 'paragraph', text: `Linked Research Node: [[Research: ${session.query.slice(0, 42)}]]` },
             { id: crypto.randomUUID(), type: 'paragraph', text: session.deep.summary },
             { id: crypto.randomUUID(), type: 'bullet', text: `Market: ${session.cards.market.join(' | ')}` },
             { id: crypto.randomUUID(), type: 'bullet', text: `Competitors: ${session.cards.competitors.join(' | ')}` },
@@ -2590,7 +2823,7 @@
         state.memory.insights.unshift({
           id: crypto.randomUUID(),
           title: `Research Insight: ${session.query.slice(0, 42)}`,
-          content: `${session.deep.summary}\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`,
+          content: `${session.deep.summary}\n\nLinked Research: [[Research: ${session.query.slice(0, 42)}]]\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`,
           tags: ['Research', 'Strategy'],
           tag: 'Research, Strategy',
           ts: new Date().toISOString()
@@ -2650,6 +2883,195 @@
         strategy.followUp = '';
         saveStrategyState();
       };
+    }
+
+    function renderKnowledgeGraph() {
+      ensureKnowledgeGraphState();
+      const el = document.getElementById('section-knowledge-graph');
+      const kg = state.knowledgeGraph;
+      const graph = buildKnowledgeGraph();
+      const filters = ['all', 'Page', 'Note', 'Daily Note', 'Task', 'Research', 'Mention'];
+      const q = kg.search.toLowerCase().trim();
+      const visibleNodes = graph.nodes.filter(node => {
+        const byQuery = !q || `${node.label} ${node.type}`.toLowerCase().includes(q);
+        const byFilter = kg.filter === 'all' || node.type === kg.filter;
+        return byQuery && byFilter;
+      });
+      const visibleSet = new Set(visibleNodes.map(n => n.ref));
+      const visibleEdges = graph.edges.filter(edge => visibleSet.has(edge.from) && visibleSet.has(edge.to));
+
+      el.innerHTML = `
+        <section class="bg-gradient-to-br from-[#070d16] via-[#0a111b] to-[#060b12] border border-cyan-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Knowledge Graph</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Interconnected graph of Pages, Notes, Tasks, Research, Daily Notes, and AI mentions.</p>
+            </div>
+            <button id="exportKnowledgeGraph" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">Export Full Graph (JSON)</button>
+          </div>
+
+          <div class="grid md:grid-cols-[1fr_auto] gap-2">
+            <input id="kgSearch" value="${escapeAttr(kg.search)}" placeholder="Search nodes..." class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+            <select id="kgFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+              ${filters.map(f => `<option value="${f}" ${kg.filter===f?'selected':''}>${f === 'all' ? 'All Types' : f}</option>`).join('')}
+            </select>
+          </div>
+
+          <div class="grid xl:grid-cols-[1fr_290px] gap-4">
+            <div class="bg-[#08101a] border border-zinc-800 rounded-xl p-2">
+              <canvas id="kgCanvas" width="1080" height="620" class="w-full h-[56vh] sm:h-[62vh] max-h-[720px] bg-[#050a12] rounded-lg"></canvas>
+              <p class="text-xs text-zinc-400 px-2 pt-2">Drag nodes, scroll to zoom, drag empty space to pan, click to open item.</p>
+            </div>
+            <aside class="bg-[#0b111a] border border-zinc-800 rounded-xl p-3 space-y-2 max-h-[62vh] overflow-auto scrollbar-thin">
+              <p class="text-xs uppercase tracking-wide text-cyan-300">Nodes (${visibleNodes.length})</p>
+              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-cyan-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-cyan-300">Show Related</button></div>`).join('') || '<p class="text-sm text-zinc-500">No nodes for current filters.</p>'}
+            </aside>
+          </div>
+        </section>
+      `;
+
+      document.getElementById('kgSearch').oninput = (e) => { kg.search = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
+      document.getElementById('kgFilter').onchange = (e) => { kg.filter = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
+      document.getElementById('exportKnowledgeGraph').onclick = () => downloadJSON('knowledge-graph.json', { exportedAt: new Date().toISOString(), nodes: graph.nodes, edges: graph.edges });
+      el.querySelectorAll('[data-kg-open]').forEach(btn => btn.onclick = () => openReference(btn.dataset.kgOpen));
+      el.querySelectorAll('[data-show-related]').forEach(btn => btn.onclick = (evt) => { evt.stopPropagation(); showRelated(btn.dataset.showRelated); });
+
+      const canvas = document.getElementById('kgCanvas');
+      if (!canvas || !visibleNodes.length) return;
+      const ctx = canvas.getContext('2d');
+      const palette = { 'Page': '#00d4ff', 'Note': '#7c9cff', 'Daily Note': '#6ee7b7', 'Task': '#f59e0b', 'Research': '#c084fc', 'Mention': '#f472b6' };
+      const dpr = window.devicePixelRatio || 1;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const layout = visibleNodes.map((node, idx) => ({ ...node, x: (width / 2) + Math.cos((idx / Math.max(1, visibleNodes.length)) * Math.PI * 2) * Math.min(width, height) * 0.22, y: (height / 2) + Math.sin((idx / Math.max(1, visibleNodes.length)) * Math.PI * 2) * Math.min(width, height) * 0.22, vx: 0, vy: 0 }));
+      const map = new Map(layout.map(n => [n.ref, n]));
+      const edgeLayout = visibleEdges.map(e => ({ ...e, a: map.get(e.from), b: map.get(e.to) })).filter(e => e.a && e.b);
+
+      for (let i = 0; i < 130; i++) {
+        layout.forEach(a => {
+          layout.forEach(b => {
+            if (a === b) return;
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.max(30, Math.hypot(dx, dy));
+            const repel = 800 / (dist * dist);
+            a.vx += (dx / dist) * repel;
+            a.vy += (dy / dist) * repel;
+          });
+        });
+        edgeLayout.forEach(edge => {
+          const dx = edge.b.x - edge.a.x;
+          const dy = edge.b.y - edge.a.y;
+          const dist = Math.max(1, Math.hypot(dx, dy));
+          const target = 140;
+          const pull = (dist - target) * 0.0009;
+          edge.a.vx += dx * pull;
+          edge.a.vy += dy * pull;
+          edge.b.vx -= dx * pull;
+          edge.b.vy -= dy * pull;
+        });
+        layout.forEach(n => {
+          n.vx *= 0.9;
+          n.vy *= 0.9;
+          n.x = Math.max(20, Math.min(width - 20, n.x + n.vx));
+          n.y = Math.max(20, Math.min(height - 20, n.y + n.vy));
+        });
+      }
+
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let dragNode = null;
+      let panning = false;
+      let moved = false;
+      let last = { x: 0, y: 0 };
+
+      const toGraph = (evt) => {
+        const rect = canvas.getBoundingClientRect();
+        return { x: (evt.clientX - rect.left - offsetX) / scale, y: (evt.clientY - rect.top - offsetY) / scale };
+      };
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+        ctx.scale(scale, scale);
+
+        edgeLayout.forEach(edge => {
+          ctx.strokeStyle = 'rgba(0,212,255,0.28)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(edge.a.x, edge.a.y);
+          ctx.lineTo(edge.b.x, edge.b.y);
+          ctx.stroke();
+        });
+
+        layout.forEach(node => {
+          const radius = 8 + Math.min(14, node.connected * 0.8);
+          const isFocus = kg.focusRef && (node.ref === kg.focusRef || edgeLayout.some(e => (e.from===kg.focusRef && e.to===node.ref) || (e.to===kg.focusRef && e.from===node.ref)));
+          ctx.fillStyle = palette[node.type] || '#00d4ff';
+          ctx.globalAlpha = kg.focusRef ? (isFocus ? 1 : 0.2) : 1;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = isFocus ? '#ffffff' : 'rgba(255,255,255,0.2)';
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.92;
+          ctx.fillStyle = '#e5e7eb';
+          ctx.font = '12px Inter, sans-serif';
+          ctx.fillText(node.label.slice(0, 30), node.x + radius + 4, node.y + 4);
+        });
+
+        ctx.restore();
+      }
+
+      const hitNode = (evt) => {
+        const p = toGraph(evt);
+        return [...layout].reverse().find(node => Math.hypot(node.x - p.x, node.y - p.y) <= 14 + Math.min(14, node.connected * 0.8));
+      };
+
+      draw();
+      canvas.onwheel = (evt) => {
+        evt.preventDefault();
+        const delta = evt.deltaY < 0 ? 1.08 : 0.92;
+        scale = Math.max(0.45, Math.min(2.4, scale * delta));
+        draw();
+      };
+      canvas.onmousedown = (evt) => {
+        const hit = hitNode(evt);
+        last = { x: evt.clientX, y: evt.clientY };
+        moved = false;
+        if (hit) dragNode = hit;
+        else panning = true;
+      };
+      canvas.onmousemove = (evt) => {
+        if (!dragNode && !panning) return;
+        const dx = evt.clientX - last.x;
+        const dy = evt.clientY - last.y;
+        last = { x: evt.clientX, y: evt.clientY };
+        moved = moved || Math.abs(dx) > 2 || Math.abs(dy) > 2;
+        if (dragNode) {
+          dragNode.x += dx / scale;
+          dragNode.y += dy / scale;
+        } else if (panning) {
+          offsetX += dx;
+          offsetY += dy;
+        }
+        draw();
+      };
+      canvas.onmouseup = (evt) => {
+        const hit = hitNode(evt);
+        dragNode = null;
+        panning = false;
+        if (hit && !moved) openReference(hit.ref);
+      };
+      canvas.onmouseleave = () => { dragNode = null; panning = false; };
     }
 
     function renderSettings() {
