@@ -10,220 +10,311 @@
         theme: {
           extend: {
             colors: {
-              baryaBg: "#0a0a0a",
-              baryaPanel: "#111111",
-              baryaCard: "#161616",
-              baryaBorder: "#232323",
-              baryaAccent: "#00d4ff",
-              baryaMuted: "#9ca3af",
-              baryaText: "#f3f4f6",
+              bg: '#0a0a0a',
+              panel: '#111111',
+              muted: '#171717',
+              accent: '#00d4ff'
             },
             boxShadow: {
-              glow: "0 0 0 1px rgba(0, 212, 255, 0.35), 0 0 24px rgba(0, 212, 255, 0.15)",
+              glow: '0 0 0 1px rgba(0,212,255,0.35), 0 12px 30px rgba(0,212,255,0.08)'
             },
-          },
-        },
+            animation: {
+              pulseSoft: 'pulseSoft 2s ease-in-out infinite'
+            },
+            keyframes: {
+              pulseSoft: {
+                '0%, 100%': { opacity: 0.72 },
+                '50%': { opacity: 1 }
+              }
+            }
+          }
+        }
       };
     </script>
+    <style>
+      .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+      .scrollbar-thin::-webkit-scrollbar-track { background: #0f0f0f; }
+      .scrollbar-thin::-webkit-scrollbar-thumb { background: #272727; border-radius: 9999px; }
+      .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #3b3b3b; }
+    </style>
   </head>
-  <body class="bg-baryaBg text-baryaText antialiased">
+  <body class="bg-bg text-zinc-100 antialiased">
     <div class="min-h-screen">
+      <!-- Mobile Sidebar Backdrop -->
+      <div id="sidebarBackdrop" class="fixed inset-0 z-30 hidden bg-black/60 lg:hidden"></div>
+
+      <!-- Sidebar -->
       <aside
         id="sidebar"
-        class="fixed inset-y-0 left-0 z-40 w-[270px] -translate-x-full border-r border-baryaBorder bg-baryaPanel transition-transform duration-300 lg:translate-x-0"
+        class="fixed left-0 top-0 z-40 flex h-full w-[270px] -translate-x-full flex-col bg-panel border-r border-zinc-800/80 p-5 transition-transform duration-300 lg:translate-x-0"
       >
-        <div class="flex h-full flex-col justify-between p-5">
-          <div>
-            <div class="mb-8">
-              <h1 class="text-2xl font-semibold tracking-wide text-white">Barya</h1>
-              <p class="mt-1 text-sm text-baryaMuted">Business AI</p>
-            </div>
-
-            <nav class="space-y-2" id="navMenu">
-              <button data-tab="dashboard" class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition">
-                <span>📊</span><span>Dashboard</span>
-              </button>
-              <button data-tab="chat" class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition">
-                <span>💬</span><span>Barya AI</span>
-              </button>
-              <button data-tab="memory" class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition">
-                <span>🧠</span><span>Memory</span>
-              </button>
-              <button data-tab="planning" class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition">
-                <span>🗂️</span><span>Business Planning</span>
-              </button>
-              <button data-tab="settings" class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition">
-                <span>⚙️</span><span>Settings</span>
-              </button>
-            </nav>
+        <div>
+          <div class="mb-8">
+            <h1 class="text-2xl font-semibold tracking-tight">Barya</h1>
+            <p class="text-xs text-zinc-400 mt-1 uppercase tracking-[0.18em]">Business AI</p>
           </div>
 
-          <div class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3">
-            <p class="inline-flex items-center gap-2 text-xs font-semibold text-emerald-300">
-              <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
-              Local-First • On Device
-            </p>
+          <nav class="space-y-2" id="navTabs">
+            <button data-target="dashboard" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition">
+              <span class="text-base">📊</span>
+              <span>Dashboard</span>
+            </button>
+            <button data-target="barya-ai" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
+              <span class="text-base">🤖</span>
+              <span>Barya AI</span>
+            </button>
+            <button data-target="memory" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
+              <span class="text-base">🧠</span>
+              <span>Memory</span>
+            </button>
+            <button data-target="planning" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
+              <span class="text-base">🗺️</span>
+              <span>Business Planning</span>
+            </button>
+            <button data-target="settings" class="nav-item group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-300 hover:bg-zinc-800/70 hover:text-white transition">
+              <span class="text-base">⚙️</span>
+              <span>Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="mt-auto">
+          <div class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-300 animate-pulseSoft">
+            <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 mr-2 align-middle"></span>
+            Local-First • On Device
           </div>
         </div>
       </aside>
 
-      <div id="sidebarBackdrop" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden"></div>
-
-      <header class="fixed top-0 left-0 right-0 z-20 border-b border-baryaBorder bg-baryaBg/95 backdrop-blur lg:left-[270px]">
-        <div class="flex h-14 items-center justify-between gap-4 px-4 sm:px-6">
+      <!-- Main Wrapper -->
+      <div class="lg:pl-[270px]">
+        <!-- Header -->
+        <header class="fixed right-0 top-0 z-20 flex h-16 w-full items-center justify-between border-b border-zinc-800/80 bg-bg/95 px-4 backdrop-blur lg:w-[calc(100%-270px)] lg:px-8">
           <div class="flex items-center gap-3">
-            <button id="menuToggle" class="rounded-md border border-baryaBorder bg-baryaPanel p-2 text-sm text-baryaMuted hover:text-baryaAccent lg:hidden" aria-label="Toggle menu">
+            <button id="menuBtn" class="rounded-lg border border-zinc-800 p-2 text-zinc-300 hover:text-white hover:border-zinc-700 lg:hidden" aria-label="Open menu">
               ☰
             </button>
-            <div
-              id="projectTitle"
-              contenteditable="true"
-              spellcheck="false"
-              class="rounded-md px-2 py-1 text-sm font-semibold text-white outline-none ring-baryaAccent/40 transition focus:ring"
-            >
-              Untitled Startup
+            <div>
+              <p class="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Project</p>
+              <h2 id="projectTitle" contenteditable="true" class="outline-none text-lg font-semibold leading-tight focus:text-accent">Untitled Startup</h2>
             </div>
           </div>
+
           <div class="flex items-center gap-3">
-            <span class="rounded-full border border-baryaAccent/50 bg-baryaAccent/10 px-2 py-1 text-[11px] font-medium text-baryaAccent">Local-First</span>
-            <div class="hidden text-right sm:block">
-              <p class="text-sm font-medium text-white">Shruti Barya</p>
+            <span class="hidden sm:inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300">Local-First</span>
+            <div class="text-right hidden sm:block">
+              <p class="text-sm font-medium">Shruti Barya</p>
+              <p class="text-xs text-zinc-500">Founder Workspace</p>
             </div>
-            <div class="grid h-8 w-8 place-items-center rounded-full bg-baryaAccent/20 text-sm font-semibold text-baryaAccent">SB</div>
+            <div class="grid h-9 w-9 place-items-center rounded-full bg-zinc-800 text-sm font-semibold text-accent ring-1 ring-zinc-700">SB</div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main class="pt-16 lg:pl-[270px]">
-        <div class="mx-auto max-w-6xl p-4 sm:p-6">
-          <section id="tab-dashboard" class="tab-panel space-y-6">
-            <div class="rounded-2xl border border-baryaBorder bg-baryaCard p-5 shadow-glow sm:p-6">
-              <h2 class="mb-4 text-lg font-semibold text-white">Magic Preview</h2>
-              <textarea
-                class="h-40 w-full resize-none rounded-xl border border-baryaBorder bg-black/20 p-4 text-sm text-white outline-none transition placeholder:text-baryaMuted focus:border-baryaAccent"
-                placeholder="Describe your startup idea..."
-              ></textarea>
-              <div class="mt-4 flex flex-wrap gap-3">
-                <button class="rounded-lg bg-baryaAccent px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110">Deep Analysis (AI)</button>
-                <button class="rounded-lg border border-baryaBorder bg-baryaPanel px-4 py-2 text-sm font-medium text-white transition hover:border-baryaAccent/60 hover:text-baryaAccent">Quick Blueprint</button>
+        <!-- Content -->
+        <main class="px-4 pb-8 pt-20 lg:px-8">
+          <!-- Dashboard -->
+          <section id="dashboard" class="tab-panel space-y-6">
+            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6 shadow-glow">
+              <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h3 class="text-xl font-semibold">Strategy Generator</h3>
+                <button class="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-200 hover:border-zinc-600 hover:bg-zinc-800 transition">Reload Saved Idea</button>
+              </div>
+
+              <label for="ideaInput" class="mb-2 block text-sm font-medium text-zinc-300">Describe your startup idea</label>
+              <textarea id="ideaInput" rows="8" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-zinc-200 placeholder-zinc-500 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">AI-native procurement copilot for mid-market manufacturing companies...</textarea>
+
+              <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <button class="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-black hover:brightness-110 transition">Deep Analysis (AI)</button>
+                <button class="rounded-xl border border-zinc-600 bg-zinc-900 px-5 py-3 text-sm font-semibold text-zinc-100 hover:border-zinc-500 hover:bg-zinc-800 transition">Quick Blueprint</button>
               </div>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-3">
-              <article class="rounded-xl border border-baryaBorder bg-baryaCard p-4">
-                <p class="text-xs uppercase tracking-wide text-baryaMuted">Income</p>
-                <p class="mt-2 text-2xl font-semibold text-white">₹3,20,000</p>
+            <div class="grid gap-4 md:grid-cols-3">
+              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
+                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Income</p>
+                <p class="mt-2 text-2xl font-semibold text-emerald-300">$128,400</p>
+                <p class="mt-1 text-xs text-zinc-500">Monthly recurring estimate</p>
               </article>
-              <article class="rounded-xl border border-baryaBorder bg-baryaCard p-4">
-                <p class="text-xs uppercase tracking-wide text-baryaMuted">Expenses</p>
-                <p class="mt-2 text-2xl font-semibold text-white">₹1,90,000</p>
+              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
+                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Expenses</p>
+                <p class="mt-2 text-2xl font-semibold text-amber-300">$61,250</p>
+                <p class="mt-1 text-xs text-zinc-500">Team + infra + tools</p>
               </article>
-              <article class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                <p class="text-xs uppercase tracking-wide text-emerald-300">Net Savings</p>
-                <p class="mt-2 text-2xl font-semibold text-emerald-300">₹1,30,000</p>
+              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
+                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Net Savings</p>
+                <p class="mt-2 text-2xl font-semibold text-accent">$67,150</p>
+                <p class="mt-1 text-xs text-zinc-500">Projected monthly runway boost</p>
               </article>
             </div>
           </section>
 
-          <section id="tab-chat" class="tab-panel hidden">
-            <div class="flex min-h-[70vh] flex-col rounded-2xl border border-baryaBorder bg-baryaCard">
-              <div class="space-y-4 border-b border-baryaBorder p-5">
-                <div class="max-w-xl rounded-xl bg-black/20 p-3 text-sm text-white">Hi Shruti — share your startup idea and I’ll generate a market-first plan.</div>
-                <div class="ml-auto max-w-xl rounded-xl bg-baryaAccent/15 p-3 text-sm text-baryaAccent">Build an AI tool for D2C founders in India.</div>
+          <!-- Barya AI -->
+          <section id="barya-ai" class="tab-panel hidden">
+            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
+              <div class="mb-5">
+                <h3 class="text-xl font-semibold">Barya AI Chat</h3>
+                <p class="text-sm text-zinc-400 mt-1">Ask for strategic guidance, market sizing, or GTM planning.</p>
               </div>
-              <div class="mt-auto flex gap-3 p-5">
-                <input class="w-full rounded-xl border border-baryaBorder bg-black/20 px-4 py-2.5 text-sm outline-none transition placeholder:text-baryaMuted focus:border-baryaAccent" placeholder="Ask Barya AI anything..." />
-                <button class="rounded-xl bg-baryaAccent px-4 py-2 text-sm font-semibold text-black">Send</button>
+
+              <div class="space-y-4 max-h-[420px] overflow-y-auto pr-2 scrollbar-thin">
+                <div class="rounded-xl border border-zinc-700 bg-zinc-900/60 p-4">
+                  <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">You</p>
+                  <p class="mt-2 text-sm">What should be our wedge into manufacturing procurement?</p>
+                </div>
+                <div class="rounded-xl border border-accent/30 bg-accent/10 p-4">
+                  <p class="text-xs uppercase tracking-[0.12em] text-accent">Barya AI</p>
+                  <div class="mt-2 space-y-2 text-sm text-zinc-100">
+                    <p><strong>Recommended wedge:</strong> Start with supplier quote normalization and negotiation prep.</p>
+                    <ul class="list-disc space-y-1 pl-5 text-zinc-300">
+                      <li>Immediate ROI: 5–9% sourcing savings in 90 days.</li>
+                      <li>Low integration friction: ingest emails, PDFs, and ERP exports.</li>
+                      <li>Expand into contract intelligence and reorder forecasting.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5 flex gap-3">
+                <input type="text" placeholder="Ask Barya AI anything..." class="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
+                <button class="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-black hover:brightness-110">Send</button>
               </div>
             </div>
           </section>
 
-          <section id="tab-memory" class="tab-panel hidden">
-            <div class="rounded-2xl border border-baryaBorder bg-baryaCard p-5 sm:p-6">
-              <h2 class="text-lg font-semibold text-white">Founder Memory</h2>
-              <p class="mt-1 text-sm text-baryaMuted">Save insights, tasks, and decisions so your AI context stays sharp.</p>
-              <textarea class="mt-4 h-56 w-full rounded-xl border border-baryaBorder bg-black/20 p-4 text-sm outline-none focus:border-baryaAccent" placeholder="Write key notes or customer learnings..."></textarea>
-            </div>
-          </section>
+          <!-- Memory -->
+          <section id="memory" class="tab-panel hidden">
+            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
+              <h3 class="text-xl font-semibold">Memory</h3>
+              <p class="mt-1 text-sm text-zinc-400">Saved insights and founder notes across sessions.</p>
 
-          <section id="tab-planning" class="tab-panel hidden">
-            <div class="rounded-2xl border border-baryaBorder bg-baryaCard p-5 sm:p-6">
-              <h2 class="text-lg font-semibold text-white">Business Planning</h2>
-              <p class="mt-2 text-sm text-baryaMuted">Startup guides and templates will appear here:</p>
-              <ul class="mt-4 space-y-2 text-sm text-white">
-                <li class="rounded-lg border border-baryaBorder bg-black/20 px-3 py-2">• MVP Validation Checklist</li>
-                <li class="rounded-lg border border-baryaBorder bg-black/20 px-3 py-2">• Go-To-Market Blueprint</li>
-                <li class="rounded-lg border border-baryaBorder bg-black/20 px-3 py-2">• Fundraising Data Room Template</li>
-              </ul>
-            </div>
-          </section>
-
-          <section id="tab-settings" class="tab-panel hidden">
-            <div class="rounded-2xl border border-baryaBorder bg-baryaCard p-5 sm:p-6">
-              <h2 class="text-lg font-semibold text-white">Settings</h2>
-              <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                <label class="text-sm">
-                  <span class="mb-2 block text-baryaMuted">Profile Name</span>
-                  <input value="Shruti Barya" class="w-full rounded-xl border border-baryaBorder bg-black/20 px-3 py-2 text-white outline-none focus:border-baryaAccent" />
-                </label>
-                <label class="text-sm">
-                  <span class="mb-2 block text-baryaMuted">Focus Mode</span>
-                  <select class="w-full rounded-xl border border-baryaBorder bg-black/20 px-3 py-2 text-white outline-none focus:border-baryaAccent">
-                    <option>Enabled</option>
-                    <option>Disabled</option>
-                  </select>
-                </label>
+              <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <p class="text-sm font-medium">Pricing Insight</p>
+                  <p class="mt-2 text-sm text-zinc-300">Mid-market buyers accept value-based pricing once procurement cycle time drops by 20%.</p>
+                </article>
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <p class="text-sm font-medium">Customer Signal</p>
+                  <p class="mt-2 text-sm text-zinc-300">Top pain: manual quote comparison across fragmented supplier formats.</p>
+                </article>
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 md:col-span-2">
+                  <p class="text-sm font-medium">Founder Note</p>
+                  <textarea rows="4" class="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent">Prioritize pilot with 3 plants. Need baseline metrics by May.</textarea>
+                </article>
               </div>
             </div>
           </section>
-        </div>
-      </main>
+
+          <!-- Planning -->
+          <section id="planning" class="tab-panel hidden">
+            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
+              <h3 class="text-xl font-semibold">Business Planning</h3>
+              <p class="mt-1 text-sm text-zinc-400">4 Core Startup Guides + working templates.</p>
+
+              <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <h4 class="font-medium">1) Problem & ICP Guide</h4>
+                  <p class="mt-2 text-sm text-zinc-300">Define customer segment, pain priority, and urgency score.</p>
+                  <button class="mt-3 text-sm text-accent hover:underline">Open Template</button>
+                </article>
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <h4 class="font-medium">2) Offer & Positioning Guide</h4>
+                  <p class="mt-2 text-sm text-zinc-300">Map value prop, core promise, and proof points for buyers.</p>
+                  <button class="mt-3 text-sm text-accent hover:underline">Open Template</button>
+                </article>
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <h4 class="font-medium">3) GTM Motion Guide</h4>
+                  <p class="mt-2 text-sm text-zinc-300">Select channels, pilot structure, and weekly growth metrics.</p>
+                  <button class="mt-3 text-sm text-accent hover:underline">Open Template</button>
+                </article>
+                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                  <h4 class="font-medium">4) Financial Plan Guide</h4>
+                  <p class="mt-2 text-sm text-zinc-300">Build first-year assumptions, runway model, and scenario plans.</p>
+                  <button class="mt-3 text-sm text-accent hover:underline">Open Template</button>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <!-- Settings -->
+          <section id="settings" class="tab-panel hidden">
+            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
+              <h3 class="text-xl font-semibold">Settings</h3>
+              <p class="mt-1 text-sm text-zinc-400">Profile and workspace preferences.</p>
+
+              <div class="mt-5 grid gap-5 md:grid-cols-2">
+                <div class="space-y-3">
+                  <label class="text-sm text-zinc-300">Display Name</label>
+                  <input value="Shruti Barya" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-accent" />
+                </div>
+                <div class="space-y-3">
+                  <label class="text-sm text-zinc-300">Primary Email</label>
+                  <input value="shruti@barya.ai" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-accent" />
+                </div>
+                <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 md:col-span-2">
+                  <p class="text-sm font-medium">Preferences</p>
+                  <div class="mt-3 space-y-2 text-sm text-zinc-300">
+                    <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-[#00d4ff]" /> Enable local autosave</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-[#00d4ff]" /> Show strategic suggestions inline</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" class="accent-[#00d4ff]" /> Compact mode</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
 
     <script>
-      const navItems = document.querySelectorAll(".nav-item");
-      const panels = document.querySelectorAll(".tab-panel");
-      const sidebar = document.getElementById("sidebar");
-      const backdrop = document.getElementById("sidebarBackdrop");
-      const menuToggle = document.getElementById("menuToggle");
+      const navButtons = document.querySelectorAll('.nav-item');
+      const panels = document.querySelectorAll('.tab-panel');
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      const menuBtn = document.getElementById('menuBtn');
 
-      function setActiveTab(tab) {
-        navItems.forEach((item) => {
-          const active = item.dataset.tab === tab;
-          item.classList.toggle("bg-baryaAccent/15", active);
-          item.classList.toggle("text-baryaAccent", active);
-          item.classList.toggle("text-baryaMuted", !active);
-          item.classList.toggle("hover:bg-white/5", !active);
-          item.classList.toggle("hover:text-white", !active);
-        });
-
+      function activateTab(targetId) {
         panels.forEach((panel) => {
-          panel.classList.toggle("hidden", panel.id !== `tab-${tab}`);
+          panel.classList.toggle('hidden', panel.id !== targetId);
         });
 
-        if (window.innerWidth < 1024) {
-          closeSidebar();
-        }
+        navButtons.forEach((button) => {
+          const isActive = button.dataset.target === targetId;
+          button.classList.toggle('bg-zinc-800', isActive);
+          button.classList.toggle('text-white', isActive);
+          button.classList.toggle('text-zinc-300', !isActive);
+          button.classList.toggle('hover:bg-zinc-800/70', !isActive);
+        });
       }
 
       function openSidebar() {
-        sidebar.classList.remove("-translate-x-full");
-        backdrop.classList.remove("hidden");
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
       }
 
       function closeSidebar() {
-        sidebar.classList.add("-translate-x-full");
-        backdrop.classList.add("hidden");
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
       }
 
-      navItems.forEach((item) => {
-        item.addEventListener("click", () => setActiveTab(item.dataset.tab));
+      navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          activateTab(button.dataset.target);
+          if (window.innerWidth < 1024) closeSidebar();
+        });
       });
 
-      menuToggle.addEventListener("click", openSidebar);
-      backdrop.addEventListener("click", closeSidebar);
+      menuBtn.addEventListener('click', openSidebar);
+      backdrop.addEventListener('click', closeSidebar);
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          backdrop.classList.add('hidden');
+          sidebar.classList.remove('-translate-x-full');
+        } else {
+          sidebar.classList.add('-translate-x-full');
+        }
+      });
 
-      setActiveTab("dashboard");
+      activateTab('dashboard');
     </script>
   </body>
 </html>
