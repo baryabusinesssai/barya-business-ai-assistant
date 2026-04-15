@@ -36,6 +36,24 @@
       .scrollbar-thin::-webkit-scrollbar-track { background: #0f0f0f; }
       .scrollbar-thin::-webkit-scrollbar-thumb { background: #272727; border-radius: 9999px; }
       .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #3b3b3b; }
+      .strategy-card {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(39, 39, 42, 0.38));
+        backdrop-filter: blur(16px);
+      }
+      .step-dot-active {
+        box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.15), 0 0 20px rgba(0, 212, 255, 0.35);
+      }
+      .progress-shimmer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.22) 45%, transparent 100%);
+        transform: translateX(-120%);
+        animation: shimmer 1.6s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        100% { transform: translateX(120%); }
+      }
     </style>
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -193,6 +211,52 @@
                   </div>
                 </div>
               </article>
+            <div class="rounded-2xl border border-zinc-700/80 bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-5 shadow-glow sm:p-6">
+              <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h3 class="text-2xl font-bold tracking-tight text-zinc-100">Strategy <span class="text-accent">Generator</span></h3>
+                <button id="reloadIdeaBtn" class="rounded-lg border border-accent/45 bg-slate-950/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-zinc-200 hover:-translate-y-0.5 hover:border-accent hover:bg-slate-900 transition-all duration-300">Reload Saved Idea</button>
+              </div>
+
+              <label for="ideaInput" class="mb-2 block text-sm font-semibold text-zinc-200">Describe your startup idea</label>
+              <textarea id="ideaInput" rows="8" class="w-full rounded-2xl border border-zinc-700/90 bg-zinc-950/85 px-5 py-4 text-sm leading-relaxed text-zinc-100 placeholder-zinc-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition duration-300 focus:border-accent focus:ring-2 focus:ring-accent/30" placeholder="AI-native procurement copilot for mid-market manufacturing companies...">AI-native procurement copilot for mid-market manufacturing companies...</textarea>
+
+              <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <button id="deepAnalysisBtn" class="rounded-2xl bg-[#00d4ff] px-5 py-4 text-base font-bold text-black shadow-[0_10px_30px_rgba(0,212,255,0.28)] hover:-translate-y-0.5 hover:brightness-110 transition-all duration-300">Deep Analysis (AI)</button>
+                <button id="quickBlueprintBtn" class="rounded-2xl border border-zinc-500 bg-zinc-900/70 px-5 py-4 text-base font-semibold text-zinc-100 hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-800/90 transition-all duration-300">Quick Blueprint</button>
+              </div>
+
+              <div id="strategyProgressWrap" class="mt-6 hidden rounded-2xl border border-zinc-700/80 bg-zinc-900/50 p-4">
+                <p id="strategyProgressLabel" class="mb-4 text-sm font-medium text-zinc-300">Preparing strategic intelligence...</p>
+                <div class="relative h-2 overflow-hidden rounded-full bg-zinc-800">
+                  <div id="strategyProgressBar" class="progress-shimmer relative h-full w-0 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"></div>
+                </div>
+                <div id="strategyStepper" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
+              </div>
+
+              <div id="strategyResults" class="mt-6 hidden">
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <article class="strategy-card rounded-2xl border border-white/10 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Competitive Edge</p>
+                    <p id="edgeText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
+                  </article>
+                  <article class="strategy-card rounded-2xl border border-white/10 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Marketing Hack</p>
+                    <p id="marketingText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
+                  </article>
+                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Tech Stack Suggestion</p>
+                    <p id="techText" class="mt-2 text-sm leading-relaxed text-zinc-100"></p>
+                  </article>
+                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">GTM Roadmap</p>
+                    <ul id="roadmapList" class="mt-2 list-disc space-y-2 pl-5 text-sm text-zinc-100"></ul>
+                  </article>
+                  <article class="strategy-card rounded-2xl border border-white/10 p-4 md:col-span-2 xl:col-span-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Immediate Founder Actions</p>
+                    <ul id="actionsList" class="mt-2 list-disc space-y-2 pl-5 text-sm text-zinc-100"></ul>
+                  </article>
+                </div>
+              </div>
             </div>
 
             <div class="grid gap-4 xl:grid-cols-3">
@@ -405,6 +469,109 @@
           button.classList.toggle('hover:bg-zinc-800/70', !isActive);
         });
       }
+
+      const ideaInput = document.getElementById('ideaInput');
+      const reloadIdeaBtn = document.getElementById('reloadIdeaBtn');
+      const deepAnalysisBtn = document.getElementById('deepAnalysisBtn');
+      const quickBlueprintBtn = document.getElementById('quickBlueprintBtn');
+      const strategyProgressWrap = document.getElementById('strategyProgressWrap');
+      const strategyProgressLabel = document.getElementById('strategyProgressLabel');
+      const strategyProgressBar = document.getElementById('strategyProgressBar');
+      const strategyStepper = document.getElementById('strategyStepper');
+      const strategyResults = document.getElementById('strategyResults');
+      const edgeText = document.getElementById('edgeText');
+      const marketingText = document.getElementById('marketingText');
+      const techText = document.getElementById('techText');
+      const roadmapList = document.getElementById('roadmapList');
+      const actionsList = document.getElementById('actionsList');
+      let progressTimer = null;
+
+      const savedIdeaKey = 'barya_saved_idea';
+      const stepLabels = [
+        'Mapping Market Gaps...',
+        'Competitive Analysis...',
+        'Building GTM Roadmap...',
+        'Generating Actionable Strategy...'
+      ];
+
+      function buildStepMarkup(activeStep) {
+        strategyStepper.innerHTML = stepLabels
+          .map((label, index) => {
+            const isActive = index <= activeStep;
+            const dotClass = isActive ? 'bg-accent step-dot-active border-transparent' : 'bg-zinc-800 border-zinc-600';
+            const textClass = isActive ? 'text-zinc-100' : 'text-zinc-500';
+            return `
+              <div class="rounded-xl border ${isActive ? 'border-accent/40 bg-accent/10' : 'border-zinc-700 bg-zinc-900/70'} p-3 transition-all duration-300">
+                <div class="flex items-center gap-2">
+                  <span class="h-2.5 w-2.5 rounded-full border ${dotClass} transition-all duration-300"></span>
+                  <p class="text-xs font-medium ${textClass}">${label}</p>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+      }
+
+      function fillResults(mode) {
+        const idea = ideaInput.value.trim() || 'AI startup concept';
+        const focus = mode === 'deep' ? 'defensible depth' : 'rapid go-to-market experiments';
+        edgeText.textContent = `Position as the fastest way for operations leaders to convert fragmented supplier data into savings decisions. Your edge is ${focus} anchored to measurable procurement cycle reduction for "${idea}".`;
+        marketingText.textContent = mode === 'deep'
+          ? 'Launch a benchmarking report showing hidden costs of manual procurement workflows; gate by role and company size, then trigger founder-led teardown calls.'
+          : 'Ship a 7-day blueprint challenge: upload three supplier quotes, receive one board-ready comparison, then upsell to pilot.'
+        techText.textContent = mode === 'deep'
+          ? 'Use a retrieval pipeline (OCR + embeddings), workflow orchestration, and human-in-the-loop approval inside a secure multi-tenant architecture.'
+          : 'Start with OCR + rules engine + lightweight LLM summarization, then layer forecasting and negotiation copilots after proof of ROI.'
+        roadmapList.innerHTML = [
+          'Weeks 1-2: Interview 12 procurement managers and score pains by urgency and spend impact.',
+          'Weeks 3-4: Build pilot MVP for quote normalization with exportable savings dashboard.',
+          'Month 2: Close 2 paid design partners with success metric of 15% cycle-time reduction.',
+          'Month 3: Productize onboarding playbook and case-study driven outbound sequence.'
+        ].map((item) => `<li>${item}</li>`).join('');
+        actionsList.innerHTML = [
+          'Define one-sentence wedge and add it to homepage hero.',
+          'Create ROI calculator for first sales call.',
+          'Pre-schedule 5 founder demos with target logos this week.'
+        ].map((item) => `<li>${item}</li>`).join('');
+      }
+
+      function runStrategyGeneration(mode) {
+        if (progressTimer) clearInterval(progressTimer);
+        localStorage.setItem(savedIdeaKey, ideaInput.value.trim());
+        strategyResults.classList.add('hidden');
+        strategyProgressWrap.classList.remove('hidden');
+        strategyProgressBar.style.width = '0%';
+        buildStepMarkup(-1);
+
+        let step = 0;
+        strategyProgressLabel.textContent = stepLabels[step];
+        progressTimer = setInterval(() => {
+          buildStepMarkup(step);
+          strategyProgressBar.style.width = `${((step + 1) / stepLabels.length) * 100}%`;
+          strategyProgressLabel.textContent = stepLabels[step];
+          step += 1;
+
+          if (step === stepLabels.length) {
+            clearInterval(progressTimer);
+            setTimeout(() => {
+              fillResults(mode);
+              strategyResults.classList.remove('hidden');
+            }, 350);
+          }
+        }, 750);
+      }
+
+      reloadIdeaBtn.addEventListener('click', () => {
+        const saved = localStorage.getItem(savedIdeaKey);
+        if (saved) ideaInput.value = saved;
+        reloadIdeaBtn.textContent = saved ? 'Idea Reloaded' : 'No Saved Idea';
+        setTimeout(() => {
+          reloadIdeaBtn.textContent = 'Reload Saved Idea';
+        }, 1200);
+      });
+
+      deepAnalysisBtn.addEventListener('click', () => runStrategyGeneration('deep'));
+      quickBlueprintBtn.addEventListener('click', () => runStrategyGeneration('quick'));
 
       function openSidebar() {
         sidebar.classList.remove('-translate-x-full');
