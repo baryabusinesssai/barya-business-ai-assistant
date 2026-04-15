@@ -27,10 +27,29 @@
   </script>
   <style>
     :root { color-scheme: dark; }
-    body { background: #0a0a0a; }
+    body {
+      background:
+        radial-gradient(circle at 18% 10%, rgba(0, 212, 255, 0.08), transparent 34%),
+        radial-gradient(circle at 82% 0%, rgba(37, 99, 235, 0.07), transparent 32%),
+        #0a0a0a;
+      font-feature-settings: "ss01", "cv01";
+    }
     .section-panel { display: none; }
     .section-panel.active { display: block; }
     .active-nav { background: rgba(0, 212, 255, 0.14); color: #00d4ff; border-color: rgba(0, 212, 255, 0.25); }
+    .glass-card {
+      background: linear-gradient(135deg, rgba(17, 17, 17, 0.86), rgba(13, 16, 25, 0.76));
+      border: 1px solid rgba(82, 82, 91, 0.55);
+      box-shadow: 0 20px 36px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(14px);
+    }
+    .premium-hover { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease; }
+    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(0, 212, 255, 0.34); box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
+    .soft-input { transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
+    .soft-input:focus { border-color: rgba(0, 212, 255, 0.6); box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.12); }
+    #mainNav button { transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease; }
+    #mainNav button:hover { transform: translateX(2px); }
+    button, a, input, select, textarea { transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
     .ring-progress {
       width: 132px;
       height: 132px;
@@ -51,11 +70,14 @@
     .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #2c2c2c; border-radius: 10px; }
     .scrollbar-thin::-webkit-scrollbar-track { background: #131313; }
+    @media (max-width: 1023px) {
+      #sidebar { width: min(84vw, 290px); }
+    }
   </style>
 </head>
-<body class="text-zinc-100 min-h-screen">
+<body class="text-zinc-100 min-h-screen antialiased">
   <div class="min-h-screen flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#0d0d0d] border-r border-zinc-800 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#0d0d0d]/95 backdrop-blur-xl border-r border-zinc-800 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-lg font-semibold text-barya-accent">Barya Workspace</h1>
@@ -67,12 +89,13 @@
     </aside>
 
     <div class="flex-1 lg:ml-0 w-full">
-      <header class="sticky top-0 z-30 backdrop-blur bg-[#0a0a0a]/90 border-b border-zinc-800 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <header class="sticky top-0 z-30 backdrop-blur-xl bg-[#0a0a0a]/88 border-b border-zinc-800 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
-          <input id="workspaceTitle" class="bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
+          <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
         </div>
         <div class="flex items-center gap-3">
+          <span class="hidden md:inline-flex text-[11px] border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 rounded-full text-cyan-200">⌘/Ctrl+K Search</span>
           <span class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
           <div class="text-right">
             <p class="text-sm font-medium">Shruti Barya</p>
@@ -227,6 +250,9 @@
     let state = loadState();
     let cashflowChart;
     let expenseChart;
+    let persistTimer = null;
+    let latestPersistedSnapshot = '';
+    let renderQueued = false;
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -250,19 +276,46 @@
       return target;
     }
 
+    function persistStateNow() {
+      const snapshot = JSON.stringify(state);
+      if (snapshot === latestPersistedSnapshot) return;
+      latestPersistedSnapshot = snapshot;
+      localStorage.setItem(STORAGE_KEY, snapshot);
+    }
+
+    function schedulePersist(delay = 120) {
+      if (persistTimer) clearTimeout(persistTimer);
+      persistTimer = setTimeout(() => {
+        persistTimer = null;
+        persistStateNow();
+      }, delay);
+    }
+
+    function queueRenderActiveSection() {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(() => {
+        renderQueued = false;
+        renderActiveSection();
+      });
+    }
+
     function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       updateRecommendations();
-      renderActiveSection();
+      schedulePersist(0);
+      queueRenderActiveSection();
     }
 
     function init() {
       ensureKnowledgeGraphState();
       renderNav();
       setupBaseEvents();
+      setupGlobalShortcuts();
       updateRecommendations();
       renderActiveSection();
       document.getElementById('workspaceTitle').value = state.title;
+      latestPersistedSnapshot = JSON.stringify(state);
+      applyThemePreference();
     }
 
     function renderNav() {
@@ -284,7 +337,7 @@
       });
     }
 
-    function saveStateRaw(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function saveStateRaw(){ schedulePersist(80); }
 
     function renderActiveSection() {
       document.querySelectorAll('.section-panel').forEach(el => el.classList.remove('active'));
@@ -297,6 +350,20 @@
       if (state.activeSection === 'planning') renderPlanning();
       if (state.activeSection === 'settings') renderSettings();
       if (state.activeSection === 'knowledge-graph') renderKnowledgeGraph();
+      enhanceSurfacePolish();
+    }
+
+    function enhanceSurfacePolish() {
+      const panel = document.getElementById(`section-${state.activeSection}`);
+      if (!panel) return;
+      panel.querySelectorAll('div, section, article, aside, label').forEach(node => {
+        const c = node.className || '';
+        if (typeof c !== 'string') return;
+        if (!/rounded-(lg|xl|2xl)/.test(c) || !/border/.test(c)) return;
+        node.classList.add('glass-card');
+        node.classList.add('premium-hover');
+      });
+      panel.querySelectorAll('input, textarea, select').forEach(input => input.classList.add('soft-input'));
     }
 
     function setupBaseEvents() {
@@ -310,6 +377,13 @@
       document.getElementById('closeSidebar').onclick = closeSidebar;
       document.getElementById('overlay').onclick = closeSidebar;
       document.getElementById('closeMemoryModal').onclick = () => document.getElementById('memoryModal').close();
+      window.addEventListener('resize', debounce(() => {
+        if (state.activeSection === 'dashboard') renderDashboardCharts();
+      }, 150));
+      window.addEventListener('beforeunload', () => persistStateNow());
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') persistStateNow();
+      });
     }
 
     function openSidebar() {
@@ -319,6 +393,58 @@
     function closeSidebar() {
       document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('overlay').classList.add('hidden');
+    }
+
+    function applyThemePreference() {
+      const isDark = state.settings?.preferences?.darkMode !== false;
+      document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+      document.body.classList.toggle('dark-mode-enabled', isDark);
+    }
+
+    function setupGlobalShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          focusSectionSearch();
+          return;
+        }
+        if (e.key === 'Escape') {
+          closeSidebar();
+          const modal = document.getElementById('memoryModal');
+          if (modal?.open) modal.close();
+        }
+      });
+    }
+
+    function focusSectionSearch() {
+      const searchBySection = {
+        dashboard: ['txCategory'],
+        workspace: ['workspacePageTitle'],
+        tasks: ['taskSearch'],
+        ai: ['chatInput'],
+        memory: ['memorySearch'],
+        planning: ['strategyIdeaInput', 'researchFollowInput'],
+        settings: ['workspaceTitle'],
+        'knowledge-graph': ['kgSearch']
+      };
+      const targets = searchBySection[state.activeSection] || [];
+      for (const id of targets) {
+        const input = document.getElementById(id);
+        if (input) {
+          input.focus();
+          if ('select' in input) input.select();
+          return;
+        }
+      }
+      document.getElementById('workspaceTitle')?.focus();
+    }
+
+    function debounce(fn, wait = 120) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+      };
     }
 
     function money(v){ return `${state.settings.preferences.currency} ${Number(v || 0).toLocaleString()}`; }
@@ -662,7 +788,7 @@
                   <p class="font-medium">${escapeHTML(exp.name)}</p>
                   <p class="text-sm text-zinc-300">${money(exp.amount)}</p>
                 </div>
-              `).join('') || '<p class="text-sm text-zinc-500 col-span-3">No expense categories yet.</p>'}
+              `).join('') || emptyStateMarkup('💸', 'No expense categories yet', 'Add your first expense category to unlock better burn insights.', 'col-span-3')}
             </div>
           </div>
 
@@ -707,7 +833,7 @@
                     </div>
                   </div>
                 </li>
-              `).join('') || '<li class="text-zinc-500 text-sm">No transactions yet.</li>'}
+              `).join('') || `<li>${emptyStateMarkup('📭', 'No transactions yet', 'Add an income or expense to start tracking cash movement.')}</li>`}
             </ul>
           </div>
 
@@ -823,6 +949,7 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { labels: { color: '#d4d4d8' } } },
             scales: {
               x: { ticks: { color: '#a1a1aa' }, grid: { color: '#232323' } },
@@ -846,6 +973,7 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: { labels: { color: '#d4d4d8' } }
             }
@@ -2180,7 +2308,7 @@
                         </div>
                         <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML((note.tags || []).join(', ') || 'General')}</p>
                       </button>
-                    `).join('') || '<p class="text-sm text-zinc-500">No notes yet. Create one to get started.</p>'}
+                    `).join('') || emptyStateMarkup('📝', 'No notes yet', 'Create your first note to build long-term founder memory.')}
                   </div>
                 </section>
 
@@ -2262,7 +2390,7 @@
                         <button data-del-action="${action.id}" class="text-red-400 text-xs">Delete</button>
                       </li>
                     `;
-                  }).join('') || '<li class="text-zinc-500 text-sm">No actions yet.</li>'}
+                  }).join('') || `<li>${emptyStateMarkup('🚀', 'No actions yet', 'Capture your next action item and keep execution momentum.')}</li>`}
                 </ul>
               </section>
             </div>
@@ -2607,7 +2735,7 @@
                   <p class="text-sm truncate">${escapeHTML(session.query)}</p>
                   <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
                 </button>
-              `).join('') : `<p class="text-sm text-zinc-500">No research history yet.</p>`}
+              `).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.')}
             </div>
           </div>
         </section>
@@ -2924,7 +3052,7 @@
             </div>
             <aside class="bg-[#0b111a] border border-zinc-800 rounded-xl p-3 space-y-2 max-h-[62vh] overflow-auto scrollbar-thin">
               <p class="text-xs uppercase tracking-wide text-cyan-300">Nodes (${visibleNodes.length})</p>
-              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-cyan-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-cyan-300">Show Related</button></div>`).join('') || '<p class="text-sm text-zinc-500">No nodes for current filters.</p>'}
+              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-cyan-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-cyan-300">Show Related</button></div>`).join('') || emptyStateMarkup('🕸️', 'No graph nodes for this filter', 'Try clearing filters or add linked items from Notes, Tasks, and Workspace.')}
             </aside>
           </div>
         </section>
@@ -3104,6 +3232,16 @@
           <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import All Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>
           <button id="clearAll" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear All Data</button>
         </div>
+
+        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-3">
+          <h3 class="font-semibold text-cyan-200">Keyboard Shortcuts</h3>
+          <div class="grid sm:grid-cols-2 gap-2 text-sm text-zinc-300">
+            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Quick Search</span><kbd class="text-xs text-cyan-200 border border-cyan-500/40 rounded px-1.5 py-0.5">Ctrl/⌘ + K</kbd></p>
+            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Close Sidebar/Modal</span><kbd class="text-xs text-cyan-200 border border-cyan-500/40 rounded px-1.5 py-0.5">Esc</kbd></p>
+          </div>
+          <p class="text-xs text-zinc-500">Tip: shortcuts adapt to the active section and focus the most relevant input.</p>
+          <footer class="pt-2 border-t border-zinc-800 text-center text-sm text-zinc-400">Made with ❤️ for Indian Founders</footer>
+        </div>
       `;
 
       el.querySelectorAll('[data-setting]').forEach(input => {
@@ -3116,16 +3254,17 @@
             state.title = input.value;
             document.getElementById('workspaceTitle').value = input.value;
           }
-          document.documentElement.style.colorScheme = state.settings.preferences.darkMode ? 'dark' : 'light';
+          applyThemePreference();
           saveState();
         };
       });
       document.getElementById('exportAll').onclick = () => downloadJSON('barya-all-data.json', state);
-      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state = deepMerge(structuredClone(defaultState), data); saveState(); renderNav(); document.getElementById('workspaceTitle').value = state.title; });
+      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state = deepMerge(structuredClone(defaultState), data); applyThemePreference(); saveState(); renderNav(); document.getElementById('workspaceTitle').value = state.title; });
       document.getElementById('clearAll').onclick = () => {
         if (!confirm('Clear all local data and reset workspace?')) return;
         localStorage.removeItem(STORAGE_KEY);
         state = structuredClone(defaultState);
+        applyThemePreference();
         saveState();
         renderNav();
         document.getElementById('workspaceTitle').value = state.title;
@@ -3134,6 +3273,14 @@
 
     function inputField(label, settingPath, value, type='text') {
       return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2" /></label>`;
+    }
+
+    function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '') {
+      return `<div class="rounded-xl border border-dashed border-cyan-500/25 bg-cyan-500/5 p-4 text-center ${extraClass}">
+        <p class="text-xl mb-1">${icon}</p>
+        <p class="text-sm font-medium text-cyan-100">${escapeHTML(title)}</p>
+        <p class="text-xs text-zinc-400 mt-1">${escapeHTML(subtitle)}</p>
+      </div>`;
     }
 
     function downloadJSON(filename, data) {
