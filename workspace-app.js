@@ -844,12 +844,14 @@
   }
 
   function renderActivityLog() {
-    const activityList = $('activityLogList');
-    if (!activityList) return;
     const recent = appState.activityLog.slice(0, 5);
-    activityList.innerHTML = recent.length
-      ? recent.map((item) => `<li class="border border-[#eeeeee] rounded px-3 py-2 bg-white text-slate-700">${escapeHTML(item.action)} - ${formatRelativeTime(item.ts)}</li>`).join('')
+    const content = recent.length
+      ? recent.map((item) => `<li class="border border-[#e2e8f0] rounded-xl px-3 py-2.5 bg-white text-slate-700 shadow-sm">${escapeHTML(item.action)} <span class="text-slate-400">· ${formatRelativeTime(item.ts)}</span></li>`).join('')
       : '<li class="text-slate-400">No data yet. Start by adding your first entry.</li>';
+    ['activityLogList', 'dashboardActivityLogList'].forEach((listId) => {
+      const targetList = $(listId);
+      if (targetList) targetList.innerHTML = content;
+    });
   }
 
   function saveTaskManagerTasks() {
@@ -1130,32 +1132,34 @@
     if (comparisonChartEmptyState) comparisonChartEmptyState.style.display = hasComparisonData ? 'none' : 'flex';
 
     if (comparisonChartInstance) comparisonChartInstance.destroy();
-    if (hasComparisonData) comparisonChartInstance = new Chart(comparisonCanvas, {
-      type: 'bar',
-      data: {
-        labels: ['Monthly Totals'],
-        datasets: [
-          {
-            label: 'Income',
-            data: [totals.monthlyIncome],
-            backgroundColor: '#1D4ED8'
-          },
-          {
-            label: 'Expenses',
-            data: [totals.totalExpenses],
-            backgroundColor: '#EF4444'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
+    if (hasComparisonData) {
+      const trend = loadFromStorage(STORAGE_KEYS.netSavingsTrend, []);
+      const recentTrend = Array.isArray(trend) ? trend.slice(-6) : [];
+      const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].slice(-Math.max(2, recentTrend.length));
+      const normalizedTrend = (recentTrend.length ? recentTrend : [totals.netSavings, totals.netSavings]).slice(-monthLabels.length);
+      comparisonChartInstance = new Chart(comparisonCanvas, {
+        type: 'line',
+        data: {
+          labels: monthLabels,
+          datasets: [
+            {
+              label: 'Revenue Growth',
+              data: normalizedTrend,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.12)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
         }
-      }
-    });
+      });
+    }
   }
 
   function renderDashboard() {
@@ -1197,7 +1201,11 @@
 
     if ($('autoRecommendations')) {
       const items = buildRecommendations(totals);
-      $('autoRecommendations').innerHTML = items.map((item) => `<li>${item}</li>`).join('');
+      $('autoRecommendations').innerHTML = items.map((item) => `
+        <li class="rounded-xl border border-[#e2e8f0] bg-white px-3 py-2.5 shadow-sm">
+          <p class="font-medium text-slate-800">${item}</p>
+        </li>
+      `).join('');
     }
 
     generateAIInsights();
