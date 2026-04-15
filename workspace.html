@@ -55,6 +55,7 @@
         100% { transform: translateX(120%); }
       }
     </style>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="bg-bg text-zinc-100 antialiased">
     <div class="min-h-screen">
@@ -132,6 +133,84 @@
         <main class="px-4 pb-8 pt-20 lg:px-8">
           <!-- Dashboard -->
           <section id="dashboard" class="tab-panel space-y-6">
+            <div class="grid gap-4 xl:grid-cols-3">
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Total Income</p>
+                <p class="mt-2 text-3xl font-semibold text-emerald-300">
+                  <span class="metric-editable outline-none" contenteditable="true" data-key="totalIncome" data-type="currency">$0</span>
+                </p>
+                <p class="mt-1 text-xs text-zinc-500">Click value to edit • autosaves locally</p>
+              </article>
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Total Expenses</p>
+                <p class="mt-2 text-3xl font-semibold text-rose-300">
+                  <span class="metric-editable outline-none" contenteditable="true" data-key="totalExpenses" data-type="currency">$0</span>
+                </p>
+                <p class="mt-1 text-xs text-zinc-500">Click value to edit • autosaves locally</p>
+              </article>
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Net Savings</p>
+                    <p class="mt-2 text-3xl font-semibold text-accent" id="netSavingsDisplay">$0</p>
+                    <p class="mt-1 text-xs text-zinc-500" id="netSavingsPercent">0% change</p>
+                  </div>
+                  <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-right">
+                    <p class="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Runway</p>
+                    <p class="text-lg font-semibold text-zinc-100"><span class="metric-editable outline-none" contenteditable="true" data-key="runwayMonths" data-type="number">0</span>m</p>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="grid gap-4 xl:grid-cols-3">
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Startup Readiness Score</p>
+                    <p class="mt-2 text-sm text-zinc-400">Local-only progress tracker</p>
+                  </div>
+                  <button id="downloadReportBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/20">Download PDF Report</button>
+                </div>
+                <div class="mt-5 flex items-center gap-5">
+                  <div class="relative h-28 w-28">
+                    <svg class="h-28 w-28 -rotate-90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" stroke="#1f1f1f" stroke-width="12" fill="none"></circle>
+                      <circle id="readinessCircle" cx="60" cy="60" r="50" stroke="#00d4ff" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="314" stroke-dashoffset="94"></circle>
+                    </svg>
+                    <div id="readinessText" class="absolute inset-0 grid place-items-center text-xl font-semibold text-accent">0%</div>
+                  </div>
+                  <div class="flex-1">
+                    <label class="text-xs uppercase tracking-[0.16em] text-zinc-500" for="readinessRange">Readiness %</label>
+                    <input id="readinessRange" type="range" min="0" max="100" class="mt-2 w-full accent-[#00d4ff]" />
+                    <input id="readinessInput" type="number" min="0" max="100" class="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
+                  </div>
+                </div>
+              </article>
+
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-2">
+                <div class="flex items-center justify-between gap-3">
+                  <h3 class="text-lg font-semibold">Monthly Overview</h3>
+                  <p class="text-xs text-zinc-500">Editable and persistent</p>
+                </div>
+                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
+                    <p class="text-xs text-zinc-500">Income</p>
+                    <p class="mt-1 text-xl font-semibold text-emerald-300"><span class="monthly-editable outline-none" contenteditable="true" data-key="income" data-type="currency">$0</span></p>
+                    <p id="incomeTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
+                  </div>
+                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
+                    <p class="text-xs text-zinc-500">Expenses</p>
+                    <p class="mt-1 text-xl font-semibold text-rose-300"><span class="monthly-editable outline-none" contenteditable="true" data-key="expenses" data-type="currency">$0</span></p>
+                    <p id="expenseTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
+                  </div>
+                  <div class="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
+                    <p class="text-xs text-zinc-500">Net</p>
+                    <p id="monthlyNet" class="mt-1 text-xl font-semibold text-accent">$0</p>
+                    <p id="netTrend" class="mt-1 text-xs text-zinc-400">→ Flat</p>
+                  </div>
+                </div>
+              </article>
             <div class="rounded-2xl border border-zinc-700/80 bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-5 shadow-glow sm:p-6">
               <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 class="text-2xl font-bold tracking-tight text-zinc-100">Strategy <span class="text-accent">Generator</span></h3>
@@ -180,21 +259,50 @@
               </div>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-3">
-              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
-                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Income</p>
-                <p class="mt-2 text-2xl font-semibold text-emerald-300">$128,400</p>
-                <p class="mt-1 text-xs text-zinc-500">Monthly recurring estimate</p>
+            <div class="grid gap-4 xl:grid-cols-3">
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow xl:col-span-2">
+                <div class="mb-3 flex items-center justify-between">
+                  <h3 class="text-lg font-semibold">Revenue Growth Chart</h3>
+                  <p class="text-xs text-zinc-500">Chart.js + localStorage</p>
+                </div>
+                <div class="h-72">
+                  <canvas id="revenueChart"></canvas>
+                </div>
               </article>
-              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
-                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Expenses</p>
-                <p class="mt-2 text-2xl font-semibold text-amber-300">$61,250</p>
-                <p class="mt-1 text-xs text-zinc-500">Team + infra + tools</p>
+
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <h3 class="text-lg font-semibold">Recommendations</h3>
+                <div id="recommendations" class="mt-3 space-y-2 text-sm text-zinc-300"></div>
               </article>
-              <article class="rounded-xl border border-zinc-800 bg-muted p-5">
-                <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Net Savings</p>
-                <p class="mt-2 text-2xl font-semibold text-accent">$67,150</p>
-                <p class="mt-1 text-xs text-zinc-500">Projected monthly runway boost</p>
+            </div>
+
+            <div class="grid gap-4 xl:grid-cols-2">
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-semibold">Recent Activity</h3>
+                  <span class="text-xs text-zinc-500">Saved locally</span>
+                </div>
+                <form id="activityForm" class="mt-4 grid gap-3 sm:grid-cols-3">
+                  <input id="activityDesc" required placeholder="Description" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent sm:col-span-2" />
+                  <input id="activityAmount" required type="number" step="0.01" placeholder="Amount" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
+                  <input id="activityDate" required type="date" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-accent" />
+                  <button class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black hover:brightness-110 sm:col-span-2" type="submit">Add Activity</button>
+                </form>
+                <ul id="activityList" class="mt-4 space-y-2 max-h-56 overflow-y-auto pr-1 scrollbar-thin"></ul>
+              </article>
+
+              <article class="rounded-2xl border border-zinc-800/90 bg-panel/90 p-5 backdrop-blur shadow-glow">
+                <h3 class="text-lg font-semibold">Safety & Backup</h3>
+                <p class="mt-1 text-sm text-zinc-400">Export/import complete dashboard data as JSON.</p>
+                <div class="mt-4 flex flex-wrap gap-3">
+                  <button id="exportDataBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/20">Export All Data</button>
+                  <label class="cursor-pointer rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800">
+                    Import Data
+                    <input id="importDataInput" type="file" accept="application/json" class="hidden" />
+                  </label>
+                  <button id="clearDataBtn" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/20">Clear All Data</button>
+                </div>
+                <p id="backupMessage" class="mt-3 text-xs text-zinc-500"></p>
               </article>
             </div>
           </section>
@@ -323,6 +431,31 @@
       const backdrop = document.getElementById('sidebarBackdrop');
       const menuBtn = document.getElementById('menuBtn');
 
+      const STORAGE_KEY = 'barya-dashboard-v1';
+      const DASHBOARD_DEFAULTS = {
+        totalIncome: 128400,
+        totalExpenses: 61250,
+        runwayMonths: 11,
+        readinessScore: 68,
+        monthlyOverview: {
+          income: 45200,
+          expenses: 27100,
+          previousIncome: 41800,
+          previousExpenses: 24900
+        },
+        revenueChart: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          values: [32000, 36000, 39500, 42000, 46800, 50200]
+        },
+        activities: [
+          { id: crypto.randomUUID(), description: 'Closed design partner pilot', amount: 12000, date: '2026-03-21' },
+          { id: crypto.randomUUID(), description: 'Cloud infrastructure renewal', amount: -1800, date: '2026-03-28' }
+        ]
+      };
+
+      let dashboardState = loadDashboardState();
+      let revenueChart;
+
       function activateTab(targetId) {
         panels.forEach((panel) => {
           panel.classList.toggle('hidden', panel.id !== targetId);
@@ -450,6 +583,318 @@
         backdrop.classList.add('hidden');
       }
 
+      function safeNumber(value, fallback = 0) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : fallback;
+      }
+
+      function deepMerge(base, incoming) {
+        const merged = structuredClone(base);
+        Object.entries(incoming || {}).forEach(([key, value]) => {
+          if (value && typeof value === 'object' && !Array.isArray(value) && key in merged) {
+            merged[key] = deepMerge(merged[key], value);
+          } else {
+            merged[key] = value;
+          }
+        });
+        return merged;
+      }
+
+      function loadDashboardState() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(DASHBOARD_DEFAULTS);
+        try {
+          return deepMerge(DASHBOARD_DEFAULTS, JSON.parse(raw));
+        } catch {
+          return structuredClone(DASHBOARD_DEFAULTS);
+        }
+      }
+
+      function saveDashboardState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dashboardState));
+      }
+
+      function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(safeNumber(value));
+      }
+
+      function parseEditableNumber(text) {
+        return safeNumber(String(text).replace(/[^0-9.-]/g, ''), 0);
+      }
+
+      function updateMetricDisplays() {
+        document.querySelectorAll('.metric-editable').forEach((el) => {
+          const key = el.dataset.key;
+          const value = safeNumber(dashboardState[key]);
+          el.textContent = el.dataset.type === 'currency' ? formatCurrency(value) : value.toString();
+        });
+
+        const netSavings = safeNumber(dashboardState.totalIncome) - safeNumber(dashboardState.totalExpenses);
+        const netPercent = dashboardState.totalIncome > 0 ? (netSavings / dashboardState.totalIncome) * 100 : 0;
+        const netSavingsDisplay = document.getElementById('netSavingsDisplay');
+        const netSavingsPercent = document.getElementById('netSavingsPercent');
+        netSavingsDisplay.textContent = formatCurrency(netSavings);
+        netSavingsPercent.textContent = `${netPercent >= 0 ? '▲' : '▼'} ${Math.abs(netPercent).toFixed(1)}% change`;
+        netSavingsPercent.className = `mt-1 text-xs ${netPercent >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+      }
+
+      function updateReadinessDisplay() {
+        const score = Math.min(100, Math.max(0, safeNumber(dashboardState.readinessScore)));
+        dashboardState.readinessScore = score;
+        const circumference = 314;
+        const offset = circumference - (score / 100) * circumference;
+
+        document.getElementById('readinessCircle').style.strokeDashoffset = offset;
+        document.getElementById('readinessText').textContent = `${Math.round(score)}%`;
+        document.getElementById('readinessRange').value = score;
+        document.getElementById('readinessInput').value = Math.round(score);
+      }
+
+      function trendText(current, previous, inverse = false) {
+        if (current === previous) return { icon: '→', text: 'Flat', tone: 'text-zinc-400' };
+        const up = current > previous;
+        const positive = inverse ? !up : up;
+        return {
+          icon: up ? '▲' : '▼',
+          text: `${Math.abs(((current - previous) / (previous || 1)) * 100).toFixed(1)}%`,
+          tone: positive ? 'text-emerald-300' : 'text-rose-300'
+        };
+      }
+
+      function updateMonthlyOverview() {
+        const m = dashboardState.monthlyOverview;
+        document.querySelectorAll('.monthly-editable').forEach((el) => {
+          const value = safeNumber(m[el.dataset.key]);
+          el.textContent = formatCurrency(value);
+        });
+
+        const net = safeNumber(m.income) - safeNumber(m.expenses);
+        const previousNet = safeNumber(m.previousIncome) - safeNumber(m.previousExpenses);
+
+        const incomeTrend = trendText(m.income, m.previousIncome);
+        const expenseTrend = trendText(m.expenses, m.previousExpenses, true);
+        const netTrend = trendText(net, previousNet);
+
+        const incomeTrendEl = document.getElementById('incomeTrend');
+        incomeTrendEl.textContent = `${incomeTrend.icon} ${incomeTrend.text}`;
+        incomeTrendEl.className = `mt-1 text-xs ${incomeTrend.tone}`;
+
+        const expenseTrendEl = document.getElementById('expenseTrend');
+        expenseTrendEl.textContent = `${expenseTrend.icon} ${expenseTrend.text}`;
+        expenseTrendEl.className = `mt-1 text-xs ${expenseTrend.tone}`;
+
+        const netTrendEl = document.getElementById('netTrend');
+        netTrendEl.textContent = `${netTrend.icon} ${netTrend.text}`;
+        netTrendEl.className = `mt-1 text-xs ${netTrend.tone}`;
+
+        document.getElementById('monthlyNet').textContent = formatCurrency(net);
+      }
+
+      function renderRecommendations() {
+        const recommendations = [];
+        const runway = safeNumber(dashboardState.runwayMonths);
+        const net = safeNumber(dashboardState.totalIncome) - safeNumber(dashboardState.totalExpenses);
+        const readiness = safeNumber(dashboardState.readinessScore);
+
+        if (runway < 6) {
+          recommendations.push('⚠️ Runway is under 6 months. Reduce burn or secure new funding soon.');
+        } else {
+          recommendations.push('✅ Runway is healthy. Keep at least 6+ months buffer while scaling.');
+        }
+
+        if (net < 0) {
+          recommendations.push('⚠️ You are net negative. Prioritize margin improvements and expense control.');
+        } else {
+          recommendations.push('✅ Positive net savings. Consider reinvesting in customer acquisition.');
+        }
+
+        if (readiness < 70) {
+          recommendations.push('ℹ️ Readiness score is below 70%. Focus on market validation and repeatable GTM motion.');
+        } else {
+          recommendations.push('🚀 Readiness is strong. You can accelerate pilots and fundraising prep.');
+        }
+
+        document.getElementById('recommendations').innerHTML = recommendations
+          .map((item) => `<p class="rounded-lg border border-zinc-800 bg-zinc-950/70 px-3 py-2">${item}</p>`)
+          .join('');
+      }
+
+      function renderActivities() {
+        const list = document.getElementById('activityList');
+        list.innerHTML = '';
+
+        if (!dashboardState.activities.length) {
+          list.innerHTML = '<li class="rounded-lg border border-dashed border-zinc-700 px-3 py-4 text-sm text-zinc-500">No activities yet.</li>';
+          return;
+        }
+
+        dashboardState.activities
+          .slice()
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .forEach((activity) => {
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2';
+            li.innerHTML = `
+              <div>
+                <p class="text-sm text-zinc-100">${activity.description}</p>
+                <p class="text-xs text-zinc-500">${activity.date} • ${formatCurrency(activity.amount)}</p>
+              </div>
+              <button class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-rose-500/20" data-action="delete-activity" data-id="${activity.id}">Delete</button>
+            `;
+            list.appendChild(li);
+          });
+      }
+
+      function syncChartFromState() {
+        if (!revenueChart) return;
+        revenueChart.data.labels = dashboardState.revenueChart.labels;
+        revenueChart.data.datasets[0].data = dashboardState.revenueChart.values;
+        revenueChart.update();
+      }
+
+      function initChart() {
+        const ctx = document.getElementById('revenueChart');
+        revenueChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: dashboardState.revenueChart.labels,
+            datasets: [{
+              label: 'Revenue',
+              data: dashboardState.revenueChart.values,
+              borderColor: '#00d4ff',
+              backgroundColor: 'rgba(0,212,255,0.15)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: '#00d4ff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#d4d4d8' } } },
+            scales: {
+              x: { ticks: { color: '#a1a1aa' }, grid: { color: '#242424' } },
+              y: { ticks: { color: '#a1a1aa' }, grid: { color: '#242424' } }
+            }
+          }
+        });
+      }
+
+      function renderDashboard() {
+        updateMetricDisplays();
+        updateReadinessDisplay();
+        updateMonthlyOverview();
+        renderRecommendations();
+        renderActivities();
+        syncChartFromState();
+      }
+
+      function showBackupMessage(message, tone = 'text-zinc-500') {
+        const msg = document.getElementById('backupMessage');
+        msg.textContent = message;
+        msg.className = `mt-3 text-xs ${tone}`;
+      }
+
+      document.querySelectorAll('.metric-editable').forEach((el) => {
+        el.addEventListener('blur', () => {
+          dashboardState[el.dataset.key] = parseEditableNumber(el.textContent);
+          saveDashboardState();
+          renderDashboard();
+        });
+      });
+
+      document.querySelectorAll('.monthly-editable').forEach((el) => {
+        el.addEventListener('blur', () => {
+          dashboardState.monthlyOverview[el.dataset.key] = parseEditableNumber(el.textContent);
+          saveDashboardState();
+          renderDashboard();
+        });
+      });
+
+      const readinessRange = document.getElementById('readinessRange');
+      const readinessInput = document.getElementById('readinessInput');
+      [readinessRange, readinessInput].forEach((input) => {
+        input.addEventListener('input', (event) => {
+          dashboardState.readinessScore = Math.min(100, Math.max(0, safeNumber(event.target.value)));
+          saveDashboardState();
+          renderDashboard();
+        });
+      });
+
+      document.getElementById('downloadReportBtn').addEventListener('click', () => {
+        const reportData = {
+          generatedAt: new Date().toISOString(),
+          readinessScore: dashboardState.readinessScore,
+          summary: 'Local mock PDF report payload'
+        };
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'startup-readiness-report.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('activityForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const description = document.getElementById('activityDesc').value.trim();
+        const amount = safeNumber(document.getElementById('activityAmount').value);
+        const date = document.getElementById('activityDate').value;
+        if (!description || !date) return;
+
+        dashboardState.activities.push({ id: crypto.randomUUID(), description, amount, date });
+        saveDashboardState();
+        renderDashboard();
+        event.target.reset();
+      });
+
+      document.getElementById('activityList').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="delete-activity"]');
+        if (!button) return;
+        dashboardState.activities = dashboardState.activities.filter((item) => item.id !== button.dataset.id);
+        saveDashboardState();
+        renderDashboard();
+      });
+
+      document.getElementById('exportDataBtn').addEventListener('click', () => {
+        const payload = JSON.stringify(dashboardState, null, 2);
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showBackupMessage('Export complete. Backup downloaded.', 'text-emerald-300');
+      });
+
+      document.getElementById('importDataInput').addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const imported = JSON.parse(await file.text());
+          dashboardState = deepMerge(DASHBOARD_DEFAULTS, imported);
+          saveDashboardState();
+          renderDashboard();
+          showBackupMessage('Import successful. Local data restored.', 'text-emerald-300');
+        } catch {
+          showBackupMessage('Invalid JSON file. Import failed.', 'text-rose-300');
+        }
+        event.target.value = '';
+      });
+
+      document.getElementById('clearDataBtn').addEventListener('click', () => {
+        const confirmed = window.confirm('Clear all dashboard data from this browser? This cannot be undone.');
+        if (!confirmed) return;
+        localStorage.removeItem(STORAGE_KEY);
+        dashboardState = structuredClone(DASHBOARD_DEFAULTS);
+        saveDashboardState();
+        renderDashboard();
+        showBackupMessage('All local dashboard data cleared and reset.', 'text-amber-300');
+      });
+
       navButtons.forEach((button) => {
         button.addEventListener('click', () => {
           activateTab(button.dataset.target);
@@ -469,6 +914,8 @@
       });
 
       activateTab('dashboard');
+      initChart();
+      renderDashboard();
     </script>
   </body>
 </html>
