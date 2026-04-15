@@ -12,31 +12,56 @@
         extend: {
           colors: {
             barya: {
-              bg: '#0a0a0a',
-              card: '#111111',
-              accent: '#00d4ff',
-              soft: '#1a1a1a'
+              bg: '#f8f9fa',
+              card: '#ffffff',
+              accent: '#f97316',
+              soft: '#f1f5f9'
             }
           },
           boxShadow: {
-            neon: '0 0 0 1px rgba(0, 212, 255, 0.3), 0 0 30px rgba(0, 212, 255, 0.12)'
+            neon: '0 0 0 1px rgba(249, 115, 22, 0.3), 0 0 30px rgba(249, 115, 22, 0.12)'
           }
         }
       }
     };
   </script>
   <style>
-    :root { color-scheme: dark; }
+    :root { color-scheme: light; }
     body {
       background:
-        radial-gradient(circle at 18% 10%, rgba(0, 212, 255, 0.08), transparent 34%),
-        radial-gradient(circle at 82% 0%, rgba(37, 99, 235, 0.07), transparent 32%),
-        #0a0a0a;
+        radial-gradient(circle at 18% 10%, rgba(249, 115, 22, 0.08), transparent 34%),
+        radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.07), transparent 32%),
+        #f8f9fa;
       font-feature-settings: "ss01", "cv01";
     }
+
+    /* Light workspace overrides */
+    .light-theme .glass-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      backdrop-filter: none;
+    }
+    .light-theme .active-nav { background: rgba(249, 115, 22, 0.14); color: #ea580c; border-color: rgba(249, 115, 22, 0.35); }
+    .light-theme [class*="bg-zinc"],
+    .light-theme [class*="bg-[#"],
+    .light-theme [class*="bg-black"] { background: #ffffff !important; }
+    .light-theme [class*="border-zinc"] { border-color: #e5e7eb !important; }
+    .light-theme [class*="text-zinc"] { color: #374151 !important; }
+    .light-theme [class*="text-black"] { color: #111111 !important; }
+    .light-theme [class*="text-orange"],
+    .light-theme .text-barya-accent { color: #f97316 !important; }
+    .light-theme [class*="bg-orange"] { background: #f97316 !important; color: #ffffff !important; }
+    .light-theme [class*="border-orange"] { border-color: #fb923c !important; }
+    .light-theme input, .light-theme textarea, .light-theme select { background: #ffffff !important; color: #111827 !important; border-color: #d1d5db !important; }
+    .light-theme .ring-progress { background: conic-gradient(#f97316 var(--pct), #e5e7eb 0); }
+    .light-theme .ring-progress > div { background: #ffffff; border-color: #e5e7eb; }
+    .light-theme .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; }
+    .light-theme .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; }
+
     .section-panel { display: none; }
     .section-panel.active { display: block; }
-    .active-nav { background: rgba(0, 212, 255, 0.14); color: #00d4ff; border-color: rgba(0, 212, 255, 0.25); }
+    .active-nav { background: rgba(249, 115, 22, 0.14); color: #f97316; border-color: rgba(249, 115, 22, 0.25); }
     .glass-card {
       background: linear-gradient(135deg, rgba(17, 17, 17, 0.86), rgba(13, 16, 25, 0.76));
       border: 1px solid rgba(82, 82, 91, 0.55);
@@ -44,9 +69,9 @@
       backdrop-filter: blur(14px);
     }
     .premium-hover { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease; }
-    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(0, 212, 255, 0.34); box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
+    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(249, 115, 22, 0.34); box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
     .soft-input { transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
-    .soft-input:focus { border-color: rgba(0, 212, 255, 0.6); box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.12); }
+    .soft-input:focus { border-color: rgba(249, 115, 22, 0.6); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12); }
     #mainNav button { transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease; }
     #mainNav button:hover { transform: translateX(2px); }
     button, a, input, select, textarea { transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
@@ -54,7 +79,7 @@
       width: 132px;
       height: 132px;
       border-radius: 999px;
-      background: conic-gradient(#00d4ff var(--pct), #202020 0);
+      background: conic-gradient(#f97316 var(--pct), #e5e7eb 0);
       display: grid;
       place-items: center;
     }
@@ -62,22 +87,22 @@
       width: 98px;
       height: 98px;
       border-radius: 999px;
-      background: #111111;
+      background: #ffffff;
       display: grid;
       place-items: center;
-      border: 1px solid #2b2b2b;
+      border: 1px solid #e5e7eb;
     }
     .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #2c2c2c; border-radius: 10px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: #131313; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; }
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
   </style>
 </head>
-<body class="text-zinc-100 min-h-screen antialiased">
+<body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#0d0d0d]/95 backdrop-blur-xl border-r border-zinc-800 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#f1f1f1] border-r border-gray-200 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-lg font-semibold text-barya-accent">Barya Workspace</h1>
@@ -89,19 +114,19 @@
     </aside>
 
     <div class="flex-1 lg:ml-0 w-full">
-      <header class="sticky top-0 z-30 backdrop-blur-xl bg-[#0a0a0a]/88 border-b border-zinc-800 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
           <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
         </div>
         <div class="flex items-center gap-3">
-          <span class="hidden md:inline-flex text-[11px] border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 rounded-full text-cyan-200">⌘/Ctrl+K Search</span>
+          <span class="hidden md:inline-flex text-[11px] border border-orange-500/30 bg-orange-500/10 px-2 py-1 rounded-full text-orange-200">⌘/Ctrl+K Search</span>
           <span class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
           <div class="text-right">
             <p class="text-sm font-medium">Shruti Barya</p>
             <p class="text-xs text-zinc-400">Founder</p>
           </div>
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-black font-bold grid place-items-center">SB</div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-400 text-black font-bold grid place-items-center">SB</div>
         </div>
       </header>
 
@@ -120,7 +145,7 @@
 
   <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
 
-  <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-[#111] border border-zinc-700 rounded-xl p-0 text-zinc-100">
+  <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-white border border-gray-200 rounded-xl p-0 text-gray-900">
     <div class="p-5 border-b border-zinc-800 flex justify-between items-center">
       <h3 class="text-lg font-semibold">Insight</h3>
       <button id="closeMemoryModal" class="text-zinc-400 hover:text-zinc-100">✕</button>
@@ -322,7 +347,7 @@
     function renderNav() {
       const nav = document.getElementById('mainNav');
       nav.innerHTML = navItems.map(item => `
-        <button data-section="${item.id}" class="w-full border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2 text-left hover:border-cyan-500/40 ${state.activeSection === item.id ? 'active-nav' : ''}">
+        <button data-section="${item.id}" class="w-full border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2 text-left hover:border-orange-500/40 ${state.activeSection === item.id ? 'active-nav' : ''}">
           <span>${item.icon}</span><span class="text-sm font-medium">${item.label}</span>
         </button>
       `).join('');
@@ -787,7 +812,7 @@
       const topExpenses = getTopExpenseCategories();
 
       el.innerHTML = `
-        <div class="bg-gradient-to-r from-cyan-500/15 via-cyan-500/5 to-transparent border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-neon">
+        <div class="bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent border border-orange-500/30 rounded-2xl p-5 sm:p-6 shadow-neon">
           <h2 class="text-2xl sm:text-3xl font-semibold text-barya-accent tracking-wide">Finance Command Center</h2>
           <p class="text-zinc-300 mt-2 text-sm sm:text-base">Real-time financial operating view for founder decisions: runway, burn, forecast, and transaction intelligence.</p>
         </div>
@@ -799,7 +824,7 @@
             { key: 'netSavings', label: 'Net Savings', hint: 'Income - Expenses' },
             { key: 'runway', label: 'Runway', hint: 'In months' }
           ].map((metric) => `
-            <label class="bg-[#101217] border border-zinc-800 rounded-xl p-4 block hover:border-cyan-500/40 transition">
+            <label class="bg-[#101217] border border-zinc-800 rounded-xl p-4 block hover:border-orange-500/40 transition">
               <p class="text-xs uppercase tracking-[0.15em] text-zinc-400 mb-2">${metric.label}</p>
               <input data-metric="${metric.key}" type="number" step="0.1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-lg font-semibold outline-none focus:border-barya-accent" value="${d.metrics[metric.key]}" />
               <p class="text-xs text-zinc-500 mt-2">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(1)} months` : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
@@ -808,7 +833,7 @@
         </div>
 
         <div class="grid xl:grid-cols-3 gap-4">
-          <div class="xl:col-span-2 bg-[#111111] border border-zinc-800 rounded-xl p-4 sm:p-5">
+          <div class="xl:col-span-2 bg-[#ffffff] border border-zinc-800 rounded-xl p-4 sm:p-5">
             <div class="flex items-center justify-between mb-3">
               <h3 class="font-semibold text-barya-accent">Cash Flow Forecast (Next 6 Months)</h3>
               <span class="text-xs text-zinc-400">Trend-based projection • Auto updates</span>
@@ -817,7 +842,7 @@
               <canvas id="cashFlowChart"></canvas>
             </div>
             <div class="mt-4 space-y-1.5 text-xs sm:text-sm">
-              <p class="text-zinc-300">Based on current trend of <span class="text-[#00d4ff] font-semibold">${formatINR(forecast.currentNet)}</span> monthly net.</p>
+              <p class="text-zinc-300">Based on current trend of <span class="text-[#f97316] font-semibold">${formatINR(forecast.currentNet)}</span> monthly net.</p>
               <p class="text-zinc-300">Projected Runway: <span class="font-semibold">${forecast.projectedRunwayMonths} months</span></p>
               <p class="text-zinc-500">This is a trend-based estimate. Actual results may vary.</p>
             </div>
@@ -841,11 +866,11 @@
             <form id="expenseCategoryForm" class="grid sm:grid-cols-[1fr_160px_auto] gap-2">
               <input id="expenseCategoryName" placeholder="Category name" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
               <input id="expenseCategoryAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
-              <button class="px-3 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Category</button>
+              <button class="px-3 py-2 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-300">Add Category</button>
             </form>
             <div class="grid sm:grid-cols-3 gap-2">
               ${topExpenses.map((exp, i) => `
-                <div class="bg-zinc-900 border ${i === 0 ? 'border-cyan-500/40' : 'border-zinc-800'} rounded-lg p-2">
+                <div class="bg-zinc-900 border ${i === 0 ? 'border-orange-500/40' : 'border-zinc-800'} rounded-lg p-2">
                   <p class="text-xs text-zinc-400">Top ${i + 1}</p>
                   <p class="font-medium">${escapeHTML(exp.name)}</p>
                   <p class="text-sm text-zinc-300">${money(exp.amount)}</p>
@@ -858,9 +883,9 @@
             <h3 class="font-semibold text-barya-accent mb-3">Startup Financial Health Score</h3>
             <div class="ring-progress mx-auto mb-4" style="--pct:${healthScore}%"><div><span class="text-2xl font-bold text-barya-accent">${healthScore}</span></div></div>
             <div class="space-y-2 text-sm">
-              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Runway Stability</span><span class="text-cyan-300">${runwayScore}/100</span></div>
-              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Profitability</span><span class="text-cyan-300">${profitability}/100</span></div>
-              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Burn Rate Control</span><span class="text-cyan-300">${burnRateScore}/100</span></div>
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Runway Stability</span><span class="text-orange-300">${runwayScore}/100</span></div>
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Profitability</span><span class="text-orange-300">${profitability}/100</span></div>
+              <div class="flex justify-between bg-zinc-900 rounded p-2 border border-zinc-800"><span>Burn Rate Control</span><span class="text-orange-300">${burnRateScore}/100</span></div>
             </div>
           </div>
         </div>
@@ -879,7 +904,7 @@
               <input id="txCategory" placeholder="Category (e.g. Payroll)" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
               <input id="txAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
               <input id="txNotes" placeholder="Notes" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
-              <button class="sm:col-span-2 px-3 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Transaction</button>
+              <button class="sm:col-span-2 px-3 py-2 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-300">Add Transaction</button>
             </form>
             <ul class="space-y-2 max-h-64 overflow-auto scrollbar-thin">
               ${d.transactions.slice().sort((a,b)=>new Date(b.ts)-new Date(a.ts)).map((tx) => `
@@ -903,8 +928,8 @@
             <h3 class="font-semibold text-barya-accent mb-3">Safety & Backup</h3>
             <p class="text-sm text-zinc-400 mb-4">Export or import your complete finance command center data snapshot.</p>
             <div class="flex flex-wrap gap-2">
-              <button id="exportDashboard" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">Export Finance Data</button>
-              <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40 cursor-pointer">Import Finance Data<input id="importDashboard" type="file" accept="application/json" class="hidden"></label>
+              <button id="exportDashboard" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40">Export Finance Data</button>
+              <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40 cursor-pointer">Import Finance Data<input id="importDashboard" type="file" accept="application/json" class="hidden"></label>
             </div>
           </div>
         </div>
@@ -1020,8 +1045,8 @@
               {
                 label: 'Current Monthly Net',
                 data: [forecast.currentNet, ...Array(5).fill(null)],
-                borderColor: '#00d4ff',
-                backgroundColor: '#00d4ff',
+                borderColor: '#f97316',
+                backgroundColor: '#f97316',
                 pointRadius: 5,
                 pointHoverRadius: 6,
                 borderWidth: 2,
@@ -1030,7 +1055,7 @@
               {
                 label: 'Projected Cash Flow (₹)',
                 data: forecast.values,
-                borderColor: '#00d4ff',
+                borderColor: '#f97316',
                 segment: {
                   borderColor: (ctx) => {
                     const y = ctx.p1.parsed.y;
@@ -1040,17 +1065,17 @@
                 backgroundColor: (ctx) => {
                   const { chart } = ctx;
                   const { ctx: context, chartArea } = chart;
-                  if (!chartArea) return 'rgba(0, 212, 255, 0.08)';
+                  if (!chartArea) return 'rgba(249, 115, 22, 0.08)';
                   const gradient = context.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                  gradient.addColorStop(0, 'rgba(0, 212, 255, 0.22)');
-                  gradient.addColorStop(1, 'rgba(0, 212, 255, 0.02)');
+                  gradient.addColorStop(0, 'rgba(249, 115, 22, 0.22)');
+                  gradient.addColorStop(1, 'rgba(249, 115, 22, 0.02)');
                   return gradient;
                 },
                 fill: true,
                 tension: 0.3,
                 pointRadius: 4,
                 pointBackgroundColor: (ctx) => (ctx.raw >= 0 ? '#22c55e' : '#ef4444'),
-                pointBorderColor: '#00d4ff',
+                pointBorderColor: '#f97316',
                 pointBorderWidth: 1.5
               }
             ]
@@ -1097,8 +1122,8 @@
             labels,
             datasets: [{
               data,
-              borderColor: '#0a0a0a',
-              backgroundColor: ['#00d4ff', '#1d4ed8', '#3b82f6', '#0284c7', '#155e75', '#0ea5e9']
+              borderColor: '#f8f9fa',
+              backgroundColor: ['#f97316', '#fb923c', '#fdba74', '#ea580c', '#c2410c', '#ffedd5']
             }]
           },
           options: {
@@ -1324,24 +1349,24 @@
       const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
 
       el.innerHTML = `
-        <div class="bg-[#0e1015] border border-cyan-500/20 rounded-2xl p-4 sm:p-5 space-y-4 shadow-neon">
+        <div class="bg-[#0e1015] border border-orange-500/20 rounded-2xl p-4 sm:p-5 space-y-4 shadow-neon">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="text-xl font-semibold text-barya-accent">Workspace · Connected Block Editor</h2>
               <p class="text-xs text-zinc-400">Anytype-style local-first editor with relations, backlinks, and smart object types.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button id="workspaceTemplatesBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-400/70 transition">Templates</button>
-              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/50 font-semibold hover:bg-cyan-500/30 transition">New Object</button>
+              <button id="workspaceTemplatesBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-400/70 transition">Templates</button>
+              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/50 font-semibold hover:bg-orange-500/30 transition">New Object</button>
             </div>
           </div>
 
           <div id="workspaceTemplates" class="hidden grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             ${Object.entries(workspaceTemplates).map(([key, tpl]) => `
-              <div class="bg-zinc-900/70 border border-cyan-500/20 rounded-xl p-3">
+              <div class="bg-zinc-900/70 border border-orange-500/20 rounded-xl p-3">
                 <p class="font-medium">${escapeHTML(tpl.label)}</p>
                 <p class="text-xs text-zinc-400 mt-1">Type: ${escapeHTML(tpl.objectType || 'Page')}</p>
-                <button data-template-key="${key}" class="mt-3 w-full px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/30 transition">Use Template</button>
+                <button data-template-key="${key}" class="mt-3 w-full px-3 py-2 rounded bg-orange-500/20 border border-orange-500/40 text-orange-200 hover:bg-orange-500/30 transition">Use Template</button>
               </div>
             `).join('')}
           </div>
@@ -1350,10 +1375,10 @@
             <aside class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
               <h3 class="text-xs uppercase tracking-[0.2em] text-zinc-400 px-1">Objects</h3>
               ${(state.workspace.pages || []).map(page => `
-                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-cyan-400/60 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/35'}">
+                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400/60 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/35'}">
                   <div class="flex items-center justify-between gap-2">
                     <p class="font-medium truncate">${escapeHTML(page.title || 'Untitled')}</p>
-                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-200">${escapeHTML(page.objectType || 'Page')}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-orange-500/40 text-orange-200">${escapeHTML(page.objectType || 'Page')}</span>
                   </div>
                   <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
                   <p class="text-[11px] text-zinc-500 mt-1">${new Date(page.updatedAt).toLocaleString()}</p>
@@ -1364,58 +1389,58 @@
             <section class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-4 space-y-4">
               ${activePage ? `
                 <div class="flex flex-wrap gap-2 items-center">
-                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xl font-semibold focus:border-cyan-400/70 outline-none" placeholder="Untitled object" />
+                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xl font-semibold focus:border-orange-400/70 outline-none" placeholder="Untitled object" />
                   <select id="workspaceObjectType" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
                     ${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}
                   </select>
-                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-cyan-500/15 border border-cyan-500/40 text-cyan-200">Show Related</button>
+                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-orange-500/15 border border-orange-500/40 text-orange-200">Show Related</button>
                   <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/40 text-red-300">Delete</button>
                 </div>
 
                 <div class="grid lg:grid-cols-2 gap-3">
                   <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
-                    <div class="flex items-center justify-between"><h4 class="font-semibold text-cyan-200">Relations</h4><span class="text-xs text-zinc-500">Notion-style properties</span></div>
+                    <div class="flex items-center justify-between"><h4 class="font-semibold text-orange-200">Relations</h4><span class="text-xs text-zinc-500">Notion-style properties</span></div>
                     ${WORKSPACE_RELATION_KEYS.map(key => `
                       <div class="space-y-2" data-relation-key-wrap="${escapeAttr(key)}">
                         <p class="text-xs text-zinc-400">${escapeHTML(key)}</p>
-                        <div class="flex flex-wrap gap-1">${(activePage.relations[key]||[]).map(id => `<span class="text-xs px-2 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30">${escapeHTML(pageMap.get(id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">None</span>'}</div>
+                        <div class="flex flex-wrap gap-1">${(activePage.relations[key]||[]).map(id => `<span class="text-xs px-2 py-1 rounded-full bg-orange-500/15 border border-orange-500/30">${escapeHTML(pageMap.get(id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">None</span>'}</div>
                         <div class="flex gap-2">
                           <select data-relation-select="${escapeAttr(key)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">
                             <option value="">Select object…</option>
                             ${(state.workspace.pages || []).filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType || 'Page')}</option>`).join('')}
                           </select>
-                          <button data-relation-add="${escapeAttr(key)}" class="px-3 py-1 rounded border border-cyan-500/40 text-cyan-200 bg-cyan-500/10">Add</button>
+                          <button data-relation-add="${escapeAttr(key)}" class="px-3 py-1 rounded border border-orange-500/40 text-orange-200 bg-orange-500/10">Add</button>
                         </div>
                       </div>
                     `).join('')}
                   </div>
 
                   <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
-                    <h4 class="font-semibold text-cyan-200">Backlinks & Related Objects</h4>
+                    <h4 class="font-semibold text-orange-200">Backlinks & Related Objects</h4>
                     <div>
                       <p class="text-xs uppercase text-zinc-500 mb-1">Backlinks</p>
-                      <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-800 hover:border-cyan-500/40 bg-zinc-950">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')} <span class="text-zinc-500 text-xs">via ${escapeHTML(link.via)}</span></button>`).join('') || '<p class="text-sm text-zinc-600">No backlinks yet.</p>'}</div>
+                      <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-800 hover:border-orange-500/40 bg-zinc-950">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')} <span class="text-zinc-500 text-xs">via ${escapeHTML(link.via)}</span></button>`).join('') || '<p class="text-sm text-zinc-600">No backlinks yet.</p>'}</div>
                     </div>
                     <div>
                       <p class="text-xs uppercase text-zinc-500 mb-1">Related Objects</p>
-                      <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 hover:bg-cyan-500/25 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-600">No related objects.</p>'}</div>
+                      <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 hover:bg-orange-500/25 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-600">No related objects.</p>'}</div>
                     </div>
                   </div>
                 </div>
 
                 <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 space-y-3">
                   <div class="flex items-center justify-between">
-                    <h4 class="font-semibold text-cyan-200">Blocks</h4>
-                    <p class="text-xs text-zinc-500">Type <span class="text-cyan-300">/</span> at start of a block for commands · Drag handle to reorder</p>
+                    <h4 class="font-semibold text-orange-200">Blocks</h4>
+                    <p class="text-xs text-zinc-500">Type <span class="text-orange-300">/</span> at start of a block for commands · Drag handle to reorder</p>
                   </div>
                   <div id="workspaceBlocks" class="space-y-2">
                     ${(activePage.blocks || []).map((block, idx) => {
                       const cmdOpen = block.commandOpen ? '' : 'hidden';
                       const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase()));
                       return `
-                      <article class="workspace-block group border border-zinc-800 rounded-lg bg-[#080a0f] p-2 transition hover:border-cyan-500/35" draggable="true" data-block-id="${block.id}">
+                      <article class="workspace-block group border border-zinc-800 rounded-lg bg-[#080a0f] p-2 transition hover:border-orange-500/35" draggable="true" data-block-id="${block.id}">
                         <div class="flex items-center gap-2 mb-2">
-                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-cyan-300" data-drag-handle="${block.id}">⋮⋮</button>
+                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-orange-300" data-drag-handle="${block.id}">⋮⋮</button>
                           <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-400">${blockTypeLabel(block.type)}</span>
                           <button data-delete-block="${block.id}" class="ml-auto text-xs text-red-400">Remove</button>
                         </div>
@@ -1423,7 +1448,7 @@
                       </article>`;
                     }).join('')}
                   </div>
-                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20 transition">+ Add Block</button>
+                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-orange-500/40 bg-orange-500/10 text-orange-200 hover:bg-orange-500/20 transition">+ Add Block</button>
                 </div>
 
                 <section class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
@@ -1541,17 +1566,17 @@
       const mentionIds = resolveMentionedPageIds(`${block.text || ''} ${block.content || ''}`, currentPageId);
       const mentionPills = mentionIds.map(id => {
         const page = (state.workspace.pages || []).find(p => p.id === id);
-        return `<span class="text-[11px] px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10">[[${escapeHTML(page?.title || 'Unknown')}]]</span>`;
+        return `<span class="text-[11px] px-2 py-1 rounded-full border border-orange-500/30 bg-orange-500/10">[[${escapeHTML(page?.title || 'Unknown')}]]</span>`;
       }).join('');
 
       const slashMenu = `
-        <div class="${cmdOpenClass} mt-2 rounded-lg border border-cyan-500/40 bg-[#06080d] p-2 space-y-1" data-command-menu="${block.id}">
-          ${(filteredMenu.length ? filteredMenu : workspaceBlockMenu).map(item => `<button data-command-type="${item.type}" data-command-for="${block.id}" class="w-full text-left px-2 py-1 rounded hover:bg-cyan-500/15 text-sm">/${item.type} · ${item.label}</button>`).join('')}
+        <div class="${cmdOpenClass} mt-2 rounded-lg border border-orange-500/40 bg-[#06080d] p-2 space-y-1" data-command-menu="${block.id}">
+          ${(filteredMenu.length ? filteredMenu : workspaceBlockMenu).map(item => `<button data-command-type="${item.type}" data-command-for="${block.id}" class="w-full text-left px-2 py-1 rounded hover:bg-orange-500/15 text-sm">/${item.type} · ${item.label}</button>`).join('')}
         </div>
       `;
 
       if (block.type === 'todo') {
-        return `<label class="flex items-center gap-2"><input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-cyan-400" /><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="To-do" /></label>${mentionPills ? `<div class="flex gap-1 flex-wrap mt-2">${mentionPills}</div>`:''}${slashMenu}`;
+        return `<label class="flex items-center gap-2"><input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-orange-400" /><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="To-do" /></label>${mentionPills ? `<div class="flex gap-1 flex-wrap mt-2">${mentionPills}</div>`:''}${slashMenu}`;
       }
       if (block.type === 'heading') {
         return `<div class="space-y-2"><div class="flex gap-2"><select data-block-level="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs">${[1,2,3].map(level=>`<option value="${level}" ${block.level===level?'selected':''}>H${level}</option>`).join('')}</select><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="${headingClass} flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Heading" /></div>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
@@ -1564,11 +1589,11 @@
         return `<div class="space-y-2"><button data-toggle-open="${block.id}" class="text-sm px-2 py-1 rounded border border-zinc-700 bg-zinc-950">${block.open ? '▼' : '▶'} Toggle</button><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle title" />${block.open ? `<textarea data-block-content="${block.id}" class="w-full h-20 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle content">${escapeHTML(block.content || '')}</textarea>` : ''}${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
       }
       if (block.type === 'relation') {
-        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-relation-key="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">${WORKSPACE_RELATION_KEYS.map(key => `<option value="${key}" ${block.relationKey===key?'selected':''}>${key}</option>`).join('')}</select><select data-block-relation-target="${block.id}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm"><option value="">Select object…</option>${(state.workspace.pages || []).filter(p => p.id !== currentPageId).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType||'Page')}</option>`).join('')}</select><button data-block-relation-add="${block.id}" class="px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/40 text-cyan-200">Add</button></div><div class="flex flex-wrap gap-1">${(block.targets || []).map(id => `<span class="text-xs px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10">${escapeHTML((state.workspace.pages || []).find(p => p.id === id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">No linked objects</span>'}</div>${slashMenu}</div>`;
+        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-relation-key="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">${WORKSPACE_RELATION_KEYS.map(key => `<option value="${key}" ${block.relationKey===key?'selected':''}>${key}</option>`).join('')}</select><select data-block-relation-target="${block.id}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm"><option value="">Select object…</option>${(state.workspace.pages || []).filter(p => p.id !== currentPageId).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType||'Page')}</option>`).join('')}</select><button data-block-relation-add="${block.id}" class="px-3 py-1 rounded bg-orange-500/10 border border-orange-500/40 text-orange-200">Add</button></div><div class="flex flex-wrap gap-1">${(block.targets || []).map(id => `<span class="text-xs px-2 py-1 rounded-full border border-orange-500/30 bg-orange-500/10">${escapeHTML((state.workspace.pages || []).find(p => p.id === id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">No linked objects</span>'}</div>${slashMenu}</div>`;
       }
       if (block.type === 'database') {
         const cols = block.columns.length || 1;
-        return `<div class="space-y-2"><div class="overflow-auto"><table class="min-w-full text-xs border border-zinc-800"><thead><tr>${block.columns.map((col, cIdx) => `<th class="p-1 border border-zinc-800"><input data-block-db-col="${block.id}:${cIdx}" value="${escapeAttr(col)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1" /></th>`).join('')}<th class="p-1 border border-zinc-800"><button data-block-db-add-col="${block.id}" class="text-cyan-300">+ Col</button></th></tr></thead><tbody>${(block.rows || []).map((row, rIdx) => `<tr>${Array.from({length: cols}).map((_, cIdx) => `<td class="border border-zinc-800 p-1"><input data-block-db-cell="${block.id}:${rIdx}:${cIdx}" value="${escapeAttr(row[cIdx] || '')}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1"/></td>`).join('')}<td class="border border-zinc-800 p-1 text-center"><button data-block-db-del-row="${block.id}:${rIdx}" class="text-red-400">✕</button></td></tr>`).join('')}</tbody></table></div><div class="flex gap-2"><button data-block-db-add-row="${block.id}" class="px-2 py-1 rounded border border-zinc-700 bg-zinc-950 text-xs">+ Row</button></div>${slashMenu}</div>`;
+        return `<div class="space-y-2"><div class="overflow-auto"><table class="min-w-full text-xs border border-zinc-800"><thead><tr>${block.columns.map((col, cIdx) => `<th class="p-1 border border-zinc-800"><input data-block-db-col="${block.id}:${cIdx}" value="${escapeAttr(col)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1" /></th>`).join('')}<th class="p-1 border border-zinc-800"><button data-block-db-add-col="${block.id}" class="text-orange-300">+ Col</button></th></tr></thead><tbody>${(block.rows || []).map((row, rIdx) => `<tr>${Array.from({length: cols}).map((_, cIdx) => `<td class="border border-zinc-800 p-1"><input data-block-db-cell="${block.id}:${rIdx}:${cIdx}" value="${escapeAttr(row[cIdx] || '')}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1"/></td>`).join('')}<td class="border border-zinc-800 p-1 text-center"><button data-block-db-del-row="${block.id}:${rIdx}" class="text-red-400">✕</button></td></tr>`).join('')}</tbody></table></div><div class="flex gap-2"><button data-block-db-add-row="${block.id}" class="px-2 py-1 rounded border border-zinc-700 bg-zinc-950 text-xs">+ Row</button></div>${slashMenu}</div>`;
       }
       return `<div class="space-y-2"><textarea data-block-text="${block.id}" class="w-full min-h-[74px] bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Write something...">${escapeHTML(block.text)}</textarea>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
     }
@@ -1796,7 +1821,7 @@
               </div>
               <button data-delete-sprint="${sprint.id}" class="text-xs text-red-400">Delete</button>
             </div>
-            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#00d4ff]" style="width:${pct}%"></div></div>
+            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#f97316]" style="width:${pct}%"></div></div>
             <p class="text-xs text-zinc-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p>
           </div>
         `;
@@ -1806,7 +1831,7 @@
         const sprint = sprintMap.get(task.sprintId);
         const prColor = task.priority === 'High' ? 'text-rose-300 border-rose-500/40 bg-rose-500/10' : task.priority === 'Medium' ? 'text-amber-300 border-amber-500/40 bg-amber-500/10' : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10';
         return `
-          <article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2 ${t.selectedTaskId === task.id ? 'ring-1 ring-cyan-500/50' : ''}">
+          <article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2 ${t.selectedTaskId === task.id ? 'ring-1 ring-orange-500/50' : ''}">
             <div class="flex items-start justify-between gap-2">
               <button data-select-task="${task.id}" class="text-left flex-1">
                 <p class="font-medium">${escapeHTML(task.title)}</p>
@@ -1815,15 +1840,15 @@
               <span class="text-[11px] px-2 py-0.5 rounded border ${prColor}">${task.priority}</span>
             </div>
             <div class="flex flex-wrap gap-1">
-              ${(task.tags || []).map(tag => `<span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-200 border border-cyan-500/25">${escapeHTML(tag)}</span>`).join('') || '<span class="text-[10px] text-zinc-500">No tags</span>'}
+              ${(task.tags || []).map(tag => `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-200 border border-orange-500/25">${escapeHTML(tag)}</span>`).join('') || '<span class="text-[10px] text-zinc-500">No tags</span>'}
             </div>
             <div class="text-xs text-zinc-500 flex flex-wrap gap-3">
               <span>Due: ${escapeHTML(task.dueDate || '—')}</span>
               <span>Sprint: ${escapeHTML(sprint?.name || 'Backlog')}</span>
-              <button data-jump-link="${task.id}" class="text-cyan-300 hover:text-cyan-200">${escapeHTML(linkedTaskLabel(task))}</button>
+              <button data-jump-link="${task.id}" class="text-orange-300 hover:text-orange-200">${escapeHTML(linkedTaskLabel(task))}</button>
             </div>
             <div class="flex gap-2">
-              <button data-show-related="task:${task.id}" class="text-xs px-2 py-1 rounded bg-cyan-500/15 text-cyan-200 border border-cyan-500/30">Show Related</button>
+              <button data-show-related="task:${task.id}" class="text-xs px-2 py-1 rounded bg-orange-500/15 text-orange-200 border border-orange-500/30">Show Related</button>
               <button data-edit-task="${task.id}" class="text-xs px-2 py-1 rounded bg-zinc-800 border border-zinc-700">Edit</button>
               <button data-delete-task="${task.id}" class="text-xs px-2 py-1 rounded bg-red-500/15 text-red-300 border border-red-500/30">Delete</button>
             </div>
@@ -1832,11 +1857,11 @@
       };
 
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#0b0f14] to-[#090b10] border border-cyan-500/20 rounded-2xl shadow-neon overflow-hidden">
+        <section class="bg-gradient-to-br from-[#0b0f14] to-[#090b10] border border-orange-500/20 rounded-2xl shadow-neon overflow-hidden">
           <div class="grid xl:grid-cols-[220px_1fr] min-h-[76vh]">
             <aside class="border-r border-zinc-800 bg-[#0b0e13] p-4 space-y-3">
-              <h2 class="text-lg font-semibold text-[#00d4ff]">Task & Sprint Manager</h2>
-              ${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2 rounded-lg border ${t.leftTab === tab.id ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-800 hover:border-cyan-500/30'}">${tab.label}</button>`).join('')}
+              <h2 class="text-lg font-semibold text-[#f97316]">Task & Sprint Manager</h2>
+              ${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2 rounded-lg border ${t.leftTab === tab.id ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-800 hover:border-orange-500/30'}">${tab.label}</button>`).join('')}
               <div class="pt-3 border-t border-zinc-800 space-y-2">
                 <button id="exportTasks" class="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Export Tasks & Sprints</button>
                 <label class="block w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm text-center cursor-pointer">Import Tasks & Sprints<input id="importTasks" type="file" accept="application/json" class="hidden"></label>
@@ -1847,12 +1872,12 @@
             <div class="p-4 sm:p-5 space-y-4">
               <div class="flex flex-wrap items-center gap-2 justify-between">
                 <div class="flex flex-wrap items-center gap-2">
-                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/40">+ New Task</button>
+                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/40">+ New Task</button>
                   <button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">+ New Sprint</button>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button data-view="list" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'list' ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'}">List</button>
-                  <button data-view="kanban" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'kanban' ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'}">Kanban</button>
+                  <button data-view="list" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'list' ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'}">List</button>
+                  <button data-view="kanban" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'kanban' ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'}">Kanban</button>
                 </div>
               </div>
 
@@ -1901,7 +1926,7 @@
                         ${(state.workspace?.pages || []).slice(0, 30).map(page => `<option value="page:${page.id}" ${selectedTask?.linkRef===`page:${page.id}`?'selected':''}>📄 ${escapeHTML(page.title)}</option>`).join('')}
                       </select>
                       <div class="flex gap-2">
-                        <button class="px-3 py-2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button>
+                        <button class="px-3 py-2 rounded bg-orange-500/20 text-orange-200 border border-orange-500/40 text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button>
                         <button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Reset</button>
                       </div>
                     </form>
@@ -2177,16 +2202,16 @@
         'Design retention experiment'
       ];
       el.innerHTML = `
-        <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-cyan-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
+        <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-orange-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Barya AI · Smart Reasoning Assistant</h2>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Barya AI · Smart Reasoning Assistant</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Professional founder guidance with context-aware execution plans.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/35 text-cyan-200 text-sm">Show Related</button>
-              <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-cyan-500/30">
-                <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-cyan-400">
+              <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
+              <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-orange-500/30">
+                <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-orange-400">
                 <span class="text-sm text-zinc-200">Think Step-by-Step</span>
               </label>
             </div>
@@ -2195,15 +2220,15 @@
           <div class="grid xl:grid-cols-[1fr_280px] gap-4">
             <div class="min-w-0 space-y-4">
               <div class="flex flex-wrap gap-2">
-                ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 bg-[#10151e] hover:border-cyan-400/50 hover:text-cyan-200 transition">${q}</button>`).join('')}
+                ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 bg-[#10151e] hover:border-orange-400/50 hover:text-orange-200 transition">${q}</button>`).join('')}
               </div>
 
               <div id="chatBox" class="space-y-3 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
 
               <form id="chatForm" class="space-y-2">
-                <textarea id="chatInput" rows="3" placeholder="Ask complex founder questions (multi-part supported)..." class="w-full bg-[#0d1117] border border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-cyan-400/60 resize-y"></textarea>
+                <textarea id="chatInput" rows="3" placeholder="Ask complex founder questions (multi-part supported)..." class="w-full bg-[#0d1117] border border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-orange-400/60 resize-y"></textarea>
                 <div class="flex flex-wrap items-center gap-2">
-                  <button class="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30">Send</button>
+                  <button class="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30">Send</button>
                   <button id="clearChat" type="button" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-300 border border-red-500/30">Clear Chat</button>
                   <button id="exportChat" type="button" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">Export Chat</button>
                   <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 cursor-pointer">Import Chat<input id="importChat" type="file" accept="application/json" class="hidden"></label>
@@ -2212,9 +2237,9 @@
             </div>
 
             <aside class="bg-[#0d1117] border border-zinc-800 rounded-xl p-3 space-y-3 h-fit">
-              <p class="text-xs uppercase tracking-wide text-cyan-300">Smart Prompt Suggestions</p>
+              <p class="text-xs uppercase tracking-wide text-orange-300">Smart Prompt Suggestions</p>
               <div class="space-y-2">
-                ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-lg p-2 bg-zinc-900/80 border border-zinc-800 hover:border-cyan-500/40">${escapeHTML(s)}</button>`).join('')}
+                ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-lg p-2 bg-zinc-900/80 border border-zinc-800 hover:border-orange-500/40">${escapeHTML(s)}</button>`).join('')}
               </div>
             </aside>
           </div>
@@ -2226,27 +2251,27 @@
         const wrap = document.createElement('div');
         if (item.role === 'user') {
           wrap.innerHTML = `
-            <div class="ml-auto max-w-3xl bg-cyan-500/15 border border-cyan-500/30 rounded-2xl p-3">
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300 mb-1">You</p>
+            <div class="ml-auto max-w-3xl bg-orange-500/15 border border-orange-500/30 rounded-2xl p-3">
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 mb-1">You</p>
               <p class="whitespace-pre-wrap">${escapeHTML(item.message)}</p>
             </div>
           `;
         } else {
           const structured = item.structured || aiStructuredResponse(item.message || '');
           wrap.innerHTML = `
-            <div class="max-w-4xl bg-[#111722] border border-cyan-500/20 rounded-2xl p-4 space-y-2">
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300">Clear Answer</p>
+            <div class="max-w-4xl bg-[#111722] border border-orange-500/20 rounded-2xl p-4 space-y-2">
+              <p class="text-[11px] uppercase tracking-wide text-orange-300">Clear Answer</p>
               <p>${escapeHTML(structured.answer)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Why It Matters</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Why It Matters</p>
               <p>${escapeHTML(structured.why)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Action Steps</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Action Steps</p>
               <ol class="list-decimal pl-5 space-y-1">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol>
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Founder Tip</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Founder Tip</p>
               <p>${escapeHTML(structured.tip)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-cyan-300 pt-1">Next Move</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Next Move</p>
               <p>${escapeHTML(structured.next)}</p>
               ${(state.ai.thinkStepByStep && structured.reasoning?.length)
-                ? `<details class="pt-2"><summary class="cursor-pointer text-xs text-cyan-200">Reasoning Path</summary><ul class="list-disc pl-5 mt-2 text-sm text-zinc-300">${structured.reasoning.map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul></details>`
+                ? `<details class="pt-2"><summary class="cursor-pointer text-xs text-orange-200">Reasoning Path</summary><ul class="list-disc pl-5 mt-2 text-sm text-zinc-300">${structured.reasoning.map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul></details>`
                 : ''}
             </div>
           `;
@@ -2390,29 +2415,29 @@
       const nodeMap = new Map(graphNodes.map(n => [n.id, n]));
 
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#0e1118] via-[#0a0e14] to-[#080b10] border border-cyan-500/20 rounded-2xl shadow-neon overflow-hidden transition-all duration-300">
+        <section class="bg-gradient-to-br from-[#0e1118] via-[#0a0e14] to-[#080b10] border border-orange-500/20 rounded-2xl shadow-neon overflow-hidden transition-all duration-300">
           <div class="grid xl:grid-cols-[250px_1fr] min-h-[72vh]">
             <aside class="border-r border-zinc-800/80 bg-[#0b0f16] p-4 space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.22em] text-cyan-300/80 mb-2">Memory Vault</p>
+                <p class="text-xs uppercase tracking-[0.22em] text-orange-300/80 mb-2">Memory Vault</p>
                 <h2 class="text-xl font-semibold text-barya-accent">Advanced Memory</h2>
                 <p class="text-xs text-zinc-400 mt-1">Founder's second brain, local-first.</p>
               </div>
 
               <div class="space-y-2">
-                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">Daily Notes</button>
-                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">All Notes</button>
-                <button id="memorySidebarGraph" class="w-full text-left px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30">Graph</button>
+                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' ? 'border-orange-400/60 bg-orange-400/10 text-orange-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">Daily Notes</button>
+                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' ? 'border-orange-400/60 bg-orange-400/10 text-orange-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">All Notes</button>
+                <button id="memorySidebarGraph" class="w-full text-left px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30">Graph</button>
               </div>
 
               <div class="space-y-2">
-                <button id="newDailyNote" class="w-full px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 hover:bg-cyan-500/30 transition">New Daily Note</button>
-                <button id="newMemoryNote" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40 transition">New Note</button>
+                <button id="newDailyNote" class="w-full px-3 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/40 hover:bg-orange-500/30 transition">New Daily Note</button>
+                <button id="newMemoryNote" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40 transition">New Note</button>
               </div>
 
               <div class="pt-2 border-t border-zinc-800 space-y-2">
-                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30 text-sm">Export Full Memory (JSON)</button>
-                <label class="block w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
+                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30 text-sm">Export Full Memory (JSON)</button>
+                <label class="block w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
                 <button id="clearMemory" class="w-full px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 text-sm">Clear All Memory</button>
               </div>
             </aside>
@@ -2420,8 +2445,8 @@
             <div class="p-4 sm:p-5 space-y-4">
               <div class="flex flex-wrap items-center gap-2 justify-between">
                 <div class="flex items-center gap-2">
-                  <input id="memorySearch" placeholder="Search title, content, tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-cyan-400 outline-none" />
-                  <button id="memoryToggleView" class="px-3 py-2 rounded-lg border ${memory.viewMode === 'graph' ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200' : 'bg-zinc-900 border-zinc-700'} text-sm">${memory.viewMode === 'graph' ? 'Switch to List' : 'Show Graph View'}</button>
+                  <input id="memorySearch" placeholder="Search title, content, tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-orange-400 outline-none" />
+                  <button id="memoryToggleView" class="px-3 py-2 rounded-lg border ${memory.viewMode === 'graph' ? 'bg-orange-500/20 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'} text-sm">${memory.viewMode === 'graph' ? 'Switch to List' : 'Show Graph View'}</button>
                 </div>
                 <p class="text-xs text-zinc-400">${visibleNotes.length} visible · ${memory.insights.length} total notes</p>
               </div>
@@ -2431,10 +2456,10 @@
                   <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">${memory.leftTab === 'daily' ? 'Daily Notes' : 'All Notes'}</p>
                   <div class="space-y-2">
                     ${visibleNotes.map(note => `
-                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2 transition ${note.id === memory.activeNoteId ? 'border-cyan-500/60 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-cyan-500/30'}">
+                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2 transition ${note.id === memory.activeNoteId ? 'border-orange-500/60 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">
                         <div class="flex items-center justify-between gap-2">
                           <p class="font-medium truncate">${escapeHTML(note.title)}</p>
-                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200">Daily</span>' : ''}
+                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-200">Daily</span>' : ''}
                         </div>
                         <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML((note.tags || []).join(', ') || 'General')}</p>
                       </button>
@@ -2445,8 +2470,8 @@
                 <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-4">
                   ${memory.viewMode === 'graph' ? `
                     <div class="space-y-3">
-                      <h3 class="text-lg font-semibold text-cyan-200">Memory Graph</h3>
-                      <p class="text-xs text-zinc-400">Click a node to open note. Links come from <span class="text-cyan-300">[[Note Title]]</span>.</p>
+                      <h3 class="text-lg font-semibold text-orange-200">Memory Graph</h3>
+                      <p class="text-xs text-zinc-400">Click a node to open note. Links come from <span class="text-orange-300">[[Note Title]]</span>.</p>
                       <canvas id="memoryGraphCanvas" width="620" height="420" class="w-full bg-[#0b111a] border border-zinc-800 rounded-lg"></canvas>
                     </div>
                   ` : activeNote ? `
@@ -2454,9 +2479,9 @@
                       <div class="grid sm:grid-cols-2 gap-2">
                         <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 font-semibold" />
                         <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
-                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/35 text-cyan-200 text-sm">Show Related</button>
+                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
                       </div>
-                      <textarea id="noteContent" rows="13" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-3 font-mono text-sm leading-6 focus:border-cyan-400 outline-none" placeholder="Use [[Note Title]] to link notes...">${escapeHTML(activeNote.content)}</textarea>
+                      <textarea id="noteContent" rows="13" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-3 font-mono text-sm leading-6 focus:border-orange-400 outline-none" placeholder="Use [[Note Title]] to link notes...">${escapeHTML(activeNote.content)}</textarea>
                       <div class="flex flex-wrap items-center gap-2 justify-between">
                         <p class="text-xs text-zinc-500">Auto-saved · Updated ${new Date(activeNote.ts).toLocaleString()}</p>
                         <button id="deleteActiveNote" class="px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30">Delete Note</button>
@@ -2468,7 +2493,7 @@
                           <div class="space-y-1 max-h-32 overflow-auto scrollbar-thin pr-1">
                             ${(activeNote.links || []).map(linkedId => {
                               const linked = memory.insights.find(n => n.id === linkedId);
-                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-cyan-300 hover:text-cyan-200">→ ${escapeHTML(linked.title)}</button>` : '';
+                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-orange-300 hover:text-orange-200">→ ${escapeHTML(linked.title)}</button>` : '';
                             }).join('') || '<p class="text-sm text-zinc-500">No links yet.</p>'}
                           </div>
                         </div>
@@ -2499,7 +2524,7 @@
                     ${memory.insights.slice(0, 30).map(note => `<option value="note:${note.id}">🧠 ${escapeHTML(note.title)}</option>`).join('')}
                     ${(state.workspace?.pages || []).slice(0, 20).map(page => `<option value="page:${page.id}">📄 ${escapeHTML(page.title)}</option>`).join('')}
                   </select>
-                  <button class="px-3 py-2 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300">Add Action</button>
+                  <button class="px-3 py-2 rounded bg-orange-500/20 border border-orange-500/30 text-orange-300">Add Action</button>
                 </form>
                 <ul class="space-y-2 max-h-[28vh] overflow-auto scrollbar-thin pr-1">
                   ${memory.actions.map(action => {
@@ -2515,7 +2540,7 @@
                       <li class="bg-zinc-900 border border-zinc-800 rounded p-2 text-sm flex justify-between gap-3">
                         <div>
                           <p>${escapeHTML(action.text)} <span class="text-zinc-500">(${escapeHTML(action.category)})</span></p>
-                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-cyan-300 hover:text-cyan-200">Linked: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500">Not linked</p>'}
+                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-orange-300 hover:text-orange-200">Linked: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500">Not linked</p>'}
                         </div>
                         <button data-del-action="${action.id}" class="text-red-400 text-xs">Delete</button>
                       </li>
@@ -2648,7 +2673,7 @@
               (note.links || []).forEach(targetId => {
                 const to = nodeMap.get(targetId);
                 if (!from || !to) return;
-                ctx.strokeStyle = 'rgba(0, 212, 255, 0.35)';
+                ctx.strokeStyle = 'rgba(249, 115, 22, 0.35)';
                 ctx.beginPath();
                 ctx.moveTo(from.x, from.y);
                 ctx.lineTo(to.x, to.y);
@@ -2661,10 +2686,10 @@
               const isHover = node.id === hoverId;
               ctx.beginPath();
               ctx.arc(node.x, node.y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
-              ctx.fillStyle = isActive ? '#00d4ff' : '#1e293b';
+              ctx.fillStyle = isActive ? '#f97316' : '#1e293b';
               ctx.fill();
               ctx.lineWidth = isActive ? 2 : 1;
-              ctx.strokeStyle = isActive ? 'rgba(0, 212, 255, 0.8)' : 'rgba(148, 163, 184, 0.35)';
+              ctx.strokeStyle = isActive ? 'rgba(249, 115, 22, 0.8)' : 'rgba(148, 163, 184, 0.35)';
               ctx.stroke();
 
               ctx.fillStyle = isActive ? '#001018' : '#dbeafe';
@@ -2777,42 +2802,42 @@
         'Build a founder-friendly wedge strategy with low CAC channels first.'
       ];
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#070b12] via-[#0a1020] to-[#070b12] border border-cyan-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
+        <section class="bg-gradient-to-br from-[#070b12] via-[#0a1020] to-[#070b12] border border-orange-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Strategy Generator + Research Mode</h2>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Strategy Generator + Research Mode</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Perplexity-style founder research cockpit with local-first persistence.</p>
             </div>
             <div class="text-xs text-zinc-400 flex items-center gap-2">
-              Sessions: <span class="text-cyan-300 font-semibold">${strategy.sessions.length}</span>
-              <button id="planningShowRelated" class="px-2 py-1 rounded bg-cyan-500/15 border border-cyan-500/35 text-cyan-200">Show Related</button>
+              Sessions: <span class="text-orange-300 font-semibold">${strategy.sessions.length}</span>
+              <button id="planningShowRelated" class="px-2 py-1 rounded bg-orange-500/15 border border-orange-500/35 text-orange-200">Show Related</button>
             </div>
           </div>
 
-          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-[#0a101b] border border-zinc-700 rounded-xl p-3 outline-none focus:border-cyan-400/60 resize-y">${escapeHTML(strategy.idea)}</textarea>
+          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-[#0a101b] border border-zinc-700 rounded-xl p-3 outline-none focus:border-orange-400/60 resize-y">${escapeHTML(strategy.idea)}</textarea>
 
           <div class="grid sm:grid-cols-2 gap-2">
-            <button data-strategy-mode="deep" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'deep' ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-cyan-500/40'}">Deep Analysis (AI)</button>
-            <button data-strategy-mode="research" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'research' ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-cyan-500/40'}">Research Mode</button>
+            <button data-strategy-mode="deep" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'deep' ? 'bg-orange-500/20 border-orange-400/50 text-orange-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-orange-500/40'}">Deep Analysis (AI)</button>
+            <button data-strategy-mode="research" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'research' ? 'bg-orange-500/20 border-orange-400/50 text-orange-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-orange-500/40'}">Research Mode</button>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/30">Generate</button>
-            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Save to Workspace Page</button>
-            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Save to Memory</button>
-            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Export Report (JSON)</button>
-            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Export Report (Text)</button>
+            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-200 hover:bg-orange-500/30">Generate</button>
+            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Save to Workspace Page</button>
+            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Save to Memory</button>
+            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Export Report (JSON)</button>
+            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Export Report (Text)</button>
           </div>
 
           <div id="strategyLoading" class="${strategy.loading ? '' : 'hidden'}">
             <div class="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-              <div class="h-full bg-[#00d4ff] animate-pulse" style="width: 68%"></div>
+              <div class="h-full bg-[#f97316] animate-pulse" style="width: 68%"></div>
             </div>
-            <p class="text-xs text-cyan-200 mt-2 animate-pulse">Running deep local research simulation...</p>
+            <p class="text-xs text-orange-200 mt-2 animate-pulse">Running deep local research simulation...</p>
           </div>
 
           <div id="deepAnalysisBox" class="${strategy.mode === 'deep' ? '' : 'hidden'} bg-[#0b121d] border border-zinc-800 rounded-xl p-4 space-y-3">
-            <h3 class="text-sm uppercase tracking-wide text-cyan-300">Deep Analysis (AI)</h3>
+            <h3 class="text-sm uppercase tracking-wide text-orange-300">Deep Analysis (AI)</h3>
             <p class="text-sm text-zinc-300">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate to get an execution-focused strategy brief with risks, priorities, and immediate moves.'}</p>
             <div class="grid md:grid-cols-3 gap-2 text-sm">
               ${(activeSession?.deep?.priorities || ['Priorities will appear after analysis.']).map(item => `<div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">${escapeHTML(item)}</div>`).join('')}
@@ -2828,8 +2853,8 @@
                 ['Opportunity Gaps', activeSession.cards.opportunities],
                 ['Sources / References', activeSession.cards.sources]
               ].map(([title, content]) => `
-                <article class="bg-[#0b121d] border border-zinc-800 rounded-xl p-4 hover:border-cyan-500/35 transition-all duration-300">
-                  <h4 class="text-sm font-semibold text-cyan-300 mb-2">${escapeHTML(title)}</h4>
+                <article class="bg-[#0b121d] border border-zinc-800 rounded-xl p-4 hover:border-orange-500/35 transition-all duration-300">
+                  <h4 class="text-sm font-semibold text-orange-300 mb-2">${escapeHTML(title)}</h4>
                   <div class="text-sm text-zinc-300 space-y-2">${Array.isArray(content) ? `<ul class="list-disc pl-5 space-y-1">${content.map(line => `<li>${escapeHTML(line)}</li>`).join('')}</ul>` : `<p>${escapeHTML(content || 'No data yet')}</p>`}</div>
                 </article>
               `).join('') : `
@@ -2839,29 +2864,29 @@
               `}
             </div>
             <div class="bg-[#0b121d] border border-zinc-800 rounded-xl p-3">
-              <label class="text-xs uppercase tracking-wide text-cyan-300">Ask follow-up research question</label>
+              <label class="text-xs uppercase tracking-wide text-orange-300">Ask follow-up research question</label>
               <div class="mt-2 flex flex-col sm:flex-row gap-2">
                 <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="e.g., Which segment has the highest willingness to pay?" class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
-                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-200">Run Follow-up</button>
+                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-200">Run Follow-up</button>
               </div>
             </div>
           </div>
 
           <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
-            <p class="text-xs uppercase tracking-wide text-cyan-300 mb-2">Smart Suggestions</p>
+            <p class="text-xs uppercase tracking-wide text-orange-300 mb-2">Smart Suggestions</p>
             <div class="flex flex-wrap gap-2">
-              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">${escapeHTML(s)}</button>`).join('')}
+              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 hover:border-orange-500/40">${escapeHTML(s)}</button>`).join('')}
             </div>
           </div>
 
           <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs uppercase tracking-wide text-cyan-300">Research History</p>
+              <p class="text-xs uppercase tracking-wide text-orange-300">Research History</p>
               <button id="clearResearchHistory" class="text-xs px-2.5 py-1 rounded bg-red-500/10 border border-red-500/30 text-red-300">Clear</button>
             </div>
             <div class="mt-2 max-h-40 overflow-auto scrollbar-thin space-y-2">
               ${strategy.sessions.length ? strategy.sessions.slice(0, 12).map((session, idx) => `
-                <button data-session-open="${session.id}" class="w-full text-left bg-zinc-900 border ${activeSession?.id === session.id ? 'border-cyan-500/40' : 'border-zinc-800'} rounded-lg px-3 py-2 hover:border-cyan-500/35">
+                <button data-session-open="${session.id}" class="w-full text-left bg-zinc-900 border ${activeSession?.id === session.id ? 'border-orange-500/40' : 'border-zinc-800'} rounded-lg px-3 py-2 hover:border-orange-500/35">
                   <p class="text-sm truncate">${escapeHTML(session.query)}</p>
                   <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
                 </button>
@@ -2875,14 +2900,14 @@
             <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
               <div class="flex items-center justify-between mb-3">
                 <h3 class="font-semibold">${escapeHTML(g.title)}</h3>
-                <span class="text-xs text-cyan-300">${guideProgress[gi]}%</span>
+                <span class="text-xs text-orange-300">${guideProgress[gi]}%</span>
               </div>
               <div class="space-y-2">
                 ${g.tasks.map((t, ti) => `
                   <label class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded p-2 text-sm">
-                    <input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done[ti] ? 'checked' : ''} class="accent-cyan-400" />
+                    <input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done[ti] ? 'checked' : ''} class="accent-orange-400" />
                     <span>${escapeHTML(t)}</span>
-                    <button type="button" data-plan-task="${gi}:${ti}" class="ml-auto text-[11px] px-2 py-1 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-200">Add to Task Manager</button>
+                    <button type="button" data-plan-task="${gi}:${ti}" class="ml-auto text-[11px] px-2 py-1 rounded bg-orange-500/15 border border-orange-500/30 text-orange-200">Add to Task Manager</button>
                   </label>
                 `).join('')}
               </div>
@@ -3159,13 +3184,13 @@
       const visibleEdges = graph.edges.filter(edge => visibleSet.has(edge.from) && visibleSet.has(edge.to));
 
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#070d16] via-[#0a111b] to-[#060b12] border border-cyan-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
+        <section class="bg-gradient-to-br from-[#070d16] via-[#0a111b] to-[#060b12] border border-orange-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Knowledge Graph</h2>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Knowledge Graph</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Interconnected graph of Pages, Notes, Tasks, Research, Daily Notes, and AI mentions.</p>
             </div>
-            <button id="exportKnowledgeGraph" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">Export Full Graph (JSON)</button>
+            <button id="exportKnowledgeGraph" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40">Export Full Graph (JSON)</button>
           </div>
 
           <div class="grid md:grid-cols-[1fr_auto] gap-2">
@@ -3181,8 +3206,8 @@
               <p class="text-xs text-zinc-400 px-2 pt-2">Drag nodes, scroll to zoom, drag empty space to pan, click to open item.</p>
             </div>
             <aside class="bg-[#0b111a] border border-zinc-800 rounded-xl p-3 space-y-2 max-h-[62vh] overflow-auto scrollbar-thin">
-              <p class="text-xs uppercase tracking-wide text-cyan-300">Nodes (${visibleNodes.length})</p>
-              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-cyan-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-cyan-300">Show Related</button></div>`).join('') || emptyStateMarkup('🕸️', 'No graph nodes for this filter', 'Try clearing filters or add linked items from Notes, Tasks, and Workspace.')}
+              <p class="text-xs uppercase tracking-wide text-orange-300">Nodes (${visibleNodes.length})</p>
+              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-orange-500/50 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-orange-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-orange-300">Show Related</button></div>`).join('') || emptyStateMarkup('🕸️', 'No graph nodes for this filter', 'Try clearing filters or add linked items from Notes, Tasks, and Workspace.')}
             </aside>
           </div>
         </section>
@@ -3197,7 +3222,7 @@
       const canvas = document.getElementById('kgCanvas');
       if (!canvas || !visibleNodes.length) return;
       const ctx = canvas.getContext('2d');
-      const palette = { 'Page': '#00d4ff', 'Note': '#7c9cff', 'Daily Note': '#6ee7b7', 'Task': '#f59e0b', 'Research': '#c084fc', 'Mention': '#f472b6' };
+      const palette = { 'Page': '#f97316', 'Note': '#7c9cff', 'Daily Note': '#6ee7b7', 'Task': '#f59e0b', 'Research': '#c084fc', 'Mention': '#f472b6' };
       const dpr = window.devicePixelRatio || 1;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
@@ -3271,7 +3296,7 @@
         layout.forEach(node => {
           const radius = 8 + Math.min(14, node.connected * 0.8);
           const isFocus = kg.focusRef && (node.ref === kg.focusRef || edgeLayout.some(e => (e.from===kg.focusRef && e.to===node.ref) || (e.to===kg.focusRef && e.from===node.ref)));
-          ctx.fillStyle = palette[node.type] || '#00d4ff';
+          ctx.fillStyle = palette[node.type] || '#f97316';
           ctx.globalAlpha = kg.focusRef ? (isFocus ? 1 : 0.2) : 1;
           ctx.beginPath();
           ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -3353,7 +3378,7 @@
             <h3 class="font-semibold mb-2">Preferences</h3>
             <label class="block text-sm">Currency<select data-setting="preferences.currency" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.currency==='USD'?'selected':''}>USD</option><option ${s.preferences.currency==='INR'?'selected':''}>INR</option><option ${s.preferences.currency==='EUR'?'selected':''}>EUR</option></select></label>
             <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option></select></label>
-            <label class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded px-3 py-2 mt-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-cyan-400" /></label>
+            <label class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded px-3 py-2 mt-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-400" /></label>
           </div>
         </div>
 
@@ -3364,10 +3389,10 @@
         </div>
 
         <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-3">
-          <h3 class="font-semibold text-cyan-200">Keyboard Shortcuts</h3>
+          <h3 class="font-semibold text-orange-200">Keyboard Shortcuts</h3>
           <div class="grid sm:grid-cols-2 gap-2 text-sm text-zinc-300">
-            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Quick Search</span><kbd class="text-xs text-cyan-200 border border-cyan-500/40 rounded px-1.5 py-0.5">Ctrl/⌘ + K</kbd></p>
-            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Close Sidebar/Modal</span><kbd class="text-xs text-cyan-200 border border-cyan-500/40 rounded px-1.5 py-0.5">Esc</kbd></p>
+            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Quick Search</span><kbd class="text-xs text-orange-200 border border-orange-500/40 rounded px-1.5 py-0.5">Ctrl/⌘ + K</kbd></p>
+            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Close Sidebar/Modal</span><kbd class="text-xs text-orange-200 border border-orange-500/40 rounded px-1.5 py-0.5">Esc</kbd></p>
           </div>
           <p class="text-xs text-zinc-500">Tip: shortcuts adapt to the active section and focus the most relevant input.</p>
           <footer class="pt-2 border-t border-zinc-800 text-center text-sm text-zinc-400">Made with ❤️ for Indian Founders</footer>
@@ -3406,9 +3431,9 @@
     }
 
     function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '') {
-      return `<div class="rounded-xl border border-dashed border-cyan-500/25 bg-cyan-500/5 p-4 text-center ${extraClass}">
+      return `<div class="rounded-xl border border-dashed border-orange-500/25 bg-orange-500/5 p-4 text-center ${extraClass}">
         <p class="text-xl mb-1">${icon}</p>
-        <p class="text-sm font-medium text-cyan-100">${escapeHTML(title)}</p>
+        <p class="text-sm font-medium text-orange-100">${escapeHTML(title)}</p>
         <p class="text-xs text-zinc-400 mt-1">${escapeHTML(subtitle)}</p>
       </div>`;
     }
