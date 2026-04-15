@@ -350,23 +350,95 @@
 
           <!-- Memory -->
           <section id="memory" class="tab-panel hidden">
-            <div class="rounded-2xl border border-zinc-800 bg-muted p-5 sm:p-6">
-              <h3 class="text-xl font-semibold">Memory</h3>
-              <p class="mt-1 text-sm text-zinc-400">Saved insights and founder notes across sessions.</p>
+            <div class="rounded-2xl border border-accent/30 bg-[#0a0a0a] p-5 shadow-glow sm:p-6">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 class="text-2xl font-semibold tracking-tight text-zinc-100">Memory <span class="text-accent">System</span></h3>
+                  <p class="mt-1 text-sm text-zinc-400">Private founder intelligence vault. Everything stays in this browser.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <button id="memoryExportBtn" class="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition hover:-translate-y-0.5 hover:bg-accent/20">Export Memory</button>
+                  <label class="cursor-pointer rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:-translate-y-0.5 hover:border-accent/60 hover:text-accent">
+                    Import Memory
+                    <input id="memoryImportInput" type="file" accept="application/json" class="hidden" />
+                  </label>
+                  <button id="memoryClearBtn" class="rounded-lg border border-rose-500/50 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 transition hover:-translate-y-0.5 hover:bg-rose-500/20">Clear All Memory</button>
+                </div>
+              </div>
 
-              <div class="mt-5 grid gap-4 md:grid-cols-2">
-                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
-                  <p class="text-sm font-medium">Pricing Insight</p>
-                  <p class="mt-2 text-sm text-zinc-300">Mid-market buyers accept value-based pricing once procurement cycle time drops by 20%.</p>
+              <div id="memoryToast" class="mt-3 min-h-[1.25rem] text-xs text-zinc-500"></div>
+
+              <div class="mt-5 grid gap-5 xl:grid-cols-2">
+                <article class="rounded-2xl border border-zinc-700/80 bg-[#111111]/80 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
+                  <div class="mb-4 flex items-center justify-between gap-3">
+                    <h4 class="text-lg font-semibold text-zinc-100">Saved Insights</h4>
+                    <span class="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent" id="memoryInsightCount">0 items</span>
+                  </div>
+
+                  <form id="insightForm" class="space-y-3 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
+                    <input id="insightTitle" type="text" maxlength="120" required placeholder="Insight title" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                    <textarea id="insightNote" rows="3" required placeholder="Detailed note..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <input id="insightDate" type="date" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                      <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/25">Add Insight</button>
+                    </div>
+                  </form>
+
+                  <div class="mt-4">
+                    <input id="insightSearch" type="text" placeholder="Search insights in real time..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                  </div>
+
+                  <ul id="insightList" class="mt-4 max-h-[25rem] space-y-3 overflow-y-auto pr-1 scrollbar-thin"></ul>
+                  <div id="insightEmptyState" class="mt-4 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/50 p-4 text-sm text-zinc-400">
+                    No insights yet. Start capturing your decisions...
+                  </div>
                 </article>
-                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
-                  <p class="text-sm font-medium">Customer Signal</p>
-                  <p class="mt-2 text-sm text-zinc-300">Top pain: manual quote comparison across fragmented supplier formats.</p>
+
+                <article class="rounded-2xl border border-zinc-700/80 bg-[#111111]/80 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
+                  <div class="mb-4 flex items-center justify-between gap-3">
+                    <h4 class="text-lg font-semibold text-zinc-100">Recent Actions</h4>
+                    <span class="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent" id="memoryActionCount">0 actions</span>
+                  </div>
+
+                  <form id="actionForm" class="space-y-3 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
+                    <textarea id="actionDescription" rows="3" maxlength="240" required placeholder="Action description..." class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
+                    <div class="grid gap-2 sm:grid-cols-2">
+                      <select id="actionCategory" required class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30">
+                        <option value="Strategy">Strategy</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Validation">Validation</option>
+                        <option value="Customer">Customer</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <input id="actionDate" type="date" required class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/25">Add Action</button>
+                  </form>
+
+                  <ul id="actionList" class="mt-4 max-h-[31rem] space-y-3 overflow-y-auto pr-1 scrollbar-thin"></ul>
+                  <div id="actionEmptyState" class="mt-4 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/50 p-4 text-sm text-zinc-400">
+                    No actions yet. Start capturing your decisions...
+                  </div>
                 </article>
-                <article class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 md:col-span-2">
-                  <p class="text-sm font-medium">Founder Note</p>
-                  <textarea rows="4" class="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent">Prioritize pilot with 3 plants. Need baseline metrics by May.</textarea>
-                </article>
+              </div>
+            </div>
+
+            <div id="insightModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 px-4 py-8">
+              <div class="w-full max-w-2xl rounded-2xl border border-accent/35 bg-[#111111]/95 p-5 shadow-[0_20px_60px_rgba(0,212,255,0.08)] backdrop-blur-xl sm:p-6">
+                <div class="flex items-start justify-between gap-4">
+                  <h5 class="text-lg font-semibold text-zinc-100">Insight Details</h5>
+                  <button id="closeInsightModal" class="rounded-lg border border-zinc-700 px-2.5 py-1 text-sm text-zinc-300 transition hover:border-accent hover:text-accent">✕</button>
+                </div>
+                <form id="insightEditForm" class="mt-4 space-y-3">
+                  <input id="modalInsightTitle" type="text" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                  <textarea id="modalInsightNote" rows="7" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"></textarea>
+                  <input id="modalInsightDate" type="date" required class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30" />
+                  <div class="flex flex-wrap justify-end gap-2 pt-2">
+                    <button type="button" id="deleteInsightFromModal" class="rounded-lg border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20">Delete</button>
+                    <button type="submit" class="rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/25">Save Changes</button>
+                  </div>
+                </form>
               </div>
             </div>
           </section>
@@ -761,6 +833,304 @@
       });
 
       renderBaryaChat();
+
+      const MEMORY_STORAGE_KEY = 'barya_memory_v1';
+      const MEMORY_DEFAULTS = { insights: [], actions: [] };
+      let memoryState = loadMemoryState();
+      let activeInsightId = null;
+
+      const insightForm = document.getElementById('insightForm');
+      const insightTitle = document.getElementById('insightTitle');
+      const insightNote = document.getElementById('insightNote');
+      const insightDate = document.getElementById('insightDate');
+      const insightSearch = document.getElementById('insightSearch');
+      const insightList = document.getElementById('insightList');
+      const insightEmptyState = document.getElementById('insightEmptyState');
+      const memoryInsightCount = document.getElementById('memoryInsightCount');
+
+      const actionForm = document.getElementById('actionForm');
+      const actionDescription = document.getElementById('actionDescription');
+      const actionCategory = document.getElementById('actionCategory');
+      const actionDate = document.getElementById('actionDate');
+      const actionList = document.getElementById('actionList');
+      const actionEmptyState = document.getElementById('actionEmptyState');
+      const memoryActionCount = document.getElementById('memoryActionCount');
+
+      const memoryToast = document.getElementById('memoryToast');
+      const memoryExportBtn = document.getElementById('memoryExportBtn');
+      const memoryImportInput = document.getElementById('memoryImportInput');
+      const memoryClearBtn = document.getElementById('memoryClearBtn');
+
+      const insightModal = document.getElementById('insightModal');
+      const closeInsightModal = document.getElementById('closeInsightModal');
+      const insightEditForm = document.getElementById('insightEditForm');
+      const modalInsightTitle = document.getElementById('modalInsightTitle');
+      const modalInsightNote = document.getElementById('modalInsightNote');
+      const modalInsightDate = document.getElementById('modalInsightDate');
+      const deleteInsightFromModal = document.getElementById('deleteInsightFromModal');
+
+      function todayISODate() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function loadMemoryState() {
+        try {
+          const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
+          if (!raw) return structuredClone(MEMORY_DEFAULTS);
+          const parsed = JSON.parse(raw);
+          return {
+            insights: Array.isArray(parsed?.insights) ? parsed.insights : [],
+            actions: Array.isArray(parsed?.actions) ? parsed.actions : []
+          };
+        } catch {
+          return structuredClone(MEMORY_DEFAULTS);
+        }
+      }
+
+      function saveMemoryState() {
+        localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(memoryState));
+      }
+
+      function setMemoryToast(message, tone = 'text-zinc-500') {
+        memoryToast.textContent = message;
+        memoryToast.className = `mt-3 min-h-[1.25rem] text-xs ${tone}`;
+      }
+
+      function previewText(text, limit = 90) {
+        if (!text) return '';
+        return text.length > limit ? `${text.slice(0, limit).trim()}…` : text;
+      }
+
+      function renderInsights() {
+        const searchTerm = insightSearch.value.trim().toLowerCase();
+        const insights = memoryState.insights
+          .filter((item) => item.title.toLowerCase().includes(searchTerm) || item.note.toLowerCase().includes(searchTerm))
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        memoryInsightCount.textContent = `${memoryState.insights.length} item${memoryState.insights.length === 1 ? '' : 's'}`;
+        insightList.innerHTML = '';
+
+        if (!insights.length) {
+          insightEmptyState.classList.remove('hidden');
+          return;
+        }
+
+        insightEmptyState.classList.add('hidden');
+        insights.forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'rounded-xl border border-zinc-700 bg-zinc-950/70 p-3 transition hover:border-accent/35 hover:bg-zinc-900/80';
+          li.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+              <button data-action="open-insight" data-id="${item.id}" class="min-w-0 text-left">
+                <p class="truncate text-sm font-semibold text-zinc-100">${escapeHtml(item.title)}</p>
+                <p class="mt-1 text-xs text-zinc-400">${escapeHtml(previewText(item.note))}</p>
+                <p class="mt-2 text-[11px] uppercase tracking-[0.12em] text-zinc-500">${escapeHtml(item.date)}</p>
+              </button>
+              <div class="flex shrink-0 items-center gap-2">
+                <button data-action="open-insight" data-id="${item.id}" class="rounded-md border border-accent/40 px-2 py-1 text-xs text-accent transition hover:bg-accent/15">Edit</button>
+                <button data-action="delete-insight" data-id="${item.id}" class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/15">Delete</button>
+              </div>
+            </div>
+          `;
+          insightList.appendChild(li);
+        });
+      }
+
+      function renderActions() {
+        const actions = memoryState.actions.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+        memoryActionCount.textContent = `${memoryState.actions.length} action${memoryState.actions.length === 1 ? '' : 's'}`;
+        actionList.innerHTML = '';
+
+        if (!actions.length) {
+          actionEmptyState.classList.remove('hidden');
+          return;
+        }
+
+        actionEmptyState.classList.add('hidden');
+        actions.forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'rounded-xl border border-zinc-700 bg-zinc-950/70 p-3';
+          li.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm text-zinc-100">${escapeHtml(item.description)}</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.11em]">
+                  <span class="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-accent">${escapeHtml(item.category)}</span>
+                  <span class="text-zinc-500">${escapeHtml(item.date)}</span>
+                </div>
+              </div>
+              <button data-action="delete-action" data-id="${item.id}" class="shrink-0 rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/15">Delete</button>
+            </div>
+          `;
+          actionList.appendChild(li);
+        });
+      }
+
+      function renderMemory() {
+        renderInsights();
+        renderActions();
+      }
+
+      function openInsightModal(insightId) {
+        const insight = memoryState.insights.find((item) => item.id === insightId);
+        if (!insight) return;
+        activeInsightId = insightId;
+        modalInsightTitle.value = insight.title;
+        modalInsightNote.value = insight.note;
+        modalInsightDate.value = insight.date || todayISODate();
+        insightModal.classList.remove('hidden');
+        insightModal.classList.add('flex');
+      }
+
+      function closeInsightModalView() {
+        activeInsightId = null;
+        insightModal.classList.add('hidden');
+        insightModal.classList.remove('flex');
+      }
+
+      insightForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const title = insightTitle.value.trim();
+        const note = insightNote.value.trim();
+        const date = insightDate.value || todayISODate();
+        if (!title || !note) return;
+
+        memoryState.insights.push({ id: crypto.randomUUID(), title, note, date, updatedAt: Date.now() });
+        saveMemoryState();
+        renderInsights();
+        insightForm.reset();
+        insightDate.value = todayISODate();
+        setMemoryToast('Insight saved locally.', 'text-emerald-300');
+      });
+
+      insightSearch.addEventListener('input', renderInsights);
+
+      insightList.addEventListener('click', (event) => {
+        const openButton = event.target.closest('[data-action="open-insight"]');
+        if (openButton) {
+          openInsightModal(openButton.dataset.id);
+          return;
+        }
+
+        const deleteButton = event.target.closest('[data-action="delete-insight"]');
+        if (!deleteButton) return;
+
+        memoryState.insights = memoryState.insights.filter((item) => item.id !== deleteButton.dataset.id);
+        saveMemoryState();
+        renderInsights();
+        setMemoryToast('Insight deleted.', 'text-amber-300');
+      });
+
+      actionForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const description = actionDescription.value.trim();
+        const category = actionCategory.value;
+        const date = actionDate.value || todayISODate();
+        if (!description || !category) return;
+
+        memoryState.actions.push({ id: crypto.randomUUID(), description, category, date, createdAt: Date.now() });
+        saveMemoryState();
+        renderActions();
+        actionForm.reset();
+        actionCategory.value = 'Strategy';
+        actionDate.value = todayISODate();
+        setMemoryToast('Action saved locally.', 'text-emerald-300');
+      });
+
+      actionList.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="delete-action"]');
+        if (!button) return;
+        memoryState.actions = memoryState.actions.filter((item) => item.id !== button.dataset.id);
+        saveMemoryState();
+        renderActions();
+        setMemoryToast('Action deleted.', 'text-amber-300');
+      });
+
+      insightEditForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!activeInsightId) return;
+
+        const insight = memoryState.insights.find((item) => item.id === activeInsightId);
+        if (!insight) return;
+
+        insight.title = modalInsightTitle.value.trim();
+        insight.note = modalInsightNote.value.trim();
+        insight.date = modalInsightDate.value || todayISODate();
+        insight.updatedAt = Date.now();
+
+        saveMemoryState();
+        renderInsights();
+        closeInsightModalView();
+        setMemoryToast('Insight updated.', 'text-emerald-300');
+      });
+
+      deleteInsightFromModal.addEventListener('click', () => {
+        if (!activeInsightId) return;
+        memoryState.insights = memoryState.insights.filter((item) => item.id !== activeInsightId);
+        saveMemoryState();
+        renderInsights();
+        closeInsightModalView();
+        setMemoryToast('Insight deleted.', 'text-amber-300');
+      });
+
+      closeInsightModal.addEventListener('click', closeInsightModalView);
+      insightModal.addEventListener('click', (event) => {
+        if (event.target === insightModal) closeInsightModalView();
+      });
+
+      memoryExportBtn.addEventListener('click', () => {
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          schemaVersion: 1,
+          memory: memoryState
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `barya-memory-${todayISODate()}.json`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        setMemoryToast('Memory export complete.', 'text-emerald-300');
+      });
+
+      memoryImportInput.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const parsed = JSON.parse(await file.text());
+          const incoming = parsed?.memory || parsed;
+          if (!incoming || !Array.isArray(incoming.insights) || !Array.isArray(incoming.actions)) {
+            throw new Error('Invalid format');
+          }
+
+          memoryState = {
+            insights: incoming.insights,
+            actions: incoming.actions
+          };
+          saveMemoryState();
+          renderMemory();
+          setMemoryToast('Memory imported successfully.', 'text-emerald-300');
+        } catch {
+          setMemoryToast('Import failed. Please use a valid memory JSON file.', 'text-rose-300');
+        } finally {
+          memoryImportInput.value = '';
+        }
+      });
+
+      memoryClearBtn.addEventListener('click', () => {
+        if (!window.confirm('Clear all Memory data from this browser? This cannot be undone.')) return;
+        memoryState = structuredClone(MEMORY_DEFAULTS);
+        saveMemoryState();
+        renderMemory();
+        closeInsightModalView();
+        setMemoryToast('All memory data cleared.', 'text-amber-300');
+      });
+
+      insightDate.value = todayISODate();
+      actionDate.value = todayISODate();
+      renderMemory();
 
       function openSidebar() {
         sidebar.classList.remove('-translate-x-full');
