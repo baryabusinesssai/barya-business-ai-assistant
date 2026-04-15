@@ -3660,32 +3660,35 @@
     }
 
 
-    /* Workspace redesign: clean SaaS dashboard */
+    /* Workspace redesign: Command center glassmorphism */
     #appContainer.workspace-dashboard-view {
       font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #1e293b;
-      padding: 1.25rem;
-      background: #f3f6fb;
+      color: #dbe5ff;
+      padding: clamp(1rem, 2vw, 2rem);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.2), transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(236, 72, 153, 0.16), transparent 35%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.14), transparent 42%),
+        #030712;
       min-height: 100vh;
     }
     #appContainer .workspace-dashboard-layout {
-      display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
-      gap: 1rem;
-      min-height: calc(100vh - 2rem);
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: linear-gradient(160deg, rgba(7, 17, 38, 0.94), rgba(2, 6, 23, 0.9));
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.14), 0 25px 70px rgba(2, 6, 23, 0.7);
+      overflow: hidden;
+      min-height: calc(100vh - 2.5rem);
     }
     #appContainer .workspace-sidebar {
-      width: 100%;
-      border: 1px solid #dce6f2;
-      border-radius: 16px;
-      background: #ffffff;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-      top: 7.2rem;
+      background: linear-gradient(185deg, rgba(15, 23, 42, 0.8), rgba(17, 24, 39, 0.56));
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+      backdrop-filter: blur(16px);
     }
     #appContainer .workspace-sidebar-brand h2,
     #appContainer .workspace-sidebar-brand p,
     #appContainer .workspace-top-header,
-    #appContainer .workspace-top-header * { color: #0f172a !important; }
+    #appContainer .workspace-top-header * { color: #e2e8f0 !important; }
     .workspace-sparkline {
       width: 100%;
       height: 26px;
@@ -3695,18 +3698,18 @@
     .workspace-sparkline path { fill: none; stroke-width: 2; stroke-linecap: round; }
     #appContainer .workspace-sidebar-nav .tabBtn {
       text-align: left;
-      border: 1px solid transparent;
-      background: transparent;
-      color: #475569;
-      padding: 0.68rem 0.78rem;
-      border-radius: 12px !important;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.45);
+      color: #cbd5e1;
+      padding: 0.75rem 0.85rem;
+      border-radius: 14px !important;
       display: block;
     }
     #appContainer .workspace-sidebar-nav .tabBtn.active {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-      color: #1d4ed8;
-      box-shadow: none;
+      background: linear-gradient(130deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
+      border-color: rgba(125, 211, 252, 0.7);
+      color: #eff6ff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.22);
     }
     #appContainer .workspace-sidebar-nav .tab-label {
       display: flex;
@@ -3717,42 +3720,42 @@
       letter-spacing: .01em;
     }
     .workspace-command-topbar {
-      border-radius: 14px;
-      padding: 0.82rem 1rem;
-      border: 1px solid #dce6f2;
-      background: #ffffff;
+      border-radius: 18px;
+      padding: .72rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.56);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.2rem;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+      gap: 1rem;
     }
-    .workspace-top-nav-links { display: flex; gap: 0.8rem; flex: 1; justify-content: center; }
-    .workspace-top-nav-link { color: #475569; font-size: 0.92rem; font-weight: 600; text-decoration: none; padding: 0.35rem 0.2rem; border-bottom: 2px solid transparent; }
-    .workspace-top-nav-link.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
     .encryption-badge {
       display: inline-flex;
       align-items: center;
       gap: .45rem;
       border-radius: 999px;
       padding: .4rem .8rem;
-      border: 1px solid #dbeafe;
-      background: #eff6ff;
-      color: #1e40af;
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      background: rgba(20, 83, 45, 0.34);
+      color: #bbf7d0;
       font-size: .76rem;
       letter-spacing: .08em;
       text-transform: uppercase;
-      box-shadow: none;
+      box-shadow: 0 0 14px rgba(74, 222, 128, 0.16);
+    }
+    .encryption-badge .shield {
+      filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.7));
     }
     .workspace-neural-shell {
       margin-top: 1.25rem;
-      border-radius: 16px;
-      border: 1px solid #dce6f2;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
       padding: clamp(1.2rem, 2.2vw, 1.9rem);
-      background: #ffffff;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14), transparent 40%),
+        rgba(2, 6, 23, 0.7);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
     }
     .workspace-neural-center {
       max-width: 420px;
@@ -3763,23 +3766,23 @@
     }
     .workspace-neural-input {
       width: 100%;
-      border-radius: 12px;
-      border: 1px solid #d1dce9;
-      background: #ffffff;
-      color: #0f172a;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.7);
+      color: #e2e8f0;
       padding: 0.9rem 1rem;
     }
     .workspace-neural-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,189,248,0.4); }
     .workspace-generate-btn {
       margin-top: .7rem;
       width: 100%;
-      border-radius: 12px;
-      border: 1px solid #2563eb;
-      background: #2563eb;
+      border-radius: 14px;
+      border: 1px solid rgba(59, 130, 246, 0.8);
+      background: linear-gradient(120deg, #2563eb, #7c3aed);
       color: white;
       font-weight: 700;
       padding: .8rem 1rem;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
     }
     .neural-network-bg {
       position: absolute;
@@ -3787,10 +3790,10 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      opacity: .18;
+      opacity: .45;
     }
     .neural-network-bg path {
-      stroke: rgba(148, 163, 184, 0.95);
+      stroke: rgba(148, 163, 184, 0.7);
       stroke-width: 1.2;
       stroke-dasharray: 460;
       stroke-dashoffset: 460;
@@ -3809,17 +3812,17 @@
     }
     .neural-node {
       padding: 1rem;
-      border-radius: 14px;
-      border: 1px solid #dce6f2;
-      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid currentColor;
+      background: color-mix(in oklab, currentColor 12%, transparent);
       opacity: 0;
       transform: translateY(10px) scale(.98);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 0 18px color-mix(in srgb, currentColor 40%, transparent);
     }
     .neural-node.visible { animation: nodePop .6s ease forwards, nodePulse 4.8s ease-in-out infinite; }
-    .neural-node h4 { font-size: .95rem; font-weight: 700; color: #0f172a; }
+    .neural-node h4 { font-size: .95rem; font-weight: 700; color: #f8fafc; }
     .neural-pill-row { margin-top: .5rem; display: flex; flex-wrap: wrap; gap: .4rem; }
-    .neural-pill { border-radius: 999px; font-size: .74rem; padding: .34rem .68rem; background: #f8fafc; border: 1px solid #dbe7f4; color: #475569; }
+    .neural-pill { border-radius: 999px; font-size: .74rem; padding: .34rem .68rem; background: rgba(2,6,23,.45); border: 1px solid rgba(226,232,240,.22); color: #cbd5e1; }
     .node-green { color: #22c55e; }
     .node-blue { color: #38bdf8; }
     .node-purple { color: #a78bfa; }
@@ -3838,7 +3841,7 @@
       display: block;
       margin-top: .28rem;
       font-size: .72rem;
-      color: #64748b;
+      color: #94a3b8;
       letter-spacing: .02em;
     }
     #appContainer .workspace-sidebar-group-title {
@@ -3847,7 +3850,7 @@
       font-size: .68rem;
       text-transform: uppercase;
       letter-spacing: .14em;
-      color: #94a3b8;
+      color: #64748b;
       font-weight: 700;
     }
     #appContainer .workspace-top-header {
@@ -3862,10 +3865,9 @@
     #appContainer .workspace-content-card,
     #appContainer .workspace-module-card,
     #appContainer .workspace-utility-card {
-      border: 1px solid #dce6f2;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-      border-radius: 16px;
-      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+      border-radius: 18px;
     }
     #appContainer .workspace-utility-rail {
       display: grid;
@@ -3892,35 +3894,90 @@
     }
     @media (max-width: 1280px) {
       #appContainer.workspace-dashboard-view { padding: 1rem; }
-      #appContainer .workspace-dashboard-layout { min-height: auto; grid-template-columns: 240px minmax(0, 1fr); }
+      #appContainer .workspace-dashboard-layout { min-height: auto; }
       #appContainer .workspace-main-grid { gap: 1rem; }
     }
     @media (max-width: 900px) {
-      #appContainer .workspace-dashboard-layout { grid-template-columns: 1fr; }
-      #appContainer .workspace-sidebar {
-        position: static;
-      }
-      #appContainer .workspace-sidebar-nav {
-        display: flex;
-        overflow-x: auto;
-        gap: 0.55rem;
-        padding-bottom: 0.25rem;
-      }
-      #appContainer .workspace-sidebar-nav .tabBtn {
-        min-width: 180px;
-        flex: 0 0 auto;
-      }
       .workspace-command-topbar { flex-wrap: wrap; }
       .workspace-command-topbar > div:last-child { width: 100%; justify-content: space-between; }
-      .workspace-top-nav-links { order: 3; width: 100%; justify-content: space-between; }
       .neural-node-grid { grid-template-columns: 1fr; }
       .workspace-neural-center { margin: 1rem auto 1.3rem; }
       #appContainer .workspace-sidebar-group-title { margin-top: .55rem; }
+    }
+    .app-nav-item {
+      width: 100%;
+      text-align: left;
+      border-radius: 12px;
+      padding: .7rem .9rem;
+      border: 1px solid transparent;
+      color: #d1d5db;
+      background: transparent;
+      font-size: .92rem;
+      transition: background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .app-nav-item:hover {
+      background: rgba(255,255,255,.06);
+      color: #f8fafc;
+      transform: none;
+      box-shadow: none;
+    }
+    .app-nav-item.is-active {
+      background: rgba(0, 212, 255, .12);
+      border-color: rgba(0, 212, 255, .5);
+      color: #d9fbff;
+    }
+    .app-main-section { min-height: calc(100vh - 56px); }
+    #layoutMain #publicNavbar { top: 56px; z-index: 1100; }
+    #layoutMain #publicNavbar .public-navbar-inner { max-width: 1200px; }
+    @media (max-width: 767px) {
+      #layoutMain #publicNavbar { top: 56px; }
     }
 
 </style>
 </head>
 <body class="text-slate-100 min-h-screen" data-theme="light">
+  <aside id="appSidebar" class="fixed top-0 left-0 z-[1300] h-screen w-[270px] bg-[#111111] border-r border-white/10 text-slate-100 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+    <div class="h-full flex flex-col">
+      <div class="px-5 py-6 border-b border-white/10">
+        <h1 class="text-2xl font-semibold tracking-tight text-white">Barya</h1>
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400 mt-1">Business AI</p>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-2" aria-label="App sections">
+        <button class="app-nav-item is-active" data-app-section="dashboard-section">🏠 Dashboard</button>
+        <button class="app-nav-item" data-app-section="barya-ai-section">🤖 Barya AI</button>
+        <button class="app-nav-item" data-app-section="memory-section">🧠 Memory</button>
+        <button class="app-nav-item" data-app-section="planning-section">🗂️ Business Planning</button>
+        <button class="app-nav-item" data-app-section="settings-section">⚙️ Settings</button>
+      </nav>
+      <div class="p-4 border-t border-white/10">
+        <div class="rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200 animate-pulse">
+          Local-First • On Device
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <header class="fixed top-0 left-0 md:left-[270px] right-0 h-14 z-[1200] bg-[#0f0f0f]/95 backdrop-blur border-b border-cyan-400/20">
+    <div class="h-full px-4 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <button id="sidebarMenuBtn" class="md:hidden w-9 h-9 rounded-lg border border-white/15 text-slate-200">☰</button>
+        <button id="editableProjectTitle" class="text-sm font-semibold text-white truncate">Untitled Startup</button>
+        <input id="projectTitleInput" class="hidden bg-white/10 border border-cyan-300/50 rounded px-2 py-1 text-sm text-white" />
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline-flex text-[11px] px-2.5 py-1 rounded-full border border-cyan-300/35 text-cyan-200">Local-First</span>
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 inline-block"></span>
+          <span class="text-xs sm:text-sm text-slate-200">Shruti Barya</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobileSidebarBackdrop" class="fixed inset-0 bg-black/60 z-[1250] hidden md:hidden"></div>
+
+  <main id="layoutMain" class="pt-16 md:pl-[270px] bg-[#0a0a0a] min-h-screen">
+    <section id="dashboard-section" class="app-main-section">
   <nav id="publicNavbar" class="public-navbar" aria-label="Main navigation">
     <div class="public-navbar-inner">
       <a href="#home" data-public-nav="home" class="public-logo">BARYA AI</a>
@@ -4267,27 +4324,28 @@
     <div class="workspace-dashboard-layout">
       <aside class="workspace-sidebar" aria-label="Workspace navigation">
         <div class="workspace-sidebar-brand">
-          <p class="text-xs uppercase tracking-[0.22em] text-slate-500 font-semibold">Barya AI</p>
-          <h2 class="text-lg font-semibold text-slate-900 mt-1">Workspace</h2>
-          <p class="text-xs text-slate-500 mt-1">Professional startup operating system</p>
+          <p class="text-xs uppercase tracking-[0.22em] text-slate-500 font-semibold">Barya</p>
+          <h2 class="text-lg font-semibold text-slate-900 mt-1">Founder Workspace</h2>
+          <p class="text-xs text-slate-500 mt-1">Local-first execution system</p>
           <div class="workspace-status-pills">
             <span class="workspace-status-pill">Live</span>
             <span class="workspace-status-pill">Private</span>
+            <span class="workspace-status-pill">Focused</span>
           </div>
         </div>
         <nav id="tabs" class="workspace-sidebar-nav" aria-label="Workspace sections">
-          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Dashboard</span></span><span class="tab-meta">Workspace overview and metrics</span></button>
-          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Barya AI</span></span><span class="tab-meta">AI advisor and execution assistant</span></button>
-          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Business Planning</span></span><span class="tab-meta">Plan builder and execution strategy</span></button>
-          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Startup Guides</span></span><span class="tab-meta">Learn and track readiness tasks</span></button>
-          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates</span></span><span class="tab-meta">Reusable startup planning templates</span></button>
-          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Memory</span></span><span class="tab-meta">Save context, notes, and actions</span></button>
-          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway</span></span><span class="tab-meta">Income, expenses, savings and trends</span></button>
-          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Settings</span></span><span class="tab-meta">Profile, preferences, and controls</span></button>
+          <p class="workspace-sidebar-group-title">Command</p>
+          <button data-tab="strategy" class="tabBtn active"><span class="tab-label"><span>Strategy · Barya AI</span><span>↗</span></span><span class="tab-meta">AI advisor, GTM and execution decisions</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 22 L22 18 L38 20 L56 12 L78 14 L96 9 L116 7" stroke="#38bdf8"/></svg></button>
+          <button data-tab="dashboard" class="tabBtn"><span class="tab-label"><span>Finance / Runway Tracker</span><span>↗</span></span><span class="tab-meta">Dashboard + monthly overview + trends</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 24 L20 19 L36 20 L54 16 L72 12 L90 10 L116 6" stroke="#22c55e"/></svg></button>
+          <p class="workspace-sidebar-group-title">Build</p>
+          <button data-tab="planning" class="tabBtn"><span class="tab-label"><span>Business Planning + Startup Guides</span><span>↗</span></span><span class="tab-meta">Plans, checklists, launch playbooks</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 21 L24 22 L42 17 L60 15 L82 12 L98 14 L116 10" stroke="#a78bfa"/></svg></button>
+          <button data-tab="memory" class="tabBtn"><span class="tab-label"><span>Templates + Memory</span><span>↗</span></span><span class="tab-meta">Reusable frameworks and saved context</span><svg class="workspace-sparkline" viewBox="0 0 120 30" aria-hidden="true"><path d="M4 20 L18 16 L34 19 L52 13 L70 16 L88 10 L116 8" stroke="#f472b6"/></svg></button>
+          <p class="workspace-sidebar-group-title">System</p>
+          <button data-tab="settings" class="tabBtn"><span class="tab-label"><span>Profile / Settings</span><span>•</span></span><span class="tab-meta">Founder profile, preferences, data controls</span></button>
         </nav>
         <div class="sidebar-founder-profile">
           <p class="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold">Navigation Tip</p>
-          <p class="text-sm text-slate-600 mt-2">All modules remain available and keep their current functionality.</p>
+          <p class="text-sm text-slate-600 mt-2">Only one section is active at a time so you can stay focused on execution.</p>
         </div>
       </aside>
 
@@ -4295,18 +4353,14 @@
         <header class="workspace-top-header">
           <div class="workspace-command-topbar">
             <div class="flex items-center gap-3">
-              <p class="text-sm md:text-base font-semibold">Barya AI</p>
-            </div>
-            <div class="workspace-top-nav-links" aria-label="Workspace top navigation">
-              <a class="workspace-top-nav-link" href="#home" data-public-nav="home">Home</a>
-              <a class="workspace-top-nav-link" href="#features" data-public-nav="features">Features</a>
-              <a class="workspace-top-nav-link" href="#pricing" data-public-nav="pricing">Pricing</a>
-              <a class="workspace-top-nav-link active" href="#workspace">Workspace</a>
+              <p class="text-xs font-semibold tracking-[0.28em]">BARYA AI</p>
+              <span class="text-slate-500">|</span>
+              <h1 class="text-sm md:text-base font-semibold">Founder Command Center</h1>
             </div>
             <div class="flex items-center gap-2">
-              <span class="encryption-badge">Local-First Encryption Active</span>
+              <span class="encryption-badge"><span class="shield">🛡</span>Local-First Encryption Active</span>
               <select id="languageSelect" class="border border-slate-700 rounded-xl px-3 py-2 text-xs bg-slate-900/80" aria-label="Language" data-i18n-aria-label="language"></select>
-              <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">Enter Workspace</button>
+              <button id="backToLandingBtn" class="workspace-secondary-btn text-xs">Back to Landing</button>
             </div>
           </div>
           <section class="workspace-neural-shell" aria-label="Magic AI Preview neural map">
@@ -4340,18 +4394,22 @@
         </div>
         <article id="workspaceOverviewState" class="dashboard-empty-state hidden xl:col-span-3">
           <div class="dashboard-empty-card">
+            <div class="text-5xl" aria-hidden="true">✦</div>
             <h3 class="text-2xl font-semibold mt-3">No data yet. Start by adding your first entry.</h3>
             <p class="text-slate-500 mt-2">Pick one action to begin.</p>
             <div class="grid md:grid-cols-3 gap-4 mt-6 text-left">
               <button type="button" class="get-started-card" data-guided-entry="build">
+                <span class="get-started-icon" aria-hidden="true">▦</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Business Planning</p>
                 <p class="text-sm text-slate-500 mt-1">Open templates and start building.</p>
               </button>
               <button type="button" class="get-started-card" data-guided-entry="track">
+                <span class="get-started-icon" aria-hidden="true">▤</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Dashboard</p>
                 <p class="text-sm text-slate-500 mt-1">Track income, expenses, and savings.</p>
               </button>
               <button type="button" class="get-started-card" data-guided-entry="grow">
+                <span class="get-started-icon" aria-hidden="true">✦</span>
                 <p class="text-base font-semibold mt-3 text-slate-900">Barya AI</p>
                 <p class="text-sm text-slate-500 mt-1">Get advice and next-step prompts.</p>
               </button>
@@ -4393,7 +4451,7 @@
 
           <div id="executiveSummaryCard" class="executive-summary-card rounded-2xl p-4">
             <div class="flex items-start gap-3">
-              <span class="executive-summary-icon" aria-hidden="true">●</span>
+              <span class="executive-summary-icon" aria-hidden="true">◉</span>
               <div>
                 <p class="text-xs uppercase tracking-[0.2em] text-indigo-600 font-semibold">Founder Workspace Insight</p>
                 <h3 class="font-semibold text-lg mt-1">Executive Summary</h3>
@@ -4408,17 +4466,14 @@
               <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                 <p class="text-xs text-slate-400" data-i18n="monthlyIncome">Monthly Income</p>
                 <p class="text-xl font-semibold mt-1" id="overviewIncome">$0.00</p>
-                <p class="text-xs text-emerald-600 mt-1">+15%</p>
               </div>
               <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                 <p class="text-xs text-slate-400" data-i18n="totalExpenses">Total Expenses</p>
                 <p class="text-xl font-semibold mt-1" id="overviewExpenses">$0.00</p>
-                <p class="text-xs text-emerald-600 mt-1">+8%</p>
               </div>
               <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                 <p class="text-xs text-slate-400" data-i18n="netSavings">Net Savings</p>
                 <p class="text-xl font-semibold mt-1" id="overviewSavings">$0.00</p>
-                <p class="text-xs text-indigo-600 mt-1">+$2,000</p>
               </div>
             </div>
             <p id="savingsStatus" class="text-sm text-slate-300 mt-3"></p>
@@ -4427,8 +4482,8 @@
 
           <div class="dashboard-secondary-grid">
             <div class="soft-card rounded-2xl p-4">
-              <h3 class="font-semibold">Revenue Growth Chart</h3>
-              <p class="text-xs text-slate-400 mt-1">Clean monthly trend view for income and expenses</p>
+              <h3 class="font-semibold">Financial Charts</h3>
+              <p class="text-xs text-slate-400 mt-1">Expense category split and monthly comparison</p>
               <div class="grid md:grid-cols-2 gap-4 mt-4">
                 <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
                   <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Expense Categories</p>
@@ -4436,7 +4491,7 @@
                   <div id="expenseChartEmptyState" class="chart-empty-state">No chart data yet. Add expenses to see category insights.</div>
                 </div>
                 <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-                  <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Revenue Growth</p>
+                  <p class="text-xs text-slate-400 uppercase tracking-[0.15em] mb-2">Income vs Expenses</p>
                   <canvas id="comparisonChart"></canvas>
                   <div id="comparisonChartEmptyState" class="chart-empty-state">No totals available yet. Save income or add expenses to visualize this chart.</div>
                 </div>
@@ -4444,16 +4499,16 @@
             </div>
             <div class="soft-card rounded-2xl p-4">
               <div class="flex items-center justify-between gap-3">
-                <h3 class="font-semibold">Recent Activity</h3>
-                <span class="text-xs text-slate-400">Latest founder actions</span>
+                <h3 class="font-semibold" data-i18n="recentExpenses">Recent Expenses</h3>
+                <span class="text-xs text-slate-400">Last 5 added</span>
               </div>
-              <ul id="dashboardActivityLogList" class="mt-3 space-y-2 text-sm text-slate-600"></ul>
+              <ul id="recentExpensesList" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
             </div>
           </div>
 
           <div class="soft-card rounded-2xl p-4">
             <h3 class="font-semibold text-lg" data-i18n="recommendations">Recommendations</h3>
-            <ul id="autoRecommendations" class="mt-3 space-y-2 text-slate-700"></ul>
+            <ul id="autoRecommendations" class="list-disc list-inside text-slate-300 mt-3 space-y-2"></ul>
           </div>
           </div>
         </article>
@@ -4564,7 +4619,7 @@
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
                 <p class="text-xs uppercase tracking-[0.25em] text-indigo-300 font-semibold">Business Planning</p>
-                <h2 class="font-semibold text-2xl mt-2">Startup Guides <span class="text-sm font-medium text-emerald-300">Learning Module</span></h2>
+                <h2 class="font-semibold text-2xl mt-2">Startup Guides <span class="text-sm font-medium text-emerald-300">• Learn</span></h2>
                 <p class="text-slate-300 mt-2 max-w-3xl">Learn the foundations of business with structured, beginner-friendly guides.</p>
               </div>
               <div class="soft-card rounded-2xl px-4 py-3">
@@ -4784,6 +4839,33 @@
       </p>
     </div>
   </footer>
+    </section>
+
+    <section id="barya-ai-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Barya AI Workspace</p>
+      </div>
+    </section>
+
+    <section id="memory-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Memory Workspace</p>
+      </div>
+    </section>
+
+    <section id="planning-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Business Planning Workspace</p>
+      </div>
+    </section>
+
+    <section id="settings-section" class="app-main-section hidden">
+      <div class="px-4 sm:px-6 pt-6 pb-4">
+        <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Settings Workspace</p>
+      </div>
+    </section>
+  </main>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const blueprintBtn = document.getElementById('workspaceBlueprintBtn');
@@ -4801,6 +4883,101 @@
       };
       animateNodes();
       blueprintBtn.addEventListener('click', animateNodes);
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('appSidebar');
+      const sidebarBtn = document.getElementById('sidebarMenuBtn');
+      const sidebarBackdrop = document.getElementById('mobileSidebarBackdrop');
+      const navItems = Array.from(document.querySelectorAll('.app-nav-item'));
+      const sections = {
+        'dashboard-section': document.getElementById('dashboard-section'),
+        'barya-ai-section': document.getElementById('barya-ai-section'),
+        'memory-section': document.getElementById('memory-section'),
+        'planning-section': document.getElementById('planning-section'),
+        'settings-section': document.getElementById('settings-section')
+      };
+      const appContainer = document.getElementById('appContainer');
+      const dashboardSection = sections['dashboard-section'];
+      const editableProjectTitle = document.getElementById('editableProjectTitle');
+      const projectTitleInput = document.getElementById('projectTitleInput');
+
+      const sectionTabMap = {
+        'dashboard-section': 'dashboard',
+        'barya-ai-section': 'strategy',
+        'memory-section': 'memory',
+        'planning-section': 'planning',
+        'settings-section': 'settings'
+      };
+
+      const setActiveSection = (targetId) => {
+        Object.entries(sections).forEach(([id, section]) => {
+          if (!section) return;
+          section.classList.toggle('hidden', id !== targetId);
+        });
+        navItems.forEach((item) => item.classList.toggle('is-active', item.dataset.appSection === targetId));
+
+        if (appContainer) {
+          const hostSection = sections[targetId] || dashboardSection;
+          if (hostSection && appContainer.parentElement !== hostSection) hostSection.appendChild(appContainer);
+          if (targetId !== 'dashboard-section') {
+            appContainer.style.display = 'block';
+            appContainer.classList.remove('is-hidden');
+            appContainer.classList.add('is-visible');
+          }
+        }
+
+        const tab = sectionTabMap[targetId];
+        if (tab) {
+          const matchingTabBtn = document.querySelector(`#tabs [data-tab="${tab}"]`);
+          if (matchingTabBtn) matchingTabBtn.click();
+        }
+
+        if (window.innerWidth < 768) {
+          sidebar.classList.add('-translate-x-full');
+          sidebarBackdrop.classList.add('hidden');
+        }
+      };
+
+      navItems.forEach((item) => item.addEventListener('click', () => setActiveSection(item.dataset.appSection)));
+      setActiveSection('dashboard-section');
+
+      sidebarBtn?.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        sidebarBackdrop.classList.toggle('hidden');
+      });
+      sidebarBackdrop?.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        sidebarBackdrop.classList.add('hidden');
+      });
+
+      editableProjectTitle?.addEventListener('click', () => {
+        projectTitleInput.value = editableProjectTitle.textContent.trim();
+        editableProjectTitle.classList.add('hidden');
+        projectTitleInput.classList.remove('hidden');
+        projectTitleInput.focus();
+      });
+
+      const saveProjectTitle = () => {
+        const next = projectTitleInput.value.trim() || 'Untitled Startup';
+        editableProjectTitle.textContent = next;
+        localStorage.setItem('barya.sidebarProjectTitle', next);
+        projectTitleInput.classList.add('hidden');
+        editableProjectTitle.classList.remove('hidden');
+      };
+
+      projectTitleInput?.addEventListener('blur', saveProjectTitle);
+      projectTitleInput?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') saveProjectTitle();
+        if (event.key === 'Escape') {
+          projectTitleInput.classList.add('hidden');
+          editableProjectTitle.classList.remove('hidden');
+        }
+      });
+
+      const storedTitle = localStorage.getItem('barya.sidebarProjectTitle');
+      if (storedTitle) editableProjectTitle.textContent = storedTitle;
     });
   </script>
   <script defer src="workspace-app.js"></script>
