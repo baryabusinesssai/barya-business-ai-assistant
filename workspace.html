@@ -199,6 +199,14 @@
           onePager: 'Vision, customer, problem, solution, moat.',
           fundraise: 'Round goal, use of funds, milestones.',
           ops: 'Quarter goals, KPI owners, weekly cadence.'
+        },
+        strategy: {
+          mode: 'deep',
+          idea: '',
+          followUp: '',
+          loading: false,
+          activeSessionId: null,
+          sessions: []
         }
       },
       settings: {
@@ -2055,12 +2063,121 @@
 
 
     function renderPlanning() {
+      if (!state.planning.strategy || typeof state.planning.strategy !== 'object') {
+        state.planning.strategy = structuredClone(defaultState.planning.strategy);
+      }
+      const strategy = state.planning.strategy;
+      if (!Array.isArray(strategy.sessions)) strategy.sessions = [];
+      if (!strategy.mode) strategy.mode = 'deep';
+      if (typeof strategy.idea !== 'string') strategy.idea = '';
+      if (typeof strategy.followUp !== 'string') strategy.followUp = '';
+      if (typeof strategy.loading !== 'boolean') strategy.loading = false;
       const el = document.getElementById('section-planning');
       const guideProgress = state.planning.guides.map(g => {
         const done = g.done.filter(Boolean).length;
         return Math.round((done / g.done.length) * 100);
       });
+      const activeSession = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0] || null;
+      const smartSuggestions = [
+        `Estimate TAM/SAM/SOM for ${strategy.idea || 'my startup'} in the next 24 months.`,
+        `Where are underserved opportunities in ${strategy.idea || 'this space'}?`,
+        `Summarize top 5 competitor weaknesses founders can exploit.`,
+        'What customer pain points are urgent enough for immediate paid pilots?',
+        'Build a founder-friendly wedge strategy with low CAC channels first.'
+      ];
       el.innerHTML = `
+        <section class="bg-gradient-to-br from-[#070b12] via-[#0a1020] to-[#070b12] border border-cyan-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#00d4ff]">Strategy Generator + Research Mode</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Perplexity-style founder research cockpit with local-first persistence.</p>
+            </div>
+            <div class="text-xs text-zinc-400">
+              Sessions: <span class="text-cyan-300 font-semibold">${strategy.sessions.length}</span>
+            </div>
+          </div>
+
+          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-[#0a101b] border border-zinc-700 rounded-xl p-3 outline-none focus:border-cyan-400/60 resize-y">${escapeHTML(strategy.idea)}</textarea>
+
+          <div class="grid sm:grid-cols-2 gap-2">
+            <button data-strategy-mode="deep" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'deep' ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-cyan-500/40'}">Deep Analysis (AI)</button>
+            <button data-strategy-mode="research" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'research' ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-cyan-500/40'}">Research Mode</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/30">Generate</button>
+            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Save to Workspace Page</button>
+            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Save to Memory</button>
+            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Export Report (JSON)</button>
+            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-cyan-500/30">Export Report (Text)</button>
+          </div>
+
+          <div id="strategyLoading" class="${strategy.loading ? '' : 'hidden'}">
+            <div class="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div class="h-full bg-[#00d4ff] animate-pulse" style="width: 68%"></div>
+            </div>
+            <p class="text-xs text-cyan-200 mt-2 animate-pulse">Running deep local research simulation...</p>
+          </div>
+
+          <div id="deepAnalysisBox" class="${strategy.mode === 'deep' ? '' : 'hidden'} bg-[#0b121d] border border-zinc-800 rounded-xl p-4 space-y-3">
+            <h3 class="text-sm uppercase tracking-wide text-cyan-300">Deep Analysis (AI)</h3>
+            <p class="text-sm text-zinc-300">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate to get an execution-focused strategy brief with risks, priorities, and immediate moves.'}</p>
+            <div class="grid md:grid-cols-3 gap-2 text-sm">
+              ${(activeSession?.deep?.priorities || ['Priorities will appear after analysis.']).map(item => `<div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">${escapeHTML(item)}</div>`).join('')}
+            </div>
+          </div>
+
+          <div id="researchModeBox" class="${strategy.mode === 'research' ? '' : 'hidden'} space-y-3">
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+              ${activeSession ? [
+                ['Market Size & Trends', activeSession.cards.market],
+                ['Competitor Analysis', activeSession.cards.competitors],
+                ['Customer Pain Points', activeSession.cards.painPoints],
+                ['Opportunity Gaps', activeSession.cards.opportunities],
+                ['Sources / References', activeSession.cards.sources]
+              ].map(([title, content]) => `
+                <article class="bg-[#0b121d] border border-zinc-800 rounded-xl p-4 hover:border-cyan-500/35 transition-all duration-300">
+                  <h4 class="text-sm font-semibold text-cyan-300 mb-2">${escapeHTML(title)}</h4>
+                  <div class="text-sm text-zinc-300 space-y-2">${Array.isArray(content) ? `<ul class="list-disc pl-5 space-y-1">${content.map(line => `<li>${escapeHTML(line)}</li>`).join('')}</ul>` : `<p>${escapeHTML(content || 'No data yet')}</p>`}</div>
+                </article>
+              `).join('') : `
+                <article class="md:col-span-2 xl:col-span-3 bg-[#0b121d] border border-dashed border-zinc-700 rounded-xl p-5 text-sm text-zinc-400">
+                  Run Research Mode to generate market, competitor, pain-point, opportunity, and source cards.
+                </article>
+              `}
+            </div>
+            <div class="bg-[#0b121d] border border-zinc-800 rounded-xl p-3">
+              <label class="text-xs uppercase tracking-wide text-cyan-300">Ask follow-up research question</label>
+              <div class="mt-2 flex flex-col sm:flex-row gap-2">
+                <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="e.g., Which segment has the highest willingness to pay?" class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-200">Run Follow-up</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
+            <p class="text-xs uppercase tracking-wide text-cyan-300 mb-2">Smart Suggestions</p>
+            <div class="flex flex-wrap gap-2">
+              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 hover:border-cyan-500/40">${escapeHTML(s)}</button>`).join('')}
+            </div>
+          </div>
+
+          <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs uppercase tracking-wide text-cyan-300">Research History</p>
+              <button id="clearResearchHistory" class="text-xs px-2.5 py-1 rounded bg-red-500/10 border border-red-500/30 text-red-300">Clear</button>
+            </div>
+            <div class="mt-2 max-h-40 overflow-auto scrollbar-thin space-y-2">
+              ${strategy.sessions.length ? strategy.sessions.slice(0, 12).map((session, idx) => `
+                <button data-session-open="${session.id}" class="w-full text-left bg-zinc-900 border ${activeSession?.id === session.id ? 'border-cyan-500/40' : 'border-zinc-800'} rounded-lg px-3 py-2 hover:border-cyan-500/35">
+                  <p class="text-sm truncate">${escapeHTML(session.query)}</p>
+                  <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
+                </button>
+              `).join('') : `<p class="text-sm text-zinc-500">No research history yet.</p>`}
+            </div>
+          </div>
+        </section>
+
         <div class="grid lg:grid-cols-2 gap-4">
           ${state.planning.guides.map((g, gi) => `
             <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
@@ -2091,6 +2208,68 @@
           `).join('')}
         </div>
       `;
+
+      function strategyTemplates(query = '') {
+        const q = query.toLowerCase();
+        if (/(saas|b2b|software|platform)/i.test(q)) {
+          return {
+            market: ['B2B SaaS spend continues double-digit growth in automation and vertical tools.', 'Fastest expansion in workflow AI copilots and industry-specific solutions.', 'Enterprise buyers prioritize ROI visibility and compliance readiness.'],
+            competitors: ['Incumbents: broad suites with slower onboarding and high implementation costs.', 'Startups: niche-first products with faster iteration but weaker distribution.', 'Open-source alternatives increase switching pressure for technical buyers.'],
+            painPoints: ['Onboarding complexity delays first value.', 'Tool sprawl increases operational cost and context switching.', 'Founders struggle to prove ROI quickly to finance stakeholders.'],
+            opportunities: ['Ship fast setup + guided activation as a wedge.', 'Bundle insights dashboard that translates product value into dollar impact.', 'Target underserved sub-segments where incumbents are too generic.']
+          };
+        }
+        if (/(ecommerce|d2c|retail|store)/i.test(q)) {
+          return {
+            market: ['D2C growth remains resilient in premium and repeat-purchase categories.', 'Customer acquisition costs are volatile across paid channels.', 'Retail media partnerships are becoming a key growth lever.'],
+            competitors: ['Marketplace-native sellers optimize for price and logistics.', 'Premium brands win on trust, content, and retention programs.', 'Aggregator brands have scale but weaker personalization.'],
+            painPoints: ['High CAC compresses margins.', 'Low repeat purchase due to weak lifecycle journeys.', 'Inventory forecasting errors drive stockouts or excess.'],
+            opportunities: ['Focus on high-LTV cohorts with personalized replenishment flows.', 'Create content-led acquisition loops to reduce dependency on paid ads.', 'Add post-purchase value propositions to increase retention.']
+          };
+        }
+        return {
+          market: ['Growing demand for focused products that remove specific workflow friction.', 'Capital-efficient startups are preferred due to uncertain funding cycles.', 'AI-enhanced offerings are expected even in non-technical categories.'],
+          competitors: ['General tools offer breadth but low specialization.', 'Emerging startups compete on speed and user-centric workflows.', 'Manual alternatives still dominate where software onboarding is painful.'],
+          painPoints: ['Users face fragmented tools and unclear outcomes.', 'Decision-makers need clear ROI before adoption.', 'Existing offerings often require too much setup and training.'],
+          opportunities: ['Own one urgent use case end-to-end before expanding.', 'Design measurable outcomes into onboarding.', 'Use founder-led distribution to validate demand quickly.']
+        };
+      }
+
+      function buildResearchSession(query, followUpText = '') {
+        const template = strategyTemplates(query);
+        const insight = followUpText ? `Follow-up lens: ${followUpText}.` : 'Initial research pass.';
+        return {
+          id: crypto.randomUUID(),
+          ts: new Date().toISOString(),
+          query,
+          followUp: followUpText,
+          deep: {
+            summary: `${insight} Recommended founder move: prioritize one monetizable wedge, validate with interviews, and launch a 14-day test cycle.`,
+            priorities: [
+              'Validate willingness-to-pay with 5 targeted discovery calls.',
+              'Ship one measurable value moment inside onboarding this week.',
+              'Define a channel cadence with weekly conversion review.'
+            ]
+          },
+          cards: {
+            market: template.market,
+            competitors: template.competitors,
+            painPoints: template.painPoints,
+            opportunities: template.opportunities,
+            sources: [
+              'PitchBook 2026 Sector Brief (simulated local summary)',
+              'CB Insights Market Map Q1 2026 (simulated local summary)',
+              'G2 Category Reviews trendline (simulated local summary)',
+              'Founder interview synthesis from session memory (simulated)'
+            ]
+          }
+        };
+      }
+
+      function saveStrategyState() {
+        saveStateRaw();
+        renderPlanning();
+      }
 
       el.querySelectorAll('[data-guide]').forEach(cb => cb.onchange = () => {
         const gi = Number(cb.dataset.guide);
@@ -2126,6 +2305,143 @@
         renderNav();
         saveState();
       });
+
+      document.getElementById('strategyIdeaInput').oninput = (e) => {
+        strategy.idea = e.target.value;
+        saveStateRaw();
+      };
+      el.querySelectorAll('[data-strategy-mode]').forEach(btn => btn.onclick = () => {
+        strategy.mode = btn.dataset.strategyMode;
+        saveStrategyState();
+      });
+      el.querySelectorAll('[data-smart-suggestion]').forEach(btn => btn.onclick = () => {
+        strategy.idea = smartSuggestions[Number(btn.dataset.smartSuggestion)] || strategy.idea;
+        saveStrategyState();
+      });
+
+      const runResearch = (baseQuery, follow = '') => {
+        const query = String(baseQuery || '').trim();
+        if (!query) return;
+        strategy.loading = true;
+        saveStateRaw();
+        renderPlanning();
+        setTimeout(() => {
+          const session = buildResearchSession(query, follow);
+          strategy.sessions.unshift(session);
+          strategy.activeSessionId = session.id;
+          strategy.loading = false;
+          strategy.mode = strategy.mode || 'research';
+          saveStrategyState();
+        }, 850);
+      };
+
+      const generateBtn = document.getElementById('generateStrategyBtn');
+      if (generateBtn) {
+        generateBtn.onclick = () => runResearch(strategy.idea);
+      }
+
+      const followInput = document.getElementById('researchFollowInput');
+      if (followInput) {
+        followInput.oninput = (e) => {
+          strategy.followUp = e.target.value;
+          saveStateRaw();
+        };
+      }
+      const followBtn = document.getElementById('runFollowUpResearch');
+      if (followBtn) {
+        followBtn.onclick = () => runResearch(`${strategy.idea} ${strategy.followUp}`.trim(), strategy.followUp);
+      }
+
+      document.getElementById('saveToWorkspaceBtn').onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (!session) return alert('Run strategy or research first.');
+        ensureWorkspaceState();
+        state.workspace.pages.unshift({
+          id: crypto.randomUUID(),
+          title: `Research: ${session.query.slice(0, 42)}`,
+          updatedAt: new Date().toISOString(),
+          blocks: [
+            { id: crypto.randomUUID(), type: 'h1', text: 'Research Report' },
+            { id: crypto.randomUUID(), type: 'paragraph', text: session.deep.summary },
+            { id: crypto.randomUUID(), type: 'bullet', text: `Market: ${session.cards.market.join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `Competitors: ${session.cards.competitors.join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `Pain Points: ${session.cards.painPoints.join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `Opportunities: ${session.cards.opportunities.join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'paragraph', text: `Sources: ${session.cards.sources.join('; ')}` }
+          ]
+        });
+        state.workspace.activePageId = state.workspace.pages[0].id;
+        saveState();
+      };
+
+      document.getElementById('saveToMemoryBtn').onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (!session) return alert('Run strategy or research first.');
+        if (!state.memory || typeof state.memory !== 'object') state.memory = structuredClone(defaultState.memory);
+        if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
+        state.memory.insights.unshift({
+          id: crypto.randomUUID(),
+          title: `Research Insight: ${session.query.slice(0, 42)}`,
+          content: `${session.deep.summary}\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`,
+          tags: ['Research', 'Strategy'],
+          tag: 'Research, Strategy',
+          ts: new Date().toISOString()
+        });
+        saveState();
+      };
+
+      document.getElementById('exportResearchJson').onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (!session) return alert('No research session to export.');
+        downloadJSON(`research-report-${new Date().toISOString().slice(0,10)}.json`, session);
+      };
+
+      document.getElementById('exportResearchText').onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (!session) return alert('No research session to export.');
+        const txt = [
+          `Research Report`,
+          `Date: ${new Date(session.ts).toLocaleString()}`,
+          `Query: ${session.query}`,
+          ``,
+          `Deep Summary`,
+          session.deep.summary,
+          ``,
+          `Market Size & Trends`,
+          ...session.cards.market.map(x => `- ${x}`),
+          ``,
+          `Competitor Analysis`,
+          ...session.cards.competitors.map(x => `- ${x}`),
+          ``,
+          `Customer Pain Points`,
+          ...session.cards.painPoints.map(x => `- ${x}`),
+          ``,
+          `Opportunity Gaps`,
+          ...session.cards.opportunities.map(x => `- ${x}`),
+          ``,
+          `Sources`,
+          ...session.cards.sources.map(x => `- ${x}`)
+        ].join('\n');
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `research-report-${new Date().toISOString().slice(0,10)}.txt`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      };
+
+      el.querySelectorAll('[data-session-open]').forEach(btn => btn.onclick = () => {
+        strategy.activeSessionId = btn.dataset.sessionOpen;
+        saveStrategyState();
+      });
+
+      document.getElementById('clearResearchHistory').onclick = () => {
+        if (!confirm('Clear all research history?')) return;
+        strategy.sessions = [];
+        strategy.activeSessionId = null;
+        strategy.followUp = '';
+        saveStrategyState();
+      };
     }
 
     function renderSettings() {
