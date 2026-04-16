@@ -307,7 +307,7 @@
             { id: 'mtg-weekly', title: 'Weekly Leadership Sync', datetime: '2026-04-20T09:30', participants: 'Shruti Barya, Ayaan Mehta', agenda: 'Roadmap updates, hiring priorities, KPI review.', recurring: true }
           ]
         },
-        preferences: { currency: 'USD', language: 'English', dateFormat: 'MM/DD/YYYY', darkMode: true }
+        preferences: { currency: '', language: 'English', dateFormat: 'MM/DD/YYYY', darkMode: true }
       },
       knowledgeGraph: {
         search: '',
@@ -520,7 +520,11 @@
       };
     }
 
-    function money(v){ return `${state.settings.preferences.currency} ${Number(v || 0).toLocaleString()}`; }
+    function money(v){
+      const currencyCode = state.settings.preferences.currency || '';
+      const amount = Number(v || 0).toLocaleString();
+      return currencyCode ? `${currencyCode} ${amount}` : amount;
+    }
 
     function ensureKnowledgeGraphState() {
       if (!state.knowledgeGraph || typeof state.knowledgeGraph !== 'object') state.knowledgeGraph = {};
@@ -4361,7 +4365,42 @@ Use the 'Add Block' button below to get started.</p>
           <div class="grid lg:grid-cols-2 gap-4">
             <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
               <h3 class="font-semibold text-lg text-orange-700">Preferences</h3>
-              <label class="block text-sm">Currency<select data-setting="preferences.currency" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.currency==='USD'?'selected':''}>USD</option><option ${s.preferences.currency==='EUR'?'selected':''}>EUR</option><option ${s.preferences.currency==='GBP'?'selected':''}>GBP</option><option ${s.preferences.currency==='INR'?'selected':''}>INR</option><option ${s.preferences.currency==='AED'?'selected':''}>AED</option><option ${s.preferences.currency==='SGD'?'selected':''}>SGD</option><option ${s.preferences.currency==='AUD'?'selected':''}>AUD</option></select></label>
+              <label class="block text-sm">
+                <span class="font-medium text-zinc-700">Currency</span>
+                <select data-setting="preferences.currency" class="w-full mt-1 rounded-xl border border-orange-200 bg-gradient-to-b from-white to-orange-50/30 px-3 py-2.5 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                  <option value="" ${!s.preferences.currency ? 'selected' : ''}>Select Currency</option>
+                  <option value="INR" ${s.preferences.currency==='INR' ? 'selected' : ''}>₹ Indian Rupee (INR)</option>
+                  <option value="USD" ${s.preferences.currency==='USD' ? 'selected' : ''}>$ US Dollar (USD)</option>
+                  <option value="EUR" ${s.preferences.currency==='EUR' ? 'selected' : ''}>€ Euro (EUR)</option>
+                  <option value="GBP" ${s.preferences.currency==='GBP' ? 'selected' : ''}>£ British Pound (GBP)</option>
+                  <option value="CAD" ${s.preferences.currency==='CAD' ? 'selected' : ''}>$ Canadian Dollar (CAD)</option>
+                  <option value="AUD" ${s.preferences.currency==='AUD' ? 'selected' : ''}>$ Australian Dollar (AUD)</option>
+                  <option value="SGD" ${s.preferences.currency==='SGD' ? 'selected' : ''}>$ Singapore Dollar (SGD)</option>
+                  <option value="AED" ${s.preferences.currency==='AED' ? 'selected' : ''}>د.إ UAE Dirham (AED)</option>
+                  <option value="BDT" ${s.preferences.currency==='BDT' ? 'selected' : ''}>৳ Bangladeshi Taka (BDT)</option>
+                  <option value="NPR" ${s.preferences.currency==='NPR' ? 'selected' : ''}>₨ Nepalese Rupee (NPR)</option>
+                  <option value="PKR" ${s.preferences.currency==='PKR' ? 'selected' : ''}>₨ Pakistani Rupee (PKR)</option>
+                  <option value="CNY" ${s.preferences.currency==='CNY' ? 'selected' : ''}>¥ Chinese Yuan (CNY)</option>
+                  <option value="JPY" ${s.preferences.currency==='JPY' ? 'selected' : ''}>¥ Japanese Yen (JPY)</option>
+                  <option value="RUB" ${s.preferences.currency==='RUB' ? 'selected' : ''}>₽ Russian Ruble (RUB)</option>
+                  <option value="TRY" ${s.preferences.currency==='TRY' ? 'selected' : ''}>₺ Turkish Lira (TRY)</option>
+                  <option value="ZAR" ${s.preferences.currency==='ZAR' ? 'selected' : ''}>R South African Rand (ZAR)</option>
+                  <option value="BRL" ${s.preferences.currency==='BRL' ? 'selected' : ''}>R$ Brazilian Real (BRL)</option>
+                  <option value="NGN" ${s.preferences.currency==='NGN' ? 'selected' : ''}>₦ Nigerian Naira (NGN)</option>
+                  <option value="CHF" ${s.preferences.currency==='CHF' ? 'selected' : ''}>CHF Swiss Franc (CHF)</option>
+                  <option value="SEK" ${s.preferences.currency==='SEK' ? 'selected' : ''}>kr Swedish Krona (SEK)</option>
+                  <option value="NOK" ${s.preferences.currency==='NOK' ? 'selected' : ''}>kr Norwegian Krone (NOK)</option>
+                  <option value="DKK" ${s.preferences.currency==='DKK' ? 'selected' : ''}>kr Danish Krone (DKK)</option>
+                  <option value="NZD" ${s.preferences.currency==='NZD' ? 'selected' : ''}>$ New Zealand Dollar (NZD)</option>
+                  <option value="HKD" ${s.preferences.currency==='HKD' ? 'selected' : ''}>$ Hong Kong Dollar (HKD)</option>
+                  <option value="KRW" ${s.preferences.currency==='KRW' ? 'selected' : ''}>₩ South Korean Won (KRW)</option>
+                  <option value="THB" ${s.preferences.currency==='THB' ? 'selected' : ''}>฿ Thai Baht (THB)</option>
+                  <option value="MYR" ${s.preferences.currency==='MYR' ? 'selected' : ''}>RM Malaysian Ringgit (MYR)</option>
+                  <option value="IDR" ${s.preferences.currency==='IDR' ? 'selected' : ''}>Rp Indonesian Rupiah (IDR)</option>
+                  <option value="SAR" ${s.preferences.currency==='SAR' ? 'selected' : ''}>﷼ Saudi Riyal (SAR)</option>
+                  <option value="MXN" ${s.preferences.currency==='MXN' ? 'selected' : ''}>$ Mexican Peso (MXN)</option>
+                </select>
+              </label>
               <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option><option ${s.preferences.language==='French'?'selected':''}>French</option><option ${s.preferences.language==='German'?'selected':''}>German</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Arabic'?'selected':''}>Arabic</option></select></label>
               <label class="block text-sm">Date Format<select data-setting="preferences.dateFormat" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.dateFormat==='MM/DD/YYYY'?'selected':''}>MM/DD/YYYY</option><option ${s.preferences.dateFormat==='DD/MM/YYYY'?'selected':''}>DD/MM/YYYY</option><option ${s.preferences.dateFormat==='YYYY-MM-DD'?'selected':''}>YYYY-MM-DD</option></select></label>
               <label class="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-3 py-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-500" /></label>
