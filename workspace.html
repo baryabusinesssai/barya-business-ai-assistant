@@ -355,6 +355,10 @@
       color: #374151 !important;
     }
     .light-theme .active-nav { color: #111827 !important; }
+    .welcome-tour-backdrop {
+      background: rgba(15, 23, 42, 0.52);
+      backdrop-filter: blur(4px);
+    }
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
@@ -411,6 +415,25 @@
 
   <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
 
+  <div id="welcomeTourModal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 welcome-tour-backdrop">
+    <div class="w-full max-w-xl rounded-2xl border border-teal-200 bg-white shadow-2xl p-5 sm:p-7">
+      <p class="text-xs uppercase tracking-[0.2em] text-teal-700 font-semibold">Getting Started</p>
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">Welcome to Barya! 👋</h2>
+      <p class="text-sm sm:text-base text-slate-600 mt-2">Barya is your private AI workspace to plan, build, and grow your startup.</p>
+      <div class="mt-5 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+        <p class="text-xs uppercase tracking-[0.14em] text-teal-700 font-semibold">Step <span id="welcomeTourStepNumber">1</span> of 4</p>
+        <p id="welcomeTourStepText" class="mt-2 text-lg font-semibold text-slate-800"></p>
+      </div>
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-2">
+        <button id="welcomeTourSkip" class="text-sm text-slate-500 hover:text-slate-700 underline">Skip Tour</button>
+        <div class="flex items-center gap-2">
+          <button id="welcomeTourNext" class="px-5 py-2.5 rounded-xl border border-teal-200 bg-teal-50 text-teal-700 font-semibold hover:bg-teal-100">Next</button>
+          <button id="welcomeTourGetStarted" class="hidden px-6 py-3 rounded-xl bg-barya-accent text-white font-semibold text-base hover:bg-teal-600">Get Started</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-white border border-gray-200 rounded-xl p-0 text-gray-900">
     <div class="p-5 border-b border-zinc-800 flex justify-between items-center">
       <h3 id="memoryModalTitle" class="text-lg font-semibold">Insight</h3>
@@ -428,7 +451,22 @@
 
   <script>
     const STORAGE_KEY = 'baryaWorkspaceV2';
+    const ONBOARDING_TOUR_STORAGE_KEY = 'baryaWelcomeTourSeenV1';
+    const CHECKLIST_STORAGE_KEY = 'baryaGettingStartedChecklistV1';
     const LANGUAGE_STORAGE_KEY = 'baryaWorkspaceLanguage';
+    const WELCOME_TOUR_STEPS = [
+      'Start with Strategy Generator',
+      'Talk to Barya AI',
+      'Use Workspace to organize ideas',
+      'Track everything in Dashboard'
+    ];
+    const GETTING_STARTED_ITEMS = [
+      { id: 'strategy', label: 'Describe your idea in Strategy Generator', section: 'planning' },
+      { id: 'ai', label: 'Ask Barya AI your first question', section: 'ai' },
+      { id: 'note', label: 'Create your first note in Memory', section: 'memory' },
+      { id: 'task', label: 'Add your first task', section: 'tasks' },
+      { id: 'profile', label: 'Set up your basic profile in Settings', section: 'settings' }
+    ];
     const SUPPORTED_LANGUAGES = ['en', 'hi', 'es', 'fr', 'ar', 'pt', 'de', 'zh'];
     const LANGUAGE_NAMES = {
       en: 'English',
@@ -742,6 +780,8 @@
     let latestPersistedSnapshot = '';
     let renderQueued = false;
     let workspacePendingAnimation = { pageId: null, blockId: null };
+    let welcomeTourStep = 0;
+    let checklistState = loadChecklistState();
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -758,6 +798,23 @@
       } catch {
         return structuredClone(defaultState);
       }
+    }
+
+    function loadChecklistState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY) || '{}');
+        const normalized = {};
+        GETTING_STARTED_ITEMS.forEach((item) => {
+          normalized[item.id] = Boolean(parsed[item.id]);
+        });
+        return normalized;
+      } catch {
+        return Object.fromEntries(GETTING_STARTED_ITEMS.map((item) => [item.id, false]));
+      }
+    }
+
+    function saveChecklistState() {
+      localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
     }
 
     function normalizeLanguageCode(value) {
@@ -950,7 +1007,9 @@
       latestPersistedSnapshot = JSON.stringify(state);
       applyThemePreference();
       renderHeaderFounderProfile();
+      setupWelcomeTour();
       translateDom(document.body);
+      maybeOpenWelcomeTour();
       window.addEventListener('storage', (event) => {
         if (event.key !== STORAGE_KEY || !event.newValue) return;
         try {
@@ -962,6 +1021,45 @@
           /* noop */
         }
       });
+    }
+
+    function setupWelcomeTour() {
+      const modal = document.getElementById('welcomeTourModal');
+      const nextBtn = document.getElementById('welcomeTourNext');
+      const startBtn = document.getElementById('welcomeTourGetStarted');
+      const skipBtn = document.getElementById('welcomeTourSkip');
+      if (!modal || !nextBtn || !startBtn || !skipBtn) return;
+
+      const closeTour = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        localStorage.setItem(ONBOARDING_TOUR_STORAGE_KEY, 'true');
+      };
+      const renderTourStep = () => {
+        const stepText = document.getElementById('welcomeTourStepText');
+        const stepNum = document.getElementById('welcomeTourStepNumber');
+        if (stepText) stepText.textContent = WELCOME_TOUR_STEPS[welcomeTourStep] || '';
+        if (stepNum) stepNum.textContent = String(welcomeTourStep + 1);
+        const isLast = welcomeTourStep >= WELCOME_TOUR_STEPS.length - 1;
+        nextBtn.classList.toggle('hidden', isLast);
+        startBtn.classList.toggle('hidden', !isLast);
+      };
+
+      nextBtn.onclick = () => {
+        welcomeTourStep = Math.min(WELCOME_TOUR_STEPS.length - 1, welcomeTourStep + 1);
+        renderTourStep();
+      };
+      startBtn.onclick = closeTour;
+      skipBtn.onclick = closeTour;
+      renderTourStep();
+    }
+
+    function maybeOpenWelcomeTour() {
+      if (localStorage.getItem(ONBOARDING_TOUR_STORAGE_KEY) === 'true') return;
+      const modal = document.getElementById('welcomeTourModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function renderNav() {
@@ -1054,6 +1152,18 @@
       document.getElementById('closeSidebar').onclick = closeSidebar;
       document.getElementById('overlay').onclick = closeSidebar;
       document.getElementById('closeMemoryModal').onclick = () => document.getElementById('memoryModal').close();
+      document.addEventListener('click', (event) => {
+        const startBtn = event.target.closest('[data-start-here]');
+        if (!startBtn) return;
+        const action = startBtn.dataset.startHere;
+        if (!action) return;
+        if (action.startsWith('section:')) switchSection(action.replace('section:', ''));
+        if (action === 'resource-form') {
+          state.resources.customFormOpen = true;
+          switchSection('resources');
+          saveStateRaw();
+        }
+      });
       window.addEventListener('resize', debounce(() => {
         if (state.activeSection === 'dashboard') renderDashboardCharts();
       }, 150));
@@ -1331,7 +1441,7 @@
                   </div>
                 `;
               }).join('')}
-            </div>` : `<div>${emptyStateMarkup('', 'No resources found in this category', 'Try another tab or clear your search query.')}</div>`}
+            </div>` : `<div>${emptyStateMarkup('📚', 'No resources found in this category', 'Try another tab or clear your search query.', '', 'Start Here', 'section:resources')}</div>`}
           </article>`;
 
       el.innerHTML = `
@@ -1389,7 +1499,7 @@
                   </div>
                   <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-1.5 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
                 </div>
-              `).join('') || emptyStateMarkup('', 'No bookmarks yet', 'Bookmark resources to build your personal shortlist.')}
+              `).join('') || emptyStateMarkup('🔖', 'No bookmarks yet', 'Bookmark resources to build your personal shortlist.', '', 'Start Here', 'section:resources')}
             </div>
           </article>
 
@@ -1416,7 +1526,7 @@
                   </div>
                   <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
                 </div>
-              `).join('') || emptyStateMarkup('', 'No custom resources yet', 'Use Add My Own Resource to save links that are specific to your workflow.')}
+              `).join('') || emptyStateMarkup('🧰', 'No custom resources yet', 'Use Add My Own Resource to save links that are specific to your workflow.', '', 'Start Here', 'resource-form')}
             </div>
           </article>
         </section>
@@ -1810,8 +1920,53 @@
       state.dashboard.recommendations = rec.slice(0, 5);
     }
 
+    function renderGettingStartedChecklist() {
+      const completed = GETTING_STARTED_ITEMS.filter((item) => checklistState[item.id]).length;
+      return `
+        <section class="bg-white border border-teal-200 rounded-xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-lg sm:text-xl font-semibold text-teal-700">Getting Started Checklist</h3>
+              <p class="text-sm text-zinc-600 mt-1">Complete these first 5 actions to get momentum in your first 60 seconds.</p>
+            </div>
+            <span class="text-sm font-semibold px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700">${completed}/5 completed</span>
+          </div>
+          <div class="space-y-2.5">
+            ${GETTING_STARTED_ITEMS.map((item) => `
+              <label class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+                <span class="flex items-center gap-2 text-sm text-zinc-700">
+                  <input type="checkbox" data-checklist-toggle="${item.id}" class="h-4 w-4 accent-teal-500" ${checklistState[item.id] ? 'checked' : ''} />
+                  ${escapeHTML(item.label)}
+                </span>
+                <button type="button" data-checklist-start="${item.section}" class="text-xs px-2.5 py-1.5 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 font-medium hover:bg-teal-100">Start Here</button>
+              </label>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function syncChecklistProgressFromWorkspace() {
+      const updates = {
+        strategy: Boolean((state.planning?.researchSessions || []).length),
+        ai: (state.ai?.history || []).some((msg) => msg.role === 'user' && String(msg.message || '').trim()),
+        note: Boolean((state.memory?.insights || []).length),
+        task: Boolean((state.tasks?.items || []).length),
+        profile: Boolean(String(state.settings?.founder?.name || '').trim() && String(state.settings?.founder?.role || '').trim())
+      };
+      let changed = false;
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value && !checklistState[key]) {
+          checklistState[key] = true;
+          changed = true;
+        }
+      });
+      if (changed) saveChecklistState();
+    }
+
     function renderDashboard() {
       normalizeDashboardState();
+      syncChecklistProgressFromWorkspace();
       updateRecommendations();
       const el = document.getElementById('section-dashboard');
       const d = state.dashboard;
@@ -1853,6 +2008,7 @@
       };
 
       el.innerHTML = `
+        ${renderGettingStartedChecklist()}
         <div class="bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent border border-orange-500/30 rounded-xl p-4 sm:p-5 shadow-neon">
           <h2 class="text-xl sm:text-2xl font-semibold text-barya-accent tracking-wide">Finance Command Center</h2>
           <p class="text-zinc-500 mt-1 text-sm">Compact operating view for runway, burn, forecast, and transaction activity.</p>
@@ -1989,7 +2145,7 @@
                       </div>
                     </div>
                   `;
-                  }).join('') || emptyStateMarkup('💸', 'No expense categories yet', 'Add your first expense category to unlock better burn insights.')}
+                  }).join('') || emptyStateMarkup('💸', 'No expense categories yet', 'Add your first expense category to unlock better burn insights.', '', 'Start Here', 'section:dashboard')}
                 </div>
               </div>
               <form id="expenseCategoryForm" class="grid sm:grid-cols-[1fr_140px_auto] gap-2">
@@ -2030,7 +2186,7 @@
                       </div>
                     </div>
                   </li>
-                `).join('') || `<li>${emptyStateMarkup('📭', 'No transactions yet', 'Add an income or expense to start tracking cash movement.')}</li>`}
+                `).join('') || `<li>${emptyStateMarkup('📭', 'No transactions yet', 'Add an income or expense to start tracking cash movement.', '', 'Start Here', 'section:dashboard')}</li>`}
               </ul>
             </div>
           </section>
@@ -2180,6 +2336,16 @@
         normalizeDashboardState();
         state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
         saveState();
+      });
+      el.querySelectorAll('[data-checklist-toggle]').forEach((checkbox) => {
+        checkbox.onchange = () => {
+          checklistState[checkbox.dataset.checklistToggle] = checkbox.checked;
+          saveChecklistState();
+          renderDashboard();
+        };
+      });
+      el.querySelectorAll('[data-checklist-start]').forEach((button) => {
+        button.onclick = () => switchSection(button.dataset.checklistStart);
       });
 
       renderDashboardCharts();
@@ -2573,7 +2739,7 @@
                   </div>
                   <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
                 </button>
-              `).join('') || '<p class="text-sm text-zinc-500">No pages yet. Click “+ New Page” to start.</p>'}
+              `).join('') || emptyStateMarkup('🗂️', 'No pages yet.', 'Create your first page to start organizing ideas.', '', 'Start Here', 'section:workspace')}
             </aside>
 
             <section class="bg-white border border-orange-100 rounded-xl p-4 space-y-4 min-h-[70vh]">
@@ -2639,11 +2805,11 @@ Use the 'Add Block' button below to get started.</p>
               ${activePage ? `
                 <div class="space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Connected Pages</p>
-                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">No connections yet.</p>'}</div>
+                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🔗', 'No connections yet.', 'Link this page to another one to build your graph.', '', 'Start Here', 'section:workspace')}</div>
                 </div>
                 <div class="space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Linked From</p>
-                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">No pages link here yet.</p>'}</div>
+                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🧭', 'No pages link here yet.', 'Mention this page in another page using [[Page Name]].', '', 'Start Here', 'section:workspace')}</div>
                 </div>
                 <div class="pt-2 border-t border-zinc-200 space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Add Link</p>
@@ -2653,7 +2819,7 @@ Use the 'Add Block' button below to get started.</p>
                   </select>
                   <button id="workspaceQuickLinkBtn" class="w-full px-3 py-2 rounded border border-orange-300 bg-orange-100 text-orange-700">Add Link</button>
                 </div>
-              ` : '<p class="text-sm text-zinc-500">Open a page to view its connections here.</p>'}
+              ` : emptyStateMarkup('📄', 'No page selected yet.', 'Open a page and connections will show here.', '', 'Start Here', 'section:workspace')}
             </section>
           </div>
         </div>
@@ -3030,7 +3196,7 @@ Use the 'Add Block' button below to get started.</p>
             <p class="text-xs text-zinc-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p>
           </div>
         `;
-      }).join('') || '<p class="text-sm text-zinc-500">No sprints yet.</p>';
+      }).join('') || emptyStateMarkup('🏁', 'No sprints yet.', 'Create a sprint to group this week’s execution tasks.', '', 'Start Here', 'section:tasks');
 
       const taskCard = (task) => {
         const sprint = sprintMap.get(task.sprintId);
@@ -3096,7 +3262,7 @@ Use the 'Add Block' button below to get started.</p>
               <div class="grid xl:grid-cols-[1fr_340px] gap-4">
                 <section>
                   ${t.view === 'list' ? `
-                    <div class="space-y-2">${sorted.map(taskCard).join('') || '<p class="text-sm text-zinc-500">No tasks match your filters.</p>'}</div>
+                    <div class="space-y-2">${sorted.map(taskCard).join('') || emptyStateMarkup('✅', 'No tasks yet.', 'Add your first task so your execution plan has momentum.', '', 'Start Here', 'section:tasks')}</div>
                   ` : `
                     <div class="grid md:grid-cols-3 gap-3">
                       ${['To Do','In Progress','Done'].map(status => `
@@ -3105,7 +3271,7 @@ Use the 'Add Block' button below to get started.</p>
                             <h3 class="font-medium">${status}</h3>
                             <span class="text-xs text-zinc-500">${sorted.filter(task => task.status === status).length}</span>
                           </div>
-                          <div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="text-xs text-zinc-500">Drop tasks here</p>'}</div>
+                          <div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('') || emptyStateMarkup('📥', 'No tasks in this lane yet.', 'Drag a task here or create one now.', '', 'Start Here', 'section:tasks')}</div>
                         </div>
                       `).join('')}
                     </div>
@@ -3818,7 +3984,7 @@ Use the 'Add Block' button below to get started.</p>
                             ${(activeNote.links || []).map(linkedId => {
                               const linked = memory.insights.find(n => n.id === linkedId);
                               return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">→ ${escapeHTML(linked.title)}</button>` : '';
-                            }).join('') || '<p class="text-sm text-zinc-500">No outgoing links yet.</p>'}
+                            }).join('') || emptyStateMarkup('↗️', 'No outgoing links yet.', 'Link this note to another note for context.', '', 'Start Here', 'section:memory')}
                           </div>
                         </div>
                         <div class="rounded-lg border border-gray-200 p-3">
@@ -3828,7 +3994,7 @@ Use the 'Add Block' button below to get started.</p>
                             ${(backlinksMap[activeNote.id] || []).map(backId => {
                               const back = memory.insights.find(n => n.id === backId);
                               return back ? `<button data-open-note="${back.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">← ${escapeHTML(back.title)}</button>` : '';
-                            }).join('') || '<p class="text-sm text-zinc-500">No backlinks yet.</p>'}
+                            }).join('') || emptyStateMarkup('↩️', 'No backlinks yet.', 'Create more connected notes and backlinks will appear.', '', 'Start Here', 'section:memory')}
                           </div>
                         </div>
                       </div>
@@ -4340,7 +4506,7 @@ Use the 'Add Block' button below to get started.</p>
                   <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
                   <p class="text-[11px] text-zinc-600 truncate">${escapeHTML(session.deep?.summary || '')}</p>
                 </button>
-              `).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.')}
+              `).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.', '', 'Start Here', 'section:planning')}
             </div>
           </div>
         </section>
@@ -5209,7 +5375,7 @@ Use the 'Add Block' button below to get started.</p>
                     <td class="p-3">${money(member.salary || 0)}</td>
                     <td class="p-3">${escapeHTML(member.status || 'Active')}</td>
                     <td class="p-3 flex gap-2"><button data-action="edit-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700">Edit</button><button data-action="remove-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600">Remove</button></td>
-                  </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-zinc-500">No team members added yet.</td></tr>`}
+                  </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center">${emptyStateMarkup('👥', 'No team members added yet.', 'Add your first teammate to structure responsibilities.', '', 'Start Here', 'section:settings')}</td></tr>`}
                 </tbody>
               </table>
             </div>
@@ -5245,7 +5411,7 @@ Use the 'Add Block' button below to get started.</p>
                 ${team.meetings.length ? team.meetings.map((meeting) => `<div class="rounded-lg border border-orange-100 bg-orange-50/40 p-3 flex flex-wrap gap-3 items-center justify-between">
                   <div><p class="font-medium">${escapeHTML(meeting.title)}</p><p class="text-xs text-zinc-500">${new Date(meeting.datetime).toLocaleString()} • ${escapeHTML(meeting.participants || 'No participants')}</p><p class="text-xs text-zinc-500">${escapeHTML(meeting.agenda || 'No agenda')}</p></div>
                   <div class="flex gap-2"><span class="text-xs px-2 py-1 rounded-full border border-orange-200">${meeting.recurring ? 'Recurring' : 'One-time'}</span><button data-action="edit-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700 text-sm">Edit</button><button data-action="remove-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600 text-sm">Delete</button></div>
-                </div>`).join('') : `<p class="text-sm text-zinc-500">No meetings scheduled yet.</p>`}
+                </div>`).join('') : emptyStateMarkup('📅', 'No meetings scheduled yet.', 'Create your first recurring sync to stay aligned.', '', 'Start Here', 'section:settings')}
               </div>
             </div>
 
@@ -5494,11 +5660,12 @@ Use the 'Add Block' button below to get started.</p>
       return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" placeholder="${escapeAttr(placeholder)}" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2" /></label>`;
     }
 
-    function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '') {
+    function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '', ctaLabel = '', ctaAction = '') {
       return `<div class="rounded-xl border border-dashed border-orange-500/25 bg-orange-500/5 p-4 text-center ${extraClass}">
         <p class="text-xl mb-1">${icon}</p>
         <p class="text-sm font-medium text-orange-100">${escapeHTML(title)}</p>
         <p class="text-xs text-zinc-400 mt-1">${escapeHTML(subtitle)}</p>
+        ${ctaAction ? `<button type="button" data-start-here="${escapeAttr(ctaAction)}" class="mt-3 px-3 py-1.5 rounded-lg border border-teal-300 bg-teal-50 text-teal-700 text-xs font-semibold hover:bg-teal-100">${escapeHTML(ctaLabel || 'Start Here')}</button>` : ''}
       </div>`;
     }
 
