@@ -461,11 +461,12 @@
       },
       settings: {
         founder: {
-          name: 'Shruti Barya',
-          role: 'Founder & CEO',
-          email: 'shruti@barya.ai',
-          bio: 'Founder focused on building practical AI systems for small business operators.',
-          location: 'Bengaluru, India',
+          name: '',
+          role: '',
+          email: '',
+          bio: '',
+          country: '',
+          city: '',
           linkedin: '',
           twitter: '',
           website: '',
@@ -4739,6 +4740,60 @@ Use the 'Add Block' button below to get started.</p>
 
     function renderSettings() {
       const s = state.settings;
+      const popularCountries = [
+        { name: 'India', flag: '🇮🇳' },
+        { name: 'United States', flag: '🇺🇸' },
+        { name: 'United Kingdom', flag: '🇬🇧' },
+        { name: 'Singapore', flag: '🇸🇬' },
+        { name: 'United Arab Emirates', flag: '🇦🇪' },
+        { name: 'Canada', flag: '🇨🇦' },
+        { name: 'Australia', flag: '🇦🇺' },
+        { name: 'Bangladesh', flag: '🇧🇩' },
+        { name: 'Nepal', flag: '🇳🇵' },
+        { name: 'Pakistan', flag: '🇵🇰' }
+      ];
+      const allCountries = [
+        { name: 'Afghanistan', flag: '🇦🇫' }, { name: 'Albania', flag: '🇦🇱' }, { name: 'Algeria', flag: '🇩🇿' }, { name: 'Andorra', flag: '🇦🇩' }, { name: 'Angola', flag: '🇦🇴' },
+        { name: 'Argentina', flag: '🇦🇷' }, { name: 'Armenia', flag: '🇦🇲' }, { name: 'Austria', flag: '🇦🇹' }, { name: 'Azerbaijan', flag: '🇦🇿' }, { name: 'Bahrain', flag: '🇧🇭' },
+        { name: 'Barbados', flag: '🇧🇧' }, { name: 'Belarus', flag: '🇧🇾' }, { name: 'Belgium', flag: '🇧🇪' }, { name: 'Belize', flag: '🇧🇿' }, { name: 'Benin', flag: '🇧🇯' },
+        { name: 'Bhutan', flag: '🇧🇹' }, { name: 'Bolivia', flag: '🇧🇴' }, { name: 'Bosnia and Herzegovina', flag: '🇧🇦' }, { name: 'Botswana', flag: '🇧🇼' }, { name: 'Brazil', flag: '🇧🇷' },
+        { name: 'Brunei', flag: '🇧🇳' }, { name: 'Bulgaria', flag: '🇧🇬' }, { name: 'Burkina Faso', flag: '🇧🇫' }, { name: 'Burundi', flag: '🇧🇮' }, { name: 'Cambodia', flag: '🇰🇭' },
+        { name: 'Cameroon', flag: '🇨🇲' }, { name: 'Cape Verde', flag: '🇨🇻' }, { name: 'Central African Republic', flag: '🇨🇫' }, { name: 'Chad', flag: '🇹🇩' }, { name: 'Chile', flag: '🇨🇱' },
+        { name: 'China', flag: '🇨🇳' }, { name: 'Colombia', flag: '🇨🇴' }, { name: 'Comoros', flag: '🇰🇲' }, { name: 'Congo', flag: '🇨🇬' }, { name: 'Costa Rica', flag: '🇨🇷' },
+        { name: 'Croatia', flag: '🇭🇷' }, { name: 'Cuba', flag: '🇨🇺' }, { name: 'Cyprus', flag: '🇨🇾' }, { name: 'Czech Republic', flag: '🇨🇿' }, { name: 'Denmark', flag: '🇩🇰' },
+        { name: 'Djibouti', flag: '🇩🇯' }, { name: 'Dominica', flag: '🇩🇲' }, { name: 'Dominican Republic', flag: '🇩🇴' }, { name: 'Ecuador', flag: '🇪🇨' }, { name: 'Egypt', flag: '🇪🇬' },
+        { name: 'El Salvador', flag: '🇸🇻' }, { name: 'Equatorial Guinea', flag: '🇬🇶' }, { name: 'Eritrea', flag: '🇪🇷' }, { name: 'Estonia', flag: '🇪🇪' }, { name: 'Eswatini', flag: '🇸🇿' },
+        { name: 'Ethiopia', flag: '🇪🇹' }, { name: 'Fiji', flag: '🇫🇯' }, { name: 'Finland', flag: '🇫🇮' }, { name: 'France', flag: '🇫🇷' }, { name: 'Gabon', flag: '🇬🇦' },
+        { name: 'Gambia', flag: '🇬🇲' }, { name: 'Georgia', flag: '🇬🇪' }, { name: 'Germany', flag: '🇩🇪' }, { name: 'Ghana', flag: '🇬🇭' }, { name: 'Greece', flag: '🇬🇷' },
+        { name: 'Grenada', flag: '🇬🇩' }, { name: 'Guatemala', flag: '🇬🇹' }, { name: 'Guinea', flag: '🇬🇳' }, { name: 'Guinea-Bissau', flag: '🇬🇼' }, { name: 'Guyana', flag: '🇬🇾' },
+        { name: 'Haiti', flag: '🇭🇹' }, { name: 'Honduras', flag: '🇭🇳' }, { name: 'Hungary', flag: '🇭🇺' }, { name: 'Iceland', flag: '🇮🇸' }, { name: 'Indonesia', flag: '🇮🇩' },
+        { name: 'Iran', flag: '🇮🇷' }, { name: 'Iraq', flag: '🇮🇶' }, { name: 'Ireland', flag: '🇮🇪' }, { name: 'Israel', flag: '🇮🇱' }, { name: 'Italy', flag: '🇮🇹' },
+        { name: 'Jamaica', flag: '🇯🇲' }, { name: 'Japan', flag: '🇯🇵' }, { name: 'Jordan', flag: '🇯🇴' }, { name: 'Kazakhstan', flag: '🇰🇿' }, { name: 'Kenya', flag: '🇰🇪' },
+        { name: 'Kiribati', flag: '🇰🇮' }, { name: 'Kuwait', flag: '🇰🇼' }, { name: 'Kyrgyzstan', flag: '🇰🇬' }, { name: 'Laos', flag: '🇱🇦' }, { name: 'Latvia', flag: '🇱🇻' },
+        { name: 'Lebanon', flag: '🇱🇧' }, { name: 'Lesotho', flag: '🇱🇸' }, { name: 'Liberia', flag: '🇱🇷' }, { name: 'Libya', flag: '🇱🇾' }, { name: 'Liechtenstein', flag: '🇱🇮' },
+        { name: 'Lithuania', flag: '🇱🇹' }, { name: 'Luxembourg', flag: '🇱🇺' }, { name: 'Madagascar', flag: '🇲🇬' }, { name: 'Malawi', flag: '🇲🇼' }, { name: 'Malaysia', flag: '🇲🇾' },
+        { name: 'Maldives', flag: '🇲🇻' }, { name: 'Mali', flag: '🇲🇱' }, { name: 'Malta', flag: '🇲🇹' }, { name: 'Marshall Islands', flag: '🇲🇭' }, { name: 'Mauritania', flag: '🇲🇷' },
+        { name: 'Mauritius', flag: '🇲🇺' }, { name: 'Mexico', flag: '🇲🇽' }, { name: 'Micronesia', flag: '🇫🇲' }, { name: 'Moldova', flag: '🇲🇩' }, { name: 'Monaco', flag: '🇲🇨' },
+        { name: 'Mongolia', flag: '🇲🇳' }, { name: 'Montenegro', flag: '🇲🇪' }, { name: 'Morocco', flag: '🇲🇦' }, { name: 'Mozambique', flag: '🇲🇿' }, { name: 'Myanmar', flag: '🇲🇲' },
+        { name: 'Namibia', flag: '🇳🇦' }, { name: 'Nauru', flag: '🇳🇷' }, { name: 'Netherlands', flag: '🇳🇱' }, { name: 'New Zealand', flag: '🇳🇿' }, { name: 'Nicaragua', flag: '🇳🇮' },
+        { name: 'Niger', flag: '🇳🇪' }, { name: 'Nigeria', flag: '🇳🇬' }, { name: 'North Korea', flag: '🇰🇵' }, { name: 'North Macedonia', flag: '🇲🇰' }, { name: 'Norway', flag: '🇳🇴' },
+        { name: 'Oman', flag: '🇴🇲' }, { name: 'Palau', flag: '🇵🇼' }, { name: 'Panama', flag: '🇵🇦' }, { name: 'Papua New Guinea', flag: '🇵🇬' }, { name: 'Paraguay', flag: '🇵🇾' },
+        { name: 'Peru', flag: '🇵🇪' }, { name: 'Philippines', flag: '🇵🇭' }, { name: 'Poland', flag: '🇵🇱' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Qatar', flag: '🇶🇦' },
+        { name: 'Romania', flag: '🇷🇴' }, { name: 'Russia', flag: '🇷🇺' }, { name: 'Rwanda', flag: '🇷🇼' }, { name: 'Saint Kitts and Nevis', flag: '🇰🇳' }, { name: 'Saint Lucia', flag: '🇱🇨' },
+        { name: 'Saint Vincent and the Grenadines', flag: '🇻🇨' }, { name: 'Samoa', flag: '🇼🇸' }, { name: 'San Marino', flag: '🇸🇲' }, { name: 'Sao Tome and Principe', flag: '🇸🇹' }, { name: 'Saudi Arabia', flag: '🇸🇦' },
+        { name: 'Senegal', flag: '🇸🇳' }, { name: 'Serbia', flag: '🇷🇸' }, { name: 'Seychelles', flag: '🇸🇨' }, { name: 'Sierra Leone', flag: '🇸🇱' }, { name: 'Slovakia', flag: '🇸🇰' },
+        { name: 'Slovenia', flag: '🇸🇮' }, { name: 'Solomon Islands', flag: '🇸🇧' }, { name: 'Somalia', flag: '🇸🇴' }, { name: 'South Africa', flag: '🇿🇦' }, { name: 'South Korea', flag: '🇰🇷' },
+        { name: 'South Sudan', flag: '🇸🇸' }, { name: 'Spain', flag: '🇪🇸' }, { name: 'Sri Lanka', flag: '🇱🇰' }, { name: 'Sudan', flag: '🇸🇩' }, { name: 'Suriname', flag: '🇸🇷' },
+        { name: 'Sweden', flag: '🇸🇪' }, { name: 'Switzerland', flag: '🇨🇭' }, { name: 'Syria', flag: '🇸🇾' }, { name: 'Taiwan', flag: '🇹🇼' }, { name: 'Tajikistan', flag: '🇹🇯' },
+        { name: 'Tanzania', flag: '🇹🇿' }, { name: 'Thailand', flag: '🇹🇭' }, { name: 'Timor-Leste', flag: '🇹🇱' }, { name: 'Togo', flag: '🇹🇬' }, { name: 'Tonga', flag: '🇹🇴' },
+        { name: 'Trinidad and Tobago', flag: '🇹🇹' }, { name: 'Tunisia', flag: '🇹🇳' }, { name: 'Turkey', flag: '🇹🇷' }, { name: 'Turkmenistan', flag: '🇹🇲' }, { name: 'Tuvalu', flag: '🇹🇻' },
+        { name: 'Uganda', flag: '🇺🇬' }, { name: 'Ukraine', flag: '🇺🇦' }, { name: 'Uruguay', flag: '🇺🇾' }, { name: 'Uzbekistan', flag: '🇺🇿' }, { name: 'Vanuatu', flag: '🇻🇺' },
+        { name: 'Vatican City', flag: '🇻🇦' }, { name: 'Venezuela', flag: '🇻🇪' }, { name: 'Vietnam', flag: '🇻🇳' }, { name: 'Yemen', flag: '🇾🇪' }, { name: 'Zambia', flag: '🇿🇲' },
+        { name: 'Zimbabwe', flag: '🇿🇼' }
+      ];
+      const popularNames = new Set(popularCountries.map((country) => country.name));
+      const additionalCountries = allCountries.filter((country) => !popularNames.has(country.name)).sort((a, b) => a.name.localeCompare(b.name));
+      const countryOption = (country) => `<option value="${escapeAttr(country.name)}"${s.founder.country === country.name ? ' selected' : ''}>${country.flag} ${country.name}</option>`;
       const team = s.team || (s.team = { openRoles: 0, members: [], responsibilities: {}, meetings: [] });
       team.members ||= [];
       team.meetings ||= [];
@@ -4762,7 +4817,7 @@ Use the 'Add Block' button below to get started.</p>
               <div class="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50 via-white to-teal-50 p-4 mb-2">
                 <div class="flex flex-col items-center gap-3">
                   <div id="founderPhotoPreview" class="h-[120px] w-[120px] rounded-full overflow-hidden grid place-items-center">
-                    ${renderFounderAvatar({ name: s.founder.name || 'Shruti Barya', photo: s.founder.photo, size: 'h-[120px] w-[120px] text-3xl' })}
+                    ${renderFounderAvatar({ name: s.founder.name || 'Founder', photo: s.founder.photo, size: 'h-[120px] w-[120px] text-3xl' })}
                   </div>
                   <input id="founderPhotoInput" type="file" accept="image/png,image/jpeg,.jpg,.jpeg" class="hidden" />
                   <div class="flex flex-wrap items-center justify-center gap-2">
@@ -4772,14 +4827,30 @@ Use the 'Add Block' button below to get started.</p>
                   <p class="text-xs text-zinc-500">Max 2MB · JPG, JPEG, PNG</p>
                 </div>
               </div>
-              ${inputField('Founder Name','founder.name',s.founder.name)}
-              ${inputField('Role / Title','founder.role',s.founder.role)}
-              ${inputField('Email','founder.email',s.founder.email,'email')}
-              <label class="block text-sm">Bio<textarea data-setting="founder.bio" rows="3" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2">${escapeHTML(s.founder.bio || '')}</textarea></label>
-              ${inputField('Location','founder.location',s.founder.location)}
-              ${inputField('LinkedIn','founder.linkedin',s.founder.linkedin)}
-              ${inputField('Twitter','founder.twitter',s.founder.twitter)}
-              ${inputField('Website','founder.website',s.founder.website)}
+              ${inputField('Full Name','founder.name',s.founder.name,'text','Your Full Name')}
+              ${inputField('Role / Title','founder.role',s.founder.role,'text','Your Role (e.g., Founder & CEO)')}
+              ${inputField('Email','founder.email',s.founder.email,'email','your.email@example.com')}
+              <label class="block text-sm">
+                Country
+                <div class="relative mt-1">
+                  <select data-setting="founder.country" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-10 text-zinc-800 shadow-sm transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200">
+                    <option value="" ${!s.founder.country ? 'selected' : ''}>Select your country</option>
+                    <optgroup label="Popular countries">
+                      ${popularCountries.map(countryOption).join('')}
+                    </optgroup>
+                    <option disabled>──────────</option>
+                    <optgroup label="All countries (A-Z)">
+                      ${additionalCountries.map(countryOption).join('')}
+                    </optgroup>
+                  </select>
+                  <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-zinc-400">▾</span>
+                </div>
+              </label>
+              ${inputField('City','founder.city',s.founder.city,'text','Your City')}
+              <label class="block text-sm">Bio<textarea data-setting="founder.bio" rows="4" placeholder="Write a short bio about yourself as a founder..." class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2">${escapeHTML(s.founder.bio || '')}</textarea></label>
+              ${inputField('LinkedIn Profile','founder.linkedin',s.founder.linkedin,'url','https://linkedin.com/in/your-profile')}
+              ${inputField('Twitter / X','founder.twitter',s.founder.twitter,'url','https://x.com/yourhandle')}
+              ${inputField('Website (optional)','founder.website',s.founder.website,'url','https://yourwebsite.com')}
             </article>
 
             <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
@@ -4932,7 +5003,7 @@ Use the 'Add Block' button below to get started.</p>
       const photoPreview = document.getElementById('founderPhotoPreview');
       const founderNameInput = el.querySelector('[data-setting="founder.name"]');
       const updateFounderPhotoUI = () => {
-        const founderName = founderNameInput?.value?.trim() || state.settings.founder.name || 'Shruti Barya';
+        const founderName = founderNameInput?.value?.trim() || state.settings.founder.name || 'Founder';
         if (photoPreview) {
           photoPreview.innerHTML = renderFounderAvatar({
             name: founderName,
@@ -5108,8 +5179,8 @@ Use the 'Add Block' button below to get started.</p>
       };
     }
 
-    function inputField(label, settingPath, value, type='text') {
-      return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2" /></label>`;
+    function inputField(label, settingPath, value, type='text', placeholder='') {
+      return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" placeholder="${escapeAttr(placeholder)}" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2" /></label>`;
     }
 
     function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '') {
