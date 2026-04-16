@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya | Features</title>
+  <meta name="description" content="Explore Barya's powerful founder features for strategy, execution, workspace collaboration, and financial clarity." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border-soft: #d9e2ec;
+      --text-main: #1e2937;
+      --text-muted: #526174;
+      --primary: #1e2937;
+      --primary-hover: #111827;
+      --accent: #14b8a6;
+      --accent-hover: #0f766e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+      line-height: 1.55;
+    }
+
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    p { color: var(--text-muted); }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      padding-inline: 1.2rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #14b8a6, #0f766e 58%, #0f766e);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
+    }
+
+    .secondary-btn {
+      border: 1px solid #c6d6df;
+      color: var(--primary);
+      background: #ffffff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #14b8a6;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+    .section-label {
+      font-size: .73rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(20,184,166,.25), rgba(30,41,55,.12), rgba(15,118,110,.18));
+      opacity: 0;
+      transition: opacity .28s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before { opacity: 1; }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 36px rgba(15, 23, 42, 0.1);
+    }
+
+    .feature-icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: .9rem;
+      display: grid;
+      place-items: center;
+      background: #f0fdfa;
+      border: 1px solid rgba(20,184,166,.35);
+      color: #0f766e;
+    }
+
+    .nav-active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      main { padding-top: 6.8rem !important; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/90 bg-[#f8fafc]/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+      <a href="index.html#home" class="text-sm font-semibold tracking-[0.2em] text-[#1e2937]">BARYA</a>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+        <a href="features.html" class="nav-active">Features</a>
+        <a href="index.html#pricing" class="hover:text-slate-900">Pricing</a>
+        <a href="index.html#blog" class="hover:text-slate-900">Blog</a>
+        <a href="index.html#contact" class="hover:text-slate-900">Contact</a>
+        <a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a>
+        <a href="index.html#terms-of-service" class="hover:text-slate-900">Terms of Service</a>
+      </div>
+      <a href="workspace.html" class="primary-btn text-sm">Enter Workspace</a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
+    <section class="glass-card rounded-3xl p-8 lg:p-12">
+      <p class="section-label">Features</p>
+      <h1 class="section-heading mt-3 max-w-3xl">Powerful Features Built for Founders</h1>
+      <p class="mt-4 max-w-3xl text-lg">Everything you need to think, plan, and execute — all in one private workspace.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="workspace.html" class="primary-btn text-sm">Open Workspace</a>
+        <a href="index.html#pricing" class="secondary-btn text-sm">See Pricing</a>
+      </div>
+    </section>
+
+    <section class="mt-12">
+      <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Smart Strategy Generator</h3>
+          <p class="mt-2 text-sm">Deep analysis, SWOT, competitor research, and actionable GTM plans.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Barya AI - Your Private Co-Founder</h3>
+          <p class="mt-2 text-sm">Long-form reasoning, execution plans, and context-aware guidance.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 8h8M8 12h5M8 16h8"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Workspace - Connected Editor</h3>
+          <p class="mt-2 text-sm">Notion-style pages with relations, structure, and backlinks.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Tasks &amp; Sprints</h3>
+          <p class="mt-2 text-sm">Task management with sprints, owners, and responsibility tracking.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8v8H8z"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Memory Vault</h3>
+          <p class="mt-2 text-sm">Your second brain with daily notes, graph view, and smart connections.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14h3v4H7zM12 10h3v8h-3zM17 6h3v12h-3z"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Finance Command Center</h3>
+          <p class="mt-2 text-sm">Real-time metrics, runway visibility, and cash flow forecasting.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Resources Hub</h3>
+          <p class="mt-2 text-sm">Curated tools, communities, books, and investment guides.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl p-6">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M8 7.5l3 8M16 7.5l-3 8M8 6h8"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-slate-900">Knowledge Graph</h3>
+          <p class="mt-2 text-sm">A visual map of your ideas, notes, tasks, and business insights.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-[#f0f7f7] py-14">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <p class="text-lg font-bold text-slate-900">Barya</p>
+        <p class="mt-3 text-sm text-slate-600">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Product</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="features.html" class="hover:text-slate-900">Product</a></li>
+          <li><a href="index.html#how-it-works" class="hover:text-slate-900">How it Works</a></li>
+          <li><a href="features.html" class="hover:text-slate-900">Features</a></li>
+          <li><a href="index.html#what-you-can-do" class="hover:text-slate-900">Templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Company</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#what-is-barya" class="hover:text-slate-900">Story</a></li>
+          <li><a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a></li>
+          <li><a href="index.html#contact" class="hover:text-slate-900">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Resources</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#faq" class="hover:text-slate-900">Guides</a></li>
+          <li><a href="index.html#blog" class="hover:text-slate-900">Blog</a></li>
+          <li><a href="index.html#business-planning" class="hover:text-slate-900">Startup Checklist</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto mt-10 max-w-6xl border-t border-slate-200 px-6 pt-6 text-xs text-slate-500">
+      <p>© 2026 Barya Labs. All rights reserved.</p>
+      <p class="mt-1">Built with love for founders by a fellow founder.</p>
+    </div>
+  </footer>
+</body>
+</html>
