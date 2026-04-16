@@ -1814,12 +1814,12 @@
                   <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-500 mb-1.5">${metric.label}</p>
                   ${metric.editable
                     ? `<input data-metric="${metric.key}" type="number" step="0.1" min="0" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-lg font-bold outline-none focus:border-teal-500" value="${d.metrics[metric.key]}" />`
-                    : `<p data-metric-output="${metric.key}" class="text-3xl font-extrabold leading-tight ${metricStyles[metric.key]}">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(2)} mo` : money(d.metrics[metric.key])}</p>`
+                    : `<p data-metric-output="${metric.key}" class="${metric.key === 'runway' ? 'text-4xl font-black leading-tight tracking-tight' : 'text-3xl font-extrabold leading-tight'} ${metricStyles[metric.key]}">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(2)} months` : money(d.metrics[metric.key])}</p>`
                   }
                   <p data-metric-caption="${metric.key}" class="text-xs text-zinc-500 mt-1.5">${metric.key === 'runway'
-                    ? `${Number(d.metrics.runway).toFixed(2)} months • Team Burn ${money(teamBurn)} + Other Expenses ${money(d.metrics.expenses)}`
+                    ? `Team Burn ${money(teamBurn, { includeCode: false })} + Other Expenses ${money(d.metrics.expenses, { includeCode: false })}`
                     : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
-                  ${metric.key === 'runway' ? `<p class="text-[11px] text-zinc-400 mt-0.5">Calculation base: ${money(runwayDenominator)} / month</p>` : ''}
+                  ${metric.key === 'runway' ? `<p data-metric-base="runway" class="text-[11px] text-zinc-400 mt-0.5">Calculation base: ${money(runwayDenominator, { includeCode: false })} / month</p>` : ''}
                 </label>
               `).join('')}
             </div>
@@ -2006,6 +2006,7 @@
           const expensesCaption = el.querySelector('[data-metric-caption="expenses"]');
           const netCaption = el.querySelector('[data-metric-caption="netSavings"]');
           const runwayCaption = el.querySelector('[data-metric-caption="runway"]');
+          const runwayBase = el.querySelector('[data-metric-base="runway"]');
           if (incomeCaption) incomeCaption.textContent = `${money(income)} • Editable • Monthly inflow`;
           if (expensesCaption) expensesCaption.textContent = `${money(expenses)} • Editable • Other monthly expenses`;
           if (netOutput) {
@@ -2016,10 +2017,11 @@
           if (runwayOutput) {
             runwayOutput.classList.toggle('text-emerald-600', state.dashboard.metrics.runway >= 0);
             runwayOutput.classList.toggle('text-red-500', state.dashboard.metrics.runway < 0);
-            runwayOutput.textContent = `${Number(state.dashboard.metrics.runway).toFixed(2)} mo`;
+            runwayOutput.textContent = `${Number(state.dashboard.metrics.runway).toFixed(2)} months`;
           }
           if (netCaption) netCaption.textContent = `${money(netSavings)} • Auto-calculated (Income - Expenses)`;
-          if (runwayCaption) runwayCaption.textContent = `${Number(state.dashboard.metrics.runway).toFixed(2)} months • Team Burn ${money(monthlyTeamBurn)} + Other Expenses ${money(expenses)}`;
+          if (runwayCaption) runwayCaption.textContent = `Team Burn ${money(monthlyTeamBurn, { includeCode: false })} + Other Expenses ${money(expenses, { includeCode: false })}`;
+          if (runwayBase) runwayBase.textContent = `Calculation base: ${money(denominator, { includeCode: false })} / month`;
           saveStateWithoutRender();
           renderDashboardCharts();
         };
