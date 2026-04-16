@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya | Privacy Policy</title>
+  <meta name="description" content="Read Barya's founder-friendly Privacy Policy. Learn how our local-first approach keeps your notes, chats, and business data private on your device." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border-soft: #d9e2ec;
+      --text-main: #1e2937;
+      --text-muted: #526174;
+      --primary: #1e2937;
+      --accent: #14b8a6;
+      --accent-hover: #0f766e;
+      --warm: #f97316;
+      --warm-soft: #fff7ed;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+      line-height: 1.55;
+    }
+
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    p { color: var(--text-muted); }
+
+    .section-label {
+      font-size: .73rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(20,184,166,.25), rgba(30,41,55,.12), rgba(249,115,22,.18));
+      opacity: 0;
+      transition: opacity .28s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before { opacity: 1; }
+
+    .policy-card {
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .policy-highlight {
+      border: 1px solid rgba(20, 184, 166, 0.35);
+      background: linear-gradient(150deg, #f0fdfa 0%, #ffffff 100%);
+      box-shadow: 0 14px 32px rgba(15, 118, 110, 0.14);
+    }
+
+    .policy-list li {
+      position: relative;
+      padding-left: 1.1rem;
+      color: #475569;
+      line-height: 1.75;
+    }
+
+    .policy-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #0f766e;
+      font-weight: 700;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      padding-inline: 1.2rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #14b8a6, #0f766e 58%, #0f766e);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
+    }
+
+    .secondary-btn {
+      border: 1px solid #c6d6df;
+      color: var(--primary);
+      background: #ffffff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #14b8a6;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+    .nav-active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      main { padding-top: 6.8rem !important; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/90 bg-[#f8fafc]/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+      <a href="index.html#home" class="text-sm font-semibold tracking-[0.2em] text-[#1e2937]">BARYA</a>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+        <a href="features.html" class="hover:text-slate-900">Features</a>
+        <a href="pricing.html" class="hover:text-slate-900">Pricing</a>
+        <a href="blog.html" class="hover:text-slate-900">Blog</a>
+        <a href="contact.html" class="hover:text-slate-900">Contact</a>
+        <a href="privacy.html" class="nav-active">Privacy Policy</a>
+        <a href="index.html#terms-of-service" class="hover:text-slate-900">Terms of Service</a>
+      </div>
+      <a href="workspace.html" class="primary-btn text-sm">Enter Workspace</a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
+    <section class="glass-card rounded-3xl p-8 lg:p-12">
+      <p class="section-label">Privacy Policy</p>
+      <h1 class="section-heading mt-3 max-w-3xl">Privacy Policy</h1>
+      <p class="mt-4 max-w-3xl text-lg">We take your privacy seriously. Your data belongs to you.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="workspace.html" class="primary-btn text-sm">Open Workspace</a>
+        <a href="contact.html" class="secondary-btn text-sm">Contact Support</a>
+      </div>
+    </section>
+
+    <section class="mt-12 grid gap-6">
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">1) Introduction</h2>
+        <p class="mt-3">This Privacy Policy explains, in simple language, how Barya handles your information. We built Barya for founders who want speed and control without giving up privacy.</p>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">2) Information We Collect</h2>
+        <p class="mt-3">Barya is designed so your working data stays with you. That includes your:</p>
+        <ul class="policy-list mt-4 space-y-2 text-sm sm:text-base">
+          <li>Notes, ideas, and planning documents</li>
+          <li>Tasks, strategy drafts, and workspace content</li>
+          <li>Financial entries, runway plans, and forecasts</li>
+          <li>Chats and interactions inside your local workspace</li>
+        </ul>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">3) How We Use Your Information</h2>
+        <p class="mt-3">Your information is used only to power your product experience on your own device, such as organizing your workspace, generating outputs, and helping you execute faster.</p>
+        <ul class="policy-list mt-4 space-y-2 text-sm sm:text-base">
+          <li>We do not sell your data</li>
+          <li>We do not share your data for advertising</li>
+          <li>We do not profile you for third-party marketing</li>
+        </ul>
+      </article>
+
+      <article class="policy-card policy-highlight rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">4) Local-First Approach</h2>
+        <p class="mt-3 text-base sm:text-lg font-medium text-teal-800">Barya is 100% local-first — no data is sent to our servers.</p>
+        <p class="mt-3">Your notes, ideas, financial data, and chats stay on your device. This is a core product principle, not an optional setting.</p>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">5) Data Storage &amp; Security</h2>
+        <p class="mt-3">Everything stays on your device by default. We do not host your workspace content on Barya-managed servers.</p>
+        <ul class="policy-list mt-4 space-y-2 text-sm sm:text-base">
+          <li>Your sensitive business context remains under your control</li>
+          <li>Security depends on your device protections (passwords, OS security, backups)</li>
+          <li>We recommend using device encryption and regular local backups</li>
+        </ul>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">6) Your Rights</h2>
+        <p class="mt-3">You stay in control of your information at all times. You can:</p>
+        <ul class="policy-list mt-4 space-y-2 text-sm sm:text-base">
+          <li>Access your data whenever you want</li>
+          <li>Export your data in supported formats</li>
+          <li>Delete your data anytime from your own device</li>
+        </ul>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">7) Third-Party Services</h2>
+        <p class="mt-3">If third-party services are used in the future (for example payments, analytics, or optional integrations), we will clearly explain what data they process and why. We only choose providers that align with a privacy-first mindset.</p>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">8) Changes to This Policy</h2>
+        <p class="mt-3">If we update this Privacy Policy, we will post the revised version on this page with a clear effective date. We aim to keep changes understandable and practical.</p>
+        <p class="mt-2 text-sm">Effective date: April 16, 2026</p>
+      </article>
+
+      <article class="policy-card rounded-2xl p-6 lg:p-8">
+        <h2 class="text-2xl font-semibold text-slate-900">9) Contact Us</h2>
+        <p class="mt-3">Questions about privacy? Reach out any time — we're happy to help.</p>
+        <ul class="policy-list mt-4 space-y-2 text-sm sm:text-base">
+          <li>Email: <a href="mailto:privacy@barya.ai" class="font-medium text-teal-700 hover:text-teal-800">privacy@barya.ai</a></li>
+          <li>Contact Page: <a href="contact.html" class="font-medium text-teal-700 hover:text-teal-800">barya.ai/contact</a></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-[#f0f7f7] py-14">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <p class="text-lg font-bold text-slate-900">Barya</p>
+        <p class="mt-3 text-sm text-slate-600">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Product</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="features.html" class="hover:text-slate-900">Product</a></li>
+          <li><a href="index.html#how-it-works" class="hover:text-slate-900">How it Works</a></li>
+          <li><a href="features.html" class="hover:text-slate-900">Features</a></li>
+          <li><a href="index.html#what-you-can-do" class="hover:text-slate-900">Templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Company</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#what-is-barya" class="hover:text-slate-900">Story</a></li>
+          <li><a href="privacy.html" class="hover:text-slate-900">Privacy Policy</a></li>
+          <li><a href="contact.html" class="hover:text-slate-900">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Resources</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#faq" class="hover:text-slate-900">Guides</a></li>
+          <li><a href="blog.html" class="hover:text-slate-900">Blog</a></li>
+          <li><a href="index.html#business-planning" class="hover:text-slate-900">Startup Checklist</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto mt-10 max-w-6xl border-t border-slate-200 px-6 pt-6 text-xs text-slate-500">
+      <p>© 2026 Barya Labs. All rights reserved.</p>
+      <p class="mt-1">Built with love for founders by a fellow founder.</p>
+    </div>
+  </footer>
+</body>
+</html>
