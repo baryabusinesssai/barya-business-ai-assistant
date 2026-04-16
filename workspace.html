@@ -3917,40 +3917,97 @@ Use the 'Add Block' button below to get started.</p>
       const kg = state.knowledgeGraph;
       const graph = buildKnowledgeGraph();
       const filters = ['all', 'Page', 'Note', 'Daily Note', 'Task', 'Research', 'Mention'];
-      const q = kg.search.toLowerCase().trim();
+      const q = String(kg.search || '').toLowerCase().trim();
       const visibleNodes = graph.nodes.filter(node => {
         const byQuery = !q || `${node.label} ${node.type}`.toLowerCase().includes(q);
         const byFilter = kg.filter === 'all' || node.type === kg.filter;
         return byQuery && byFilter;
       });
-      const visibleSet = new Set(visibleNodes.map(n => n.ref));
-      const visibleEdges = graph.edges.filter(edge => visibleSet.has(edge.from) && visibleSet.has(edge.to));
+      const visibleRefs = new Set(visibleNodes.map(node => node.ref));
+      const visibleEdges = graph.edges.filter(edge => visibleRefs.has(edge.from) && visibleRefs.has(edge.to));
 
+      const getPreview = (ref) => {
+        const [kind, id] = String(ref || '').split(':');
+        if (kind === 'page') {
+          const page = (state.workspace?.pages || []).find(p => p.id === id);
+          const sample = (page?.blocks || []).map(b => b.text || b.content || '').find(Boolean) || '';
+          return sample || 'Workspace page with linked content.';
+        }
+        if (kind === 'note') {
+          const note = (state.memory?.insights || []).find(n => n.id === id);
+          return note?.content || 'Personal note with connected context.';
+        }
+        if (kind === 'task') {
+          const task = (state.tasks?.items || []).find(t => t.id === id);
+          return task?.description || `Status: ${task?.status || 'To Do'}${task?.priority ? ` · Priority: ${task.priority}` : ''}`;
+        }
+        if (kind === 'research') {
+          const session = (state.planning?.strategy?.sessions || []).find(s => s.id === id);
+          return session?.deep?.summary || session?.followUp || 'Research insight connected to your workspace.';
+        }
+        if (kind === 'mention') {
+          const mention = (state.knowledgeGraph?.mentions || []).find(m => m.id === id);
+          return `Mentioned ${mention?.count || 1} time(s) in ${mention?.context || 'AI'} context.`;
+        }
+        return 'Connected item in your knowledge workspace.';
+      };
+
+      const colorByType = {
+        'Page': '#3b82f6',
+        'Note': '#22c55e',
+        'Daily Note': '#16a34a',
+        'Task': '#f59e0b',
+        'Research': '#8b5cf6',
+        'Mention': '#6b7280'
+      };
+
+      const emptyGraph = !visibleNodes.length || !visibleEdges.length;
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#070d16] via-[#0a111b] to-[#060b12] border border-orange-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <section class="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-4 sm:p-6 shadow-lg shadow-orange-100/50 space-y-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Knowledge Graph</h2>
-              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Interconnected graph of Pages, Notes, Tasks, Research, Daily Notes, and AI mentions.</p>
+              <h2 class="text-2xl font-semibold text-orange-600">Knowledge Graph</h2>
+              <p class="text-sm text-zinc-600 mt-1">See how all your ideas, notes, tasks, and research are connected</p>
             </div>
-            <button id="exportKnowledgeGraph" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40">Export Full Graph (JSON)</button>
+            <button id="exportKnowledgeGraph" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-100">Export Full Graph (JSON)</button>
           </div>
 
-          <div class="grid md:grid-cols-[1fr_auto] gap-2">
-            <input id="kgSearch" value="${escapeAttr(kg.search)}" placeholder="Search nodes..." class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
-            <select id="kgFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-              ${filters.map(f => `<option value="${f}" ${kg.filter===f?'selected':''}>${f === 'all' ? 'All Types' : f}</option>`).join('')}
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="kgSearch" value="${escapeAttr(kg.search || '')}" placeholder="Search nodes..." class="flex-1 min-w-[180px] bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm" />
+            <select id="kgFilter" class="bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
+              ${filters.map(f => `<option value="${f}" ${kg.filter===f?'selected':''}>${f === 'all' ? 'All' : f}</option>`).join('')}
             </select>
+            <button id="refreshKnowledgeGraph" class="px-3 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-100 text-sm">Refresh Graph</button>
+            <button id="kgZoomIn" class="px-3 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-100 text-sm">Zoom In</button>
+            <button id="kgZoomOut" class="px-3 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-100 text-sm">Zoom Out</button>
+            <button id="kgResetView" class="px-3 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-100 text-sm">Reset View</button>
           </div>
 
-          <div class="grid xl:grid-cols-[1fr_290px] gap-4">
-            <div class="bg-[#08101a] border border-zinc-800 rounded-xl p-2">
-              <canvas id="kgCanvas" width="1080" height="620" class="w-full h-[56vh] sm:h-[62vh] max-h-[720px] bg-[#050a12] rounded-lg"></canvas>
-              <p class="text-xs text-zinc-400 px-2 pt-2">Drag nodes, scroll to zoom, drag empty space to pan, click to open item.</p>
+          <div class="grid xl:grid-cols-[1fr_300px] gap-4">
+            <div class="relative rounded-xl border border-orange-200 bg-white p-2">
+              <canvas id="kgCanvas" width="1080" height="620" class="w-full h-[56vh] sm:h-[62vh] max-h-[720px] rounded-lg bg-[#fffaf4]"></canvas>
+              <div id="kgTooltip" class="hidden absolute pointer-events-none z-20 max-w-[280px] rounded-lg border border-orange-200 bg-white/95 px-3 py-2 text-xs shadow-lg"></div>
+              ${emptyGraph ? `
+                <div class="absolute inset-0 m-2 flex items-center justify-center rounded-lg bg-white/85 border border-dashed border-orange-200">
+                  <p class="max-w-md text-center text-sm text-zinc-600 px-4">Your Knowledge Graph is empty right now.<br/>Create more pages, notes, and tasks and link them using [[Page Name]] to see beautiful connections.</p>
+                </div>
+              ` : ''}
+              <p class="text-xs text-zinc-500 px-1 pt-2">Drag nodes to rearrange • Mouse wheel to zoom • Drag empty space to pan • Click a node to open it</p>
             </div>
-            <aside class="bg-[#0b111a] border border-zinc-800 rounded-xl p-3 space-y-2 max-h-[62vh] overflow-auto scrollbar-thin">
-              <p class="text-xs uppercase tracking-wide text-orange-300">Nodes (${visibleNodes.length})</p>
-              ${visibleNodes.slice(0, 200).map(node => `<div class="w-full rounded-lg border ${kg.focusRef===node.ref ? 'border-orange-500/50 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/60'} p-2"><button data-kg-open="${node.ref}" class="w-full text-left hover:text-orange-100"><p class="text-sm font-medium truncate">${escapeHTML(node.label)}</p><p class="text-[11px] text-zinc-500">${node.type} · Connected Items: ${node.connected}</p></button><button data-show-related="${node.ref}" class="mt-1 text-[11px] text-orange-300">Show Related</button></div>`).join('') || emptyStateMarkup('🕸️', 'No graph nodes for this filter', 'Try clearing filters or add linked items from Notes, Tasks, and Workspace.')}
+
+            <aside class="rounded-xl border border-orange-200 bg-white p-3 space-y-2 max-h-[62vh] overflow-auto scrollbar-thin">
+              <p class="text-xs uppercase tracking-wide text-orange-500">Node Details (${visibleNodes.length})</p>
+              ${visibleNodes.slice(0, 250).map(node => `
+                <div class="rounded-lg border ${kg.focusRef===node.ref ? 'border-orange-300 bg-orange-50' : 'border-orange-100 bg-white'} p-2">
+                  <button data-kg-open="${node.ref}" class="w-full text-left">
+                    <p class="text-sm font-semibold text-zinc-800 truncate">${escapeHTML(node.label)}</p>
+                    <p class="text-xs text-zinc-500">${node.type}</p>
+                    <p class="text-xs font-medium text-zinc-700 mt-1">Connected Items: ${node.connected}</p>
+                  </button>
+                  <p class="text-[11px] text-zinc-500 mt-1 line-clamp-2">${escapeHTML(getPreview(node.ref).slice(0, 140))}</p>
+                  <button data-show-related="${node.ref}" class="mt-1 text-[11px] text-orange-600 hover:text-orange-700">Show Related</button>
+                </div>
+              `).join('') || '<p class="text-sm text-zinc-500">No nodes for the selected filter.</p>'}
             </aside>
           </div>
         </section>
@@ -3958,14 +4015,16 @@ Use the 'Add Block' button below to get started.</p>
 
       document.getElementById('kgSearch').oninput = (e) => { kg.search = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
       document.getElementById('kgFilter').onchange = (e) => { kg.filter = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
+      document.getElementById('refreshKnowledgeGraph').onclick = () => renderKnowledgeGraph();
       document.getElementById('exportKnowledgeGraph').onclick = () => downloadJSON('knowledge-graph.json', { exportedAt: new Date().toISOString(), nodes: graph.nodes, edges: graph.edges });
       el.querySelectorAll('[data-kg-open]').forEach(btn => btn.onclick = () => openReference(btn.dataset.kgOpen));
       el.querySelectorAll('[data-show-related]').forEach(btn => btn.onclick = (evt) => { evt.stopPropagation(); showRelated(btn.dataset.showRelated); });
 
       const canvas = document.getElementById('kgCanvas');
+      const tooltip = document.getElementById('kgTooltip');
       if (!canvas || !visibleNodes.length) return;
+
       const ctx = canvas.getContext('2d');
-      const palette = { 'Page': '#f97316', 'Note': '#7c9cff', 'Daily Note': '#6ee7b7', 'Task': '#f59e0b', 'Research': '#c084fc', 'Mention': '#f472b6' };
       const dpr = window.devicePixelRatio || 1;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
@@ -3973,38 +4032,57 @@ Use the 'Add Block' button below to get started.</p>
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const layout = visibleNodes.map((node, idx) => ({ ...node, x: (width / 2) + Math.cos((idx / Math.max(1, visibleNodes.length)) * Math.PI * 2) * Math.min(width, height) * 0.22, y: (height / 2) + Math.sin((idx / Math.max(1, visibleNodes.length)) * Math.PI * 2) * Math.min(width, height) * 0.22, vx: 0, vy: 0 }));
-      const map = new Map(layout.map(n => [n.ref, n]));
-      const edgeLayout = visibleEdges.map(e => ({ ...e, a: map.get(e.from), b: map.get(e.to) })).filter(e => e.a && e.b);
+      const layout = visibleNodes.map((node, idx) => {
+        const angle = (idx / Math.max(1, visibleNodes.length)) * Math.PI * 2;
+        const distance = Math.min(width, height) * 0.24;
+        return {
+          ...node,
+          x: (width / 2) + Math.cos(angle) * distance,
+          y: (height / 2) + Math.sin(angle) * distance,
+          vx: 0,
+          vy: 0,
+          r: 12 + Math.min(10, node.connected * 0.9),
+          preview: getPreview(node.ref)
+        };
+      });
+      const nodeMap = new Map(layout.map(node => [node.ref, node]));
+      const edgeLayout = visibleEdges
+        .map(edge => ({ ...edge, a: nodeMap.get(edge.from), b: nodeMap.get(edge.to) }))
+        .filter(edge => edge.a && edge.b);
 
-      for (let i = 0; i < 130; i++) {
-        layout.forEach(a => {
-          layout.forEach(b => {
-            if (a === b) return;
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.max(30, Math.hypot(dx, dy));
-            const repel = 800 / (dist * dist);
-            a.vx += (dx / dist) * repel;
-            a.vy += (dy / dist) * repel;
-          });
-        });
+      for (let i = 0; i < 100; i += 1) {
+        for (let a = 0; a < layout.length; a += 1) {
+          for (let b = a + 1; b < layout.length; b += 1) {
+            const na = layout[a];
+            const nb = layout[b];
+            const dx = na.x - nb.x;
+            const dy = na.y - nb.y;
+            const dist = Math.max(20, Math.hypot(dx, dy));
+            const repel = 1000 / (dist * dist);
+            const ux = dx / dist;
+            const uy = dy / dist;
+            na.vx += ux * repel;
+            na.vy += uy * repel;
+            nb.vx -= ux * repel;
+            nb.vy -= uy * repel;
+          }
+        }
         edgeLayout.forEach(edge => {
           const dx = edge.b.x - edge.a.x;
           const dy = edge.b.y - edge.a.y;
           const dist = Math.max(1, Math.hypot(dx, dy));
-          const target = 140;
-          const pull = (dist - target) * 0.0009;
-          edge.a.vx += dx * pull;
-          edge.a.vy += dy * pull;
-          edge.b.vx -= dx * pull;
-          edge.b.vy -= dy * pull;
+          const target = 170;
+          const spring = (dist - target) * 0.0012;
+          edge.a.vx += dx * spring;
+          edge.a.vy += dy * spring;
+          edge.b.vx -= dx * spring;
+          edge.b.vy -= dy * spring;
         });
-        layout.forEach(n => {
-          n.vx *= 0.9;
-          n.vy *= 0.9;
-          n.x = Math.max(20, Math.min(width - 20, n.x + n.vx));
-          n.y = Math.max(20, Math.min(height - 20, n.y + n.vy));
+        layout.forEach(node => {
+          node.vx *= 0.9;
+          node.vy *= 0.9;
+          node.x = Math.max(16, Math.min(width - 16, node.x + node.vx));
+          node.y = Math.max(16, Math.min(height - 16, node.y + node.vy));
         });
       }
 
@@ -4012,24 +4090,34 @@ Use the 'Add Block' button below to get started.</p>
       let offsetX = 0;
       let offsetY = 0;
       let dragNode = null;
+      let hoveredNode = null;
       let panning = false;
       let moved = false;
       let last = { x: 0, y: 0 };
 
-      const toGraph = (evt) => {
+      const toGraph = (clientX, clientY) => {
         const rect = canvas.getBoundingClientRect();
-        return { x: (evt.clientX - rect.left - offsetX) / scale, y: (evt.clientY - rect.top - offsetY) / scale };
+        return {
+          x: (clientX - rect.left - offsetX) / scale,
+          y: (clientY - rect.top - offsetY) / scale
+        };
       };
 
-      function draw() {
+      const hitNode = (clientX, clientY) => {
+        const point = toGraph(clientX, clientY);
+        return [...layout].reverse().find(node => Math.hypot(node.x - point.x, node.y - point.y) <= node.r + 3) || null;
+      };
+
+      const draw = () => {
         ctx.clearRect(0, 0, width, height);
         ctx.save();
         ctx.translate(offsetX, offsetY);
         ctx.scale(scale, scale);
 
         edgeLayout.forEach(edge => {
-          ctx.strokeStyle = 'rgba(0,212,255,0.28)';
-          ctx.lineWidth = 1;
+          const highlighted = kg.focusRef && (edge.from === kg.focusRef || edge.to === kg.focusRef);
+          ctx.strokeStyle = highlighted ? 'rgba(249,115,22,0.68)' : 'rgba(251,146,60,0.34)';
+          ctx.lineWidth = highlighted ? 2.1 : 1.2;
           ctx.beginPath();
           ctx.moveTo(edge.a.x, edge.a.y);
           ctx.lineTo(edge.b.x, edge.b.y);
@@ -4037,67 +4125,106 @@ Use the 'Add Block' button below to get started.</p>
         });
 
         layout.forEach(node => {
-          const radius = 8 + Math.min(14, node.connected * 0.8);
-          const isFocus = kg.focusRef && (node.ref === kg.focusRef || edgeLayout.some(e => (e.from===kg.focusRef && e.to===node.ref) || (e.to===kg.focusRef && e.from===node.ref)));
-          ctx.fillStyle = palette[node.type] || '#f97316';
-          ctx.globalAlpha = kg.focusRef ? (isFocus ? 1 : 0.2) : 1;
+          const connectedToFocus = kg.focusRef && (node.ref === kg.focusRef || edgeLayout.some(edge => (edge.from === kg.focusRef && edge.to === node.ref) || (edge.to === kg.focusRef && edge.from === node.ref)));
+          const faded = kg.focusRef && !connectedToFocus;
+          ctx.globalAlpha = faded ? 0.2 : 1;
+
           ctx.beginPath();
-          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.fillStyle = colorByType[node.type] || '#f59e0b';
+          ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
           ctx.fill();
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = isFocus ? '#ffffff' : 'rgba(255,255,255,0.2)';
+
+          ctx.lineWidth = hoveredNode?.ref === node.ref ? 3 : 1.5;
+          ctx.strokeStyle = hoveredNode?.ref === node.ref ? '#ea580c' : 'rgba(255,255,255,0.9)';
           ctx.stroke();
 
-          ctx.globalAlpha = 0.92;
-          ctx.fillStyle = '#e5e7eb';
-          ctx.font = '12px Inter, sans-serif';
-          ctx.fillText(node.label.slice(0, 30), node.x + radius + 4, node.y + 4);
+          ctx.fillStyle = '#1f2937';
+          ctx.font = '600 12px Inter, sans-serif';
+          ctx.fillText(node.label.slice(0, 28), node.x + node.r + 5, node.y - 2);
+          ctx.fillStyle = '#6b7280';
+          ctx.font = '11px Inter, sans-serif';
+          ctx.fillText(`${node.type} • ${node.connected} links`, node.x + node.r + 5, node.y + 12);
         });
 
+        ctx.globalAlpha = 1;
         ctx.restore();
-      }
-
-      const hitNode = (evt) => {
-        const p = toGraph(evt);
-        return [...layout].reverse().find(node => Math.hypot(node.x - p.x, node.y - p.y) <= 14 + Math.min(14, node.connected * 0.8));
       };
 
       draw();
+
+      const clampScale = () => { scale = Math.max(0.45, Math.min(2.8, scale)); };
+      document.getElementById('kgZoomIn').onclick = () => { scale *= 1.2; clampScale(); draw(); };
+      document.getElementById('kgZoomOut').onclick = () => { scale *= 0.84; clampScale(); draw(); };
+      document.getElementById('kgResetView').onclick = () => { scale = 1; offsetX = 0; offsetY = 0; draw(); };
+
       canvas.onwheel = (evt) => {
         evt.preventDefault();
-        const delta = evt.deltaY < 0 ? 1.08 : 0.92;
-        scale = Math.max(0.45, Math.min(2.4, scale * delta));
+        const prev = scale;
+        scale *= evt.deltaY < 0 ? 1.1 : 0.9;
+        clampScale();
+        const rect = canvas.getBoundingClientRect();
+        const mx = evt.clientX - rect.left;
+        const my = evt.clientY - rect.top;
+        const k = scale / prev;
+        offsetX = mx - (mx - offsetX) * k;
+        offsetY = my - (my - offsetY) * k;
         draw();
       };
+
       canvas.onmousedown = (evt) => {
-        const hit = hitNode(evt);
-        last = { x: evt.clientX, y: evt.clientY };
+        const hit = hitNode(evt.clientX, evt.clientY);
+        dragNode = hit;
+        panning = !hit;
         moved = false;
-        if (hit) dragNode = hit;
-        else panning = true;
-      };
-      canvas.onmousemove = (evt) => {
-        if (!dragNode && !panning) return;
-        const dx = evt.clientX - last.x;
-        const dy = evt.clientY - last.y;
         last = { x: evt.clientX, y: evt.clientY };
-        moved = moved || Math.abs(dx) > 2 || Math.abs(dy) > 2;
+      };
+
+      canvas.onmousemove = (evt) => {
+        const current = { x: evt.clientX, y: evt.clientY };
+        const dx = current.x - last.x;
+        const dy = current.y - last.y;
+        if (dragNode || panning) moved = moved || Math.abs(dx) > 1 || Math.abs(dy) > 1;
+        last = current;
+
         if (dragNode) {
           dragNode.x += dx / scale;
           dragNode.y += dy / scale;
+          dragNode.vx = 0;
+          dragNode.vy = 0;
+          draw();
         } else if (panning) {
           offsetX += dx;
           offsetY += dy;
+          draw();
         }
-        draw();
+
+        hoveredNode = hitNode(evt.clientX, evt.clientY);
+        if (hoveredNode) {
+          const rect = canvas.getBoundingClientRect();
+          tooltip.classList.remove('hidden');
+          tooltip.style.left = `${evt.clientX - rect.left + 12}px`;
+          tooltip.style.top = `${evt.clientY - rect.top + 12}px`;
+          tooltip.innerHTML = `<p class="font-semibold text-zinc-800">${escapeHTML(hoveredNode.label)}</p><p class="text-[11px] text-zinc-500">${hoveredNode.type} · Connected Items: ${hoveredNode.connected}</p><p class="mt-1 text-zinc-600">${escapeHTML((hoveredNode.preview || '').slice(0, 150))}</p>`;
+        } else {
+          tooltip.classList.add('hidden');
+        }
+        if (!dragNode && !panning) draw();
       };
+
       canvas.onmouseup = (evt) => {
-        const hit = hitNode(evt);
+        const hit = hitNode(evt.clientX, evt.clientY);
         dragNode = null;
         panning = false;
         if (hit && !moved) openReference(hit.ref);
       };
-      canvas.onmouseleave = () => { dragNode = null; panning = false; };
+
+      canvas.onmouseleave = () => {
+        dragNode = null;
+        panning = false;
+        hoveredNode = null;
+        tooltip.classList.add('hidden');
+        draw();
+      };
     }
 
     function renderSettings() {
