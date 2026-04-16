@@ -169,10 +169,10 @@
           <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-teal-300 bg-teal-50 px-2 py-1 rounded-full text-teal-700">⌘/Ctrl+K Search</span>
           <span id="localFirstBadge" class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
           <div class="text-right">
-            <p class="text-sm font-medium">Shruti Barya</p>
-            <p id="headerFounderRole" class="text-xs text-zinc-400">Founder</p>
+            <p id="headerFounderName" class="text-sm font-medium">Your Name</p>
+            <p id="headerFounderRole" class="text-xs text-zinc-400">Your Role</p>
           </div>
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">SB</div>
+          <div id="headerFounderInitials" class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">YN</div>
         </div>
       </header>
 
@@ -600,11 +600,32 @@
       if (searchHint) searchHint.textContent = translations[currentLanguage()]?.searchHint || translations.en.searchHint;
       const localFirstBadge = document.getElementById('localFirstBadge');
       if (localFirstBadge) localFirstBadge.textContent = translations[currentLanguage()]?.localFirst || translations.en.localFirst;
-      const founderLabel = document.getElementById('headerFounderRole');
-      if (founderLabel) founderLabel.textContent = translations[currentLanguage()]?.founder || translations.en.founder;
       const modalTitle = document.getElementById('memoryModalTitle');
       if (modalTitle) modalTitle.textContent = translations[currentLanguage()]?.insight || translations.en.insight;
       document.title = translations[currentLanguage()]?.appTitle || translations.en.appTitle;
+    }
+
+    function getFounderProfileForHeader() {
+      const founder = state?.settings?.founder || {};
+      const rawName = String(founder.name || '').trim();
+      const rawRole = String(founder.role || '').trim();
+      const name = rawName || 'Your Name';
+      const role = rawRole || 'Your Role';
+      const initials = (name.match(/\b\w/g) || [])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'YN';
+      return { name, role, initials };
+    }
+
+    function renderHeaderFounderProfile() {
+      const { name, role, initials } = getFounderProfileForHeader();
+      const nameEl = document.getElementById('headerFounderName');
+      const roleEl = document.getElementById('headerFounderRole');
+      const initialsEl = document.getElementById('headerFounderInitials');
+      if (nameEl) nameEl.textContent = name;
+      if (roleEl) roleEl.textContent = role;
+      if (initialsEl) initialsEl.textContent = initials;
     }
 
     function deepMerge(target, source) {
@@ -665,7 +686,19 @@
       document.getElementById('workspaceTitle').value = state.title;
       latestPersistedSnapshot = JSON.stringify(state);
       applyThemePreference();
+      renderHeaderFounderProfile();
       translateDom(document.body);
+      window.addEventListener('storage', (event) => {
+        if (event.key !== STORAGE_KEY || !event.newValue) return;
+        try {
+          const parsed = JSON.parse(event.newValue);
+          const merged = deepMerge(structuredClone(defaultState), parsed);
+          state.settings = merged.settings;
+          renderHeaderFounderProfile();
+        } catch {
+          /* noop */
+        }
+      });
     }
 
     function renderNav() {
@@ -4857,6 +4890,9 @@ Use the 'Add Block' button below to get started.</p>
             state.title = input.value;
             document.getElementById('workspaceTitle').value = input.value;
           }
+          if (input.dataset.setting === 'founder.name' || input.dataset.setting === 'founder.role') {
+            renderHeaderFounderProfile();
+          }
           applyThemePreference();
           saveStateWithoutRender();
         };
@@ -4957,6 +4993,7 @@ Use the 'Add Block' button below to get started.</p>
         state = deepMerge(structuredClone(defaultState), data);
         setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
         applyThemePreference();
+        renderHeaderFounderProfile();
         saveState();
         renderNav();
         renderActiveSection();
@@ -4970,6 +5007,7 @@ Use the 'Add Block' button below to get started.</p>
         state = structuredClone(defaultState);
         setLanguage('en', { skipRender: true });
         applyThemePreference();
+        renderHeaderFounderProfile();
         saveState();
         renderNav();
         document.getElementById('workspaceTitle').value = state.title;
