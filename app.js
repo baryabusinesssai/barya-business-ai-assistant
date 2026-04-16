@@ -1,6 +1,5 @@
 (() => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const offset = 96;
 
   const REQUIRED_SECTIONS = [
     'home','what-is-barya','what-you-can-do','features','how-it-works','trust','business-planning','pricing','blog','contact','faq','privacy-policy','terms-of-service'
@@ -20,19 +19,6 @@
 
   document.querySelectorAll('main > section').forEach((section) => {
     if (!section.classList.contains('anim-section')) section.classList.add('anim-section');
-  });
-
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const href = link.getAttribute('href');
-      if (!href || href === '#') return;
-      const target = document.querySelector(href);
-      if (!target) return;
-
-      event.preventDefault();
-      const y = target.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top: Math.max(y, 0), behavior: reducedMotion ? 'auto' : 'smooth' });
-    });
   });
 
   const progressBar = document.getElementById('scroll-progress');
