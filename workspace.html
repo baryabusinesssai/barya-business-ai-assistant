@@ -3316,6 +3316,9 @@ Use the 'Add Block' button below to get started.</p>
       if (typeof strategy.idea !== 'string') strategy.idea = '';
       if (typeof strategy.followUp !== 'string') strategy.followUp = '';
       if (typeof strategy.loading !== 'boolean') strategy.loading = false;
+      if (!strategy.financialInputs || typeof strategy.financialInputs !== 'object') {
+        strategy.financialInputs = { monthlyRevenue: 15000, monthlyExpenses: 22000, cashReserve: 120000 };
+      }
       const el = document.getElementById('section-planning');
       const guideProgress = state.planning.guides.map(g => {
         const done = g.done.filter(Boolean).length;
@@ -3323,52 +3326,113 @@ Use the 'Add Block' button below to get started.</p>
       });
       const activeSession = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0] || null;
       const smartSuggestions = [
-        `Estimate TAM/SAM/SOM for ${strategy.idea || 'my startup'} in the next 24 months.`,
-        `Where are underserved opportunities in ${strategy.idea || 'this space'}?`,
-        `Summarize top 5 competitor weaknesses founders can exploit.`,
-        'What customer pain points are urgent enough for immediate paid pilots?',
-        'Build a founder-friendly wedge strategy with low CAC channels first.'
+        `Build a pricing strategy for ${strategy.idea || 'this startup'} with starter/pro/enterprise tiers and upsell triggers.`,
+        `Design a 30-day validation experiment roadmap for ${strategy.idea || 'my idea'} with weekly KPIs.`,
+        `Find the 3 highest-ROI GTM channels for ${strategy.idea || 'this business'} and define a test budget.`,
+        'Generate a founder-friendly SWOT with specific evidence and execution implications.',
+        'Identify top 5 competitor weaknesses and convert them into differentiation positioning.',
+        'Create a cash preservation plan that extends runway by at least 3 months.',
+        'Draft an investor-ready monthly update with traction, risks, asks, and next milestones.',
+        'Map ideal customer profile segments and prioritize by urgency and willingness to pay.'
       ];
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#070b12] via-[#0a1020] to-[#070b12] border border-orange-500/30 rounded-2xl shadow-neon p-4 sm:p-5 space-y-4">
+        <section class="bg-gradient-to-br from-orange-50 via-white to-orange-100/70 border border-orange-200 rounded-2xl p-4 sm:p-5 space-y-4 text-zinc-800">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Strategy Generator + Research Mode</h2>
-              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Perplexity-style founder research cockpit with local-first persistence.</p>
+              <h2 class="text-xl sm:text-2xl font-semibold text-orange-600">Strategy Generator + Research Mode</h2>
+              <p class="text-xs sm:text-sm text-zinc-600 mt-1">Deep strategies, smart research, and executable plans for founders</p>
             </div>
-            <div class="text-xs text-zinc-400 flex items-center gap-2">
-              Sessions: <span class="text-orange-300 font-semibold">${strategy.sessions.length}</span>
-              <button id="planningShowRelated" class="px-2 py-1 rounded bg-orange-500/15 border border-orange-500/35 text-orange-200">Show Related</button>
+            <div class="text-xs text-zinc-600 flex items-center gap-2">
+              Sessions: <span class="text-orange-600 font-semibold">${strategy.sessions.length}</span>
+              <button id="planningShowRelated" class="px-2 py-1 rounded bg-white border border-orange-300 text-orange-600 hover:bg-orange-50">Show Related</button>
             </div>
           </div>
 
-          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-[#0a101b] border border-zinc-700 rounded-xl p-3 outline-none focus:border-orange-400/60 resize-y">${escapeHTML(strategy.idea)}</textarea>
+          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-white border border-orange-200 rounded-xl p-3 outline-none focus:border-orange-400 resize-y">${escapeHTML(strategy.idea)}</textarea>
 
           <div class="grid sm:grid-cols-2 gap-2">
-            <button data-strategy-mode="deep" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'deep' ? 'bg-orange-500/20 border-orange-400/50 text-orange-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-orange-500/40'}">Deep Analysis (AI)</button>
-            <button data-strategy-mode="research" class="px-3 py-2.5 rounded-xl border transition ${strategy.mode === 'research' ? 'bg-orange-500/20 border-orange-400/50 text-orange-200 shadow-[0_0_20px_rgba(0,212,255,0.12)]' : 'bg-[#0d1117] border-zinc-700 hover:border-orange-500/40'}">Research Mode</button>
+            <button data-strategy-mode="deep" class="px-4 py-3 rounded-xl border font-semibold transition ${strategy.mode === 'deep' ? 'bg-orange-500 border-orange-500 text-white shadow-md' : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'}">Deep Analysis (AI)</button>
+            <button data-strategy-mode="research" class="px-4 py-3 rounded-xl border font-semibold transition ${strategy.mode === 'research' ? 'bg-orange-200 border-orange-400 text-orange-800 shadow-md' : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'}">Research Mode</button>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-2">
+            <label class="text-xs">Monthly Revenue
+              <input id="strategyMonthlyRevenue" type="number" min="0" value="${Number(strategy.financialInputs.monthlyRevenue) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
+            </label>
+            <label class="text-xs">Monthly Expenses
+              <input id="strategyMonthlyExpenses" type="number" min="0" value="${Number(strategy.financialInputs.monthlyExpenses) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
+            </label>
+            <label class="text-xs">Cash Reserve
+              <input id="strategyCashReserve" type="number" min="0" value="${Number(strategy.financialInputs.cashReserve) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
+            </label>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-200 hover:bg-orange-500/30">Generate</button>
-            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Save to Workspace Page</button>
-            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Save to Memory</button>
-            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Export Report (JSON)</button>
-            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30">Export Report (Text)</button>
+            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-orange-500 border border-orange-500 text-white hover:bg-orange-600">Generate Strategy Report</button>
+            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Save to Workspace Page</button>
+            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Save to Memory</button>
+            <button id="createTasksFromStrategyBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Create Tasks from This</button>
+            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Export Report (JSON)</button>
+            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Export Report (Text)</button>
+          </div>
+
+          <div class="bg-white border border-orange-200 rounded-xl p-3">
+            <p class="text-xs uppercase tracking-wide text-orange-600 mb-2">One-Click Templates</p>
+            <div class="flex flex-wrap gap-2">
+              ${['30-Day Execution Sprint', 'Full Business Strategy Brief', 'Cash Preservation Plan', 'GTM Strategy', 'Investor Update Draft'].map((template, idx) => `<button data-oneclick-template="${idx}" class="text-xs px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100">${template}</button>`).join('')}
+            </div>
           </div>
 
           <div id="strategyLoading" class="${strategy.loading ? '' : 'hidden'}">
-            <div class="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-              <div class="h-full bg-[#f97316] animate-pulse" style="width: 68%"></div>
+            <div class="h-1.5 rounded-full bg-orange-100 overflow-hidden">
+              <div class="h-full bg-orange-500 animate-pulse" style="width: 68%"></div>
             </div>
-            <p class="text-xs text-orange-200 mt-2 animate-pulse">Running deep local research simulation...</p>
+            <p class="text-xs text-orange-700 mt-2 animate-pulse">Running deep local research simulation...</p>
           </div>
 
-          <div id="deepAnalysisBox" class="${strategy.mode === 'deep' ? '' : 'hidden'} bg-[#0b121d] border border-zinc-800 rounded-xl p-4 space-y-3">
-            <h3 class="text-sm uppercase tracking-wide text-orange-300">Deep Analysis (AI)</h3>
-            <p class="text-sm text-zinc-300">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate to get an execution-focused strategy brief with risks, priorities, and immediate moves.'}</p>
+          <div id="deepAnalysisBox" class="${strategy.mode === 'deep' ? '' : 'hidden'} bg-white border border-orange-200 rounded-xl p-4 space-y-3">
+            <h3 class="text-sm uppercase tracking-wide text-orange-600">Deep Analysis (AI)</h3>
+            <p class="text-sm text-zinc-700">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate to get an execution-focused strategy brief with SWOT, competitor deep dive, financial projection, risks, and immediate moves.'}</p>
             <div class="grid md:grid-cols-3 gap-2 text-sm">
-              ${(activeSession?.deep?.priorities || ['Priorities will appear after analysis.']).map(item => `<div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">${escapeHTML(item)}</div>`).join('')}
+              ${(activeSession?.deep?.priorities || ['Priorities will appear after analysis.']).map(item => `<div class="bg-orange-50 border border-orange-200 rounded-lg p-3">${escapeHTML(item)}</div>`).join('')}
+            </div>
+            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
+              <h4 class="text-sm font-semibold text-orange-700">SWOT Analysis</h4>
+              <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-2 text-xs">
+                ${[['Strengths', activeSession?.deep?.swot?.strengths], ['Weaknesses', activeSession?.deep?.swot?.weaknesses], ['Opportunities', activeSession?.deep?.swot?.opportunities], ['Threats', activeSession?.deep?.swot?.threats]].map(([title, rows]) => `
+                  <div class="bg-white border border-orange-200 rounded-lg p-2">
+                    <p class="font-semibold text-orange-700 mb-1">${escapeHTML(title)}</p>
+                    <ul class="list-disc pl-4 space-y-1">${(rows || ['Generate to populate this quadrant.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+                  </div>
+                `).join('')}
+              </div>
+            </article>
+            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
+              <h4 class="text-sm font-semibold text-orange-700">Competitor Deep Dive</h4>
+              <div class="space-y-2 text-xs">
+                ${(activeSession?.competitorDeepDive || []).map(row => `<div class="bg-white border border-orange-200 rounded-lg p-2"><p class="font-semibold">${escapeHTML(row.name)}</p><p><span class="font-medium">Strengths:</span> ${escapeHTML(row.strengths)}</p><p><span class="font-medium">Weaknesses:</span> ${escapeHTML(row.weaknesses)}</p><p><span class="font-medium">Differentiation:</span> ${escapeHTML(row.differentiation)}</p></div>`).join('') || '<p class="text-zinc-600">Run analysis to generate competitor deep dive.</p>'}
+              </div>
+            </article>
+            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
+              <h4 class="text-sm font-semibold text-orange-700">6-Month Financial Projection</h4>
+              <div class="overflow-auto">
+                <table class="w-full text-xs border-collapse">
+                  <thead><tr class="bg-white"><th class="border border-orange-200 px-2 py-1 text-left">Month</th><th class="border border-orange-200 px-2 py-1 text-left">Revenue</th><th class="border border-orange-200 px-2 py-1 text-left">Expenses</th><th class="border border-orange-200 px-2 py-1 text-left">Runway</th></tr></thead>
+                  <tbody>
+                    ${(activeSession?.financialProjection || []).map((row) => `<tr><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.month)}</td><td class="border border-orange-200 px-2 py-1">$${Number(row.revenue).toLocaleString()}</td><td class="border border-orange-200 px-2 py-1">$${Number(row.expenses).toLocaleString()}</td><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.runway)}</td></tr>`).join('') || '<tr><td colspan="4" class="border border-orange-200 px-2 py-2 text-zinc-600">Generate to see projection.</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+            <div class="grid md:grid-cols-2 gap-2 text-xs">
+              <article class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <h4 class="font-semibold text-orange-700 mb-1">Key Risks & Mitigations</h4>
+                <ul class="list-disc pl-4 space-y-1">${(activeSession?.deep?.risks || ['No risk model yet.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+              </article>
+              <article class="bg-orange-100 border border-orange-300 rounded-lg p-3">
+                <h4 class="font-semibold text-orange-700 mb-1">Immediate Next 7 Days</h4>
+                <ul class="list-disc pl-4 space-y-1">${(activeSession?.deep?.next7Days || ['Generate for 7-day execution plan.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+              </article>
             </div>
           </div>
 
@@ -3381,42 +3445,43 @@ Use the 'Add Block' button below to get started.</p>
                 ['Opportunity Gaps', activeSession.cards.opportunities],
                 ['Sources / References', activeSession.cards.sources]
               ].map(([title, content]) => `
-                <article class="bg-[#0b121d] border border-zinc-800 rounded-xl p-4 hover:border-orange-500/35 transition-all duration-300">
-                  <h4 class="text-sm font-semibold text-orange-300 mb-2">${escapeHTML(title)}</h4>
-                  <div class="text-sm text-zinc-300 space-y-2">${Array.isArray(content) ? `<ul class="list-disc pl-5 space-y-1">${content.map(line => `<li>${escapeHTML(line)}</li>`).join('')}</ul>` : `<p>${escapeHTML(content || 'No data yet')}</p>`}</div>
+                <article class="bg-white border border-orange-200 rounded-xl p-4 hover:border-orange-300 transition-all duration-300">
+                  <h4 class="text-sm font-semibold text-orange-700 mb-2">${escapeHTML(title)}</h4>
+                  <div class="text-sm text-zinc-700 space-y-2">${Array.isArray(content) ? `<ul class="list-disc pl-5 space-y-1">${content.map(line => `<li>${escapeHTML(line)}</li>`).join('')}</ul>` : `<p>${escapeHTML(content || 'No data yet')}</p>`}</div>
                 </article>
               `).join('') : `
-                <article class="md:col-span-2 xl:col-span-3 bg-[#0b121d] border border-dashed border-zinc-700 rounded-xl p-5 text-sm text-zinc-400">
+                <article class="md:col-span-2 xl:col-span-3 bg-white border border-dashed border-orange-300 rounded-xl p-5 text-sm text-zinc-500">
                   Run Research Mode to generate market, competitor, pain-point, opportunity, and source cards.
                 </article>
               `}
             </div>
-            <div class="bg-[#0b121d] border border-zinc-800 rounded-xl p-3">
-              <label class="text-xs uppercase tracking-wide text-orange-300">Ask follow-up research question</label>
+            <div class="bg-white border border-orange-200 rounded-xl p-3">
+              <label class="text-xs uppercase tracking-wide text-orange-600">Ask follow-up research question</label>
               <div class="mt-2 flex flex-col sm:flex-row gap-2">
-                <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="e.g., Which segment has the highest willingness to pay?" class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
-                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-200">Run Follow-up</button>
+                <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="e.g., Which segment has the highest willingness to pay?" class="flex-1 bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm" />
+                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-orange-500 border border-orange-500 text-white">Run Follow-up</button>
               </div>
             </div>
           </div>
 
-          <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
-            <p class="text-xs uppercase tracking-wide text-orange-300 mb-2">Smart Suggestions</p>
+          <div class="bg-white border border-orange-200 rounded-xl p-3">
+            <p class="text-xs uppercase tracking-wide text-orange-600 mb-2">Smart Contextual Suggestions</p>
             <div class="flex flex-wrap gap-2">
-              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 hover:border-orange-500/40">${escapeHTML(s)}</button>`).join('')}
+              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100">${escapeHTML(s)}</button>`).join('')}
             </div>
           </div>
 
-          <div class="bg-[#0a1018] border border-zinc-800 rounded-xl p-3">
+          <div class="bg-white border border-orange-200 rounded-xl p-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs uppercase tracking-wide text-orange-300">Research History</p>
-              <button id="clearResearchHistory" class="text-xs px-2.5 py-1 rounded bg-red-500/10 border border-red-500/30 text-red-300">Clear</button>
+              <p class="text-xs uppercase tracking-wide text-orange-600">Research History</p>
+              <button id="clearResearchHistory" class="text-xs px-2.5 py-1 rounded bg-red-50 border border-red-300 text-red-500">Clear</button>
             </div>
             <div class="mt-2 max-h-40 overflow-auto scrollbar-thin space-y-2">
               ${strategy.sessions.length ? strategy.sessions.slice(0, 12).map((session, idx) => `
-                <button data-session-open="${session.id}" class="w-full text-left bg-zinc-900 border ${activeSession?.id === session.id ? 'border-orange-500/40' : 'border-zinc-800'} rounded-lg px-3 py-2 hover:border-orange-500/35">
-                  <p class="text-sm truncate">${escapeHTML(session.query)}</p>
+                <button data-session-open="${session.id}" class="w-full text-left bg-orange-50 border ${activeSession?.id === session.id ? 'border-orange-400' : 'border-orange-200'} rounded-lg px-3 py-2 hover:border-orange-400">
+                  <p class="text-sm truncate text-zinc-800">${escapeHTML(session.query)}</p>
                   <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
+                  <p class="text-[11px] text-zinc-600 truncate">${escapeHTML(session.deep?.summary || '')}</p>
                 </button>
               `).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.')}
             </div>
@@ -3480,9 +3545,31 @@ Use the 'Add Block' button below to get started.</p>
         };
       }
 
-      function buildResearchSession(query, followUpText = '') {
+      function buildFinancialProjection(financialInputs) {
+        const startRevenue = Math.max(0, Number(financialInputs.monthlyRevenue) || 0);
+        const startExpenses = Math.max(0, Number(financialInputs.monthlyExpenses) || 0);
+        let cash = Math.max(0, Number(financialInputs.cashReserve) || 0);
+        const rows = [];
+        for (let i = 1; i <= 6; i += 1) {
+          const revenue = Math.round(startRevenue * (1 + (i - 1) * 0.06));
+          const expenses = Math.round(startExpenses * (1 + (i - 1) * 0.03));
+          cash += (revenue - expenses);
+          const runway = expenses > 0 ? `${Math.max(0, cash / expenses).toFixed(1)} months` : 'N/A';
+          rows.push({ month: `M${i}`, revenue, expenses, runway });
+        }
+        return rows;
+      }
+
+      function buildResearchSession(query, followUpText = '', financialInputs = strategy.financialInputs) {
         const template = strategyTemplates(query);
         const insight = followUpText ? `Follow-up lens: ${followUpText}.` : 'Initial research pass.';
+        const financialProjection = buildFinancialProjection(financialInputs);
+        const competitorDeepDive = (template.competitors || []).map((line, idx) => ({
+          name: `Competitor ${idx + 1}`,
+          strengths: line,
+          weaknesses: idx === 0 ? 'Slow onboarding and longer implementation cycles.' : idx === 1 ? 'Narrow distribution and lower trust from enterprise buyers.' : 'Price pressure and weaker customer success depth.',
+          differentiation: idx === 0 ? 'Win with beginner-friendly setup and transparent ROI dashboard.' : idx === 1 ? 'Build stronger ecosystem partnerships and credibility assets.' : 'Own premium service quality with fast support and implementation.'
+        }));
         return {
           id: crypto.randomUUID(),
           ts: new Date().toISOString(),
@@ -3494,8 +3581,26 @@ Use the 'Add Block' button below to get started.</p>
               'Validate willingness-to-pay with 5 targeted discovery calls.',
               'Ship one measurable value moment inside onboarding this week.',
               'Define a channel cadence with weekly conversion review.'
+            ],
+            swot: {
+              strengths: ['Founder velocity and decision speed.', 'Focused wedge improves product clarity.'],
+              weaknesses: ['Limited team bandwidth and distribution reach.', 'Early process and analytics maturity gaps.'],
+              opportunities: template.opportunities.slice(0, 2),
+              threats: ['Well-funded competitors can copy core features.', 'CAC volatility can reduce growth efficiency.']
+            },
+            risks: [
+              'Risk: Slow activation in first week. Mitigation: guided onboarding checklist + live office hours.',
+              'Risk: Cash burn outpaces growth. Mitigation: weekly burn review and discretionary spend freeze triggers.',
+              'Risk: Weak differentiation message. Mitigation: sharpen positioning around one high-urgency outcome.'
+            ],
+            next7Days: [
+              'Day 1-2: Conduct 5 founder-led customer interviews with pricing probes.',
+              'Day 3-4: Ship onboarding improvement and measure activation lift.',
+              'Day 5-7: Launch one GTM experiment and review conversion metrics.'
             ]
           },
+          competitorDeepDive,
+          financialProjection,
           cards: {
             market: template.market,
             competitors: template.competitors,
@@ -3555,6 +3660,16 @@ Use the 'Add Block' button below to get started.</p>
         strategy.idea = e.target.value;
         saveStateRaw();
       };
+      ['strategyMonthlyRevenue', 'strategyMonthlyExpenses', 'strategyCashReserve'].forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.oninput = () => {
+          strategy.financialInputs.monthlyRevenue = Number(document.getElementById('strategyMonthlyRevenue')?.value || 0);
+          strategy.financialInputs.monthlyExpenses = Number(document.getElementById('strategyMonthlyExpenses')?.value || 0);
+          strategy.financialInputs.cashReserve = Number(document.getElementById('strategyCashReserve')?.value || 0);
+          saveStateRaw();
+        };
+      });
       const planningShowRelated = document.getElementById('planningShowRelated');
       if (planningShowRelated) planningShowRelated.onclick = () => {
         const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
@@ -3568,6 +3683,17 @@ Use the 'Add Block' button below to get started.</p>
         strategy.idea = smartSuggestions[Number(btn.dataset.smartSuggestion)] || strategy.idea;
         saveStrategyState();
       });
+      const templatePrompts = [
+        'Create a 30-Day Execution Sprint with weekly goals, owners, and measurable outputs.',
+        'Generate a Full Business Strategy Brief with market, positioning, GTM, operations, and finance.',
+        'Build a Cash Preservation Plan with spend cuts, pricing actions, and runway extension levers.',
+        'Draft a complete GTM Strategy including ICP, channels, messaging, funnel, and KPIs.',
+        'Write an Investor Update Draft with wins, metrics, risks, asks, and upcoming milestones.'
+      ];
+      el.querySelectorAll('[data-oneclick-template]').forEach(btn => btn.onclick = () => {
+        strategy.idea = templatePrompts[Number(btn.dataset.oneclickTemplate)] || strategy.idea;
+        saveStrategyState();
+      });
 
       const runResearch = (baseQuery, follow = '') => {
         const query = String(baseQuery || '').trim();
@@ -3576,7 +3702,7 @@ Use the 'Add Block' button below to get started.</p>
         saveStateRaw();
         renderPlanning();
         setTimeout(() => {
-          const session = buildResearchSession(query, follow);
+          const session = buildResearchSession(query, follow, strategy.financialInputs);
           registerMentionsFromText(`${session.query} ${session.deep.summary} ${(session.cards.opportunities || []).join(' ')}`, 'research');
           strategy.sessions.unshift(session);
           strategy.activeSessionId = session.id;
@@ -3615,10 +3741,15 @@ Use the 'Add Block' button below to get started.</p>
             { id: crypto.randomUUID(), type: 'h1', text: 'Research Report' },
             { id: crypto.randomUUID(), type: 'paragraph', text: `Linked Research Node: [[Research: ${session.query.slice(0, 42)}]]` },
             { id: crypto.randomUUID(), type: 'paragraph', text: session.deep.summary },
+            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Strengths: ${(session.deep.swot?.strengths || []).join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Weaknesses: ${(session.deep.swot?.weaknesses || []).join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Opportunities: ${(session.deep.swot?.opportunities || []).join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Threats: ${(session.deep.swot?.threats || []).join(' | ')}` },
             { id: crypto.randomUUID(), type: 'bullet', text: `Market: ${session.cards.market.join(' | ')}` },
             { id: crypto.randomUUID(), type: 'bullet', text: `Competitors: ${session.cards.competitors.join(' | ')}` },
             { id: crypto.randomUUID(), type: 'bullet', text: `Pain Points: ${session.cards.painPoints.join(' | ')}` },
             { id: crypto.randomUUID(), type: 'bullet', text: `Opportunities: ${session.cards.opportunities.join(' | ')}` },
+            { id: crypto.randomUUID(), type: 'bullet', text: `Key Risks: ${(session.deep.risks || []).join(' | ')}` },
             { id: crypto.randomUUID(), type: 'paragraph', text: `Sources: ${session.cards.sources.join('; ')}` }
           ]
         });
@@ -3659,6 +3790,22 @@ Use the 'Add Block' button below to get started.</p>
           `Deep Summary`,
           session.deep.summary,
           ``,
+          `SWOT Analysis`,
+          `Strengths`,
+          ...(session.deep.swot?.strengths || []).map(x => `- ${x}`),
+          `Weaknesses`,
+          ...(session.deep.swot?.weaknesses || []).map(x => `- ${x}`),
+          `Opportunities`,
+          ...(session.deep.swot?.opportunities || []).map(x => `- ${x}`),
+          `Threats`,
+          ...(session.deep.swot?.threats || []).map(x => `- ${x}`),
+          ``,
+          `Competitor Deep Dive`,
+          ...(session.competitorDeepDive || []).map(x => `- ${x.name}: strengths=${x.strengths}; weaknesses=${x.weaknesses}; differentiation=${x.differentiation}`),
+          ``,
+          `6-Month Financial Projection`,
+          ...(session.financialProjection || []).map(x => `- ${x.month}: Revenue $${x.revenue}, Expenses $${x.expenses}, Runway ${x.runway}`),
+          ``,
           `Market Size & Trends`,
           ...session.cards.market.map(x => `- ${x}`),
           ``,
@@ -3671,6 +3818,12 @@ Use the 'Add Block' button below to get started.</p>
           `Opportunity Gaps`,
           ...session.cards.opportunities.map(x => `- ${x}`),
           ``,
+          `Key Risks & Mitigations`,
+          ...(session.deep.risks || []).map(x => `- ${x}`),
+          ``,
+          `Immediate Next 7 Days`,
+          ...(session.deep.next7Days || []).map(x => `- ${x}`),
+          ``,
           `Sources`,
           ...session.cards.sources.map(x => `- ${x}`)
         ].join('\n');
@@ -3680,6 +3833,33 @@ Use the 'Add Block' button below to get started.</p>
         link.download = `research-report-${new Date().toISOString().slice(0,10)}.txt`;
         link.click();
         URL.revokeObjectURL(link.href);
+      };
+
+      const createTasksBtn = document.getElementById('createTasksFromStrategyBtn');
+      if (createTasksBtn) createTasksBtn.onclick = () => {
+        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        if (!session) return alert('Run strategy first.');
+        ensureTasksState();
+        const taskLines = [...(session.deep.next7Days || []), ...(session.deep.priorities || [])].slice(0, 6);
+        taskLines.forEach(line => {
+          state.tasks.items.unshift({
+            id: crypto.randomUUID(),
+            title: line.replace(/^Day \d+-?\d*:\s*/i, ''),
+            description: `Generated from Strategy Report: ${session.query}`,
+            dueDate: '',
+            priority: 'High',
+            status: 'To Do',
+            tags: ['Strategy', 'Auto-Generated'],
+            sprintId: '',
+            linkRef: '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+        });
+        state.tasks.selectedTaskId = state.tasks.items[0]?.id || null;
+        state.activeSection = 'tasks';
+        renderNav();
+        saveState();
       };
 
       el.querySelectorAll('[data-session-open]').forEach(btn => btn.onclick = () => {
