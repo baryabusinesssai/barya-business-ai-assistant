@@ -167,6 +167,38 @@
       { id: 'settings', label: 'Settings' },
       { id: 'knowledge-graph', label: 'Knowledge Graph' }
     ];
+    const CURRENCY_META = {
+      USD: { symbol: '$' },
+      EUR: { symbol: '€' },
+      INR: { symbol: '₹' },
+      GBP: { symbol: '£' },
+      CAD: { symbol: '$' },
+      AUD: { symbol: '$' },
+      SGD: { symbol: '$' },
+      AED: { symbol: 'د.إ' },
+      BDT: { symbol: '৳' },
+      NPR: { symbol: '₨' },
+      PKR: { symbol: '₨' },
+      CNY: { symbol: '¥' },
+      JPY: { symbol: '¥' },
+      RUB: { symbol: '₽' },
+      TRY: { symbol: '₺' },
+      ZAR: { symbol: 'R' },
+      BRL: { symbol: 'R$' },
+      NGN: { symbol: '₦' },
+      CHF: { symbol: 'CHF' },
+      SEK: { symbol: 'kr' },
+      NOK: { symbol: 'kr' },
+      DKK: { symbol: 'kr' },
+      NZD: { symbol: '$' },
+      HKD: { symbol: '$' },
+      KRW: { symbol: '₩' },
+      THB: { symbol: '฿' },
+      MYR: { symbol: 'RM' },
+      IDR: { symbol: 'Rp' },
+      SAR: { symbol: '﷼' },
+      MXN: { symbol: '$' }
+    };
 
     const defaultState = {
       activeSection: 'dashboard',
@@ -520,10 +552,42 @@
       };
     }
 
-    function money(v){
-      const currencyCode = state.settings.preferences.currency || '';
-      const amount = Number(v || 0).toLocaleString();
-      return currencyCode ? `${currencyCode} ${amount}` : amount;
+    function getCurrencyMeta(code = '') {
+      const normalizedCode = String(code || '').trim().toUpperCase();
+      return {
+        code: normalizedCode,
+        symbol: CURRENCY_META[normalizedCode]?.symbol || normalizedCode
+      };
+    }
+
+    function renderCurrencyOptions(selectedCode = '') {
+      const selected = String(selectedCode || '').trim().toUpperCase();
+      const options = ['<option value="" ' + (!selected ? 'selected' : '') + '>Select Currency</option>'];
+      Object.keys(CURRENCY_META).forEach((code) => {
+        const optionLabel = `${CURRENCY_META[code].symbol} ${code}`;
+        options.push(`<option value="${code}" ${selected === code ? 'selected' : ''}>${optionLabel}</option>`);
+      });
+      if (selected && !CURRENCY_META[selected]) {
+        options.push(`<option value="${selected}" selected>${selected}</option>`);
+      }
+      return options.join('');
+    }
+
+    function getCurrencyDisplayLabel(currencyCode = state.settings.preferences.currency || '') {
+      const { code, symbol } = getCurrencyMeta(currencyCode);
+      return code ? `${symbol} ${code}` : 'Select Currency';
+    }
+
+    function money(v, { decimals = 0, includeCode = true } = {}){
+      const rawAmount = Number(v || 0);
+      const amount = Number.isFinite(rawAmount) ? rawAmount : 0;
+      const amountLabel = amount.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+      const { code, symbol } = getCurrencyMeta(state.settings.preferences.currency || '');
+      if (!code) return amountLabel;
+      return includeCode ? `${symbol} ${code} ${amountLabel}` : `${symbol} ${amountLabel}`;
     }
 
     function ensureKnowledgeGraphState() {
@@ -1177,7 +1241,6 @@
       const d = state.dashboard;
       const { healthScore, runwayScore, profitability, burnRateScore } = computeFinancialHealth();
       const forecast = getForecast(6);
-      const formatINR = (value) => `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
       const categoryIcons = {
         payroll: '👥',
         salaries: '👥',
@@ -1259,7 +1322,7 @@
                 <div class="grid sm:grid-cols-3 gap-2 text-sm">
                   <div class="rounded-lg bg-barya-soft border border-gray-200 px-3 py-2">
                     <p class="text-xs text-zinc-500">Current Monthly Net</p>
-                    <p class="font-semibold text-orange-500">${formatINR(forecast.currentNet)}</p>
+                    <p class="font-semibold text-orange-500">${money(forecast.currentNet)}</p>
                   </div>
                   <div class="rounded-lg bg-barya-soft border border-gray-200 px-3 py-2">
                     <p class="text-xs text-zinc-500">Projected Runway</p>
@@ -1301,7 +1364,7 @@
             <div class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-4">
               <div class="rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 to-white px-4 py-3">
                 <p class="text-xs uppercase tracking-[0.14em] text-zinc-500">Total Expenses</p>
-                <p class="text-2xl sm:text-3xl font-bold text-orange-600 mt-1">${formatINR(expenseTotal)}</p>
+                <p class="text-2xl sm:text-3xl font-bold text-orange-600 mt-1">${money(expenseTotal)}</p>
               </div>
               <div class="grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4 items-start">
                 <div class="bg-barya-soft/70 border border-gray-200 rounded-xl p-3">
@@ -1322,7 +1385,7 @@
                           <p class="text-xs ${isBiggest ? 'text-orange-600' : 'text-zinc-500'} mt-1">${isBiggest ? 'Biggest Expense' : 'Category Spend'}</p>
                         </div>
                         <div class="text-right">
-                          <p class="font-semibold ${isBiggest ? 'text-orange-600' : 'text-zinc-700'}">${formatINR(amount)}</p>
+                          <p class="font-semibold ${isBiggest ? 'text-orange-600' : 'text-zinc-700'}">${money(amount)}</p>
                           <p class="text-xs text-zinc-500">${percentage.toFixed(1)}%</p>
                         </div>
                       </div>
@@ -1511,7 +1574,7 @@
       if (expenseChart) expenseChart.destroy();
       if (cashFlowCtx) {
         const forecast = getForecast(6);
-        const formatINR = (value) => `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
+        const chartCurrencyLabel = getCurrencyDisplayLabel();
         const dataLabelPlugin = {
           id: 'cashflowDataLabels',
           afterDatasetsDraw(chart) {
@@ -1523,7 +1586,7 @@
               ctx.fillStyle = '#d4d4d8';
               ctx.font = '11px Inter, system-ui, sans-serif';
               ctx.textAlign = 'center';
-              ctx.fillText(formatINR(value), point.x, point.y - 10);
+              ctx.fillText(money(value), point.x, point.y - 10);
             });
             ctx.restore();
           }
@@ -1544,7 +1607,7 @@
                 showLine: false
               },
               {
-                label: 'Projected Cash Flow (₹)',
+                label: `Projected Cash Flow (${chartCurrencyLabel})`,
                 data: forecast.values,
                 borderColor: '#f97316',
                 segment: {
@@ -1581,7 +1644,7 @@
               },
               tooltip: {
                 callbacks: {
-                  label: (ctx) => `${ctx.dataset.label}: ${formatINR(ctx.parsed.y)}`
+                  label: (ctx) => `${ctx.dataset.label}: ${money(ctx.parsed.y)}`
                 }
               }
             },
@@ -1592,10 +1655,10 @@
                 grid: { color: '#232323' }
               },
               y: {
-                title: { display: true, text: 'Projected Cash Flow (₹)', color: '#a1a1aa' },
+                title: { display: true, text: `Projected Cash Flow (${chartCurrencyLabel})`, color: '#a1a1aa' },
                 ticks: {
                   color: '#a1a1aa',
-                  callback: (value) => formatINR(value)
+                  callback: (value) => money(value)
                 },
                 grid: { color: '#232323' }
               }
@@ -1639,7 +1702,7 @@
                   label: (ctx) => {
                     const value = Number(ctx.parsed || 0);
                     const pct = totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : '0.0';
-                    return `${ctx.label}: ₹${Math.round(value).toLocaleString('en-IN')} (${pct}%)`;
+                    return `${ctx.label}: ${money(value)} (${pct}%)`;
                   }
                 }
               }
@@ -3458,7 +3521,7 @@ Use the 'Add Block' button below to get started.</p>
                 <table class="w-full text-xs border-collapse">
                   <thead><tr class="bg-white"><th class="border border-orange-200 px-2 py-1 text-left">Month</th><th class="border border-orange-200 px-2 py-1 text-left">Revenue</th><th class="border border-orange-200 px-2 py-1 text-left">Expenses</th><th class="border border-orange-200 px-2 py-1 text-left">Runway</th></tr></thead>
                   <tbody>
-                    ${(activeSession?.financialProjection || []).map((row) => `<tr><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.month)}</td><td class="border border-orange-200 px-2 py-1">$${Number(row.revenue).toLocaleString()}</td><td class="border border-orange-200 px-2 py-1">$${Number(row.expenses).toLocaleString()}</td><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.runway)}</td></tr>`).join('') || '<tr><td colspan="4" class="border border-orange-200 px-2 py-2 text-zinc-600">Generate to see projection.</td></tr>'}
+                    ${(activeSession?.financialProjection || []).map((row) => `<tr><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.month)}</td><td class="border border-orange-200 px-2 py-1">${money(row.revenue)}</td><td class="border border-orange-200 px-2 py-1">${money(row.expenses)}</td><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.runway)}</td></tr>`).join('') || '<tr><td colspan="4" class="border border-orange-200 px-2 py-2 text-zinc-600">Generate to see projection.</td></tr>'}
                   </tbody>
                 </table>
               </div>
@@ -3843,7 +3906,7 @@ Use the 'Add Block' button below to get started.</p>
           ...(session.competitorDeepDive || []).map(x => `- ${x.name}: strengths=${x.strengths}; weaknesses=${x.weaknesses}; differentiation=${x.differentiation}`),
           ``,
           `6-Month Financial Projection`,
-          ...(session.financialProjection || []).map(x => `- ${x.month}: Revenue $${x.revenue}, Expenses $${x.expenses}, Runway ${x.runway}`),
+          ...(session.financialProjection || []).map(x => `- ${x.month}: Revenue ${money(x.revenue)}, Expenses ${money(x.expenses)}, Runway ${x.runway}`),
           ``,
           `Market Size & Trends`,
           ...session.cards.market.map(x => `- ${x}`),
@@ -4281,7 +4344,7 @@ Use the 'Add Block' button below to get started.</p>
             <h3 class="font-semibold text-lg text-orange-700">Team Management</h3>
             <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
               <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Team Size</p><p class="text-2xl font-semibold">${team.members.length}</p></div>
-              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Estimated Monthly Team Burn</p><p class="text-2xl font-semibold">$${monthlyBurn.toLocaleString()}</p></div>
+              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Estimated Monthly Team Burn</p><p class="text-2xl font-semibold">${money(monthlyBurn)}</p></div>
               <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Total Equity Distributed</p><p class="text-2xl font-semibold">${totalEquity.toFixed(2)}%</p></div>
               <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><label class="text-xs text-zinc-500 block">Open Roles</label><input type="number" min="0" data-setting="team.openRoles" value="${Number(team.openRoles) || 0}" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"/></div>
             </div>
@@ -4309,7 +4372,7 @@ Use the 'Add Block' button below to get started.</p>
                     <td class="p-3">${escapeHTML(member.name || '')}</td>
                     <td class="p-3">${escapeHTML(member.role || '')}</td>
                     <td class="p-3">${Number(member.equity || 0).toFixed(2)}%</td>
-                    <td class="p-3">$${Number(member.salary || 0).toLocaleString()}</td>
+                    <td class="p-3">${money(member.salary || 0)}</td>
                     <td class="p-3">${escapeHTML(member.status || 'Active')}</td>
                     <td class="p-3 flex gap-2"><button data-action="edit-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700">Edit</button><button data-action="remove-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600">Remove</button></td>
                   </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-zinc-500">No team members added yet.</td></tr>`}
@@ -4368,37 +4431,7 @@ Use the 'Add Block' button below to get started.</p>
               <label class="block text-sm">
                 <span class="font-medium text-zinc-700">Currency</span>
                 <select data-setting="preferences.currency" class="w-full mt-1 rounded-xl border border-orange-200 bg-gradient-to-b from-white to-orange-50/30 px-3 py-2.5 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
-                  <option value="" ${!s.preferences.currency ? 'selected' : ''}>Select Currency</option>
-                  <option value="INR" ${s.preferences.currency==='INR' ? 'selected' : ''}>₹ Indian Rupee (INR)</option>
-                  <option value="USD" ${s.preferences.currency==='USD' ? 'selected' : ''}>$ US Dollar (USD)</option>
-                  <option value="EUR" ${s.preferences.currency==='EUR' ? 'selected' : ''}>€ Euro (EUR)</option>
-                  <option value="GBP" ${s.preferences.currency==='GBP' ? 'selected' : ''}>£ British Pound (GBP)</option>
-                  <option value="CAD" ${s.preferences.currency==='CAD' ? 'selected' : ''}>$ Canadian Dollar (CAD)</option>
-                  <option value="AUD" ${s.preferences.currency==='AUD' ? 'selected' : ''}>$ Australian Dollar (AUD)</option>
-                  <option value="SGD" ${s.preferences.currency==='SGD' ? 'selected' : ''}>$ Singapore Dollar (SGD)</option>
-                  <option value="AED" ${s.preferences.currency==='AED' ? 'selected' : ''}>د.إ UAE Dirham (AED)</option>
-                  <option value="BDT" ${s.preferences.currency==='BDT' ? 'selected' : ''}>৳ Bangladeshi Taka (BDT)</option>
-                  <option value="NPR" ${s.preferences.currency==='NPR' ? 'selected' : ''}>₨ Nepalese Rupee (NPR)</option>
-                  <option value="PKR" ${s.preferences.currency==='PKR' ? 'selected' : ''}>₨ Pakistani Rupee (PKR)</option>
-                  <option value="CNY" ${s.preferences.currency==='CNY' ? 'selected' : ''}>¥ Chinese Yuan (CNY)</option>
-                  <option value="JPY" ${s.preferences.currency==='JPY' ? 'selected' : ''}>¥ Japanese Yen (JPY)</option>
-                  <option value="RUB" ${s.preferences.currency==='RUB' ? 'selected' : ''}>₽ Russian Ruble (RUB)</option>
-                  <option value="TRY" ${s.preferences.currency==='TRY' ? 'selected' : ''}>₺ Turkish Lira (TRY)</option>
-                  <option value="ZAR" ${s.preferences.currency==='ZAR' ? 'selected' : ''}>R South African Rand (ZAR)</option>
-                  <option value="BRL" ${s.preferences.currency==='BRL' ? 'selected' : ''}>R$ Brazilian Real (BRL)</option>
-                  <option value="NGN" ${s.preferences.currency==='NGN' ? 'selected' : ''}>₦ Nigerian Naira (NGN)</option>
-                  <option value="CHF" ${s.preferences.currency==='CHF' ? 'selected' : ''}>CHF Swiss Franc (CHF)</option>
-                  <option value="SEK" ${s.preferences.currency==='SEK' ? 'selected' : ''}>kr Swedish Krona (SEK)</option>
-                  <option value="NOK" ${s.preferences.currency==='NOK' ? 'selected' : ''}>kr Norwegian Krone (NOK)</option>
-                  <option value="DKK" ${s.preferences.currency==='DKK' ? 'selected' : ''}>kr Danish Krone (DKK)</option>
-                  <option value="NZD" ${s.preferences.currency==='NZD' ? 'selected' : ''}>$ New Zealand Dollar (NZD)</option>
-                  <option value="HKD" ${s.preferences.currency==='HKD' ? 'selected' : ''}>$ Hong Kong Dollar (HKD)</option>
-                  <option value="KRW" ${s.preferences.currency==='KRW' ? 'selected' : ''}>₩ South Korean Won (KRW)</option>
-                  <option value="THB" ${s.preferences.currency==='THB' ? 'selected' : ''}>฿ Thai Baht (THB)</option>
-                  <option value="MYR" ${s.preferences.currency==='MYR' ? 'selected' : ''}>RM Malaysian Ringgit (MYR)</option>
-                  <option value="IDR" ${s.preferences.currency==='IDR' ? 'selected' : ''}>Rp Indonesian Rupiah (IDR)</option>
-                  <option value="SAR" ${s.preferences.currency==='SAR' ? 'selected' : ''}>﷼ Saudi Riyal (SAR)</option>
-                  <option value="MXN" ${s.preferences.currency==='MXN' ? 'selected' : ''}>$ Mexican Peso (MXN)</option>
+                  ${renderCurrencyOptions(s.preferences.currency)}
                 </select>
               </label>
               <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option><option ${s.preferences.language==='French'?'selected':''}>French</option><option ${s.preferences.language==='German'?'selected':''}>German</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Arabic'?'selected':''}>Arabic</option></select></label>
