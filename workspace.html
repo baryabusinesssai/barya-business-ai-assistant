@@ -1343,8 +1343,10 @@
       if (!d.metrics) d.metrics = structuredClone(defaultState.dashboard.metrics);
       d.metrics.income = Number(d.metrics.income || 0);
       d.metrics.expenses = Number(d.metrics.expenses || 0);
-      d.metrics.netSavings = Number(d.metrics.netSavings || d.metrics.income - d.metrics.expenses);
-      d.metrics.runway = Number(d.metrics.runway || 0);
+      d.metrics.netSavings = Number(d.metrics.income - d.metrics.expenses);
+      const teamBurn = (state.settings?.team?.members || []).reduce((sum, member) => sum + (Number(member.salary) || 0), 0);
+      const runwayDenominator = d.metrics.expenses + teamBurn;
+      d.metrics.runway = runwayDenominator > 0 ? (d.metrics.netSavings / runwayDenominator) : 0;
       if (!Array.isArray(d.expenseCategories)) d.expenseCategories = [];
       d.expenseCategories = d.expenseCategories.map(cat => ({
         id: cat.id || crypto.randomUUID(),
@@ -1499,6 +1501,14 @@
       const expenseTotal = d.expenseCategories.reduce((sum, cat) => sum + Number(cat.amount || 0), 0);
       const sortedExpenses = [...d.expenseCategories].sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0));
       const biggestExpenseId = sortedExpenses[0]?.id;
+      const teamBurn = (state.settings?.team?.members || []).reduce((sum, member) => sum + (Number(member.salary) || 0), 0);
+      const runwayDenominator = d.metrics.expenses + teamBurn;
+      const metricStyles = {
+        income: d.metrics.income >= 0 ? 'text-emerald-600' : 'text-red-500',
+        expenses: d.metrics.expenses > d.metrics.income ? 'text-red-500' : 'text-orange-600',
+        netSavings: d.metrics.netSavings >= 0 ? 'text-emerald-600' : 'text-red-500',
+        runway: d.metrics.runway >= 0 ? 'text-emerald-600' : 'text-red-500'
+      };
 
       el.innerHTML = `
         <div class="bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent border border-orange-500/30 rounded-xl p-4 sm:p-5 shadow-neon">
@@ -1510,19 +1520,25 @@
           <section class="space-y-2">
             <div class="flex items-center justify-between">
               <h3 class="font-semibold text-barya-accent">Key Metrics</h3>
-              <span class="text-xs text-zinc-500">Monthly snapshot</span>
+              <span class="text-xs font-semibold tracking-wide uppercase text-zinc-600">Monthly snapshot</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
               ${[
-                { key: 'income', label: 'Income', hint: 'Monthly inflow' },
-                { key: 'expenses', label: 'Expenses', hint: 'Monthly burn' },
-                { key: 'netSavings', label: 'Net Savings', hint: 'Income - Expenses' },
-                { key: 'runway', label: 'Runway', hint: 'In months' }
+                { key: 'income', label: 'Income', hint: 'Editable • Monthly inflow', editable: true },
+                { key: 'expenses', label: 'Expenses', hint: 'Editable • Other monthly expenses', editable: true },
+                { key: 'netSavings', label: 'Net Savings', hint: 'Auto-calculated (Income - Expenses)', editable: false },
+                { key: 'runway', label: 'Runway', hint: 'Auto-calculated (Net Savings ÷ Team Burn + Other Expenses)', editable: false }
               ].map((metric) => `
                 <label class="bg-white border border-gray-200 rounded-lg p-3 block hover:border-orange-300 transition">
                   <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-500 mb-1.5">${metric.label}</p>
-                  <input data-metric="${metric.key}" type="number" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-base font-semibold outline-none focus:border-teal-500" value="${d.metrics[metric.key]}" />
-                  <p class="text-xs text-zinc-500 mt-1.5">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(1)} months` : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
+                  ${metric.editable
+                    ? `<input data-metric="${metric.key}" type="number" step="0.1" min="0" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-lg font-bold outline-none focus:border-teal-500" value="${d.metrics[metric.key]}" />`
+                    : `<p data-metric-output="${metric.key}" class="text-3xl font-extrabold leading-tight ${metricStyles[metric.key]}">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(2)} mo` : money(d.metrics[metric.key])}</p>`
+                  }
+                  <p data-metric-caption="${metric.key}" class="text-xs text-zinc-500 mt-1.5">${metric.key === 'runway'
+                    ? `${Number(d.metrics.runway).toFixed(2)} months • Team Burn ${money(teamBurn)} + Other Expenses ${money(d.metrics.expenses)}`
+                    : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
+                  ${metric.key === 'runway' ? `<p class="text-[11px] text-zinc-400 mt-0.5">Calculation base: ${money(runwayDenominator)} / month</p>` : ''}
                 </label>
               `).join('')}
             </div>
@@ -1694,10 +1710,35 @@
 
       el.querySelectorAll('[data-metric]').forEach(input => {
         input.oninput = () => {
-          state.dashboard.metrics[input.dataset.metric] = Number(input.value || 0);
-          if (input.dataset.metric === 'income' || input.dataset.metric === 'expenses') {
-            state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
+          const metricKey = input.dataset.metric;
+          state.dashboard.metrics[metricKey] = Math.max(0, Number(input.value || 0));
+          const monthlyTeamBurn = (state.settings?.team?.members || []).reduce((sum, member) => sum + (Number(member.salary) || 0), 0);
+          const income = Number(state.dashboard.metrics.income || 0);
+          const expenses = Number(state.dashboard.metrics.expenses || 0);
+          const netSavings = income - expenses;
+          const denominator = expenses + monthlyTeamBurn;
+          state.dashboard.metrics.netSavings = netSavings;
+          state.dashboard.metrics.runway = denominator > 0 ? (netSavings / denominator) : 0;
+          const netOutput = el.querySelector('[data-metric-output="netSavings"]');
+          const runwayOutput = el.querySelector('[data-metric-output="runway"]');
+          const incomeCaption = el.querySelector('[data-metric-caption="income"]');
+          const expensesCaption = el.querySelector('[data-metric-caption="expenses"]');
+          const netCaption = el.querySelector('[data-metric-caption="netSavings"]');
+          const runwayCaption = el.querySelector('[data-metric-caption="runway"]');
+          if (incomeCaption) incomeCaption.textContent = `${money(income)} • Editable • Monthly inflow`;
+          if (expensesCaption) expensesCaption.textContent = `${money(expenses)} • Editable • Other monthly expenses`;
+          if (netOutput) {
+            netOutput.classList.toggle('text-emerald-600', netSavings >= 0);
+            netOutput.classList.toggle('text-red-500', netSavings < 0);
+            netOutput.textContent = money(netSavings);
           }
+          if (runwayOutput) {
+            runwayOutput.classList.toggle('text-emerald-600', state.dashboard.metrics.runway >= 0);
+            runwayOutput.classList.toggle('text-red-500', state.dashboard.metrics.runway < 0);
+            runwayOutput.textContent = `${Number(state.dashboard.metrics.runway).toFixed(2)} mo`;
+          }
+          if (netCaption) netCaption.textContent = `${money(netSavings)} • Auto-calculated (Income - Expenses)`;
+          if (runwayCaption) runwayCaption.textContent = `${Number(state.dashboard.metrics.runway).toFixed(2)} months • Team Burn ${money(monthlyTeamBurn)} + Other Expenses ${money(expenses)}`;
           saveStateWithoutRender();
           renderDashboardCharts();
         };
