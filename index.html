@@ -25,16 +25,18 @@
     :root {
       --surface: #ffffff;
       --surface-soft: #f8fafc;
-      --border-soft: #e2e8f0;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --primary: #0f172a;
-      --primary-hover: #1e293b;
+      --border-soft: #d9e2ec;
+      --text-main: #1e2937;
+      --text-muted: #526174;
+      --primary: #1e2937;
+      --primary-hover: #111827;
+      --accent: #14b8a6;
+      --accent-hover: #0f766e;
     }
 
     html { scroll-behavior: smooth; }
     body {
-      background: radial-gradient(circle at top left, #ecfeff 0%, #ffffff 45%, #ffffff 100%);
+      background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
       color: var(--text-main);
       letter-spacing: -0.01em;
       line-height: 1.55;
@@ -62,7 +64,7 @@
       position: absolute;
       inset: -1px;
       border-radius: inherit;
-      background: linear-gradient(120deg, rgba(14,165,233,.28), rgba(99,102,241,.22), rgba(251,146,60,.28));
+      background: linear-gradient(120deg, rgba(20,184,166,.25), rgba(30,41,55,.12), rgba(15,118,110,.18));
       opacity: 0;
       transition: opacity .28s ease;
       pointer-events: none;
@@ -78,7 +80,7 @@
       width: 100%;
       transform-origin: 0 50%;
       transform: scaleX(0);
-      background: linear-gradient(90deg, #fb923c, #f97316 38%, #f59e0b);
+      background: linear-gradient(90deg, #14b8a6, #0f766e 45%, #0d9488);
     }
 
     .feature-card {
@@ -133,9 +135,9 @@
     }
 
     .primary-btn {
-      background: linear-gradient(135deg, #fb923c, #f97316 48%, #ea580c);
+      background: linear-gradient(135deg, #14b8a6, #0f766e 58%, #0f766e);
       color: #fff;
-      box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
       transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
       position: relative;
       overflow: hidden;
@@ -155,7 +157,7 @@
     .primary-btn:hover {
       transform: translateY(-2px) scale(1.02);
       filter: saturate(1.05);
-      box-shadow: 0 14px 30px rgba(249, 115, 22, 0.34), inset 0 0 0 1px rgba(255,255,255,0.28);
+      box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34), inset 0 0 0 1px rgba(255,255,255,0.28);
     }
 
     .primary-btn:hover::after { opacity: 1; }
@@ -232,15 +234,15 @@
     }
 
     .magic-input:focus {
-      border-color: rgba(249,115,22,.45);
-      box-shadow: 0 0 0 3px rgba(251,146,60,.16), 0 8px 20px rgba(15,23,42,.08);
+      border-color: rgba(20,184,166,.45);
+      box-shadow: 0 0 0 3px rgba(20,184,166,.16), 0 8px 20px rgba(15,23,42,.08);
       transform: translateY(-1px);
       animation: focusPulse .36s ease;
     }
 
     @keyframes focusPulse {
-      0% { box-shadow: 0 0 0 0 rgba(251,146,60,.18); }
-      100% { box-shadow: 0 0 0 3px rgba(251,146,60,.16), 0 8px 20px rgba(15,23,42,.08); }
+      0% { box-shadow: 0 0 0 0 rgba(20,184,166,.18); }
+      100% { box-shadow: 0 0 0 3px rgba(20,184,166,.16), 0 8px 20px rgba(15,23,42,.08); }
     }
 
     .ripple {
@@ -256,6 +258,35 @@
       to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
 
+
+    .accent-text,
+    .section-label strong { color: var(--accent); }
+
+    .glass-card, .premium-surface, .feature-card {
+      border-color: rgba(30, 41, 55, 0.08);
+    }
+
+    .feature-card p, .glass-card p { color: var(--text-muted); }
+
+    .secondary-btn {
+      border: 1px solid #c6d6df;
+      color: var(--primary);
+      background: #ffffff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #14b8a6;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+
+    [class*="text-emerald"], [class*="text-sky"], [class*="text-violet"], [class*="text-indigo"], [class*="text-blue"] { color: #0f766e !important; }
+    [class*="bg-emerald"], [class*="bg-sky"], [class*="bg-violet"], [class*="bg-indigo"], [class*="bg-blue"] { background-color: #f0fdfa !important; }
+    [class*="border-emerald"], [class*="border-sky"], [class*="border-violet"], [class*="border-indigo"], [class*="border-blue"] { border-color: rgba(20,184,166,0.35) !important; }
+    [class*="from-"] { --tw-gradient-from: #14b8a6 var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(20,184,166,0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+    [class*="via-"] { --tw-gradient-stops: var(--tw-gradient-from), #0f766e var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+    [class*="to-"] { --tw-gradient-to: #1e2937 var(--tw-gradient-to-position) !important; }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: .01ms !important;
@@ -273,9 +304,9 @@
   </style>
 </head>
 <body class="font-sans antialiased">
-  <header class="fixed top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/90 bg-[#f8fafc]/95 backdrop-blur">
     <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
-      <a href="#home" class="text-sm font-semibold tracking-[0.2em] text-slate-900">BARYA</a>
+      <a href="#home" class="text-sm font-semibold tracking-[0.2em] text-[#1e2937]">BARYA</a>
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
         <a href="#home" data-nav-link="home" class="hover:text-slate-900">Home</a>
         <a href="#features" data-nav-link="features" class="hover:text-slate-900">Features</a>
@@ -305,7 +336,7 @@
             <span style="background: linear-gradient(135deg,#38bdf8,#2563eb);"></span>
             <span style="background: linear-gradient(135deg,#a855f7,#6366f1);"></span>
             <span style="background: linear-gradient(135deg,#34d399,#10b981);"></span>
-            <span style="background: linear-gradient(135deg,#fb7185,#f97316);"></span>
+            <span style="background: linear-gradient(135deg,#2dd4bf,#0f766e);"></span>
             <span style="background: linear-gradient(135deg,#f59e0b,#eab308);"></span>
           </div>
           <p class="text-sm text-slate-600"><span class="font-semibold text-slate-900">Join 200+ founders</span> building with clear weekly momentum.</p>
@@ -486,7 +517,7 @@
       <p class="section-label">Pricing</p>
       <h2 class="section-heading mt-2">Simple now, powerful roadmap ahead.</h2>
       <div class="mt-6 grid gap-5 md:grid-cols-2">
-        <article class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+        <article class="rounded-2xl border border-teal-300 bg-teal-50 p-6">
           <h3 class="text-xl font-semibold text-slate-900">Starter</h3>
           <p class="mt-1 text-3xl font-bold text-slate-900">$0</p>
           <p class="mt-2">Core planning and workspace access.</p>
@@ -541,7 +572,7 @@
     </section>
   </main>
 
-  <footer class="border-t border-slate-200 bg-slate-50 py-14">
+  <footer class="border-t border-slate-200 bg-[#f0f7f7] py-14">
     <div class="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-5">
       <div class="md:col-span-2">
         <p class="text-lg font-bold text-slate-900">Barya</p>

@@ -12,14 +12,14 @@
         extend: {
           colors: {
             barya: {
-              bg: '#f8f9fa',
+              bg: '#f8fafc',
               card: '#ffffff',
-              accent: '#f97316',
-              soft: '#f1f5f9'
+              accent: '#14b8a6',
+              soft: '#ecfeff'
             }
           },
           boxShadow: {
-            neon: '0 0 0 1px rgba(249, 115, 22, 0.3), 0 0 30px rgba(249, 115, 22, 0.12)'
+            neon: '0 0 0 1px rgba(20, 184, 166, 0.3), 0 0 30px rgba(20, 184, 166, 0.12)'
           }
         }
       }
@@ -29,9 +29,9 @@
     :root { color-scheme: light; }
     body {
       background:
-        radial-gradient(circle at 18% 10%, rgba(249, 115, 22, 0.08), transparent 34%),
-        radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.07), transparent 32%),
-        #f8f9fa;
+        radial-gradient(circle at 18% 10%, rgba(20, 184, 166, 0.08), transparent 34%),
+        radial-gradient(circle at 82% 0%, rgba(30, 41, 55, 0.06), transparent 32%),
+        #f8fafc;
       font-feature-settings: "ss01", "cv01";
     }
 
@@ -42,26 +42,26 @@
       box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
       backdrop-filter: none;
     }
-    .light-theme .active-nav { background: rgba(249, 115, 22, 0.14); color: #ea580c; border-color: rgba(249, 115, 22, 0.35); }
+    .light-theme .active-nav { background: rgba(20, 184, 166, 0.14); color: #0f766e; border-color: rgba(20, 184, 166, 0.35); }
     .light-theme [class*="bg-zinc"],
     .light-theme [class*="bg-[#"],
     .light-theme [class*="bg-black"] { background: #ffffff !important; }
     .light-theme [class*="border-zinc"] { border-color: #e5e7eb !important; }
     .light-theme [class*="text-zinc"] { color: #374151 !important; }
-    .light-theme [class*="text-black"] { color: #111111 !important; }
+    .light-theme [class*="text-black"] { color: #1e2937 !important; }
     .light-theme [class*="text-orange"],
-    .light-theme .text-barya-accent { color: #f97316 !important; }
-    .light-theme [class*="bg-orange"] { background: #f97316 !important; color: #ffffff !important; }
-    .light-theme [class*="border-orange"] { border-color: #fb923c !important; }
-    .light-theme input, .light-theme textarea, .light-theme select { background: #ffffff !important; color: #111827 !important; border-color: #d1d5db !important; }
-    .light-theme .ring-progress { background: conic-gradient(#f97316 var(--pct), #e5e7eb 0); }
+    .light-theme .text-barya-accent { color: #14b8a6 !important; }
+    .light-theme [class*="bg-orange"] { background: #14b8a6 !important; color: #ffffff !important; }
+    .light-theme [class*="border-orange"] { border-color: #2dd4bf !important; }
+    .light-theme input, .light-theme textarea, .light-theme select { background: #ffffff !important; color: #1e2937 !important; border-color: #d1d5db !important; }
+    .light-theme .ring-progress { background: conic-gradient(#14b8a6 var(--pct), #e5e7eb 0); }
     .light-theme .ring-progress > div { background: #ffffff; border-color: #e5e7eb; }
     .light-theme .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; }
     .light-theme .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; }
 
     .section-panel { display: none; }
     .section-panel.active { display: block; }
-    .active-nav { background: rgba(249, 115, 22, 0.14); color: #f97316; border-color: rgba(249, 115, 22, 0.25); }
+    .active-nav { background: rgba(20, 184, 166, 0.14); color: #14b8a6; border-color: rgba(20, 184, 166, 0.25); }
     .glass-card {
       background: linear-gradient(135deg, rgba(17, 17, 17, 0.86), rgba(13, 16, 25, 0.76));
       border: 1px solid rgba(82, 82, 91, 0.55);
@@ -69,9 +69,9 @@
       backdrop-filter: blur(14px);
     }
     .premium-hover { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease; }
-    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(249, 115, 22, 0.34); box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
+    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(20, 184, 166, 0.34); box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
     .soft-input { transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
-    .soft-input:focus { border-color: rgba(249, 115, 22, 0.6); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12); }
+    .soft-input:focus { border-color: rgba(20, 184, 166, 0.6); box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12); }
     #mainNav button { transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease; }
     #mainNav button:hover { transform: translateX(2px); }
     button, a, input, select, textarea { transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
@@ -79,7 +79,7 @@
       width: 132px;
       height: 132px;
       border-radius: 999px;
-      background: conic-gradient(#f97316 var(--pct), #e5e7eb 0);
+      background: conic-gradient(#14b8a6 var(--pct), #e5e7eb 0);
       display: grid;
       place-items: center;
     }
@@ -95,6 +95,36 @@
     .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; }
+
+    .light-theme { color: #1e2937; }
+    .light-theme .glass-card { background: #ffffff; border: 1px solid #dbe3ed; box-shadow: 0 12px 30px rgba(30,41,55,0.08); }
+    .light-theme .active-nav { background: rgba(20,184,166,0.16); color: #0f766e; border-color: rgba(20,184,166,0.34); }
+    .light-theme #mainNav button { color: #cbd5e1; border-color: transparent; }
+    .light-theme #mainNav button:hover { color: #f8fafc; background: rgba(148,163,184,0.16); }
+    .light-theme #mainNav .active-nav { color: #ccfbf1; background: rgba(20,184,166,0.26); }
+    .light-theme button[class*="bg-orange"], .light-theme button[class*="bg-barya-accent"] { background: #14b8a6 !important; color: #ffffff !important; }
+    .light-theme button[class*="bg-orange"]:hover, .light-theme button[class*="bg-barya-accent"]:hover { background: #0f766e !important; }
+    .light-theme [class*="text-orange"], .light-theme .text-barya-accent { color: #0f766e !important; }
+    .light-theme [class*="border-orange"] { border-color: rgba(20,184,166,0.38) !important; }
+
+    .light-theme [class*="text-emerald"],
+    .light-theme [class*="text-sky"],
+    .light-theme [class*="text-violet"],
+    .light-theme [class*="text-indigo"],
+    .light-theme [class*="text-blue"] { color: #0f766e !important; }
+    .light-theme [class*="bg-emerald"],
+    .light-theme [class*="bg-sky"],
+    .light-theme [class*="bg-violet"],
+    .light-theme [class*="bg-indigo"],
+    .light-theme [class*="bg-blue"] { background: #f0fdfa !important; color: #0f766e !important; }
+    .light-theme [class*="border-emerald"],
+    .light-theme [class*="border-sky"],
+    .light-theme [class*="border-violet"],
+    .light-theme [class*="border-indigo"],
+    .light-theme [class*="border-blue"] { border-color: rgba(20,184,166,0.32) !important; }
+    .light-theme [class*="from-orange"], .light-theme [class*="from-emerald"], .light-theme [class*="from-sky"], .light-theme [class*="from-blue"], .light-theme [class*="from-violet"], .light-theme [class*="from-indigo"] { --tw-gradient-from: #14b8a6 var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(20,184,166,0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+    .light-theme [class*="via-orange"], .light-theme [class*="via-emerald"], .light-theme [class*="via-sky"], .light-theme [class*="via-blue"], .light-theme [class*="via-violet"], .light-theme [class*="via-indigo"] { --tw-gradient-stops: var(--tw-gradient-from), #0f766e var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+    .light-theme [class*="to-orange"], .light-theme [class*="to-emerald"], .light-theme [class*="to-sky"], .light-theme [class*="to-blue"], .light-theme [class*="to-violet"], .light-theme [class*="to-indigo"] { --tw-gradient-to: #1e2937 var(--tw-gradient-to-position) !important; }
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
@@ -102,13 +132,13 @@
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#f1f1f1] border-r border-gray-200 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
       <div class="flex items-center justify-between mb-7">
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-barya-accent">Barya</h1>
-          <p class="text-xs font-medium tracking-wide text-zinc-500">Business AI</p>
+          <h1 class="text-xl font-bold tracking-tight text-teal-300">Barya</h1>
+          <p class="text-xs font-medium tracking-wide text-slate-300">Business AI</p>
         </div>
-        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-zinc-700 text-zinc-300">✕</button>
+        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-500 text-slate-100">✕</button>
       </div>
       <nav class="space-y-1.5" id="mainNav"></nav>
     </aside>
@@ -117,16 +147,16 @@
       <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
-          <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
+          <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-teal-500 max-w-[56vw] truncate" />
         </div>
         <div class="flex items-center gap-3">
-          <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-orange-500/30 bg-orange-500/10 px-2 py-1 rounded-full text-orange-200">⌘/Ctrl+K Search</span>
+          <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-teal-300 bg-teal-50 px-2 py-1 rounded-full text-teal-700">⌘/Ctrl+K Search</span>
           <span id="localFirstBadge" class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
           <div class="text-right">
             <p class="text-sm font-medium">Shruti Barya</p>
             <p id="headerFounderRole" class="text-xs text-zinc-400">Founder</p>
           </div>
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-400 text-black font-bold grid place-items-center">SB</div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">SB</div>
         </div>
       </header>
 
@@ -149,7 +179,7 @@
   <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-white border border-gray-200 rounded-xl p-0 text-gray-900">
     <div class="p-5 border-b border-zinc-800 flex justify-between items-center">
       <h3 id="memoryModalTitle" class="text-lg font-semibold">Insight</h3>
-      <button id="closeMemoryModal" class="text-zinc-400 hover:text-zinc-100">✕</button>
+      <button id="closeMemoryModal" class="text-slate-400 hover:text-slate-700">✕</button>
     </div>
     <div class="p-5" id="memoryModalBody"></div>
   </dialog>
@@ -1491,7 +1521,7 @@
               ].map((metric) => `
                 <label class="bg-white border border-gray-200 rounded-lg p-3 block hover:border-orange-300 transition">
                   <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-500 mb-1.5">${metric.label}</p>
-                  <input data-metric="${metric.key}" type="number" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-base font-semibold outline-none focus:border-barya-accent" value="${d.metrics[metric.key]}" />
+                  <input data-metric="${metric.key}" type="number" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-base font-semibold outline-none focus:border-teal-500" value="${d.metrics[metric.key]}" />
                   <p class="text-xs text-zinc-500 mt-1.5">${metric.key === 'runway' ? `${Number(d.metrics.runway).toFixed(1)} months` : `${money(d.metrics[metric.key])} • ${metric.hint}`}</p>
                 </label>
               `).join('')}
@@ -1802,8 +1832,8 @@
               {
                 label: 'Current Monthly Net',
                 data: [forecast.currentNet, ...Array(5).fill(null)],
-                borderColor: '#f97316',
-                backgroundColor: '#f97316',
+                borderColor: '#14b8a6',
+                backgroundColor: '#14b8a6',
                 pointRadius: 5,
                 pointHoverRadius: 6,
                 borderWidth: 2,
@@ -1812,7 +1842,7 @@
               {
                 label: `Projected Cash Flow (${chartCurrencyLabel})`,
                 data: forecast.values,
-                borderColor: '#f97316',
+                borderColor: '#14b8a6',
                 segment: {
                   borderColor: (ctx) => {
                     const y = ctx.p1.parsed.y;
@@ -1822,17 +1852,17 @@
                 backgroundColor: (ctx) => {
                   const { chart } = ctx;
                   const { ctx: context, chartArea } = chart;
-                  if (!chartArea) return 'rgba(249, 115, 22, 0.08)';
+                  if (!chartArea) return 'rgba(20, 184, 166, 0.08)';
                   const gradient = context.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                  gradient.addColorStop(0, 'rgba(249, 115, 22, 0.22)');
-                  gradient.addColorStop(1, 'rgba(249, 115, 22, 0.02)');
+                  gradient.addColorStop(0, 'rgba(20, 184, 166, 0.22)');
+                  gradient.addColorStop(1, 'rgba(20, 184, 166, 0.02)');
                   return gradient;
                 },
                 fill: true,
                 tension: 0.3,
                 pointRadius: 4,
                 pointBackgroundColor: (ctx) => (ctx.raw >= 0 ? '#22c55e' : '#ef4444'),
-                pointBorderColor: '#f97316',
+                pointBorderColor: '#14b8a6',
                 pointBorderWidth: 1.5
               }
             ]
@@ -1883,7 +1913,7 @@
               borderColor: '#fff',
               borderWidth: 2,
               hoverOffset: 6,
-              backgroundColor: ['#f97316', '#fb923c', '#fdba74', '#ea580c', '#c2410c', '#fed7aa', '#fb7185', '#f59e0b']
+              backgroundColor: ['#14b8a6', '#2dd4bf', '#fdba74', '#0f766e', '#c2410c', '#fed7aa', '#fb7185', '#f59e0b']
             }]
           },
           options: {
@@ -2602,7 +2632,7 @@ Use the 'Add Block' button below to get started.</p>
               </div>
               <button data-delete-sprint="${sprint.id}" class="text-xs text-red-400">Delete</button>
             </div>
-            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#f97316]" style="width:${pct}%"></div></div>
+            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#14b8a6]" style="width:${pct}%"></div></div>
             <p class="text-xs text-zinc-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p>
           </div>
         `;
@@ -2641,7 +2671,7 @@ Use the 'Add Block' button below to get started.</p>
         <section class="bg-gradient-to-br from-[#0b0f14] to-[#090b10] border border-orange-500/20 rounded-2xl shadow-neon overflow-hidden">
           <div class="grid xl:grid-cols-[220px_1fr] min-h-[76vh]">
             <aside class="border-r border-zinc-800 bg-[#0b0e13] p-4 space-y-3">
-              <h2 class="text-lg font-semibold text-[#f97316]">Task & Sprint Manager</h2>
+              <h2 class="text-lg font-semibold text-[#14b8a6]">Task & Sprint Manager</h2>
               ${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2 rounded-lg border ${t.leftTab === tab.id ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-800 hover:border-orange-500/30'}">${tab.label}</button>`).join('')}
               <div class="pt-3 border-t border-zinc-800 space-y-2">
                 <button id="exportTasks" class="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Export Tasks & Sprints</button>
@@ -3005,7 +3035,7 @@ Use the 'Add Block' button below to get started.</p>
         <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-orange-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Barya AI · Smart Reasoning Assistant</h2>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#14b8a6]">Barya AI · Smart Reasoning Assistant</h2>
               <p class="text-xs sm:text-sm text-zinc-400 mt-1">Long-form, deep-thinking founder guidance with context-aware execution and practical trade-offs.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -3506,7 +3536,7 @@ Use the 'Add Block' button below to get started.</p>
               (note.links || []).forEach(targetId => {
                 const to = nodeMap.get(targetId);
                 if (!from || !to) return;
-                ctx.strokeStyle = 'rgba(249, 115, 22, 0.35)';
+                ctx.strokeStyle = 'rgba(20, 184, 166, 0.35)';
                 ctx.beginPath();
                 ctx.moveTo(from.x, from.y);
                 ctx.lineTo(to.x, to.y);
@@ -3519,10 +3549,10 @@ Use the 'Add Block' button below to get started.</p>
               const isHover = node.id === hoverId;
               ctx.beginPath();
               ctx.arc(node.x, node.y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
-              ctx.fillStyle = isActive ? '#f97316' : '#1e293b';
+              ctx.fillStyle = isActive ? '#14b8a6' : '#1e293b';
               ctx.fill();
               ctx.lineWidth = isActive ? 2 : 1;
-              ctx.strokeStyle = isActive ? 'rgba(249, 115, 22, 0.8)' : 'rgba(148, 163, 184, 0.35)';
+              ctx.strokeStyle = isActive ? 'rgba(20, 184, 166, 0.8)' : 'rgba(148, 163, 184, 0.35)';
               ctx.stroke();
 
               ctx.fillStyle = isActive ? '#001018' : '#dbeafe';
@@ -4405,7 +4435,7 @@ Use the 'Add Block' button below to get started.</p>
           ctx.fill();
 
           ctx.lineWidth = hoveredNode?.ref === node.ref ? 3 : 1.5;
-          ctx.strokeStyle = hoveredNode?.ref === node.ref ? '#ea580c' : 'rgba(255,255,255,0.9)';
+          ctx.strokeStyle = hoveredNode?.ref === node.ref ? '#0f766e' : 'rgba(255,255,255,0.9)';
           ctx.stroke();
 
           ctx.fillStyle = '#1f2937';
