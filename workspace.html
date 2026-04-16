@@ -270,9 +270,44 @@
         }
       },
       settings: {
-        founder: { name: 'Shruti Barya', role: 'Founder', email: 'shruti@barya.ai' },
-        business: { name: 'Untitled Startup', stage: 'Pre-Seed', industry: 'B2B SaaS' },
-        preferences: { currency: 'USD', language: 'English', darkMode: true }
+        founder: {
+          name: 'Shruti Barya',
+          role: 'Founder & CEO',
+          email: 'shruti@barya.ai',
+          bio: 'Founder focused on building practical AI systems for small business operators.',
+          location: 'Bengaluru, India',
+          linkedin: '',
+          twitter: '',
+          website: '',
+          photo: ''
+        },
+        business: {
+          name: 'Untitled Startup',
+          stage: 'Pre-Seed',
+          industry: 'B2B SaaS',
+          targetAudience: 'Small business owners and solo founders',
+          foundingYear: String(new Date().getFullYear())
+        },
+        team: {
+          openRoles: 2,
+          members: [
+            { id: 'tm-founder', name: 'Shruti Barya', role: 'Founder & CEO', email: 'shruti@barya.ai', equity: 75, salary: 0, dateJoined: '2024-01-15', notes: 'Leads company strategy and fundraising.', status: 'Active' },
+            { id: 'tm-tech', name: 'Ayaan Mehta', role: 'CTO', email: 'ayaan@barya.ai', equity: 15, salary: 4200, dateJoined: '2024-05-10', notes: 'Owns product architecture and engineering roadmap.', status: 'Active' }
+          ],
+          responsibilities: {
+            Product: { r: 'tm-tech', a: 'tm-founder', c: '', i: '' },
+            Marketing: { r: 'tm-founder', a: 'tm-founder', c: '', i: '' },
+            Sales: { r: '', a: 'tm-founder', c: '', i: '' },
+            Operations: { r: '', a: 'tm-founder', c: '', i: '' },
+            Finance: { r: 'tm-founder', a: 'tm-founder', c: '', i: '' },
+            'Customer Support': { r: '', a: 'tm-founder', c: '', i: '' },
+            Tech: { r: 'tm-tech', a: 'tm-tech', c: 'tm-founder', i: '' }
+          },
+          meetings: [
+            { id: 'mtg-weekly', title: 'Weekly Leadership Sync', datetime: '2026-04-20T09:30', participants: 'Shruti Barya, Ayaan Mehta', agenda: 'Roadmap updates, hiring priorities, KPI review.', recurring: true }
+          ]
+        },
+        preferences: { currency: 'USD', language: 'English', dateFormat: 'MM/DD/YYYY', darkMode: true }
       },
       knowledgeGraph: {
         search: '',
@@ -4067,44 +4102,155 @@ Use the 'Add Block' button below to get started.</p>
 
     function renderSettings() {
       const s = state.settings;
+      const team = s.team || (s.team = { openRoles: 0, members: [], responsibilities: {}, meetings: [] });
+      team.members ||= [];
+      team.meetings ||= [];
+      team.responsibilities ||= {};
+      const roleAreas = ['Product', 'Marketing', 'Sales', 'Operations', 'Finance', 'Customer Support', 'Tech'];
+      roleAreas.forEach((area) => {
+        if (!team.responsibilities[area]) team.responsibilities[area] = { r: '', a: '', c: '', i: '' };
+      });
+      const totalEquity = team.members.reduce((sum, member) => sum + (Number(member.equity) || 0), 0);
+      const monthlyBurn = team.members.reduce((sum, member) => sum + (Number(member.salary) || 0), 0);
+      const recommendedHire = totalEquity > 90 ? 'Revenue Lead (limit further equity dilution)' : monthlyBurn < 8000 ? 'Growth Marketer' : 'Customer Success Manager';
+      const equityNote = totalEquity <= 100 ? 'Equity distribution looks balanced.' : 'Equity exceeds 100%. Rebalance cap table.';
+      const burnNote = monthlyBurn > 15000 ? 'Burn rate alert: consider extending runway before scaling hires.' : 'Team burn is within a healthy early-stage range.';
+      const memberOptions = team.members.map((m) => `<option value="${escapeAttr(m.id)}">${escapeHTML(m.name)}</option>`).join('');
       const el = document.getElementById('section-settings');
       el.innerHTML = `
-        <div class="grid lg:grid-cols-3 gap-4">
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
-            <h3 class="font-semibold mb-2">Founder Profile</h3>
-            ${inputField('Founder Name','founder.name',s.founder.name)}
-            ${inputField('Role','founder.role',s.founder.role)}
-            ${inputField('Email','founder.email',s.founder.email,'email')}
-          </div>
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
-            <h3 class="font-semibold mb-2">Business Profile</h3>
-            ${inputField('Business Name','business.name',s.business.name)}
-            ${inputField('Stage','business.stage',s.business.stage)}
-            ${inputField('Industry','business.industry',s.business.industry)}
-          </div>
-          <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-2">
-            <h3 class="font-semibold mb-2">Preferences</h3>
-            <label class="block text-sm">Currency<select data-setting="preferences.currency" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.currency==='USD'?'selected':''}>USD</option><option ${s.preferences.currency==='INR'?'selected':''}>INR</option><option ${s.preferences.currency==='EUR'?'selected':''}>EUR</option></select></label>
-            <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option></select></label>
-            <label class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded px-3 py-2 mt-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-400" /></label>
-          </div>
-        </div>
+        <section class="space-y-6 rounded-2xl border border-orange-200/60 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-4 sm:p-6 text-zinc-800">
+          <div class="grid xl:grid-cols-2 gap-4">
+            <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
+              <h3 class="font-semibold text-lg text-orange-700">Founder Profile</h3>
+              <div class="flex items-center gap-4 mb-2">
+                <div class="h-16 w-16 rounded-full border-2 border-orange-200 bg-orange-100 flex items-center justify-center text-orange-700 font-semibold">FP</div>
+                <button type="button" class="px-3 py-1.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-300 text-sm">Change Photo</button>
+              </div>
+              ${inputField('Founder Name','founder.name',s.founder.name)}
+              ${inputField('Role / Title','founder.role',s.founder.role)}
+              ${inputField('Email','founder.email',s.founder.email,'email')}
+              <label class="block text-sm">Bio<textarea data-setting="founder.bio" rows="3" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2">${escapeHTML(s.founder.bio || '')}</textarea></label>
+              ${inputField('Location','founder.location',s.founder.location)}
+              ${inputField('LinkedIn','founder.linkedin',s.founder.linkedin)}
+              ${inputField('Twitter','founder.twitter',s.founder.twitter)}
+              ${inputField('Website','founder.website',s.founder.website)}
+            </article>
 
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 flex flex-wrap gap-2">
-          <button id="exportAll" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export All Data</button>
-          <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import All Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>
-          <button id="clearAll" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear All Data</button>
-        </div>
-
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-3">
-          <h3 class="font-semibold text-orange-200">Keyboard Shortcuts</h3>
-          <div class="grid sm:grid-cols-2 gap-2 text-sm text-zinc-300">
-            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Quick Search</span><kbd class="text-xs text-orange-200 border border-orange-500/40 rounded px-1.5 py-0.5">Ctrl/⌘ + K</kbd></p>
-            <p class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2"><span>Close Sidebar/Modal</span><kbd class="text-xs text-orange-200 border border-orange-500/40 rounded px-1.5 py-0.5">Esc</kbd></p>
+            <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
+              <h3 class="font-semibold text-lg text-orange-700">Business Profile</h3>
+              ${inputField('Business Name','business.name',s.business.name)}
+              ${inputField('Stage','business.stage',s.business.stage)}
+              ${inputField('Industry','business.industry',s.business.industry)}
+              ${inputField('Target Audience','business.targetAudience',s.business.targetAudience)}
+              ${inputField('Founding Year','business.foundingYear',s.business.foundingYear,'number')}
+            </article>
           </div>
-          <p class="text-xs text-zinc-500">Tip: shortcuts adapt to the active section and focus the most relevant input.</p>
-          <footer class="pt-2 border-t border-zinc-800 text-center text-sm text-zinc-400">Made with ❤️ for Indian Founders</footer>
-        </div>
+
+          <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-5 shadow-sm">
+            <h3 class="font-semibold text-lg text-orange-700">Team Management</h3>
+            <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Team Size</p><p class="text-2xl font-semibold">${team.members.length}</p></div>
+              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Estimated Monthly Team Burn</p><p class="text-2xl font-semibold">$${monthlyBurn.toLocaleString()}</p></div>
+              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Total Equity Distributed</p><p class="text-2xl font-semibold">${totalEquity.toFixed(2)}%</p></div>
+              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><label class="text-xs text-zinc-500 block">Open Roles</label><input type="number" min="0" data-setting="team.openRoles" value="${Number(team.openRoles) || 0}" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"/></div>
+            </div>
+
+            <div class="rounded-xl border border-orange-200 p-4 space-y-3">
+              <h4 class="font-semibold text-orange-700">Add Team Member</h4>
+              <form id="teamMemberForm" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <label class="text-sm">Full Name<input name="name" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Role<select name="rolePreset" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option>Founder</option><option>CEO</option><option>CTO</option><option>COO</option><option>Product Manager</option><option>Engineer</option><option>Designer</option><option>Marketing Lead</option><option>Sales Lead</option><option>Other</option></select></label>
+                <label class="text-sm">Custom Role<input name="roleCustom" placeholder="Optional custom role" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Email<input name="email" type="email" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Equity %<input name="equity" type="number" min="0" max="100" step="0.01" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Monthly Salary (optional)<input name="salary" type="number" min="0" step="0.01" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Date Joined<input name="dateJoined" type="date" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm md:col-span-2 xl:col-span-2">Notes<input name="notes" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <div class="self-end"><button type="submit" class="w-full rounded-lg bg-orange-500 text-white px-4 py-2 font-medium">Add Member</button></div>
+              </form>
+            </div>
+
+            <div class="rounded-xl border border-orange-200 overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-orange-50"><tr><th class="text-left p-3">Name</th><th class="text-left p-3">Role</th><th class="text-left p-3">Equity %</th><th class="text-left p-3">Salary</th><th class="text-left p-3">Status</th><th class="text-left p-3">Actions</th></tr></thead>
+                <tbody>
+                  ${team.members.length ? team.members.map((member) => `<tr class="border-t border-orange-100">
+                    <td class="p-3">${escapeHTML(member.name || '')}</td>
+                    <td class="p-3">${escapeHTML(member.role || '')}</td>
+                    <td class="p-3">${Number(member.equity || 0).toFixed(2)}%</td>
+                    <td class="p-3">$${Number(member.salary || 0).toLocaleString()}</td>
+                    <td class="p-3">${escapeHTML(member.status || 'Active')}</td>
+                    <td class="p-3 flex gap-2"><button data-action="edit-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700">Edit</button><button data-action="remove-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600">Remove</button></td>
+                  </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-zinc-500">No team members added yet.</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="rounded-xl border border-orange-200 p-4 space-y-3 overflow-x-auto">
+              <h4 class="font-semibold text-orange-700">Responsibility Matrix (RACI)</h4>
+              <table class="min-w-full text-sm">
+                <thead class="bg-orange-50"><tr><th class="text-left p-2">Area</th><th class="text-left p-2">Responsible (R)</th><th class="text-left p-2">Accountable (A)</th><th class="text-left p-2">Consulted (C)</th><th class="text-left p-2">Informed (I)</th></tr></thead>
+                <tbody>
+                ${roleAreas.map((area) => {
+                  const row = team.responsibilities[area] || {};
+                  return `<tr class="border-t border-orange-100"><td class="p-2 font-medium">${area}</td>
+                    <td class="p-2"><select data-raci="${area}|r" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.r)}"`, `value="${escapeAttr(row.r)}" selected`)}</select></td>
+                    <td class="p-2"><select data-raci="${area}|a" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.a)}"`, `value="${escapeAttr(row.a)}" selected`)}</select></td>
+                    <td class="p-2"><select data-raci="${area}|c" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.c)}"`, `value="${escapeAttr(row.c)}" selected`)}</select></td>
+                    <td class="p-2"><select data-raci="${area}|i" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.i)}"`, `value="${escapeAttr(row.i)}" selected`)}</select></td></tr>`;
+                }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="rounded-xl border border-orange-200 p-4 space-y-3">
+              <h4 class="font-semibold text-orange-700">Meeting Tracker</h4>
+              <form id="meetingForm" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <label class="text-sm">Meeting Title<input name="title" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Date & Time<input name="datetime" type="datetime-local" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Participants<input name="participants" placeholder="Names separated by comma" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm md:col-span-2">Purpose / Agenda<input name="agenda" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
+                <label class="text-sm">Recurring<select name="recurring" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option value="no">No</option><option value="yes">Yes</option></select></label>
+                <div class="self-end"><button type="submit" class="w-full rounded-lg bg-orange-500 text-white px-4 py-2 font-medium">Add Meeting</button></div>
+              </form>
+              <div class="space-y-2">
+                ${team.meetings.length ? team.meetings.map((meeting) => `<div class="rounded-lg border border-orange-100 bg-orange-50/40 p-3 flex flex-wrap gap-3 items-center justify-between">
+                  <div><p class="font-medium">${escapeHTML(meeting.title)}</p><p class="text-xs text-zinc-500">${new Date(meeting.datetime).toLocaleString()} • ${escapeHTML(meeting.participants || 'No participants')}</p><p class="text-xs text-zinc-500">${escapeHTML(meeting.agenda || 'No agenda')}</p></div>
+                  <div class="flex gap-2"><span class="text-xs px-2 py-1 rounded-full border border-orange-200">${meeting.recurring ? 'Recurring' : 'One-time'}</span><button data-action="edit-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700 text-sm">Edit</button><button data-action="remove-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600 text-sm">Delete</button></div>
+                </div>`).join('') : `<p class="text-sm text-zinc-500">No meetings scheduled yet.</p>`}
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-orange-200 bg-orange-50/60 p-4">
+              <h4 class="font-semibold text-orange-700 mb-2">Team Insights</h4>
+              <ul class="text-sm space-y-1 text-zinc-700 list-disc pl-5">
+                <li>Recommended next hire: <strong>${escapeHTML(recommendedHire)}</strong>.</li>
+                <li>${escapeHTML(equityNote)}</li>
+                <li>${escapeHTML(burnNote)}</li>
+              </ul>
+            </div>
+          </article>
+
+          <div class="grid lg:grid-cols-2 gap-4">
+            <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
+              <h3 class="font-semibold text-lg text-orange-700">Preferences</h3>
+              <label class="block text-sm">Currency<select data-setting="preferences.currency" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.currency==='USD'?'selected':''}>USD</option><option ${s.preferences.currency==='EUR'?'selected':''}>EUR</option><option ${s.preferences.currency==='GBP'?'selected':''}>GBP</option><option ${s.preferences.currency==='INR'?'selected':''}>INR</option><option ${s.preferences.currency==='AED'?'selected':''}>AED</option><option ${s.preferences.currency==='SGD'?'selected':''}>SGD</option><option ${s.preferences.currency==='AUD'?'selected':''}>AUD</option></select></label>
+              <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option><option ${s.preferences.language==='French'?'selected':''}>French</option><option ${s.preferences.language==='German'?'selected':''}>German</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Arabic'?'selected':''}>Arabic</option></select></label>
+              <label class="block text-sm">Date Format<select data-setting="preferences.dateFormat" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.dateFormat==='MM/DD/YYYY'?'selected':''}>MM/DD/YYYY</option><option ${s.preferences.dateFormat==='DD/MM/YYYY'?'selected':''}>DD/MM/YYYY</option><option ${s.preferences.dateFormat==='YYYY-MM-DD'?'selected':''}>YYYY-MM-DD</option></select></label>
+              <label class="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-3 py-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-500" /></label>
+            </article>
+
+            <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
+              <h3 class="font-semibold text-lg text-orange-700">Data Management</h3>
+              <p class="text-sm text-zinc-500">Export, import, or reset your entire workspace data securely.</p>
+              <div class="flex flex-wrap gap-2">
+                <button id="exportAll" class="px-3 py-2 rounded-lg bg-orange-500 text-white">Export All My Data</button>
+                <label class="px-3 py-2 rounded-lg border border-orange-300 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>
+                <button id="clearAll" class="px-3 py-2 rounded-lg border border-red-300 text-red-600">Reset All Data</button>
+              </div>
+            </article>
+          </div>
+        </section>
       `;
 
       el.querySelectorAll('[data-setting]').forEach(input => {
@@ -4121,10 +4267,101 @@ Use the 'Add Block' button below to get started.</p>
           saveState();
         };
       });
+      el.querySelectorAll('[data-raci]').forEach((select) => {
+        select.onchange = () => {
+          const [area, type] = select.dataset.raci.split('|');
+          state.settings.team.responsibilities[area] ||= { r: '', a: '', c: '', i: '' };
+          state.settings.team.responsibilities[area][type] = select.value;
+          saveState();
+        };
+      });
+      const memberForm = document.getElementById('teamMemberForm');
+      if (memberForm) {
+        memberForm.onsubmit = (event) => {
+          event.preventDefault();
+          const form = new FormData(memberForm);
+          const rolePreset = String(form.get('rolePreset') || '').trim();
+          const roleCustom = String(form.get('roleCustom') || '').trim();
+          const role = roleCustom || rolePreset;
+          state.settings.team.members.push({
+            id: createId(),
+            name: String(form.get('name') || '').trim(),
+            role,
+            email: String(form.get('email') || '').trim(),
+            equity: Number(form.get('equity')) || 0,
+            salary: Number(form.get('salary')) || 0,
+            dateJoined: String(form.get('dateJoined') || ''),
+            notes: String(form.get('notes') || '').trim(),
+            status: 'Active'
+          });
+          saveState();
+          renderSettings();
+        };
+      }
+      el.querySelectorAll('[data-action="remove-member"]').forEach((button) => {
+        button.onclick = () => {
+          const memberId = button.dataset.memberId;
+          state.settings.team.members = state.settings.team.members.filter((m) => m.id !== memberId);
+          saveState();
+          renderSettings();
+        };
+      });
+      el.querySelectorAll('[data-action="edit-member"]').forEach((button) => {
+        button.onclick = () => {
+          const member = state.settings.team.members.find((m) => m.id === button.dataset.memberId);
+          if (!member) return;
+          const name = prompt('Full Name', member.name) ?? member.name;
+          const role = prompt('Role', member.role) ?? member.role;
+          const equity = prompt('Equity %', String(member.equity ?? 0));
+          const salary = prompt('Monthly Salary', String(member.salary ?? 0));
+          member.name = name.trim() || member.name;
+          member.role = role.trim() || member.role;
+          member.equity = Number(equity);
+          member.salary = Number(salary);
+          saveState();
+          renderSettings();
+        };
+      });
+      const meetingForm = document.getElementById('meetingForm');
+      if (meetingForm) {
+        meetingForm.onsubmit = (event) => {
+          event.preventDefault();
+          const form = new FormData(meetingForm);
+          state.settings.team.meetings.push({
+            id: createId(),
+            title: String(form.get('title') || '').trim(),
+            datetime: String(form.get('datetime') || ''),
+            participants: String(form.get('participants') || '').trim(),
+            agenda: String(form.get('agenda') || '').trim(),
+            recurring: String(form.get('recurring') || 'no') === 'yes'
+          });
+          saveState();
+          renderSettings();
+        };
+      }
+      el.querySelectorAll('[data-action="remove-meeting"]').forEach((button) => {
+        button.onclick = () => {
+          state.settings.team.meetings = state.settings.team.meetings.filter((m) => m.id !== button.dataset.meetingId);
+          saveState();
+          renderSettings();
+        };
+      });
+      el.querySelectorAll('[data-action="edit-meeting"]').forEach((button) => {
+        button.onclick = () => {
+          const meeting = state.settings.team.meetings.find((m) => m.id === button.dataset.meetingId);
+          if (!meeting) return;
+          const title = prompt('Meeting Title', meeting.title) ?? meeting.title;
+          const agenda = prompt('Purpose / Agenda', meeting.agenda || '') ?? meeting.agenda;
+          meeting.title = title.trim() || meeting.title;
+          meeting.agenda = agenda.trim();
+          saveState();
+          renderSettings();
+        };
+      });
       document.getElementById('exportAll').onclick = () => downloadJSON('barya-all-data.json', state);
       document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state = deepMerge(structuredClone(defaultState), data); applyThemePreference(); saveState(); renderNav(); document.getElementById('workspaceTitle').value = state.title; });
       document.getElementById('clearAll').onclick = () => {
-        if (!confirm('Clear all local data and reset workspace?')) return;
+        if (!confirm('Reset all workspace data? This action cannot be undone.')) return;
         localStorage.removeItem(STORAGE_KEY);
         state = structuredClone(defaultState);
         applyThemePreference();
@@ -4135,7 +4372,7 @@ Use the 'Add Block' button below to get started.</p>
     }
 
     function inputField(label, settingPath, value, type='text') {
-      return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-2" /></label>`;
+      return `<label class="block text-sm">${label}<input type="${type}" data-setting="${settingPath}" value="${escapeAttr(value)}" class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2" /></label>`;
     }
 
     function emptyStateMarkup(icon = '✨', title = 'Nothing here yet', subtitle = 'Start by adding your first item.', extraClass = '') {
