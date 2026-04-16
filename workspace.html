@@ -141,6 +141,56 @@
     .light-theme [class*="from-orange"], .light-theme [class*="from-emerald"], .light-theme [class*="from-sky"], .light-theme [class*="from-blue"], .light-theme [class*="from-violet"], .light-theme [class*="from-indigo"] { --tw-gradient-from: #14b8a6 var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(20,184,166,0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
     .light-theme [class*="via-orange"], .light-theme [class*="via-emerald"], .light-theme [class*="via-sky"], .light-theme [class*="via-blue"], .light-theme [class*="via-violet"], .light-theme [class*="via-indigo"] { --tw-gradient-stops: var(--tw-gradient-from), #0f766e var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
     .light-theme [class*="to-orange"], .light-theme [class*="to-emerald"], .light-theme [class*="to-sky"], .light-theme [class*="to-blue"], .light-theme [class*="to-violet"], .light-theme [class*="to-indigo"] { --tw-gradient-to: #1e2937 var(--tw-gradient-to-position) !important; }
+
+    /* Readability upgrade: enforce high-contrast dark text across workspace content */
+    .light-theme main,
+    .light-theme main p,
+    .light-theme main span,
+    .light-theme main label,
+    .light-theme main li,
+    .light-theme main td,
+    .light-theme main th,
+    .light-theme main dt,
+    .light-theme main dd,
+    .light-theme dialog,
+    .light-theme dialog p,
+    .light-theme dialog span,
+    .light-theme dialog label,
+    .light-theme input,
+    .light-theme textarea,
+    .light-theme select {
+      color: #1f2937 !important;
+    }
+    .light-theme main h1,
+    .light-theme main h2,
+    .light-theme main h3,
+    .light-theme main h4,
+    .light-theme main h5,
+    .light-theme main h6,
+    .light-theme dialog h1,
+    .light-theme dialog h2,
+    .light-theme dialog h3,
+    .light-theme dialog h4,
+    .light-theme dialog h5,
+    .light-theme dialog h6 {
+      color: #111827 !important;
+      font-weight: 700;
+    }
+    .light-theme header p,
+    .light-theme header span,
+    .light-theme header input { color: #1f2937 !important; }
+
+    /* Keep contrast-safe light text in dark sidebar and white text on accent buttons/chips */
+    .light-theme #sidebar,
+    .light-theme #sidebar h1,
+    .light-theme #sidebar p,
+    .light-theme #sidebar button,
+    .light-theme #sidebar nav button { color: #e5e7eb !important; }
+    .light-theme #sidebar .active-nav { color: #ecfeff !important; }
+    .light-theme [class*="bg-orange"].text-white,
+    .light-theme [class*="bg-teal"].text-white,
+    .light-theme [class*="from-"][class*="to-"].text-white,
+    .light-theme .text-white { color: #ffffff !important; }
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
