@@ -59,8 +59,20 @@
     .light-theme .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; }
     .light-theme .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; }
 
-    .section-panel { display: none; }
+    .section-panel { display: none; opacity: 0; transform: translate3d(0, 8px, 0); }
     .section-panel.active { display: block; }
+    .section-panel.section-enter-active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 240ms ease, transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      will-change: transform, opacity;
+    }
+    .section-panel.section-leave {
+      opacity: 0;
+      transform: translate3d(0, -6px, 0);
+      transition: opacity 200ms ease, transform 220ms ease;
+      will-change: transform, opacity;
+    }
     .active-nav {
       background: linear-gradient(90deg, rgba(20, 184, 166, 0.24), rgba(249, 115, 22, 0.14));
       color: #e2fffb;
@@ -76,15 +88,51 @@
       box-shadow: 0 20px 36px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(14px);
     }
-    .premium-hover { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease; }
-    .premium-hover:hover { transform: translateY(-1px); border-color: rgba(20, 184, 166, 0.34); box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.22), 0 14px 26px rgba(0, 0, 0, 0.36); }
+    .premium-hover { transition: transform 240ms ease, border-color 220ms ease, box-shadow 240ms ease, background-color 220ms ease; transform: translateZ(0); }
+    .premium-hover:hover { transform: scale(1.02) translateZ(0); border-color: rgba(20, 184, 166, 0.34); box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.22), 0 16px 28px rgba(15, 23, 42, 0.16); }
     .soft-input { transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
     .soft-input:focus { border-color: rgba(20, 184, 166, 0.6); box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12); }
     #mainNav button {
-      transition: border-color 200ms ease, background-color 220ms ease, color 220ms ease, box-shadow 220ms ease, transform 200ms ease;
+      padding-left: 0.75rem;
+      transition: border-color 220ms ease, background-color 240ms ease, color 220ms ease, box-shadow 220ms ease, padding-left 220ms ease, transform 220ms ease;
     }
-    #mainNav button:hover { transform: translateX(2px); }
-    button, a, input, select, textarea { transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+    #mainNav button:hover { padding-left: 0.95rem; background-color: rgba(148, 163, 184, 0.12); transform: translateZ(0); }
+    button, a, input, select, textarea { transition: border-color 220ms ease, background-color 220ms ease, color 220ms ease, box-shadow 220ms ease, transform 220ms ease, filter 220ms ease; transform: translateZ(0); }
+    button:hover { transform: scale(1.02) translateZ(0); filter: brightness(1.03); }
+    #section-workspace :is(input, textarea, select):focus,
+    #section-workspace :is(input, textarea, select):focus-visible,
+    #section-memory :is(input, textarea, select):focus,
+    #section-memory :is(input, textarea, select):focus-visible {
+      outline: none;
+      border-color: rgba(20, 184, 166, 0.65) !important;
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.16);
+    }
+    .workspace-fade-in {
+      animation: workspaceFadeScaleIn 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+      will-change: transform, opacity;
+    }
+    @keyframes workspaceFadeScaleIn {
+      from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.985); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+    #saveToast {
+      transition: opacity 220ms ease, transform 240ms ease;
+      transform: translate3d(-50%, 16px, 0);
+      opacity: 0;
+      pointer-events: none;
+    }
+    #saveToast.show {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
     .ring-progress {
       width: 132px;
       height: 132px;
@@ -254,6 +302,13 @@
     </div>
     <div class="p-5" id="memoryModalBody"></div>
   </dialog>
+
+  <div id="saveToast" class="fixed bottom-5 left-1/2 z-50 px-3 py-2 rounded-full border border-teal-200 bg-white/95 text-teal-700 text-xs font-medium shadow-lg backdrop-blur-sm">
+    <span class="inline-flex items-center gap-1.5">
+      <span>✓</span>
+      <span>Saved</span>
+    </span>
+  </div>
 
   <script>
     const STORAGE_KEY = 'baryaWorkspaceV2';
@@ -567,8 +622,10 @@
     let cashflowChart;
     let expenseChart;
     let persistTimer = null;
+    let saveToastTimer = null;
     let latestPersistedSnapshot = '';
     let renderQueued = false;
+    let workspacePendingAnimation = { pageId: null, blockId: null };
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -719,6 +776,21 @@
       if (snapshot === latestPersistedSnapshot) return;
       latestPersistedSnapshot = snapshot;
       localStorage.setItem(STORAGE_KEY, snapshot);
+      showSavedToast();
+    }
+
+    function prefersReducedMotion() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function showSavedToast() {
+      const toast = document.getElementById('saveToast');
+      if (!toast) return;
+      toast.classList.add('show');
+      if (saveToastTimer) clearTimeout(saveToastTimer);
+      saveToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, prefersReducedMotion() ? 1200 : 1500);
     }
 
     function schedulePersist(delay = 120) {
@@ -792,20 +864,38 @@
 
       nav.querySelectorAll('button').forEach(btn => {
         btn.onclick = () => {
-          state.activeSection = btn.dataset.section;
-          renderNav();
-          renderActiveSection();
+          switchSection(btn.dataset.section);
           closeSidebar();
-          saveStateRaw();
         };
       });
     }
 
     function saveStateRaw(){ schedulePersist(80); }
 
+    function switchSection(nextSection) {
+      if (!nextSection || nextSection === state.activeSection) return;
+      const currentPanel = document.getElementById(`section-${state.activeSection}`);
+      const completeSwitch = () => {
+        state.activeSection = nextSection;
+        renderNav();
+        renderActiveSection();
+        saveStateRaw();
+      };
+      if (prefersReducedMotion() || !currentPanel) {
+        completeSwitch();
+        return;
+      }
+      currentPanel.classList.add('section-leave');
+      setTimeout(() => {
+        currentPanel.classList.remove('section-leave');
+        completeSwitch();
+      }, 210);
+    }
+
     function renderActiveSection() {
       document.querySelectorAll('.section-panel').forEach(el => el.classList.remove('active'));
-      document.getElementById(`section-${state.activeSection}`).classList.add('active');
+      const activePanel = document.getElementById(`section-${state.activeSection}`);
+      activePanel.classList.add('active');
       if (state.activeSection === 'dashboard') renderDashboard();
       if (state.activeSection === 'workspace') renderWorkspace();
       if (state.activeSection === 'tasks') renderTasks();
@@ -815,6 +905,10 @@
       if (state.activeSection === 'planning') renderPlanning();
       if (state.activeSection === 'settings') renderSettings();
       if (state.activeSection === 'knowledge-graph') renderKnowledgeGraph();
+      if (!prefersReducedMotion()) {
+        activePanel.classList.remove('section-enter-active');
+        requestAnimationFrame(() => activePanel.classList.add('section-enter-active'));
+      }
       enhanceSurfacePolish();
       translateDom(document.getElementById(`section-${state.activeSection}`));
     }
@@ -2311,6 +2405,7 @@
       };
       state.workspace.pages.unshift(page);
       state.workspace.activePageId = page.id;
+      workspacePendingAnimation.pageId = page.id;
       saveState();
     }
 
@@ -2351,7 +2446,7 @@
             <aside class="bg-white border border-orange-100 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
               <h3 class="text-sm font-semibold text-zinc-700 px-1">My Pages</h3>
               ${(state.workspace.pages || []).map(page => `
-                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400 bg-orange-50' : 'border-zinc-200 bg-white hover:border-orange-300'}">
+                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400 bg-orange-50' : 'border-zinc-200 bg-white hover:border-orange-300'} ${workspacePendingAnimation.pageId === page.id ? 'workspace-fade-in' : ''}">
                   <div class="flex items-center justify-between gap-2">
                     <p class="font-medium truncate text-zinc-800">${escapeHTML(page.title || 'Untitled')}</p>
                     <span class="text-[10px] px-2 py-0.5 rounded-full border border-orange-300 text-orange-600 bg-orange-50">${escapeHTML(page.objectType || 'Page')}</span>
@@ -2382,7 +2477,7 @@
                       const cmdOpen = block.commandOpen ? '' : 'hidden';
                       const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase()));
                       return `
-                      <article class="workspace-block group border border-zinc-200 rounded-lg bg-white p-2 transition hover:border-orange-300" draggable="true" data-block-id="${block.id}">
+                      <article class="workspace-block group border border-zinc-200 rounded-lg bg-white p-2 transition hover:border-orange-300 ${workspacePendingAnimation.blockId === block.id ? 'workspace-fade-in' : ''}" draggable="true" data-block-id="${block.id}">
                         <div class="flex items-center gap-2 mb-2">
                           <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-orange-500" data-drag-handle="${block.id}">⋮⋮</button>
                           <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-300 text-zinc-600">${blockTypeLabel(block.type)}</span>
@@ -2483,7 +2578,9 @@ Use the 'Add Block' button below to get started.</p>
       });
 
       document.getElementById('workspaceAddBlock').onclick = () => {
-        activePage.blocks.push(createWorkspaceBlock('text'));
+        const createdBlock = createWorkspaceBlock('text');
+        activePage.blocks.push(createdBlock);
+        workspacePendingAnimation.blockId = createdBlock.id;
         updatePageUpdatedAt(activePage);
         saveState();
       };
@@ -2541,6 +2638,12 @@ Use the 'Add Block' button below to get started.</p>
         state.workspace.activePageId = null;
         saveState();
       };
+
+      if (workspacePendingAnimation.pageId || workspacePendingAnimation.blockId) {
+        setTimeout(() => {
+          workspacePendingAnimation = { pageId: null, blockId: null };
+        }, 320);
+      }
     }
 
     function renderWorkspaceBlockBody(block, idx, currentPageId, filteredMenu, cmdOpenClass) {
@@ -3791,39 +3894,48 @@ Use the 'Add Block' button below to get started.</p>
         const canvas = document.getElementById('memoryGraphCanvas');
         const ctx = canvas?.getContext('2d');
         if (ctx) {
-          const draw = (hoverId = null) => {
+          const animatedNodes = graphNodes.map(node => ({ ...node, sx: node.x, sy: node.y + 14, alpha: 0 }));
+          const animatedNodeMap = new Map(animatedNodes.map(node => [node.id, node]));
+          const springEase = (t) => {
+            const clamped = Math.max(0, Math.min(1, t));
+            return 1 - Math.exp(-5 * clamped) * Math.cos(5 * clamped);
+          };
+          const draw = (hoverId = null, nodeAlpha = 1) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#0b111a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.lineWidth = 1.3;
             filteredNotes.forEach(note => {
-              const from = nodeMap.get(note.id);
+              const from = animatedNodeMap.get(note.id) || nodeMap.get(note.id);
               (note.links || []).forEach(targetId => {
-                const to = nodeMap.get(targetId);
+                const to = animatedNodeMap.get(targetId) || nodeMap.get(targetId);
                 if (!from || !to) return;
-                ctx.strokeStyle = 'rgba(20, 184, 166, 0.35)';
+                ctx.strokeStyle = `rgba(20, 184, 166, ${0.35 * nodeAlpha})`;
                 ctx.beginPath();
-                ctx.moveTo(from.x, from.y);
-                ctx.lineTo(to.x, to.y);
+                ctx.moveTo(from.sx || from.x, from.sy || from.y);
+                ctx.lineTo(to.sx || to.x, to.sy || to.y);
                 ctx.stroke();
               });
             });
 
-            graphNodes.forEach(node => {
+            animatedNodes.forEach(node => {
               const isActive = node.id === memory.activeNoteId;
               const isHover = node.id === hoverId;
+              const x = node.sx || node.x;
+              const y = node.sy || node.y;
+              const alpha = (node.alpha ?? 1) * nodeAlpha;
               ctx.beginPath();
-              ctx.arc(node.x, node.y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
-              ctx.fillStyle = isActive ? '#14b8a6' : '#1e293b';
+              ctx.arc(x, y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
+              ctx.fillStyle = isActive ? `rgba(20, 184, 166, ${alpha})` : `rgba(30, 41, 59, ${alpha})`;
               ctx.fill();
               ctx.lineWidth = isActive ? 2 : 1;
-              ctx.strokeStyle = isActive ? 'rgba(20, 184, 166, 0.8)' : 'rgba(148, 163, 184, 0.35)';
+              ctx.strokeStyle = isActive ? `rgba(20, 184, 166, ${0.8 * alpha})` : `rgba(148, 163, 184, ${0.35 * alpha})`;
               ctx.stroke();
 
-              ctx.fillStyle = isActive ? '#001018' : '#dbeafe';
+              ctx.fillStyle = isActive ? `rgba(0, 16, 24, ${alpha})` : `rgba(219, 234, 254, ${alpha})`;
               ctx.font = '12px sans-serif';
-              ctx.fillText(node.title.slice(0, 18), node.x + 14, node.y + 4);
+              ctx.fillText(node.title.slice(0, 18), x + 14, y + 4);
             });
           };
 
@@ -3834,7 +3946,31 @@ Use the 'Add Block' button below to get started.</p>
             return graphNodes.find(node => Math.hypot(node.x - x, node.y - y) <= node.r + 4) || null;
           };
 
-          draw();
+          if (prefersReducedMotion()) {
+            animatedNodes.forEach(node => {
+              node.sx = node.x;
+              node.sy = node.y;
+              node.alpha = 1;
+            });
+            draw();
+          } else {
+            const startedAt = performance.now();
+            const duration = 420;
+            const animateGraphIn = (now) => {
+              const t = Math.min(1, (now - startedAt) / duration);
+              const eased = springEase(t);
+              animatedNodes.forEach((node, idx) => {
+                const stagger = Math.min(1, Math.max(0, (t * 1.08) - idx * 0.025));
+                const local = springEase(stagger);
+                node.sx = node.x;
+                node.sy = node.y + (1 - local) * 14;
+                node.alpha = local;
+              });
+              draw(null, eased);
+              if (t < 1) requestAnimationFrame(animateGraphIn);
+            };
+            requestAnimationFrame(animateGraphIn);
+          }
           canvas.onmousemove = (evt) => {
             const hit = getNodeAt(evt);
             canvas.style.cursor = hit ? 'pointer' : 'default';
