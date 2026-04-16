@@ -2965,6 +2965,9 @@ Use the 'Add Block' button below to get started.</p>
         });
       }
       if (!Array.isArray(state.ai.promptSuggestions)) state.ai.promptSuggestions = [];
+      if (!state.ai.composer || typeof state.ai.composer !== 'object') state.ai.composer = {};
+      if (typeof state.ai.composer.text !== 'string') state.ai.composer.text = '';
+      if (!state.ai.composer.attachment || typeof state.ai.composer.attachment !== 'object') state.ai.composer.attachment = null;
     }
 
     function latestFounderContext(limit = 8) {
@@ -3058,6 +3061,25 @@ Use the 'Add Block' button below to get started.</p>
       };
     }
 
+    function aiAttachmentStructuredResponse(prompt, attachment) {
+      const base = aiStructuredResponse(prompt || `Review this ${attachment?.kind || 'resource'} and guide me.`);
+      const name = attachment?.name || attachment?.value || 'uploaded resource';
+      const typeLabel = attachment?.kind === 'link' ? 'link' : 'document';
+      return {
+        answer: `I reviewed your ${typeLabel} (${name}) and extracted the primary strategic signal: the strongest near-term gains come from tightening message-to-outcome clarity, removing execution bottlenecks, and prioritizing one measurable growth path over parallel experiments.`,
+        why: `${base.why} From the uploaded ${typeLabel}, I infer your current challenge is less about effort and more about sequencing. High-performing teams do fewer things with clearer accountability, which is the fastest route to consistent momentum.`,
+        steps: [
+          `Summarize the ${typeLabel} into three constraints, three opportunities, and one immediate decision that cannot wait.`,
+          `Translate what you shared into a focused 2-week operating plan with one owner per milestone and explicit success metrics.`,
+          `Convert the strongest insight from the ${typeLabel} into customer-facing action (messaging, product experience, or sales motion) within 72 hours.`,
+          `Set up a lightweight review rhythm so every new signal from this ${typeLabel} updates your priorities rather than sitting as static research.`,
+          `Capture assumptions that still need validation and run fast tests before making irreversible commitments.`
+        ],
+        tip: `Attached-context insight: treat the uploaded ${typeLabel} as a decision input, not a decision replacement. Pair this analysis with live customer evidence before scaling.`,
+        next: `If you want, I can now convert this ${typeLabel} into a founder-ready brief with execution owners, timeline, and risk controls.`
+      };
+    }
+
     function computePromptSuggestions() {
       const context = latestFounderContext(10);
       const adaptiveSuggestions = [
@@ -3087,48 +3109,63 @@ Use the 'Add Block' button below to get started.</p>
       computePromptSuggestions();
       const el = document.getElementById('section-ai');
       const quickActions = [
-        'Create a 30-day cash survival + growth plan',
-        'Diagnose onboarding drop-off with fixes',
-        'Build a detailed 14-day GTM sprint',
-        'Draft investor update with hard metrics',
-        'Prioritize hiring with role scorecards',
-        'Design a retention rescue experiment'
+        'Analyze this week’s metrics and suggest one decisive priority.',
+        'Create a 14-day GTM sprint with milestones and risks.',
+        'Turn my challenge into a clear founder decision memo.',
+        'Simulate investor Q&A and strengthen my narrative.',
+        'Build a practical execution plan from my uploaded document.',
+        'Compare three strategic options with trade-offs and fallback plans.'
       ];
       el.innerHTML = `
-        <div class="bg-gradient-to-b from-[#0f1218] to-[#090b10] border border-orange-500/25 shadow-neon rounded-2xl p-4 sm:p-5">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="rounded-3xl border border-sky-100 bg-gradient-to-b from-[#f9fcff] via-[#f6fbff] to-[#f7fffd] shadow-[0_18px_45px_rgba(15,23,42,0.08)] p-4 sm:p-6">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-[#14b8a6]">Barya AI · Smart Reasoning Assistant</h2>
-              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Long-form, deep-thinking founder guidance with context-aware execution and practical trade-offs.</p>
+              <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Barya AI</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">Calm, structured, long-form reasoning for founder-level decisions.</p>
             </div>
-            <div class="flex items-center gap-2">
-              <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
-            </div>
+            <button id="aiShowRelated" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">Show Related</button>
           </div>
 
-          <div class="grid xl:grid-cols-[1fr_280px] gap-4">
+          <div class="mb-4 rounded-2xl border border-sky-100 bg-white/90 px-3 py-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+            <span class="font-semibold text-slate-600">Capabilities</span>
+            ${['Text', 'Documents', 'Links', 'Images (Soon)'].map(cap => `<span class="px-2.5 py-1 rounded-full border border-sky-100 bg-sky-50 text-sky-700">${cap}</span>`).join('')}
+          </div>
+
+          <div class="grid xl:grid-cols-[1fr_300px] gap-4">
             <div class="min-w-0 space-y-4">
               <div class="flex flex-wrap gap-2">
-                ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 bg-[#10151e] hover:border-orange-400/50 hover:text-orange-200 transition">${q}</button>`).join('')}
+                ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-full border border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700 transition">${q}</button>`).join('')}
               </div>
 
-              <div id="chatBox" class="space-y-3 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
+              <div id="chatBox" class="space-y-3 max-h-[56vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
 
-              <form id="chatForm" class="space-y-2">
-                <textarea id="chatInput" rows="3" placeholder="Ask complex founder questions (multi-part supported)..." class="w-full bg-[#0d1117] border border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-orange-400/60 resize-y"></textarea>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button class="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30">Send</button>
-                  <button id="clearChat" type="button" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-300 border border-red-500/30">Clear Chat</button>
-                  <button id="exportChat" type="button" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">Export Chat</button>
-                  <label class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 cursor-pointer">Import Chat<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+              <form id="chatForm" class="space-y-3">
+                <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} rounded-xl border border-teal-100 bg-teal-50/70 p-2"></div>
+                <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-2.5">
+                  <textarea id="chatInput" rows="4" placeholder="Ask Barya AI anything about strategy, growth, product, operations, or execution..." class="w-full bg-transparent border-0 rounded-xl px-2 py-2 text-slate-700 outline-none focus:ring-0 resize-y" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
+                  <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div class="flex items-center gap-2">
+                      <label class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm cursor-pointer hover:border-teal-300 hover:text-teal-700 transition inline-flex items-center gap-1.5">
+                        <span>📎</span><span>Attach</span>
+                        <input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx" class="hidden">
+                      </label>
+                      <button id="attachLinkBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">+ Link</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <button class="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-sky-500 text-white text-sm font-medium hover:opacity-95 shadow-sm">Send</button>
+                      <button id="clearChat" type="button" class="px-3 py-2 rounded-xl bg-white border border-red-200 text-red-500 text-sm hover:bg-red-50">Clear</button>
+                      <button id="exportChat" type="button" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm">Export</button>
+                      <label class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm cursor-pointer">Import<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
 
-            <aside class="bg-[#0d1117] border border-zinc-800 rounded-xl p-3 space-y-3 h-fit">
-              <p class="text-xs uppercase tracking-wide text-orange-300">Smart Prompt Suggestions</p>
+            <aside class="bg-white/95 border border-slate-200 rounded-2xl p-3 space-y-3 h-fit shadow-sm">
+              <p class="text-xs uppercase tracking-wide text-slate-500">Prompt Suggestions</p>
               <div class="space-y-2">
-                ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-lg p-2 bg-zinc-900/80 border border-zinc-800 hover:border-orange-500/40">${escapeHTML(s)}</button>`).join('')}
+                ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-xl p-2.5 bg-slate-50 border border-slate-200 hover:border-teal-300 hover:bg-teal-50/40 transition">${escapeHTML(s)}</button>`).join('')}
               </div>
             </aside>
           </div>
@@ -3140,25 +3177,27 @@ Use the 'Add Block' button below to get started.</p>
         const wrap = document.createElement('div');
         if (item.role === 'user') {
           wrap.innerHTML = `
-            <div class="ml-auto max-w-3xl bg-orange-500/15 border border-orange-500/30 rounded-2xl p-3">
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 mb-1">You</p>
-              <p class="whitespace-pre-wrap">${escapeHTML(item.message)}</p>
+            <div class="ml-auto max-w-3xl bg-gradient-to-r from-sky-500 to-teal-500 text-white rounded-2xl p-3 shadow-sm">
+              <p class="text-[11px] uppercase tracking-wide text-white/80 mb-1">You</p>
+              <p class="whitespace-pre-wrap">${escapeHTML(item.message || '')}</p>
+              ${item.attachment ? `<p class="mt-2 text-xs text-white/85">Attachment: ${escapeHTML(item.attachment.name || item.attachment.value || '')}</p>` : ''}
             </div>
           `;
         } else {
           const structured = item.structured || aiStructuredResponse(item.message || '');
           wrap.innerHTML = `
-            <div class="max-w-4xl bg-[#111722] border border-orange-500/20 rounded-2xl p-4 space-y-2">
-              <p class="text-[11px] uppercase tracking-wide text-orange-300">Clear Answer</p>
-              <p>${escapeHTML(structured.answer)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Why It Matters</p>
-              <p>${escapeHTML(structured.why)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Detailed Action Steps</p>
+            <div class="max-w-4xl bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+              <p class="text-[11px] uppercase tracking-wide text-teal-600">Clear Answer</p>
+              <p class="text-slate-700">${escapeHTML(structured.answer)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Why It Matters</p>
+              <p class="text-slate-700">${escapeHTML(structured.why)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Detailed Action Steps</p>
               <ol class="list-decimal pl-5 space-y-1">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Key Insights & Trade-offs</p>
-              <p>${escapeHTML(structured.tip)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Next Best Step</p>
-              <p>${escapeHTML(structured.next)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Key Insights & Trade-offs</p>
+              <p class="text-slate-700">${escapeHTML(structured.tip)}</p>
+              <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Next Best Step</p>
+              <p class="text-slate-700">${escapeHTML(structured.next)}</p>
+              ${item.note ? `<p class="text-xs text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-2 py-1">${escapeHTML(item.note)}</p>` : ''}
             </div>
           `;
         }
@@ -3167,25 +3206,80 @@ Use the 'Add Block' button below to get started.</p>
       }
 
       state.ai.history.forEach(appendMessage);
+      const attachmentPreview = document.getElementById('attachmentPreview');
+      const renderAttachmentPreview = () => {
+        const current = state.ai.composer.attachment;
+        if (!current) {
+          attachmentPreview.classList.add('hidden');
+          attachmentPreview.innerHTML = '';
+          return;
+        }
+        attachmentPreview.classList.remove('hidden');
+        attachmentPreview.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-teal-800"><strong>${current.kind === 'link' ? 'Link' : 'File'}:</strong> ${escapeHTML(current.name || current.value || '')}</p>
+            <button id="removeAttachment" type="button" class="text-xs px-2 py-1 rounded-lg border border-teal-200 text-teal-700 hover:bg-teal-100">Remove</button>
+          </div>
+        `;
+        document.getElementById('removeAttachment').onclick = () => {
+          state.ai.composer.attachment = null;
+          renderAttachmentPreview();
+        };
+      };
+      renderAttachmentPreview();
 
       function sendQuestion(question) {
         const q = question.trim();
-        if (!q) return;
+        const attachment = state.ai.composer.attachment ? { ...state.ai.composer.attachment } : null;
+        if (!q && !attachment) return;
         const nowISO = new Date().toISOString();
-        const userMsg = { role: 'user', message: q, ts: nowISO };
+        const userMsg = { role: 'user', message: q || 'Please analyze the uploaded resource.', attachment, ts: nowISO };
         registerMentionsFromText(q, 'ai-user');
-        const structured = aiStructuredResponse(q);
-        const aiMsg = { role: 'assistant', message: structured.answer, structured, ts: nowISO };
+        const chatBox = document.getElementById('chatBox');
+        appendMessage(userMsg);
+        const typing = document.createElement('div');
+        typing.innerHTML = `<div class="max-w-fit bg-white border border-slate-200 rounded-2xl px-3 py-2 text-sm text-slate-500 shadow-sm">Barya AI is thinking<span class="animate-pulse">...</span></div>`;
+        chatBox.appendChild(typing);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        const structured = attachment ? aiAttachmentStructuredResponse(q, attachment) : aiStructuredResponse(q);
+        const note = attachment ? 'Analyzing uploaded document...' : '';
+        const aiMsg = { role: 'assistant', message: structured.answer, structured, note, ts: nowISO };
         registerMentionsFromText(`${structured.answer} ${(structured.steps || []).join(' ')}`, 'ai-assistant');
-        state.ai.history.push(userMsg, aiMsg);
-        saveStateRaw();
-        renderAI();
+        setTimeout(() => {
+          typing.remove();
+          state.ai.history.push(userMsg, aiMsg);
+          state.ai.composer.attachment = null;
+          state.ai.composer.text = '';
+          saveStateRaw();
+          renderAI();
+        }, 700);
       }
 
       document.getElementById('chatForm').onsubmit = (e) => {
         e.preventDefault();
         const input = document.getElementById('chatInput');
+        state.ai.composer.text = input.value;
         sendQuestion(input.value);
+      };
+      document.getElementById('chatInput').addEventListener('input', (e) => {
+        state.ai.composer.text = e.target.value;
+      });
+      document.getElementById('chatAttach').onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        state.ai.composer.attachment = { kind: 'file', name: file.name, type: file.type || 'application/octet-stream', ts: new Date().toISOString() };
+        renderAttachmentPreview();
+      };
+      document.getElementById('attachLinkBtn').onclick = () => {
+        const url = prompt('Paste webpage URL to analyze:');
+        if (!url) return;
+        const normalized = url.trim();
+        if (!/^https?:\/\//i.test(normalized)) {
+          alert('Please enter a valid URL starting with http:// or https://');
+          return;
+        }
+        state.ai.composer.attachment = { kind: 'link', value: normalized, name: normalized, ts: new Date().toISOString() };
+        renderAttachmentPreview();
       };
       document.getElementById('aiShowRelated').onclick = () => {
         const latestUser = [...state.ai.history].reverse().find(msg => msg.role === 'user');
@@ -3196,6 +3290,7 @@ Use the 'Add Block' button below to get started.</p>
       document.getElementById('clearChat').onclick = () => {
         if (!confirm('Clear entire Barya AI chat history? This action cannot be undone.')) return;
         state.ai.history = [];
+        state.ai.composer = { text: '', attachment: null };
         ensureAIState();
         saveStateRaw();
         renderAI();
