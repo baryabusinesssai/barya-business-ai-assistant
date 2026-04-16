@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya | Pricing</title>
+  <meta name="description" content="Simple, transparent pricing for Barya. Start free, scale with confidence, and pick the founder plan that fits your stage." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border-soft: #d9e2ec;
+      --text-main: #1e2937;
+      --text-muted: #526174;
+      --primary: #1e2937;
+      --accent: #14b8a6;
+      --accent-hover: #0f766e;
+      --warm: #f97316;
+      --warm-soft: #fff7ed;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+      line-height: 1.55;
+    }
+
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    p { color: var(--text-muted); }
+
+    .section-label {
+      font-size: .73rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(20,184,166,.25), rgba(30,41,55,.12), rgba(15,118,110,.18));
+      opacity: 0;
+      transition: opacity .28s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before { opacity: 1; }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      padding-inline: 1.2rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #14b8a6, #0f766e 58%, #0f766e);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
+    }
+
+    .secondary-btn {
+      border: 1px solid #c6d6df;
+      color: var(--primary);
+      background: #ffffff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #14b8a6;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 36px rgba(15, 23, 42, 0.1);
+    }
+
+    .pricing-popular {
+      border: 1px solid rgba(15, 118, 110, 0.35);
+      box-shadow: 0 18px 44px rgba(15, 118, 110, 0.2);
+      background: linear-gradient(160deg, #ffffff 0%, #f0fdfa 100%);
+      transform: scale(1.01);
+    }
+
+    .popular-badge {
+      background: linear-gradient(120deg, #14b8a6, #0f766e);
+      color: #fff;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: .35rem .7rem;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: .85rem .75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .compare-table th {
+      color: #0f172a;
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 600;
+      background: #f8fafc;
+    }
+
+    .founder-quote {
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      background: linear-gradient(160deg, #fff7ed 0%, #fffbf5 100%);
+      box-shadow: 0 12px 30px rgba(249, 115, 22, 0.1);
+    }
+
+    .faq-item {
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      background: #ffffff;
+    }
+
+    .nav-active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      main { padding-top: 6.8rem !important; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/90 bg-[#f8fafc]/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+      <a href="index.html#home" class="text-sm font-semibold tracking-[0.2em] text-[#1e2937]">BARYA</a>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+        <a href="features.html" class="hover:text-slate-900">Features</a>
+        <a href="pricing.html" class="nav-active">Pricing</a>
+        <a href="index.html#blog" class="hover:text-slate-900">Blog</a>
+        <a href="index.html#contact" class="hover:text-slate-900">Contact</a>
+        <a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a>
+        <a href="index.html#terms-of-service" class="hover:text-slate-900">Terms of Service</a>
+      </div>
+      <a href="workspace.html" class="primary-btn text-sm">Enter Workspace</a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
+    <section class="glass-card rounded-3xl p-8 lg:p-12">
+      <p class="section-label">Pricing</p>
+      <h1 class="section-heading mt-3 max-w-3xl">Simple, Transparent Pricing</h1>
+      <p class="mt-4 max-w-3xl text-lg">Start free. Grow with confidence. No hidden fees.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="workspace.html" class="primary-btn text-sm">Start Free Today</a>
+        <a href="#compare" class="secondary-btn text-sm">Compare Plans</a>
+      </div>
+    </section>
+
+    <section class="mt-12">
+      <div class="grid gap-6 lg:grid-cols-3">
+        <article class="pricing-card rounded-2xl p-7">
+          <p class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700">Free Plan</p>
+          <p class="mt-4 text-3xl font-bold text-slate-900">Free Forever</p>
+          <p class="mt-2 text-sm">Perfect for solo founders getting started with structure and clarity.</p>
+          <ul class="mt-6 space-y-3 text-sm text-slate-700">
+            <li>• Full Workspace</li>
+            <li>• Barya AI (limited)</li>
+            <li>• Memory</li>
+            <li>• Basic Dashboard</li>
+            <li>• Local-First storage</li>
+            <li>• Community support</li>
+          </ul>
+          <a href="workspace.html" class="secondary-btn mt-7 w-full text-sm">Choose Free</a>
+        </article>
+
+        <article class="pricing-card pricing-popular rounded-2xl p-7">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700">Pro Plan</p>
+            <span class="popular-badge">Most Popular</span>
+          </div>
+          <p class="mt-4 text-3xl font-bold text-slate-900">₹499 <span class="text-base font-medium text-slate-600">/ month</span></p>
+          <p class="mt-1 text-sm font-medium text-[#0f766e]">or ₹4,999 / year</p>
+          <p class="mt-2 text-sm">Built for founders actively scaling execution, decision-making, and growth.</p>
+          <ul class="mt-6 space-y-3 text-sm text-slate-700">
+            <li>• Unlimited AI usage</li>
+            <li>• Advanced Strategy &amp; Research</li>
+            <li>• Team Management</li>
+            <li>• Priority support</li>
+            <li>• Export to PDF</li>
+            <li>• Custom templates</li>
+            <li>• Increased storage</li>
+          </ul>
+          <a href="workspace.html" class="primary-btn mt-7 w-full text-sm">Upgrade to Pro</a>
+        </article>
+
+        <article class="pricing-card rounded-2xl p-7">
+          <p class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700">Enterprise / Team</p>
+          <p class="mt-4 text-3xl font-bold text-slate-900">Contact Us</p>
+          <p class="mt-2 text-sm">For growing teams that need scale, controls, and tailored workflows.</p>
+          <ul class="mt-6 space-y-3 text-sm text-slate-700">
+            <li>• Multiple team members</li>
+            <li>• Admin controls</li>
+            <li>• Advanced analytics</li>
+            <li>• Dedicated support</li>
+            <li>• Custom integrations</li>
+          </ul>
+          <a href="index.html#contact" class="secondary-btn mt-7 w-full text-sm">Talk to Sales</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="compare" class="mt-14">
+      <p class="section-label">Comparison</p>
+      <h2 class="section-heading mt-3">Feature Comparison</h2>
+      <p class="mt-3 max-w-3xl">A clean side-by-side look at what each Barya plan includes.</p>
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table class="compare-table min-w-full text-sm text-slate-700">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Free</th>
+              <th>Pro</th>
+              <th>Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Workspace &amp; Docs</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Barya AI Usage</td><td>Limited</td><td>Unlimited</td><td>Unlimited + tailored setup</td></tr>
+            <tr><td>Strategy &amp; Research Tools</td><td>Basic</td><td>Advanced</td><td>Advanced + custom workflows</td></tr>
+            <tr><td>Team Management</td><td>—</td><td>Up to small teams</td><td>Multi-team + admin controls</td></tr>
+            <tr><td>Analytics Dashboard</td><td>Basic</td><td>Advanced</td><td>Advanced + custom reporting</td></tr>
+            <tr><td>Support</td><td>Community</td><td>Priority</td><td>Dedicated success manager</td></tr>
+            <tr><td>Exports &amp; Templates</td><td>Standard</td><td>PDF + custom templates</td><td>Custom integrations + exports</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-14">
+      <p class="section-label">Frequently Asked Questions</p>
+      <h2 class="section-heading mt-3">Everything you need to know</h2>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">Can I start for free and upgrade later?</h3>
+          <p class="mt-2 text-sm">Yes. You can begin with the Free plan and upgrade to Pro any time without losing your workspace data.</p>
+        </article>
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">Is there a yearly discount for Pro?</h3>
+          <p class="mt-2 text-sm">Yes. Pro is ₹499/month or ₹4,999/year, giving you a lower effective monthly cost on annual billing.</p>
+        </article>
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">What does “local-first storage” mean?</h3>
+          <p class="mt-2 text-sm">Your workspace is designed to prioritize your control and privacy, with data handling built for founder-first security.</p>
+        </article>
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">How is Enterprise pricing decided?</h3>
+          <p class="mt-2 text-sm">Enterprise plans are customized based on team size, support scope, integrations, and deployment requirements.</p>
+        </article>
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">Do you offer refunds?</h3>
+          <p class="mt-2 text-sm">If something is not working as expected, contact support and we will help resolve billing concerns quickly and fairly.</p>
+        </article>
+        <article class="faq-item rounded-xl p-5">
+          <h3 class="font-semibold text-slate-900">Can I cancel anytime?</h3>
+          <p class="mt-2 text-sm">Absolutely. You can cancel your Pro plan anytime from billing settings, and your workspace remains accessible.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-14">
+      <p class="section-label">What our founders say</p>
+      <h2 class="section-heading mt-3">Built with founders, for founders</h2>
+      <div class="mt-6 grid gap-4 md:grid-cols-3">
+        <article class="founder-quote rounded-2xl p-6">
+          <p class="text-sm italic text-slate-700">“Barya replaced five disconnected tools for us. Our weekly planning is now faster and far more focused.”</p>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.08em] text-slate-800">Aarav, SaaS Founder</p>
+        </article>
+        <article class="founder-quote rounded-2xl p-6">
+          <p class="text-sm italic text-slate-700">“The Pro plan paid for itself in one month just from better prioritization and cleaner execution.”</p>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.08em] text-slate-800">Neha, D2C Founder</p>
+        </article>
+        <article class="founder-quote rounded-2xl p-6">
+          <p class="text-sm italic text-slate-700">“I finally have strategy, research, and operations in one private place. It feels like a true founder OS.”</p>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.08em] text-slate-800">Karan, Fintech Co-Founder</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-14">
+      <div class="glass-card rounded-3xl p-8 text-center lg:p-12">
+        <p class="section-label">Get Started</p>
+        <h2 class="section-heading mt-3">Ready to build with confidence?</h2>
+        <p class="mx-auto mt-3 max-w-2xl">Join founders using Barya to move from scattered ideas to structured execution.</p>
+        <a href="workspace.html" class="primary-btn mt-7 text-sm">Start Free Today</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-[#f0f7f7] py-14">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <p class="text-lg font-bold text-slate-900">Barya</p>
+        <p class="mt-3 text-sm text-slate-600">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Product</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="features.html" class="hover:text-slate-900">Product</a></li>
+          <li><a href="index.html#how-it-works" class="hover:text-slate-900">How it Works</a></li>
+          <li><a href="features.html" class="hover:text-slate-900">Features</a></li>
+          <li><a href="index.html#what-you-can-do" class="hover:text-slate-900">Templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Company</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#what-is-barya" class="hover:text-slate-900">Story</a></li>
+          <li><a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a></li>
+          <li><a href="index.html#contact" class="hover:text-slate-900">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Resources</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#faq" class="hover:text-slate-900">Guides</a></li>
+          <li><a href="index.html#blog" class="hover:text-slate-900">Blog</a></li>
+          <li><a href="index.html#business-planning" class="hover:text-slate-900">Startup Checklist</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto mt-10 max-w-6xl border-t border-slate-200 px-6 pt-6 text-xs text-slate-500">
+      <p>© 2026 Barya Labs. All rights reserved.</p>
+      <p class="mt-1">Built with love for founders by a fellow founder.</p>
+    </div>
+  </footer>
+</body>
+</html>
