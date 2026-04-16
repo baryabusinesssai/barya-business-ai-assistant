@@ -120,11 +120,11 @@
           <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-barya-accent max-w-[56vw] truncate" />
         </div>
         <div class="flex items-center gap-3">
-          <span class="hidden md:inline-flex text-[11px] border border-orange-500/30 bg-orange-500/10 px-2 py-1 rounded-full text-orange-200">⌘/Ctrl+K Search</span>
-          <span class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
+          <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-orange-500/30 bg-orange-500/10 px-2 py-1 rounded-full text-orange-200">⌘/Ctrl+K Search</span>
+          <span id="localFirstBadge" class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
           <div class="text-right">
             <p class="text-sm font-medium">Shruti Barya</p>
-            <p class="text-xs text-zinc-400">Founder</p>
+            <p id="headerFounderRole" class="text-xs text-zinc-400">Founder</p>
           </div>
           <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-400 text-black font-bold grid place-items-center">SB</div>
         </div>
@@ -148,7 +148,7 @@
 
   <dialog id="memoryModal" class="w-[min(92vw,700px)] bg-white border border-gray-200 rounded-xl p-0 text-gray-900">
     <div class="p-5 border-b border-zinc-800 flex justify-between items-center">
-      <h3 class="text-lg font-semibold">Insight</h3>
+      <h3 id="memoryModalTitle" class="text-lg font-semibold">Insight</h3>
       <button id="closeMemoryModal" class="text-zinc-400 hover:text-zinc-100">✕</button>
     </div>
     <div class="p-5" id="memoryModalBody"></div>
@@ -156,16 +156,128 @@
 
   <script>
     const STORAGE_KEY = 'baryaWorkspaceV2';
+    const LANGUAGE_STORAGE_KEY = 'baryaWorkspaceLanguage';
+    const SUPPORTED_LANGUAGES = ['en', 'hi', 'es', 'fr', 'ar', 'pt', 'de', 'zh'];
+    const LANGUAGE_NAMES = {
+      en: 'English',
+      hi: 'Hindi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic',
+      pt: 'Portuguese',
+      de: 'German',
+      zh: 'Chinese (Simplified)'
+    };
+    const LANGUAGE_NAME_TO_CODE = {
+      english: 'en',
+      hindi: 'hi',
+      spanish: 'es',
+      french: 'fr',
+      arabic: 'ar',
+      portuguese: 'pt',
+      german: 'de',
+      'chinese (simplified)': 'zh',
+      chinese: 'zh'
+    };
+    const translations = {
+      en: {
+        appTitle: 'Barya Business AI Workspace',
+        searchHint: '⌘/Ctrl+K Search',
+        localFirst: 'Local-First',
+        founder: 'Founder',
+        insight: 'Insight'
+      },
+      hi: {
+        appTitle: 'बार्या बिज़नेस एआई वर्कस्पेस',
+        searchHint: '⌘/Ctrl+K खोज',
+        localFirst: 'लोकल-फर्स्ट',
+        founder: 'संस्थापक',
+        insight: 'इनसाइट',
+        textMap: {
+          'Dashboard': 'डैशबोर्ड',
+          'Workspace': 'वर्कस्पेस',
+          'Tasks': 'कार्य',
+          'Resources': 'संसाधन',
+          'Barya AI': 'बार्या एआई',
+          'Memory': 'मेमोरी',
+          'Business Planning': 'बिज़नेस प्लानिंग',
+          'Settings': 'सेटिंग्स',
+          'Knowledge Graph': 'नॉलेज ग्राफ',
+          'New Page': 'नया पेज',
+          'How it works?': 'यह कैसे काम करता है?',
+          'Add Team Member': 'टीम सदस्य जोड़ें',
+          'Export': 'एक्सपोर्ट',
+          'Import': 'इम्पोर्ट',
+          'Clear': 'साफ़ करें',
+          'Delete': 'हटाएँ',
+          'Edit': 'संपादित करें',
+          'Bookmark': 'बुकमार्क',
+          'Bookmarked': 'बुकमार्क किया गया',
+          'No bookmarks yet': 'अभी तक कोई बुकमार्क नहीं',
+          'No resources found in this category': 'इस श्रेणी में कोई संसाधन नहीं मिला',
+          'No custom resources yet': 'अभी तक कोई कस्टम संसाधन नहीं',
+          'Search resources...': 'संसाधन खोजें...',
+          'Resource title': 'संसाधन शीर्षक',
+          'Practical note': 'व्यावहारिक नोट',
+          'Save Resource': 'संसाधन सहेजें',
+          'Templates': 'टेम्पलेट्स',
+          'Open resource': 'संसाधन खोलें',
+          'My Bookmarked Resources': 'मेरे बुकमार्क किए गए संसाधन',
+          'My Custom Resources': 'मेरे कस्टम संसाधन',
+          'Finance Command Center': 'फाइनेंस कमांड सेंटर',
+          'Key Metrics': 'मुख्य मेट्रिक्स',
+          'Income': 'आय',
+          'Expenses': 'खर्च',
+          'Net Savings': 'शुद्ध बचत',
+          'Runway': 'रनवे',
+          'Readiness Score': 'तैयारी स्कोर',
+          'Monthly Overview': 'मासिक अवलोकन',
+          'Cash Flow Forecast': 'कैश फ्लो पूर्वानुमान',
+          'Expense Breakdown': 'खर्च का विभाजन',
+          'Recent Activity': 'हाल की गतिविधि',
+          'Safety & Backup': 'सुरक्षा और बैकअप',
+          'Add Transaction': 'लेन-देन जोड़ें',
+          'No transactions yet': 'अभी तक कोई लेन-देन नहीं',
+          'Category': 'श्रेणी',
+          'Amount': 'राशि',
+          'Notes': 'नोट्स',
+          'Search tasks...': 'कार्य खोजें...',
+          'Task title': 'कार्य शीर्षक',
+          'Description': 'विवरण',
+          'Barya AI · Smart Reasoning Assistant': 'बार्या एआई · स्मार्ट रीजनिंग असिस्टेंट',
+          'Ask complex founder questions (multi-part supported)...': 'जटिल संस्थापक प्रश्न पूछें (मल्टी-पार्ट समर्थित)...',
+          'Search notes by title, text, or tags...': 'शीर्षक, टेक्स्ट या टैग से नोट्स खोजें...',
+          'Write your note here. Tip: type [[Note Title]] to connect notes.': 'अपना नोट यहाँ लिखें। टिप: नोट्स जोड़ने के लिए [[Note Title]] लिखें।',
+          'Strategy Generator': 'स्ट्रेटेजी जनरेटर',
+          'No research history yet': 'अभी तक कोई शोध इतिहास नहीं',
+          'Search nodes...': 'नोड्स खोजें...',
+          'Team Management': 'टीम प्रबंधन',
+          'Founder Profile': 'संस्थापक प्रोफाइल',
+          'Business Profile': 'बिज़नेस प्रोफाइल',
+          'Preferences': 'प्राथमिकताएँ',
+          'Currency': 'मुद्रा',
+          'Language': 'भाषा',
+          'Date Format': 'तारीख प्रारूप',
+          'Dark Mode': 'डार्क मोड',
+          'Data Management': 'डेटा प्रबंधन',
+          'Reset All Data': 'सारा डेटा रीसेट करें',
+          'Import Data': 'डेटा इम्पोर्ट करें',
+          'Export All My Data': 'मेरा सारा डेटा एक्सपोर्ट करें',
+          'Nothing here yet': 'अभी यहाँ कुछ नहीं है',
+          'Start by adding your first item.': 'अपना पहला आइटम जोड़कर शुरू करें।'
+        }
+      }
+    };
     const navItems = [
-      { id: 'dashboard', label: 'Dashboard' },
-      { id: 'workspace', label: 'Workspace' },
-      { id: 'tasks', label: 'Tasks' },
-      { id: 'resources', label: 'Resources' },
-      { id: 'ai', label: 'Barya AI' },
-      { id: 'memory', label: 'Memory' },
-      { id: 'planning', label: 'Business Planning' },
-      { id: 'settings', label: 'Settings' },
-      { id: 'knowledge-graph', label: 'Knowledge Graph' }
+      { id: 'dashboard', key: 'Dashboard' },
+      { id: 'workspace', key: 'Workspace' },
+      { id: 'tasks', key: 'Tasks' },
+      { id: 'resources', key: 'Resources' },
+      { id: 'ai', key: 'Barya AI' },
+      { id: 'memory', key: 'Memory' },
+      { id: 'planning', key: 'Business Planning' },
+      { id: 'settings', key: 'Settings' },
+      { id: 'knowledge-graph', key: 'Knowledge Graph' }
     ];
     const CURRENCY_META = {
       USD: { symbol: '$' },
@@ -339,7 +451,7 @@
             { id: 'mtg-weekly', title: 'Weekly Leadership Sync', datetime: '2026-04-20T09:30', participants: 'Shruti Barya, Ayaan Mehta', agenda: 'Roadmap updates, hiring priorities, KPI review.', recurring: true }
           ]
         },
-        preferences: { currency: '', language: 'English', dateFormat: 'MM/DD/YYYY', darkMode: true }
+        preferences: { currency: '', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: true }
       },
       knowledgeGraph: {
         search: '',
@@ -358,13 +470,95 @@
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return structuredClone(defaultState);
+      if (!raw) {
+        const fresh = structuredClone(defaultState);
+        fresh.settings.preferences.language = normalizeLanguageCode(localStorage.getItem(LANGUAGE_STORAGE_KEY) || fresh.settings.preferences.language);
+        return fresh;
+      }
       try {
         const parsed = JSON.parse(raw);
-        return deepMerge(structuredClone(defaultState), parsed);
+        const merged = deepMerge(structuredClone(defaultState), parsed);
+        merged.settings.preferences.language = normalizeLanguageCode(merged.settings?.preferences?.language || localStorage.getItem(LANGUAGE_STORAGE_KEY));
+        return merged;
       } catch {
         return structuredClone(defaultState);
       }
+    }
+
+    function normalizeLanguageCode(value) {
+      if (!value) return 'en';
+      const raw = String(value).trim().toLowerCase();
+      if (SUPPORTED_LANGUAGES.includes(raw)) return raw;
+      return LANGUAGE_NAME_TO_CODE[raw] || 'en';
+    }
+
+    function currentLanguage() {
+      return normalizeLanguageCode(state.settings?.preferences?.language || 'en');
+    }
+
+    function translateText(text) {
+      const lang = currentLanguage();
+      if (lang === 'en') return text;
+      const fallback = translations.en?.textMap?.[text] || text;
+      const map = translations[lang]?.textMap || {};
+      return map[text] || fallback;
+    }
+
+    function setLanguage(lang, options = {}) {
+      const resolvedLang = normalizeLanguageCode(lang);
+      state.settings.preferences.language = resolvedLang;
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, resolvedLang);
+      document.documentElement.lang = resolvedLang;
+      if (!options.skipRender) {
+        renderNav();
+        renderActiveSection();
+        translateDom(document.body);
+      }
+      schedulePersist(0);
+    }
+
+    function translateDom(root = document) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach((node) => {
+        const parent = node.parentElement;
+        if (!parent) return;
+        if (['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION'].includes(parent.tagName)) return;
+        const original = (node.nodeValue || '').trim();
+        if (!original) return;
+        const translated = translateText(original);
+        if (translated !== original) node.nodeValue = node.nodeValue.replace(original, translated);
+      });
+      root.querySelectorAll('[placeholder]').forEach((el) => {
+        const placeholder = el.getAttribute('placeholder');
+        if (!placeholder) return;
+        el.setAttribute('placeholder', translateText(placeholder));
+      });
+      root.querySelectorAll('[title]').forEach((el) => {
+        const value = el.getAttribute('title');
+        if (!value) return;
+        el.setAttribute('title', translateText(value));
+      });
+      root.querySelectorAll('option').forEach((opt) => {
+        const base = opt.getAttribute('data-base-label') || opt.textContent.trim();
+        opt.setAttribute('data-base-label', base);
+        opt.textContent = translateText(base);
+      });
+      const titleInput = document.getElementById('workspaceTitle');
+      if (titleInput) {
+        const placeholder = titleInput.getAttribute('placeholder') || translations.en.appTitle;
+        titleInput.setAttribute('placeholder', translateText(placeholder));
+      }
+      const searchHint = document.getElementById('globalSearchHint');
+      if (searchHint) searchHint.textContent = translations[currentLanguage()]?.searchHint || translations.en.searchHint;
+      const localFirstBadge = document.getElementById('localFirstBadge');
+      if (localFirstBadge) localFirstBadge.textContent = translations[currentLanguage()]?.localFirst || translations.en.localFirst;
+      const founderLabel = document.getElementById('headerFounderRole');
+      if (founderLabel) founderLabel.textContent = translations[currentLanguage()]?.founder || translations.en.founder;
+      const modalTitle = document.getElementById('memoryModalTitle');
+      if (modalTitle) modalTitle.textContent = translations[currentLanguage()]?.insight || translations.en.insight;
+      document.title = translations[currentLanguage()]?.appTitle || translations.en.appTitle;
     }
 
     function deepMerge(target, source) {
@@ -411,6 +605,7 @@
     function init() {
       ensureKnowledgeGraphState();
       ensureResourcesState();
+      setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
       renderNav();
       setupBaseEvents();
       setupGlobalShortcuts();
@@ -419,13 +614,14 @@
       document.getElementById('workspaceTitle').value = state.title;
       latestPersistedSnapshot = JSON.stringify(state);
       applyThemePreference();
+      translateDom(document.body);
     }
 
     function renderNav() {
       const nav = document.getElementById('mainNav');
       nav.innerHTML = navItems.map(item => `
         <button data-section="${item.id}" class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 flex items-center text-left text-zinc-700 hover:border-orange-300 hover:bg-orange-50/60 ${state.activeSection === item.id ? 'active-nav border-orange-300 bg-orange-50/80' : ''}">
-          <span class="text-sm font-medium">${item.label}</span>
+          <span class="text-sm font-medium">${translateText(item.key)}</span>
         </button>
       `).join('');
 
@@ -455,6 +651,7 @@
       if (state.activeSection === 'settings') renderSettings();
       if (state.activeSection === 'knowledge-graph') renderKnowledgeGraph();
       enhanceSurfacePolish();
+      translateDom(document.getElementById(`section-${state.activeSection}`));
     }
 
     function enhanceSurfacePolish() {
@@ -4434,7 +4631,7 @@ Use the 'Add Block' button below to get started.</p>
                   ${renderCurrencyOptions(s.preferences.currency)}
                 </select>
               </label>
-              <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.language==='English'?'selected':''}>English</option><option ${s.preferences.language==='Spanish'?'selected':''}>Spanish</option><option ${s.preferences.language==='French'?'selected':''}>French</option><option ${s.preferences.language==='German'?'selected':''}>German</option><option ${s.preferences.language==='Hindi'?'selected':''}>Hindi</option><option ${s.preferences.language==='Arabic'?'selected':''}>Arabic</option></select></label>
+              <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>
               <label class="block text-sm">Date Format<select data-setting="preferences.dateFormat" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.dateFormat==='MM/DD/YYYY'?'selected':''}>MM/DD/YYYY</option><option ${s.preferences.dateFormat==='DD/MM/YYYY'?'selected':''}>DD/MM/YYYY</option><option ${s.preferences.dateFormat==='YYYY-MM-DD'?'selected':''}>YYYY-MM-DD</option></select></label>
               <label class="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-3 py-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-500" /></label>
             </article>
@@ -4458,6 +4655,10 @@ Use the 'Add Block' button below to get started.</p>
           let ref = state.settings;
           for (let i = 0; i < path.length - 1; i++) ref = ref[path[i]];
           ref[path.at(-1)] = input.type === 'checkbox' ? input.checked : input.value;
+          if (input.dataset.setting === 'preferences.language') {
+            setLanguage(input.value);
+            return;
+          }
           if (input.dataset.setting === 'business.name') {
             state.title = input.value;
             document.getElementById('workspaceTitle').value = input.value;
@@ -4558,15 +4759,28 @@ Use the 'Add Block' button below to get started.</p>
         };
       });
       document.getElementById('exportAll').onclick = () => downloadJSON('barya-all-data.json', state);
-      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => { state = deepMerge(structuredClone(defaultState), data); applyThemePreference(); saveState(); renderNav(); document.getElementById('workspaceTitle').value = state.title; });
+      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+        state = deepMerge(structuredClone(defaultState), data);
+        setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
+        applyThemePreference();
+        saveState();
+        renderNav();
+        renderActiveSection();
+        document.getElementById('workspaceTitle').value = state.title;
+        translateDom(document.body);
+      });
       document.getElementById('clearAll').onclick = () => {
         if (!confirm('Reset all workspace data? This action cannot be undone.')) return;
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LANGUAGE_STORAGE_KEY);
         state = structuredClone(defaultState);
+        setLanguage('en', { skipRender: true });
         applyThemePreference();
         saveState();
         renderNav();
         document.getElementById('workspaceTitle').value = state.title;
+        renderActiveSection();
+        translateDom(document.body);
       };
     }
 
