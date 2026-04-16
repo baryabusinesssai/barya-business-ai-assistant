@@ -103,14 +103,14 @@
 <body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#f1f1f1] border-r border-gray-200 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify-between mb-7">
         <div>
-          <h1 class="text-lg font-semibold text-barya-accent">Barya Workspace</h1>
-          <p class="text-xs text-zinc-400">Business AI Operating System</p>
+          <h1 class="text-xl font-bold tracking-tight text-barya-accent">Barya</h1>
+          <p class="text-xs font-medium tracking-wide text-zinc-500">Business AI</p>
         </div>
         <button id="closeSidebar" class="lg:hidden p-2 rounded border border-zinc-700 text-zinc-300">✕</button>
       </div>
-      <nav class="space-y-2" id="mainNav"></nav>
+      <nav class="space-y-1.5" id="mainNav"></nav>
     </aside>
 
     <div class="flex-1 lg:ml-0 w-full">
@@ -157,15 +157,15 @@
   <script>
     const STORAGE_KEY = 'baryaWorkspaceV2';
     const navItems = [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-      { id: 'workspace', icon: '📑', label: 'Workspace' },
-      { id: 'tasks', icon: '✅', label: 'Tasks' },
-      { id: 'resources', icon: '📚', label: 'Resources' },
-      { id: 'ai', icon: '🤖', label: 'Barya AI' },
-      { id: 'memory', icon: '🧠', label: 'Memory' },
-      { id: 'planning', icon: '🗺️', label: 'Business Planning' },
-      { id: 'settings', icon: '⚙️', label: 'Settings' },
-      { id: 'knowledge-graph', icon: '🔗', label: 'Knowledge Graph' }
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'workspace', label: 'Workspace' },
+      { id: 'tasks', label: 'Tasks' },
+      { id: 'resources', label: 'Resources' },
+      { id: 'ai', label: 'Barya AI' },
+      { id: 'memory', label: 'Memory' },
+      { id: 'planning', label: 'Business Planning' },
+      { id: 'settings', label: 'Settings' },
+      { id: 'knowledge-graph', label: 'Knowledge Graph' }
     ];
 
     const defaultState = {
@@ -357,8 +357,8 @@
     function renderNav() {
       const nav = document.getElementById('mainNav');
       nav.innerHTML = navItems.map(item => `
-        <button data-section="${item.id}" class="w-full border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2 text-left hover:border-orange-500/40 ${state.activeSection === item.id ? 'active-nav' : ''}">
-          <span>${item.icon}</span><span class="text-sm font-medium">${item.label}</span>
+        <button data-section="${item.id}" class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 flex items-center text-left text-zinc-700 hover:border-orange-300 hover:bg-orange-50/60 ${state.activeSection === item.id ? 'active-nav border-orange-300 bg-orange-50/80' : ''}">
+          <span class="text-sm font-medium">${item.label}</span>
         </button>
       `).join('');
 
