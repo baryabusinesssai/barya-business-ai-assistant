@@ -602,6 +602,11 @@
       queueRenderActiveSection();
     }
 
+    function saveStateWithoutRender() {
+      updateRecommendations();
+      schedulePersist(0);
+    }
+
     function init() {
       ensureKnowledgeGraphState();
       ensureResourcesState();
@@ -670,7 +675,7 @@
     function setupBaseEvents() {
       const titleInput = document.getElementById('workspaceTitle');
       titleInput.addEventListener('input', (e) => {
-        state.title = e.target.value || 'Untitled Startup';
+        state.title = e.target.value;
         state.settings.business.name = state.title;
         saveStateRaw();
       });
@@ -1663,7 +1668,8 @@
           if (input.dataset.metric === 'income' || input.dataset.metric === 'expenses') {
             state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
           }
-          saveState();
+          saveStateWithoutRender();
+          renderDashboardCharts();
         };
       });
 
@@ -2248,7 +2254,7 @@ Use the 'Add Block' button below to get started.</p>
       if (!activePage) return;
 
       document.getElementById('workspacePageTitle').oninput = (e) => {
-        activePage.title = e.target.value || 'Untitled Page';
+        activePage.title = e.target.value;
         updatePageUpdatedAt(activePage);
         saveStateRaw();
       };
@@ -3460,22 +3466,22 @@ Use the 'Add Block' button below to get started.</p>
           };
         }
         document.getElementById('noteTitle').oninput = (e) => {
-          activeNote.title = e.target.value.trim() || 'Untitled Note';
+          activeNote.title = e.target.value;
           activeNote.isDaily = /^\d{4}-\d{2}-\d{2}/.test(activeNote.title);
           activeNote.ts = new Date().toISOString();
-          saveState();
+          saveStateWithoutRender();
         };
         document.getElementById('noteTags').oninput = (e) => {
           activeNote.tags = normalizeTags(e.target.value);
           if (!activeNote.tags.length) activeNote.tags = ['General'];
           activeNote.tag = activeNote.tags.join(', ');
           activeNote.ts = new Date().toISOString();
-          saveState();
+          saveStateWithoutRender();
         };
         document.getElementById('noteContent').oninput = (e) => {
           activeNote.content = e.target.value;
           activeNote.ts = new Date().toISOString();
-          saveState();
+          saveStateWithoutRender();
         };
         document.getElementById('deleteActiveNote').onclick = () => {
           memory.insights = memory.insights.filter(note => note.id !== activeNote.id);
@@ -4664,7 +4670,7 @@ Use the 'Add Block' button below to get started.</p>
             document.getElementById('workspaceTitle').value = input.value;
           }
           applyThemePreference();
-          saveState();
+          saveStateWithoutRender();
         };
       });
       el.querySelectorAll('[data-raci]').forEach((select) => {
