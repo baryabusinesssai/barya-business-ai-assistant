@@ -2898,116 +2898,143 @@ Use the 'Add Block' button below to get started.</p>
       const nodeMap = new Map(graphNodes.map(n => [n.id, n]));
 
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#0e1118] via-[#0a0e14] to-[#080b10] border border-orange-500/20 rounded-2xl shadow-neon overflow-hidden transition-all duration-300">
-          <div class="grid xl:grid-cols-[250px_1fr] min-h-[72vh]">
-            <aside class="border-r border-zinc-800/80 bg-[#0b0f16] p-4 space-y-4">
+        <section class="bg-white border border-orange-100 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
+          <div class="grid xl:grid-cols-[260px_1fr] min-h-[72vh]">
+            <aside class="border-r border-orange-100 bg-[#fffaf5] p-4 space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.22em] text-orange-300/80 mb-2">Memory Vault</p>
-                <h2 class="text-xl font-semibold text-barya-accent">Advanced Memory</h2>
-                <p class="text-xs text-zinc-400 mt-1">Founder's second brain, local-first.</p>
+                <h2 class="text-2xl font-semibold text-barya-accent">Memory Vault</h2>
+                <p class="text-sm text-zinc-600 mt-1">Your private second brain. Save ideas, decisions, and insights locally.</p>
+                <p class="text-xs text-zinc-500 mt-2">Notes are saved automatically.</p>
               </div>
 
               <div class="space-y-2">
-                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' ? 'border-orange-400/60 bg-orange-400/10 text-orange-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">Daily Notes</button>
-                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' ? 'border-orange-400/60 bg-orange-400/10 text-orange-200' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">All Notes</button>
-                <button id="memorySidebarGraph" class="w-full text-left px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30">Graph</button>
+                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">Daily Notes</button>
+                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">All Notes</button>
+                <button data-memory-tab="graph" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.viewMode === 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">Graph View</button>
               </div>
 
               <div class="space-y-2">
-                <button id="newDailyNote" class="w-full px-3 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/40 hover:bg-orange-500/30 transition">New Daily Note</button>
-                <button id="newMemoryNote" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/40 transition">New Note</button>
+                <button id="newMemoryNote" class="w-full px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 transition">New Note</button>
+                <button id="newDailyNote" class="w-full px-4 py-3 rounded-xl border border-orange-300 bg-orange-50 text-orange-700 font-semibold hover:bg-orange-100 transition">New Daily Note</button>
               </div>
 
-              <div class="pt-2 border-t border-zinc-800 space-y-2">
-                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30 text-sm">Export Full Memory (JSON)</button>
-                <label class="block w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500/30 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
-                <button id="clearMemory" class="w-full px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 text-sm">Clear All Memory</button>
+              <div class="pt-2 border-t border-orange-100 space-y-2">
+                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-300 text-sm">Export Memory (JSON)</button>
+                <label class="block w-full px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-300 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
+                <button id="clearMemory" class="w-full px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 text-sm">Clear Memory Vault</button>
               </div>
             </aside>
 
-            <div class="p-4 sm:p-5 space-y-4">
+            <div class="p-4 sm:p-5 space-y-4 bg-[#fffdf9]">
               <div class="flex flex-wrap items-center gap-2 justify-between">
-                <div class="flex items-center gap-2">
-                  <input id="memorySearch" placeholder="Search title, content, tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-orange-400 outline-none" />
-                  <button id="memoryToggleView" class="px-3 py-2 rounded-lg border ${memory.viewMode === 'graph' ? 'bg-orange-500/20 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'} text-sm">${memory.viewMode === 'graph' ? 'Switch to List' : 'Show Graph View'}</button>
-                </div>
-                <p class="text-xs text-zinc-400">${visibleNotes.length} visible · ${memory.insights.length} total notes</p>
+                <input id="memorySearch" placeholder="Search notes by title, text, or tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-orange-400 outline-none" />
+                <p class="text-xs text-zinc-500">${visibleNotes.length} visible · ${memory.insights.length} total notes</p>
               </div>
 
-              <div class="grid xl:grid-cols-[300px_1fr] gap-4">
-                <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-3 max-h-[62vh] overflow-auto scrollbar-thin">
-                  <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">${memory.leftTab === 'daily' ? 'Daily Notes' : 'All Notes'}</p>
+              <div class="grid xl:grid-cols-[310px_1fr] gap-4">
+                <section class="bg-white border border-orange-100 rounded-xl p-3 max-h-[62vh] overflow-auto scrollbar-thin">
+                  <p class="text-xs uppercase tracking-wide text-zinc-500 mb-2">${memory.leftTab === 'daily' ? 'Daily Notes' : 'All Notes'}</p>
                   <div class="space-y-2">
                     ${visibleNotes.map(note => `
-                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2 transition ${note.id === memory.activeNoteId ? 'border-orange-500/60 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/30'}">
+                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2.5 transition ${note.id === memory.activeNoteId && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}">
                         <div class="flex items-center justify-between gap-2">
                           <p class="font-medium truncate">${escapeHTML(note.title)}</p>
-                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-200">Daily</span>' : ''}
+                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Daily</span>' : ''}
                         </div>
                         <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML((note.tags || []).join(', ') || 'General')}</p>
                       </button>
-                    `).join('') || emptyStateMarkup('📝', 'No notes yet', 'Create your first note to build long-term founder memory.')}
+                    `).join('') || `
+                      <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-5 text-center space-y-3">
+                        <p class="text-sm text-zinc-700">This is your private memory vault.<br/>Start by creating your first note or daily entry.</p>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                          <button id="emptyNewNote" class="px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600">New Note</button>
+                          <button id="emptyNewDailyNote" class="px-4 py-3 rounded-xl border border-orange-300 bg-white text-orange-700 font-semibold hover:bg-orange-50">New Daily Note</button>
+                        </div>
+                      </div>
+                    `}
                   </div>
                 </section>
 
-                <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-4">
+                <section class="bg-white border border-orange-100 rounded-xl p-4">
                   ${memory.viewMode === 'graph' ? `
                     <div class="space-y-3">
-                      <h3 class="text-lg font-semibold text-orange-200">Memory Graph</h3>
-                      <p class="text-xs text-zinc-400">Click a node to open note. Links come from <span class="text-orange-300">[[Note Title]]</span>.</p>
-                      <canvas id="memoryGraphCanvas" width="620" height="420" class="w-full bg-[#0b111a] border border-zinc-800 rounded-lg"></canvas>
+                      <h3 class="text-lg font-semibold text-zinc-900">Graph View</h3>
+                      <p class="text-xs text-zinc-500">See how your notes connect. Create more notes to see connections.</p>
+                      ${graphNodes.length ? `<canvas id="memoryGraphCanvas" width="620" height="420" class="w-full bg-[#fff7ed] border border-orange-100 rounded-lg"></canvas>` : `
+                        <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-6 text-center text-sm text-zinc-600">
+                          Create more notes to see connections.
+                        </div>
+                      `}
                     </div>
                   ` : activeNote ? `
                     <div class="space-y-3">
                       <div class="grid sm:grid-cols-2 gap-2">
-                        <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 font-semibold" />
-                        <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2" />
-                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
+                        <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-white border border-gray-300 rounded-lg px-3 py-2 font-semibold" />
+                        <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
                       </div>
-                      <textarea id="noteContent" rows="13" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-3 font-mono text-sm leading-6 focus:border-orange-400 outline-none" placeholder="Use [[Note Title]] to link notes...">${escapeHTML(activeNote.content)}</textarea>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <select id="memoryLinkPageSelect" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                          <option value="">Choose a page to mention...</option>
+                          ${(state.workspace?.pages || []).slice(0, 30).map(page => `<option value="${page.id}">${escapeHTML(page.title)}</option>`).join('')}
+                        </select>
+                        <button id="memoryLinkToPage" class="px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold hover:bg-orange-600">Link to Page</button>
+                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-orange-50 border border-orange-300 text-orange-700 text-sm">Show Related</button>
+                      </div>
+                      <textarea id="noteContent" rows="18" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 text-sm leading-6 focus:border-orange-400 outline-none" placeholder="Write your note here. Tip: type [[Note Title]] to connect notes.">${escapeHTML(activeNote.content)}</textarea>
                       <div class="flex flex-wrap items-center gap-2 justify-between">
-                        <p class="text-xs text-zinc-500">Auto-saved · Updated ${new Date(activeNote.ts).toLocaleString()}</p>
-                        <button id="deleteActiveNote" class="px-3 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30">Delete Note</button>
+                        <p class="text-xs text-zinc-500">Notes are saved automatically · Updated ${new Date(activeNote.ts).toLocaleString()}</p>
+                        <button id="deleteActiveNote" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200">Delete Note</button>
                       </div>
 
-                      <div class="grid md:grid-cols-2 gap-3 pt-2 border-t border-zinc-800">
-                        <div>
-                          <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Outgoing Links</p>
-                          <div class="space-y-1 max-h-32 overflow-auto scrollbar-thin pr-1">
+                      <div class="grid md:grid-cols-2 gap-3 pt-2 border-t border-orange-100">
+                        <div class="rounded-lg border border-gray-200 p-3">
+                          <p class="text-sm font-semibold text-zinc-800">Outgoing Links</p>
+                          <p class="text-xs text-zinc-500 mb-2">Notes this note points to.</p>
+                          <div class="space-y-1 max-h-36 overflow-auto scrollbar-thin pr-1">
                             ${(activeNote.links || []).map(linkedId => {
                               const linked = memory.insights.find(n => n.id === linkedId);
-                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-orange-300 hover:text-orange-200">→ ${escapeHTML(linked.title)}</button>` : '';
-                            }).join('') || '<p class="text-sm text-zinc-500">No links yet.</p>'}
+                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">→ ${escapeHTML(linked.title)}</button>` : '';
+                            }).join('') || '<p class="text-sm text-zinc-500">No outgoing links yet.</p>'}
                           </div>
                         </div>
-                        <div>
-                          <p class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Backlinks</p>
-                          <div class="space-y-1 max-h-32 overflow-auto scrollbar-thin pr-1">
+                        <div class="rounded-lg border border-gray-200 p-3">
+                          <p class="text-sm font-semibold text-zinc-800">Backlinks</p>
+                          <p class="text-xs text-zinc-500 mb-2">Notes that mention this note.</p>
+                          <div class="space-y-1 max-h-36 overflow-auto scrollbar-thin pr-1">
                             ${(backlinksMap[activeNote.id] || []).map(backId => {
                               const back = memory.insights.find(n => n.id === backId);
-                              return back ? `<button data-open-note="${back.id}" class="block text-left text-sm text-emerald-300 hover:text-emerald-200">← ${escapeHTML(back.title)}</button>` : '';
+                              return back ? `<button data-open-note="${back.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">← ${escapeHTML(back.title)}</button>` : '';
                             }).join('') || '<p class="text-sm text-zinc-500">No backlinks yet.</p>'}
                           </div>
                         </div>
                       </div>
                     </div>
-                  ` : '<p class="text-zinc-500">Create your first note to start building your memory graph.</p>'}
+                  ` : `
+                    <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-6 text-center space-y-3">
+                      <p class="text-sm text-zinc-700">This is your private memory vault.<br/>Start by creating your first note or daily entry.</p>
+                      <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button id="emptyEditorNewNote" class="px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600">New Note</button>
+                        <button id="emptyEditorNewDailyNote" class="px-4 py-3 rounded-xl border border-orange-300 bg-white text-orange-700 font-semibold hover:bg-orange-50">New Daily Note</button>
+                      </div>
+                    </div>
+                  `}
                 </section>
               </div>
 
-              <section class="bg-[#0f141e] border border-zinc-800 rounded-xl p-4">
-                <h3 class="font-semibold mb-3">Recent Actions</h3>
-                <form id="actionForm" class="grid md:grid-cols-[1fr_140px_170px_auto] gap-2 mb-3">
-                  <input id="actionText" placeholder="Action (e.g. Follow up with investor)" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                  <select id="actionCategory" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
+              <section class="bg-white border border-orange-100 rounded-xl p-4">
+                <h3 class="font-semibold mb-1 text-zinc-900">Recent Actions</h3>
+                <p class="text-xs text-zinc-500 mb-3">Capture what happened and connect it to a note or page for future context.</p>
+                <form id="actionForm" class="grid md:grid-cols-[1fr_140px_190px_auto] gap-2 mb-3">
+                  <input id="actionText" placeholder="Example: Follow up with investor" class="bg-white border border-gray-300 rounded px-3 py-2" />
+                  <select id="actionCategory" class="bg-white border border-gray-300 rounded px-3 py-2">
                     <option>Product</option><option>Customer</option><option>Finance</option><option>Ops</option>
                   </select>
-                  <select id="actionLink" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
-                    <option value="">Link to note/page</option>
+                  <select id="actionLink" class="bg-white border border-gray-300 rounded px-3 py-2">
+                    <option value="">Optional: link to note or page</option>
                     ${memory.insights.slice(0, 30).map(note => `<option value="note:${note.id}">🧠 ${escapeHTML(note.title)}</option>`).join('')}
                     ${(state.workspace?.pages || []).slice(0, 20).map(page => `<option value="page:${page.id}">📄 ${escapeHTML(page.title)}</option>`).join('')}
                   </select>
-                  <button class="px-3 py-2 rounded bg-orange-500/20 border border-orange-500/30 text-orange-300">Add Action</button>
+                  <button class="px-3 py-2 rounded bg-orange-500 text-white font-semibold hover:bg-orange-600">Add Action</button>
                 </form>
                 <ul class="space-y-2 max-h-[28vh] overflow-auto scrollbar-thin pr-1">
                   ${memory.actions.map(action => {
@@ -3020,15 +3047,20 @@ Use the 'Add Block' button below to get started.</p>
                         ? ((state.workspace?.pages || []).find(p => p.id === id)?.title || 'Missing page')
                         : '';
                     return `
-                      <li class="bg-zinc-900 border border-zinc-800 rounded p-2 text-sm flex justify-between gap-3">
+                      <li class="bg-[#fffaf5] border border-orange-100 rounded-lg p-3 text-sm flex justify-between gap-3">
                         <div>
-                          <p>${escapeHTML(action.text)} <span class="text-zinc-500">(${escapeHTML(action.category)})</span></p>
-                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-orange-300 hover:text-orange-200">Linked: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500">Not linked</p>'}
+                          <p class="text-zinc-800">${escapeHTML(action.text)} <span class="text-zinc-500">· ${escapeHTML(action.category)}</span></p>
+                          <p class="text-xs text-zinc-500 mt-1">${new Date(action.ts || Date.now()).toLocaleString()}</p>
+                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-orange-700 hover:text-orange-800 mt-1">Linked to: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500 mt-1">No link added</p>'}
                         </div>
-                        <button data-del-action="${action.id}" class="text-red-400 text-xs">Delete</button>
+                        <button data-del-action="${action.id}" class="text-red-500 text-xs">Delete</button>
                       </li>
                     `;
-                  }).join('') || `<li>${emptyStateMarkup('🚀', 'No actions yet', 'Capture your next action item and keep execution momentum.')}</li>`}
+                  }).join('') || `
+                    <li class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-4 text-center text-sm text-zinc-600">
+                      No actions yet. Add your first action to keep momentum.
+                    </li>
+                  `}
                 </ul>
               </section>
             </div>
@@ -3044,20 +3076,15 @@ Use the 'Add Block' button below to get started.</p>
 
       el.querySelectorAll('[data-memory-tab]').forEach(btn => {
         btn.onclick = () => {
-          memory.leftTab = btn.dataset.memoryTab;
+          if (btn.dataset.memoryTab === 'graph') {
+            memory.viewMode = 'graph';
+          } else {
+            memory.leftTab = btn.dataset.memoryTab;
+            memory.viewMode = 'list';
+          }
           saveState();
         };
       });
-
-      document.getElementById('memorySidebarGraph').onclick = () => {
-        memory.viewMode = 'graph';
-        saveState();
-      };
-
-      document.getElementById('memoryToggleView').onclick = () => {
-        memory.viewMode = memory.viewMode === 'graph' ? 'list' : 'graph';
-        saveState();
-      };
 
       document.getElementById('memorySearch').oninput = (e) => {
         memory.search = e.target.value;
@@ -3081,6 +3108,8 @@ Use the 'Add Block' button below to get started.</p>
         memory.viewMode = 'list';
         saveState();
       };
+      document.getElementById('emptyNewNote')?.addEventListener('click', () => document.getElementById('newMemoryNote').click());
+      document.getElementById('emptyEditorNewNote')?.addEventListener('click', () => document.getElementById('newMemoryNote').click());
 
       document.getElementById('newDailyNote').onclick = () => {
         const existing = memory.insights.find(n => n.isDaily && n.title === dailyISO);
@@ -3107,6 +3136,8 @@ Use the 'Add Block' button below to get started.</p>
         memory.viewMode = 'list';
         saveState();
       };
+      document.getElementById('emptyNewDailyNote')?.addEventListener('click', () => document.getElementById('newDailyNote').click());
+      document.getElementById('emptyEditorNewDailyNote')?.addEventListener('click', () => document.getElementById('newDailyNote').click());
 
       el.querySelectorAll('[data-open-note]').forEach(btn => {
         btn.onclick = () => openNote(btn.dataset.openNote);
@@ -3115,6 +3146,20 @@ Use the 'Add Block' button below to get started.</p>
       if (activeNote && memory.viewMode !== 'graph') {
         const showRelatedBtn = document.getElementById('memoryShowRelated');
         if (showRelatedBtn) showRelatedBtn.onclick = () => showRelated(`note:${activeNote.id}`);
+        const linkToPageBtn = document.getElementById('memoryLinkToPage');
+        if (linkToPageBtn) {
+          linkToPageBtn.onclick = () => {
+            const select = document.getElementById('memoryLinkPageSelect');
+            const pageId = select?.value;
+            if (!pageId) return;
+            const page = (state.workspace?.pages || []).find(p => p.id === pageId);
+            if (!page) return;
+            const line = `\n\nRelated page: ${page.title}`;
+            if (!activeNote.content.includes(line.trim())) activeNote.content += line;
+            activeNote.ts = new Date().toISOString();
+            saveState();
+          };
+        }
         document.getElementById('noteTitle').oninput = (e) => {
           activeNote.title = e.target.value.trim() || 'Untitled Note';
           activeNote.isDaily = /^\d{4}-\d{2}-\d{2}/.test(activeNote.title);
