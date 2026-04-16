@@ -172,7 +172,7 @@
             <p id="headerFounderName" class="text-sm font-medium">Your Name</p>
             <p id="headerFounderRole" class="text-xs text-zinc-400">Your Role</p>
           </div>
-          <div id="headerFounderInitials" class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">YN</div>
+          <div id="headerFounderAvatar" class="w-10 h-10 rounded-full overflow-hidden border border-teal-200 bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">YN</div>
         </div>
       </header>
 
@@ -605,27 +605,46 @@
       document.title = translations[currentLanguage()]?.appTitle || translations.en.appTitle;
     }
 
+    function getFounderInitials(name, fallback = 'YN') {
+      const initials = (String(name || '').trim().match(/\b\w/g) || [])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+      return initials || fallback;
+    }
+
+    function renderFounderAvatar({ name, photo, size = 'h-10 w-10 text-sm' }) {
+      const initials = getFounderInitials(name);
+      if (photo) {
+        return `<img src="${escapeAttr(photo)}" alt="${escapeAttr(name)} profile photo" class="${size} rounded-full object-cover border border-teal-200 shadow-sm" />`;
+      }
+      return `<div class="${size} rounded-full bg-gradient-to-br from-orange-400 via-orange-500 to-teal-500 text-white font-semibold grid place-items-center border border-orange-200 shadow-sm">${escapeHTML(initials)}</div>`;
+    }
+
     function getFounderProfileForHeader() {
       const founder = state?.settings?.founder || {};
       const rawName = String(founder.name || '').trim();
       const rawRole = String(founder.role || '').trim();
+      const rawPhoto = String(founder.photo || '').trim();
       const name = rawName || 'Your Name';
       const role = rawRole || 'Your Role';
-      const initials = (name.match(/\b\w/g) || [])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase() || 'YN';
-      return { name, role, initials };
+      const initials = getFounderInitials(name);
+      return { name, role, initials, photo: rawPhoto };
     }
 
     function renderHeaderFounderProfile() {
-      const { name, role, initials } = getFounderProfileForHeader();
+      const { name, role, initials, photo } = getFounderProfileForHeader();
       const nameEl = document.getElementById('headerFounderName');
       const roleEl = document.getElementById('headerFounderRole');
-      const initialsEl = document.getElementById('headerFounderInitials');
+      const avatarEl = document.getElementById('headerFounderAvatar');
       if (nameEl) nameEl.textContent = name;
       if (roleEl) roleEl.textContent = role;
-      if (initialsEl) initialsEl.textContent = initials;
+      if (avatarEl) {
+        avatarEl.className = 'w-10 h-10 rounded-full overflow-hidden';
+        avatarEl.innerHTML = photo
+          ? `<img src="${escapeAttr(photo)}" alt="${escapeAttr(name)} profile photo" class="w-10 h-10 rounded-full object-cover border border-teal-200 shadow-sm" />`
+          : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">${escapeHTML(initials)}</div>`;
+      }
     }
 
     function deepMerge(target, source) {
@@ -4740,9 +4759,18 @@ Use the 'Add Block' button below to get started.</p>
           <div class="grid xl:grid-cols-2 gap-4">
             <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
               <h3 class="font-semibold text-lg text-orange-700">Founder Profile</h3>
-              <div class="flex items-center gap-4 mb-2">
-                <div class="h-16 w-16 rounded-full border-2 border-orange-200 bg-orange-100 flex items-center justify-center text-orange-700 font-semibold">FP</div>
-                <button type="button" class="px-3 py-1.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-300 text-sm">Change Photo</button>
+              <div class="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50 via-white to-teal-50 p-4 mb-2">
+                <div class="flex flex-col items-center gap-3">
+                  <div id="founderPhotoPreview" class="h-[120px] w-[120px] rounded-full overflow-hidden grid place-items-center">
+                    ${renderFounderAvatar({ name: s.founder.name || 'Shruti Barya', photo: s.founder.photo, size: 'h-[120px] w-[120px] text-3xl' })}
+                  </div>
+                  <input id="founderPhotoInput" type="file" accept="image/png,image/jpeg,.jpg,.jpeg" class="hidden" />
+                  <div class="flex flex-wrap items-center justify-center gap-2">
+                    <button id="founderPhotoUploadBtn" type="button" class="px-3 py-1.5 rounded-lg bg-orange-500 text-white border border-orange-500 text-sm shadow-sm hover:bg-orange-600">${s.founder.photo ? 'Change Photo' : 'Upload Photo'}</button>
+                    <button id="founderPhotoRemoveBtn" type="button" class="px-3 py-1.5 rounded-lg bg-white text-zinc-700 border border-zinc-300 text-sm hover:bg-zinc-50 ${s.founder.photo ? '' : 'hidden'}">Remove Photo</button>
+                  </div>
+                  <p class="text-xs text-zinc-500">Max 2MB · JPG, JPEG, PNG</p>
+                </div>
               </div>
               ${inputField('Founder Name','founder.name',s.founder.name)}
               ${inputField('Role / Title','founder.role',s.founder.role)}
@@ -4897,6 +4925,70 @@ Use the 'Add Block' button below to get started.</p>
           saveStateWithoutRender();
         };
       });
+
+      const photoInput = document.getElementById('founderPhotoInput');
+      const photoUploadBtn = document.getElementById('founderPhotoUploadBtn');
+      const photoRemoveBtn = document.getElementById('founderPhotoRemoveBtn');
+      const photoPreview = document.getElementById('founderPhotoPreview');
+      const founderNameInput = el.querySelector('[data-setting="founder.name"]');
+      const updateFounderPhotoUI = () => {
+        const founderName = founderNameInput?.value?.trim() || state.settings.founder.name || 'Shruti Barya';
+        if (photoPreview) {
+          photoPreview.innerHTML = renderFounderAvatar({
+            name: founderName,
+            photo: state.settings.founder.photo,
+            size: 'h-[120px] w-[120px] text-3xl'
+          });
+        }
+        if (photoUploadBtn) photoUploadBtn.textContent = state.settings.founder.photo ? 'Change Photo' : 'Upload Photo';
+        if (photoRemoveBtn) photoRemoveBtn.classList.toggle('hidden', !state.settings.founder.photo);
+        renderHeaderFounderProfile();
+      };
+
+      if (photoUploadBtn && photoInput) {
+        photoUploadBtn.onclick = () => photoInput.click();
+      }
+      if (photoInput) {
+        photoInput.onchange = (event) => {
+          const file = event.target?.files?.[0];
+          if (!file) return;
+          if (!file.type.startsWith('image/')) {
+            alert('Please upload a valid image file.');
+            photoInput.value = '';
+            return;
+          }
+          const maxBytes = 2 * 1024 * 1024;
+          if (file.size > maxBytes) {
+            alert('Image size should be 2MB or less.');
+            photoInput.value = '';
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (loadEvent) => {
+            const base64Image = String(loadEvent.target?.result || '');
+            if (!base64Image) return;
+            state.settings.founder.photo = base64Image;
+            updateFounderPhotoUI();
+            saveStateWithoutRender();
+            photoInput.value = '';
+          };
+          reader.onerror = () => {
+            alert('Could not process the selected image. Please try another file.');
+            photoInput.value = '';
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+      if (photoRemoveBtn) {
+        photoRemoveBtn.onclick = () => {
+          state.settings.founder.photo = '';
+          updateFounderPhotoUI();
+          saveStateWithoutRender();
+        };
+      }
+      if (founderNameInput) {
+        founderNameInput.addEventListener('input', updateFounderPhotoUI);
+      }
       el.querySelectorAll('[data-raci]').forEach((select) => {
         select.onchange = () => {
           const [area, type] = select.dataset.raci.split('|');
