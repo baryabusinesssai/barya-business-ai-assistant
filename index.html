@@ -38,8 +38,10 @@
     body {
       background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
       color: var(--text-main);
-      letter-spacing: -0.01em;
-      line-height: 1.55;
+      letter-spacing: -0.006em;
+      line-height: 1.68;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     main > section {
@@ -47,8 +49,35 @@
       scroll-margin-top: 7rem;
     }
 
-    h1, h2, h3 { letter-spacing: -0.02em; }
-    p { color: var(--text-muted); }
+    h1, h2, h3 {
+      letter-spacing: -0.028em;
+      color: #0f172a;
+    }
+
+    h1 {
+      font-weight: 800;
+      line-height: 1.08;
+    }
+
+    h2 {
+      font-weight: 760;
+      line-height: 1.18;
+      margin-top: 0.35rem;
+      margin-bottom: 0.9rem;
+    }
+
+    h3 {
+      font-weight: 650;
+      line-height: 1.32;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      color: #4a5b70;
+      line-height: 1.72;
+      font-size: clamp(1rem, 0.98rem + 0.2vw, 1.085rem);
+      letter-spacing: -0.003em;
+    }
 
     .glass-card {
       background: rgba(255, 255, 255, 0.76);
@@ -182,9 +211,30 @@
     }
 
     .section-heading {
-      font-size: clamp(1.7rem, 3vw, 2.45rem);
-      font-weight: 700;
+      font-size: clamp(1.95rem, 1.58rem + 1.7vw, 2.85rem);
+      font-weight: 760;
       color: #0f172a;
+      letter-spacing: -0.03em;
+      line-height: 1.16;
+      margin-top: 0.6rem;
+      margin-bottom: 1.05rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.55rem, 1.85rem + 3.15vw, 4.7rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: #0b1324;
+      text-wrap: balance;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.075rem, 1.01rem + 0.45vw, 1.34rem);
+      line-height: 1.75;
+      letter-spacing: -0.008em;
+      color: #52657d;
+      max-width: 40ch;
     }
 
     .hero-image {
@@ -300,6 +350,16 @@
     @media (max-width: 768px) {
       main { padding-top: 6.8rem !important; }
       main > section { margin-bottom: 3.5rem !important; }
+      h2 { margin-bottom: 0.8rem; }
+      p { line-height: 1.68; }
+      .hero-title {
+        font-size: clamp(2.1rem, 1.7rem + 2.7vw, 3.15rem);
+        line-height: 1.08;
+      }
+      .hero-subtitle {
+        font-size: 1.04rem;
+        line-height: 1.7;
+      }
     }
   </style>
 </head>
@@ -325,8 +385,8 @@
     <section id="home" class="anim-section grid items-center gap-10 lg:grid-cols-2">
       <div>
         <p class="section-label mb-4 anim-item">Founder Growth Platform</p>
-        <h1 id="hero-title" class="text-4xl font-bold leading-tight text-slate-900 md:text-6xl">From startup idea to structured execution — in one premium founder command center.</h1>
-        <p class="anim-item mt-5 max-w-xl text-lg">Plan faster, validate smarter, and run your startup with a visual workflow built for founder momentum.</p>
+        <h1 id="hero-title" class="hero-title">From startup idea to structured execution — in one premium founder command center.</h1>
+        <p class="hero-subtitle anim-item mt-5">Plan faster, validate smarter, and run your startup with a visual workflow built for founder momentum.</p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a href="#pricing" class="primary-btn magnetic-btn text-sm">See Pricing</a>
           <a href="workspace.html" class="secondary-btn workspace-btn text-sm">Enter Workspace</a>
