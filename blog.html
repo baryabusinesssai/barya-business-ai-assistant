@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya | Blog</title>
+  <meta name="description" content="Practical insights, guides, and stories for early-stage founders on the Barya blog." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border-soft: #d9e2ec;
+      --text-main: #1e2937;
+      --text-muted: #526174;
+      --primary: #1e2937;
+      --accent: #14b8a6;
+      --accent-hover: #0f766e;
+      --warm: #f97316;
+      --warm-soft: #fff7ed;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(circle at top left, #e6f4f3 0%, #f8fafc 40%, #f8fafc 100%);
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+      line-height: 1.55;
+    }
+
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    p { color: var(--text-muted); }
+
+    .section-label {
+      font-size: .73rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(20,184,166,.25), rgba(30,41,55,.12), rgba(249,115,22,.18));
+      opacity: 0;
+      transition: opacity .28s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before { opacity: 1; }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      padding-inline: 1.2rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #14b8a6, #0f766e 58%, #0f766e);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
+    }
+
+    .secondary-btn {
+      border: 1px solid #c6d6df;
+      color: var(--primary);
+      background: #ffffff;
+    }
+
+    .secondary-btn:hover {
+      border-color: #14b8a6;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+    .nav-active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .blog-card {
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      transition: transform .24s ease, box-shadow .24s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+    }
+
+    .post-image {
+      width: 100%;
+      height: 10.5rem;
+      border-radius: 1rem;
+      background: linear-gradient(125deg, rgba(20,184,166,.16), rgba(249,115,22,.18) 55%, rgba(15,23,42,.08));
+      border: 1px solid rgba(20,184,166,.2);
+      display: grid;
+      place-items: center;
+      color: #0f766e;
+      font-size: .75rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: .28rem .65rem;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .tag-strategy { background: #ecfeff; color: #0f766e; border-color: rgba(20,184,166,.35); }
+    .tag-productivity { background: #f0fdf4; color: #166534; border-color: rgba(34,197,94,.35); }
+    .tag-funding { background: #fff7ed; color: #c2410c; border-color: rgba(249,115,22,.32); }
+    .tag-mindset { background: #eff6ff; color: #1d4ed8; border-color: rgba(59,130,246,.32); }
+
+    .sidebar-card {
+      border: 1px solid rgba(30, 41, 55, 0.08);
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+    }
+
+    .newsletter-input {
+      width: 100%;
+      border: 1px solid #dbe4ee;
+      border-radius: 0.8rem;
+      background: #ffffff;
+      color: #0f172a;
+      padding: 0.7rem 0.85rem;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .newsletter-input:focus {
+      border-color: rgba(20,184,166,.45);
+      box-shadow: 0 0 0 3px rgba(20,184,166,.15);
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar-wrapper {
+        position: static !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      main { padding-top: 6.8rem !important; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <header class="fixed top-0 z-50 w-full border-b border-slate-200/90 bg-[#f8fafc]/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+      <a href="index.html#home" class="text-sm font-semibold tracking-[0.2em] text-[#1e2937]">BARYA</a>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+        <a href="features.html" class="hover:text-slate-900">Features</a>
+        <a href="pricing.html" class="hover:text-slate-900">Pricing</a>
+        <a href="blog.html" class="nav-active">Blog</a>
+        <a href="contact.html" class="hover:text-slate-900">Contact</a>
+        <a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a>
+        <a href="index.html#terms-of-service" class="hover:text-slate-900">Terms of Service</a>
+      </div>
+      <a href="workspace.html" class="primary-btn text-sm">Enter Workspace</a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 pb-24 pt-28">
+    <section class="glass-card rounded-3xl p-8 lg:p-12">
+      <p class="section-label">Blog</p>
+      <h1 class="section-heading mt-3 max-w-3xl">Barya Blog</h1>
+      <p class="mt-4 max-w-3xl text-lg">Practical insights, guides, and stories for early-stage founders</p>
+    </section>
+
+    <section class="mt-12 grid gap-8 lg:grid-cols-[1.55fr_.72fr]">
+      <div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-strategy">Strategy</span>
+              <span class="text-xs text-slate-500">8 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">How to Validate Your Idea in 14 Days Without Spending Money</h2>
+            <p class="mt-2 text-sm">A practical validation playbook using founder interviews, landing pages, and quick experiments before writing code.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By Shruti Barya • April 10, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-funding">Funding</span>
+              <span class="text-xs text-slate-500">6 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">7 Cash Flow Mistakes Most First-Time Founders Make</h2>
+            <p class="mt-2 text-sm">Learn how to avoid the most common early financial blind spots and build a cash plan that protects your runway.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By A. Mehta • April 8, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-mindset">Mindset</span>
+              <span class="text-xs text-slate-500">7 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">Building in Public: When to Share and When to Stay Silent</h2>
+            <p class="mt-2 text-sm">Find the balance between momentum, transparency, and strategic secrecy when sharing your startup journey online.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By N. Kapoor • April 4, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-productivity">Productivity</span>
+              <span class="text-xs text-slate-500">5 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">The Power of Local-First Tools for Solo Founders</h2>
+            <p class="mt-2 text-sm">Discover why local-first systems can reduce context loss, improve privacy, and speed up execution every week.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By Barya Team • March 31, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-strategy">Strategy</span>
+              <span class="text-xs text-slate-500">9 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">How to Run Your First Customer Interview (Template Included)</h2>
+            <p class="mt-2 text-sm">A step-by-step approach for asking better questions, uncovering pain points, and converting insights into roadmap priorities.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By Priya Rao • March 25, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-funding">Funding</span>
+              <span class="text-xs text-slate-500">6 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">Bootstrap or Raise? A Decision Framework for 2026</h2>
+            <p class="mt-2 text-sm">Use this simple scoring framework to choose your fundraising path based on timing, control, and market risk.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By R. Menon • March 19, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-productivity">Productivity</span>
+              <span class="text-xs text-slate-500">4 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">Founder Weekly Review: The 30-Minute Ritual That Works</h2>
+            <p class="mt-2 text-sm">A repeatable reflection process to spot bottlenecks, reset priorities, and improve your focus for the next sprint.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By S. Das • March 12, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+
+          <article class="blog-card rounded-2xl p-5">
+            <div class="post-image">Featured Image</div>
+            <div class="mt-5 flex items-center justify-between gap-2">
+              <span class="tag tag-mindset">Mindset</span>
+              <span class="text-xs text-slate-500">5 min read</span>
+            </div>
+            <h2 class="mt-3 text-xl font-semibold text-slate-900">Staying Consistent as a Solo Founder in Year One</h2>
+            <p class="mt-2 text-sm">Practical ways to manage emotional highs and lows while maintaining momentum during the hardest months.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">By Barya Editorial • March 6, 2026</p>
+            <a href="#" class="secondary-btn mt-4 w-full text-sm">Read More</a>
+          </article>
+        </div>
+      </div>
+
+      <aside class="sidebar-wrapper sticky top-28 grid h-fit gap-5 self-start">
+        <article class="sidebar-card rounded-2xl p-5">
+          <h3 class="text-base font-semibold text-slate-900">Popular Posts</h3>
+          <ul class="mt-4 space-y-3 text-sm text-slate-600">
+            <li><a href="#" class="hover:text-slate-900">How to Validate Your Idea in 14 Days Without Spending Money</a></li>
+            <li><a href="#" class="hover:text-slate-900">The Power of Local-First Tools for Solo Founders</a></li>
+            <li><a href="#" class="hover:text-slate-900">7 Cash Flow Mistakes Most First-Time Founders Make</a></li>
+            <li><a href="#" class="hover:text-slate-900">How to Run Your First Customer Interview (Template Included)</a></li>
+          </ul>
+        </article>
+
+        <article class="sidebar-card rounded-2xl p-5">
+          <h3 class="text-base font-semibold text-slate-900">Categories</h3>
+          <ul class="mt-4 space-y-2 text-sm text-slate-600">
+            <li><a href="#" class="hover:text-slate-900">Strategy</a></li>
+            <li><a href="#" class="hover:text-slate-900">Finance</a></li>
+            <li><a href="#" class="hover:text-slate-900">Product</a></li>
+            <li><a href="#" class="hover:text-slate-900">Marketing</a></li>
+            <li><a href="#" class="hover:text-slate-900">Founder Life</a></li>
+          </ul>
+        </article>
+
+        <article class="sidebar-card rounded-2xl p-5">
+          <h3 class="text-base font-semibold text-slate-900">Newsletter</h3>
+          <p class="mt-2 text-sm">Get founder-ready playbooks and tactical insights every week.</p>
+          <form class="mt-4 space-y-3" action="#" method="post">
+            <label for="newsletter-email" class="sr-only">Email address</label>
+            <input id="newsletter-email" type="email" class="newsletter-input" placeholder="you@startup.com" required />
+            <button type="submit" class="primary-btn w-full text-sm">Subscribe</button>
+          </form>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-[#f0f7f7] py-14">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <p class="text-lg font-bold text-slate-900">Barya</p>
+        <p class="mt-3 text-sm text-slate-600">The premium growth platform for founders, dedicated to clarity and private, structured action.</p>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Product</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="features.html" class="hover:text-slate-900">Product</a></li>
+          <li><a href="index.html#how-it-works" class="hover:text-slate-900">How it Works</a></li>
+          <li><a href="features.html" class="hover:text-slate-900">Features</a></li>
+          <li><a href="index.html#what-you-can-do" class="hover:text-slate-900">Templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Company</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#what-is-barya" class="hover:text-slate-900">Story</a></li>
+          <li><a href="index.html#privacy-policy" class="hover:text-slate-900">Privacy Policy</a></li>
+          <li><a href="contact.html" class="hover:text-slate-900">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-900">Resources</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600">
+          <li><a href="index.html#faq" class="hover:text-slate-900">Guides</a></li>
+          <li><a href="blog.html" class="hover:text-slate-900">Blog</a></li>
+          <li><a href="index.html#business-planning" class="hover:text-slate-900">Startup Checklist</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto mt-10 max-w-6xl border-t border-slate-200 px-6 pt-6 text-xs text-slate-500">
+      <p>© 2026 Barya Labs. All rights reserved.</p>
+      <p class="mt-1">Built with love for founders by a fellow founder.</p>
+    </div>
+  </footer>
+</body>
+</html>
