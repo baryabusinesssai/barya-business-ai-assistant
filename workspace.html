@@ -1785,7 +1785,7 @@
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="space-y-1">
               <h2 class="text-3xl font-bold text-orange-500">Workspace</h2>
-              <p class="text-sm text-zinc-600">Yahan apne ideas, notes aur plans ko ek jagah rakho aur connect karo</p>
+              <p class="text-sm text-zinc-600">Keep your ideas, notes, and plans in one place and connect them.</p>
             </div>
             <div class="flex gap-2">
               <button id="workspaceHowBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-200 text-orange-500 font-medium hover:bg-orange-50 transition">How it works?</button>
@@ -1795,9 +1795,9 @@
 
           <div id="workspaceHowPanel" class="hidden rounded-xl border border-orange-200 bg-orange-50/70 p-4 text-sm text-zinc-700 space-y-1">
             <p class="font-semibold text-orange-600">Start in 3 easy steps:</p>
-            <p>1) Left side se page select karo ya naya page banao.</p>
-            <p>2) Center editor mein likho. Type <span class="font-semibold text-orange-600">/</span> karke blocks add karo.</p>
-            <p>3) Right side Connections se pages ko link karo aur Linked From dekho.</p>
+            <p>1) Select a page on the left, or create a new one.</p>
+            <p>2) Write in the center editor. Type <span class="font-semibold text-orange-600">/</span> to add blocks.</p>
+            <p>3) Use Connections on the right to link pages and see Linked From.</p>
           </div>
 
           <div class="grid xl:grid-cols-[280px_1fr_300px] gap-4">
@@ -1811,7 +1811,7 @@
                   </div>
                   <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
                 </button>
-              `).join('') || '<p class="text-sm text-zinc-500">Abhi koi page nahi hai. “+ New Page” dabao.</p>'}
+              `).join('') || '<p class="text-sm text-zinc-500">No pages yet. Click “+ New Page” to start.</p>'}
             </aside>
 
             <section class="bg-white border border-orange-100 rounded-xl p-4 space-y-4 min-h-[70vh]">
@@ -1845,9 +1845,9 @@
                       </article>`;
                     }).join('') || `<div class="rounded-xl border border-dashed border-orange-300 bg-white p-6 text-center text-zinc-700">
                       <p class="text-2xl mb-2">✨</p>
-                      <p class="whitespace-pre-line font-medium">Yeh tumhara personal workspace hai ✨
-Yahan apna idea likho, plans banao, aur sab kuch connect karo.
-Neeche 'Add Block' button se shuru karo.</p>
+                      <p class="whitespace-pre-line font-medium">This is your personal workspace ✨
+Write your idea, build plans, and connect everything.
+Use the 'Add Block' button below to get started.</p>
                     </div>`}
                   </div>
                   <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-100 text-orange-700 hover:bg-orange-200 transition">+ Add Block</button>
@@ -1863,25 +1863,25 @@ Neeche 'Add Block' button se shuru karo.</p>
                 </section>
               ` : `<div class="rounded-xl border border-dashed border-orange-300 bg-orange-50 p-8 text-center text-zinc-700">
                 <p class="text-2xl mb-2">✨</p>
-                <p class="whitespace-pre-line font-medium">Yeh tumhara personal workspace hai ✨
-Yahan apna idea likho, plans banao, aur sab kuch connect karo.
-Neeche 'Add Block' button se shuru karo.</p>
+                <p class="whitespace-pre-line font-medium">This is your personal workspace ✨
+Write your idea, build plans, and connect everything.
+Use the 'Add Block' button below to get started.</p>
               </div>`}
             </section>
 
             <aside class="bg-white border border-orange-100 rounded-xl p-4 space-y-4">
               <h3 class="text-sm font-semibold text-zinc-700">Connections</h3>
-              <div class="rounded-lg border border-orange-100 bg-orange-50/70 p-3 text-sm text-zinc-700 whitespace-pre-line">Links kaise add karein?
-- Kisi bhi page mein [[ likho aur page ka naam type karo
-- Ya neeche 'Add Link' button se kisi dusre page se connect karo</div>
+              <div class="rounded-lg border border-orange-100 bg-orange-50/70 p-3 text-sm text-zinc-700 whitespace-pre-line">How to add links:
+- In any page, type [[ and then the page name
+- Or use the 'Add Link' button below to connect to another page</div>
               ${activePage ? `
                 <div class="space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Connected Pages</p>
-                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">Abhi koi connection nahi hai.</p>'}</div>
+                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">No connections yet.</p>'}</div>
                 </div>
                 <div class="space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Linked From</p>
-                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">Abhi kisi page ne isko link nahi kiya.</p>'}</div>
+                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">No pages link here yet.</p>'}</div>
                 </div>
                 <div class="pt-2 border-t border-zinc-200 space-y-2">
                   <p class="text-xs uppercase text-zinc-500">Add Link</p>
@@ -1891,7 +1891,7 @@ Neeche 'Add Block' button se shuru karo.</p>
                   </select>
                   <button id="workspaceQuickLinkBtn" class="w-full px-3 py-2 rounded border border-orange-300 bg-orange-100 text-orange-700">Add Link</button>
                 </div>
-              ` : '<p class="text-sm text-zinc-500">Page open karoge toh connections yahan dikhengi.</p>'}
+              ` : '<p class="text-sm text-zinc-500">Open a page to view its connections here.</p>'}
             </section>
           </div>
         </div>
