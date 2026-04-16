@@ -1579,7 +1579,7 @@
       { type: 'bullet', label: 'Bullet' },
       { type: 'numbered', label: 'Numbered' },
       { type: 'toggle', label: 'Toggle' },
-      { type: 'relation', label: 'Relation' },
+      { type: 'relation', label: 'Link' },
       { type: 'database', label: 'Database (inline table)' }
     ];
 
@@ -1689,7 +1689,7 @@
     }
 
     function blockTypeLabel(type) {
-      return ({ text: 'Text', heading: 'Heading', todo: 'To-do', bullet: 'Bullet', numbered: 'Numbered', database: 'Database', relation: 'Relation', toggle: 'Toggle' })[type] || 'Text';
+      return ({ text: 'Text', heading: 'Heading', todo: 'To-do', bullet: 'Bullet', numbered: 'Numbered', database: 'Database', relation: 'Link', toggle: 'Toggle' })[type] || 'Text';
     }
 
     function pagePreview(page) {
@@ -1781,129 +1781,124 @@
       const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
 
       el.innerHTML = `
-        <div class="bg-[#0e1015] border border-orange-500/20 rounded-2xl p-4 sm:p-5 space-y-4 shadow-neon">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 class="text-xl font-semibold text-barya-accent">Workspace · Connected Block Editor</h2>
-              <p class="text-xs text-zinc-400">Anytype-style local-first editor with relations, backlinks, and smart object types.</p>
+        <div class="bg-white border border-orange-100 rounded-2xl p-4 sm:p-6 space-y-5 shadow-sm">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="space-y-1">
+              <h2 class="text-3xl font-bold text-orange-500">Workspace</h2>
+              <p class="text-sm text-zinc-600">Yahan apne ideas, notes aur plans ko ek jagah rakho aur connect karo</p>
             </div>
-            <div class="flex flex-wrap gap-2">
-              <button id="workspaceTemplatesBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-400/70 transition">Templates</button>
-              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/50 font-semibold hover:bg-orange-500/30 transition">New Object</button>
+            <div class="flex gap-2">
+              <button id="workspaceHowBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-200 text-orange-500 font-medium hover:bg-orange-50 transition">How it works?</button>
+              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-orange-500 text-white border border-orange-500 font-semibold hover:bg-orange-600 transition">+ New Page</button>
             </div>
           </div>
 
-          <div id="workspaceTemplates" class="hidden grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            ${Object.entries(workspaceTemplates).map(([key, tpl]) => `
-              <div class="bg-zinc-900/70 border border-orange-500/20 rounded-xl p-3">
-                <p class="font-medium">${escapeHTML(tpl.label)}</p>
-                <p class="text-xs text-zinc-400 mt-1">Type: ${escapeHTML(tpl.objectType || 'Page')}</p>
-                <button data-template-key="${key}" class="mt-3 w-full px-3 py-2 rounded bg-orange-500/20 border border-orange-500/40 text-orange-200 hover:bg-orange-500/30 transition">Use Template</button>
-              </div>
-            `).join('')}
+          <div id="workspaceHowPanel" class="hidden rounded-xl border border-orange-200 bg-orange-50/70 p-4 text-sm text-zinc-700 space-y-1">
+            <p class="font-semibold text-orange-600">Start in 3 easy steps:</p>
+            <p>1) Left side se page select karo ya naya page banao.</p>
+            <p>2) Center editor mein likho. Type <span class="font-semibold text-orange-600">/</span> karke blocks add karo.</p>
+            <p>3) Right side Connections se pages ko link karo aur Linked From dekho.</p>
           </div>
 
-          <div class="grid xl:grid-cols-[300px_1fr] gap-4">
-            <aside class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
-              <h3 class="text-xs uppercase tracking-[0.2em] text-zinc-400 px-1">Objects</h3>
+          <div class="grid xl:grid-cols-[280px_1fr_300px] gap-4">
+            <aside class="bg-white border border-orange-100 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
+              <h3 class="text-sm font-semibold text-zinc-700 px-1">My Pages</h3>
               ${(state.workspace.pages || []).map(page => `
-                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400/60 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-orange-500/35'}">
+                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400 bg-orange-50' : 'border-zinc-200 bg-white hover:border-orange-300'}">
                   <div class="flex items-center justify-between gap-2">
-                    <p class="font-medium truncate">${escapeHTML(page.title || 'Untitled')}</p>
-                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-orange-500/40 text-orange-200">${escapeHTML(page.objectType || 'Page')}</span>
+                    <p class="font-medium truncate text-zinc-800">${escapeHTML(page.title || 'Untitled')}</p>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-orange-300 text-orange-600 bg-orange-50">${escapeHTML(page.objectType || 'Page')}</span>
                   </div>
                   <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
-                  <p class="text-[11px] text-zinc-500 mt-1">${new Date(page.updatedAt).toLocaleString()}</p>
                 </button>
-              `).join('') || '<p class="text-sm text-zinc-500">No objects yet.</p>'}
+              `).join('') || '<p class="text-sm text-zinc-500">Abhi koi page nahi hai. “+ New Page” dabao.</p>'}
             </aside>
 
-            <section class="bg-[#0b0d12] border border-zinc-800 rounded-xl p-4 space-y-4">
+            <section class="bg-white border border-orange-100 rounded-xl p-4 space-y-4 min-h-[70vh]">
               ${activePage ? `
                 <div class="flex flex-wrap gap-2 items-center">
-                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xl font-semibold focus:border-orange-400/70 outline-none" placeholder="Untitled object" />
-                  <select id="workspaceObjectType" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xl font-semibold focus:border-orange-400 outline-none" placeholder="Untitled page" />
+                  <select id="workspaceObjectType" class="bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm">
                     ${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}
                   </select>
-                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-orange-500/15 border border-orange-500/40 text-orange-200">Show Related</button>
-                  <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/40 text-red-300">Delete</button>
+                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-orange-50 border border-orange-200 text-orange-600">Show Connected</button>
+                  <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-50 border border-red-200 text-red-500">Delete</button>
                 </div>
 
-                <div class="grid lg:grid-cols-2 gap-3">
-                  <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
-                    <div class="flex items-center justify-between"><h4 class="font-semibold text-orange-200">Relations</h4><span class="text-xs text-zinc-500">Notion-style properties</span></div>
-                    ${WORKSPACE_RELATION_KEYS.map(key => `
-                      <div class="space-y-2" data-relation-key-wrap="${escapeAttr(key)}">
-                        <p class="text-xs text-zinc-400">${escapeHTML(key)}</p>
-                        <div class="flex flex-wrap gap-1">${(activePage.relations[key]||[]).map(id => `<span class="text-xs px-2 py-1 rounded-full bg-orange-500/15 border border-orange-500/30">${escapeHTML(pageMap.get(id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">None</span>'}</div>
-                        <div class="flex gap-2">
-                          <select data-relation-select="${escapeAttr(key)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">
-                            <option value="">Select object…</option>
-                            ${(state.workspace.pages || []).filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType || 'Page')}</option>`).join('')}
-                          </select>
-                          <button data-relation-add="${escapeAttr(key)}" class="px-3 py-1 rounded border border-orange-500/40 text-orange-200 bg-orange-500/10">Add</button>
-                        </div>
-                      </div>
-                    `).join('')}
-                  </div>
-
-                  <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-3">
-                    <h4 class="font-semibold text-orange-200">Backlinks & Related Objects</h4>
-                    <div>
-                      <p class="text-xs uppercase text-zinc-500 mb-1">Backlinks</p>
-                      <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-800 hover:border-orange-500/40 bg-zinc-950">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')} <span class="text-zinc-500 text-xs">via ${escapeHTML(link.via)}</span></button>`).join('') || '<p class="text-sm text-zinc-600">No backlinks yet.</p>'}</div>
-                    </div>
-                    <div>
-                      <p class="text-xs uppercase text-zinc-500 mb-1">Related Objects</p>
-                      <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 hover:bg-orange-500/25 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-600">No related objects.</p>'}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 space-y-3">
+                <div class="bg-orange-50/40 border border-orange-100 rounded-xl p-3 space-y-3">
                   <div class="flex items-center justify-between">
-                    <h4 class="font-semibold text-orange-200">Blocks</h4>
-                    <p class="text-xs text-zinc-500">Type <span class="text-orange-300">/</span> at start of a block for commands · Drag handle to reorder</p>
+                    <h4 class="font-semibold text-zinc-800">Editor</h4>
+                    <p class="text-xs text-zinc-600">Type / to add heading, list, checkbox etc.</p>
                   </div>
                   <div id="workspaceBlocks" class="space-y-2">
                     ${(activePage.blocks || []).map((block, idx) => {
                       const cmdOpen = block.commandOpen ? '' : 'hidden';
                       const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase()));
                       return `
-                      <article class="workspace-block group border border-zinc-800 rounded-lg bg-[#080a0f] p-2 transition hover:border-orange-500/35" draggable="true" data-block-id="${block.id}">
+                      <article class="workspace-block group border border-zinc-200 rounded-lg bg-white p-2 transition hover:border-orange-300" draggable="true" data-block-id="${block.id}">
                         <div class="flex items-center gap-2 mb-2">
-                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-orange-300" data-drag-handle="${block.id}">⋮⋮</button>
-                          <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-400">${blockTypeLabel(block.type)}</span>
+                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-orange-500" data-drag-handle="${block.id}">⋮⋮</button>
+                          <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-300 text-zinc-600">${blockTypeLabel(block.type)}</span>
                           <button data-delete-block="${block.id}" class="ml-auto text-xs text-red-400">Remove</button>
                         </div>
                         ${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}
                       </article>`;
-                    }).join('')}
+                    }).join('') || `<div class="rounded-xl border border-dashed border-orange-300 bg-white p-6 text-center text-zinc-700">
+                      <p class="text-2xl mb-2">✨</p>
+                      <p class="whitespace-pre-line font-medium">Yeh tumhara personal workspace hai ✨
+Yahan apna idea likho, plans banao, aur sab kuch connect karo.
+Neeche 'Add Block' button se shuru karo.</p>
+                    </div>`}
                   </div>
-                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-orange-500/40 bg-orange-500/10 text-orange-200 hover:bg-orange-500/20 transition">+ Add Block</button>
+                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-100 text-orange-700 hover:bg-orange-200 transition">+ Add Block</button>
                 </div>
 
-                <section class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                <section class="bg-white border border-zinc-200 rounded-xl p-4">
                   <h3 class="font-semibold mb-3">Safety & Backup</h3>
                   <div class="flex flex-wrap gap-2">
-                    <button id="workspaceExport" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700">Export All Workspace</button>
-                    <label class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 cursor-pointer">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label>
-                    <button id="workspaceClear" class="px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300">Clear Workspace</button>
+                    <button id="workspaceExport" class="px-3 py-2 rounded bg-white border border-zinc-300">Export All Workspace</button>
+                    <label class="px-3 py-2 rounded bg-white border border-zinc-300 cursor-pointer">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label>
+                    <button id="workspaceClear" class="px-3 py-2 rounded bg-red-50 border border-red-200 text-red-500">Clear Workspace</button>
                   </div>
                 </section>
-              ` : '<p class="text-zinc-500">Create an object to start writing.</p>'}
+              ` : `<div class="rounded-xl border border-dashed border-orange-300 bg-orange-50 p-8 text-center text-zinc-700">
+                <p class="text-2xl mb-2">✨</p>
+                <p class="whitespace-pre-line font-medium">Yeh tumhara personal workspace hai ✨
+Yahan apna idea likho, plans banao, aur sab kuch connect karo.
+Neeche 'Add Block' button se shuru karo.</p>
+              </div>`}
+            </section>
+
+            <aside class="bg-white border border-orange-100 rounded-xl p-4 space-y-4">
+              <h3 class="text-sm font-semibold text-zinc-700">Connections</h3>
+              <div class="rounded-lg border border-orange-100 bg-orange-50/70 p-3 text-sm text-zinc-700 whitespace-pre-line">Links kaise add karein?
+- Kisi bhi page mein [[ likho aur page ka naam type karo
+- Ya neeche 'Add Link' button se kisi dusre page se connect karo</div>
+              ${activePage ? `
+                <div class="space-y-2">
+                  <p class="text-xs uppercase text-zinc-500">Connected Pages</p>
+                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">Abhi koi connection nahi hai.</p>'}</div>
+                </div>
+                <div class="space-y-2">
+                  <p class="text-xs uppercase text-zinc-500">Linked From</p>
+                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || '<p class="text-sm text-zinc-500">Abhi kisi page ne isko link nahi kiya.</p>'}</div>
+                </div>
+                <div class="pt-2 border-t border-zinc-200 space-y-2">
+                  <p class="text-xs uppercase text-zinc-500">Add Link</p>
+                  <select id="workspaceQuickLinkSelect" class="w-full bg-white border border-zinc-300 rounded px-2 py-1 text-sm">
+                    <option value="">Select page...</option>
+                    ${(state.workspace.pages || []).filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)}</option>`).join('')}
+                  </select>
+                  <button id="workspaceQuickLinkBtn" class="w-full px-3 py-2 rounded border border-orange-300 bg-orange-100 text-orange-700">Add Link</button>
+                </div>
+              ` : '<p class="text-sm text-zinc-500">Page open karoge toh connections yahan dikhengi.</p>'}
             </section>
           </div>
         </div>
       `;
 
-      document.getElementById('workspaceTemplatesBtn').onclick = () => document.getElementById('workspaceTemplates').classList.toggle('hidden');
+      document.getElementById('workspaceHowBtn').onclick = () => document.getElementById('workspaceHowPanel').classList.toggle('hidden');
       document.getElementById('workspaceNewPage').onclick = () => createWorkspacePage();
-
-      el.querySelectorAll('[data-template-key]').forEach(btn => btn.onclick = () => {
-        const tpl = workspaceTemplates[btn.dataset.templateKey];
-        createWorkspacePage(tpl.label, tpl.blocks, tpl.objectType || 'Page', tpl.relations || null);
-      });
 
       el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
         state.workspace.activePageId = btn.dataset.openPage;
@@ -1945,6 +1940,14 @@
         updatePageUpdatedAt(activePage);
         saveState();
       };
+
+      document.getElementById('workspaceQuickLinkBtn')?.addEventListener('click', () => {
+        const id = document.getElementById('workspaceQuickLinkSelect')?.value;
+        if (!id) return;
+        if (!activePage.relations['Linked Notes'].includes(id)) activePage.relations['Linked Notes'].push(id);
+        updatePageUpdatedAt(activePage);
+        saveState();
+      });
 
       let dragId = null;
       el.querySelectorAll('.workspace-block').forEach(blockEl => {
@@ -2002,32 +2005,32 @@
       }).join('');
 
       const slashMenu = `
-        <div class="${cmdOpenClass} mt-2 rounded-lg border border-orange-500/40 bg-[#06080d] p-2 space-y-1" data-command-menu="${block.id}">
+        <div class="${cmdOpenClass} mt-2 rounded-lg border border-orange-200 bg-white p-2 space-y-1" data-command-menu="${block.id}">
           ${(filteredMenu.length ? filteredMenu : workspaceBlockMenu).map(item => `<button data-command-type="${item.type}" data-command-for="${block.id}" class="w-full text-left px-2 py-1 rounded hover:bg-orange-500/15 text-sm">/${item.type} · ${item.label}</button>`).join('')}
         </div>
       `;
 
       if (block.type === 'todo') {
-        return `<label class="flex items-center gap-2"><input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-orange-400" /><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="To-do" /></label>${mentionPills ? `<div class="flex gap-1 flex-wrap mt-2">${mentionPills}</div>`:''}${slashMenu}`;
+        return `<label class="flex items-center gap-2"><input type="checkbox" data-block-check="${block.id}" ${block.checked ? 'checked' : ''} class="accent-orange-400" /><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="flex-1 bg-white border border-zinc-300 rounded px-2 py-2" placeholder="To-do" /></label>${mentionPills ? `<div class="flex gap-1 flex-wrap mt-2">${mentionPills}</div>`:''}${slashMenu}`;
       }
       if (block.type === 'heading') {
-        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-level="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs">${[1,2,3].map(level=>`<option value="${level}" ${block.level===level?'selected':''}>H${level}</option>`).join('')}</select><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="${headingClass} flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Heading" /></div>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-level="${block.id}" class="bg-white border border-zinc-300 rounded px-2 py-1 text-xs">${[1,2,3].map(level=>`<option value="${level}" ${block.level===level?'selected':''}>H${level}</option>`).join('')}</select><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="${headingClass} flex-1 bg-white border border-zinc-300 rounded px-2 py-2" placeholder="Heading" /></div>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
       }
       if (block.type === 'bullet' || block.type === 'numbered') {
         const marker = block.type === 'bullet' ? '•' : `${idx + 1}.`;
-        return `<div class="flex items-start gap-2"><span class="text-zinc-500 mt-2">${marker}</span><div class="flex-1 space-y-2"><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="List item" />${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div></div>`;
+        return `<div class="flex items-start gap-2"><span class="text-zinc-500 mt-2">${marker}</span><div class="flex-1 space-y-2"><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-white border border-zinc-300 rounded px-2 py-2" placeholder="List item" />${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div></div>`;
       }
       if (block.type === 'toggle') {
-        return `<div class="space-y-2"><button data-toggle-open="${block.id}" class="text-sm px-2 py-1 rounded border border-zinc-700 bg-zinc-950">${block.open ? '▼' : '▶'} Toggle</button><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle title" />${block.open ? `<textarea data-block-content="${block.id}" class="w-full h-20 bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Toggle content">${escapeHTML(block.content || '')}</textarea>` : ''}${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+        return `<div class="space-y-2"><button data-toggle-open="${block.id}" class="text-sm px-2 py-1 rounded border border-zinc-300 bg-white">${block.open ? '▼' : '▶'} Toggle</button><input data-block-text="${block.id}" value="${escapeAttr(block.text)}" class="w-full bg-white border border-zinc-300 rounded px-2 py-2" placeholder="Toggle title" />${block.open ? `<textarea data-block-content="${block.id}" class="w-full h-20 bg-white border border-zinc-300 rounded px-2 py-2" placeholder="Toggle content">${escapeHTML(block.content || '')}</textarea>` : ''}${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
       }
       if (block.type === 'relation') {
-        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-relation-key="${block.id}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm">${WORKSPACE_RELATION_KEYS.map(key => `<option value="${key}" ${block.relationKey===key?'selected':''}>${key}</option>`).join('')}</select><select data-block-relation-target="${block.id}" class="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm"><option value="">Select object…</option>${(state.workspace.pages || []).filter(p => p.id !== currentPageId).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType||'Page')}</option>`).join('')}</select><button data-block-relation-add="${block.id}" class="px-3 py-1 rounded bg-orange-500/10 border border-orange-500/40 text-orange-200">Add</button></div><div class="flex flex-wrap gap-1">${(block.targets || []).map(id => `<span class="text-xs px-2 py-1 rounded-full border border-orange-500/30 bg-orange-500/10">${escapeHTML((state.workspace.pages || []).find(p => p.id === id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">No linked objects</span>'}</div>${slashMenu}</div>`;
+        return `<div class="space-y-2"><div class="flex gap-2"><select data-block-relation-key="${block.id}" class="bg-white border border-zinc-300 rounded px-2 py-1 text-sm">${WORKSPACE_RELATION_KEYS.map(key => `<option value="${key}" ${block.relationKey===key?'selected':''}>${key}</option>`).join('')}</select><select data-block-relation-target="${block.id}" class="flex-1 bg-white border border-zinc-300 rounded px-2 py-1 text-sm"><option value="">Select page…</option>${(state.workspace.pages || []).filter(p => p.id !== currentPageId).map(p => `<option value="${p.id}">${escapeHTML(p.title)} · ${escapeHTML(p.objectType||'Page')}</option>`).join('')}</select><button data-block-relation-add="${block.id}" class="px-3 py-1 rounded bg-orange-100 border border-orange-300 text-orange-700">Add Link</button></div><div class="flex flex-wrap gap-1">${(block.targets || []).map(id => `<span class="text-xs px-2 py-1 rounded-full border border-orange-500/30 bg-orange-500/10">${escapeHTML((state.workspace.pages || []).find(p => p.id === id)?.title || 'Missing')}</span>`).join('') || '<span class="text-xs text-zinc-600">No linked pages</span>'}</div>${slashMenu}</div>`;
       }
       if (block.type === 'database') {
         const cols = block.columns.length || 1;
-        return `<div class="space-y-2"><div class="overflow-auto"><table class="min-w-full text-xs border border-zinc-800"><thead><tr>${block.columns.map((col, cIdx) => `<th class="p-1 border border-zinc-800"><input data-block-db-col="${block.id}:${cIdx}" value="${escapeAttr(col)}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1" /></th>`).join('')}<th class="p-1 border border-zinc-800"><button data-block-db-add-col="${block.id}" class="text-orange-300">+ Col</button></th></tr></thead><tbody>${(block.rows || []).map((row, rIdx) => `<tr>${Array.from({length: cols}).map((_, cIdx) => `<td class="border border-zinc-800 p-1"><input data-block-db-cell="${block.id}:${rIdx}:${cIdx}" value="${escapeAttr(row[cIdx] || '')}" class="w-full bg-zinc-950 border border-zinc-700 rounded px-1 py-1"/></td>`).join('')}<td class="border border-zinc-800 p-1 text-center"><button data-block-db-del-row="${block.id}:${rIdx}" class="text-red-400">✕</button></td></tr>`).join('')}</tbody></table></div><div class="flex gap-2"><button data-block-db-add-row="${block.id}" class="px-2 py-1 rounded border border-zinc-700 bg-zinc-950 text-xs">+ Row</button></div>${slashMenu}</div>`;
+        return `<div class="space-y-2"><div class="overflow-auto"><table class="min-w-full text-xs border border-zinc-200"><thead><tr>${block.columns.map((col, cIdx) => `<th class="p-1 border border-zinc-200"><input data-block-db-col="${block.id}:${cIdx}" value="${escapeAttr(col)}" class="w-full bg-white border border-zinc-300 rounded px-1 py-1" /></th>`).join('')}<th class="p-1 border border-zinc-200"><button data-block-db-add-col="${block.id}" class="text-orange-500">+ Col</button></th></tr></thead><tbody>${(block.rows || []).map((row, rIdx) => `<tr>${Array.from({length: cols}).map((_, cIdx) => `<td class="border border-zinc-200 p-1"><input data-block-db-cell="${block.id}:${rIdx}:${cIdx}" value="${escapeAttr(row[cIdx] || '')}" class="w-full bg-white border border-zinc-300 rounded px-1 py-1"/></td>`).join('')}<td class="border border-zinc-200 p-1 text-center"><button data-block-db-del-row="${block.id}:${rIdx}" class="text-red-400">✕</button></td></tr>`).join('')}</tbody></table></div><div class="flex gap-2"><button data-block-db-add-row="${block.id}" class="px-2 py-1 rounded border border-zinc-300 bg-white text-xs">+ Row</button></div>${slashMenu}</div>`;
       }
-      return `<div class="space-y-2"><textarea data-block-text="${block.id}" class="w-full min-h-[74px] bg-zinc-950 border border-zinc-700 rounded px-2 py-2" placeholder="Write something...">${escapeHTML(block.text)}</textarea>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
+      return `<div class="space-y-2"><textarea data-block-text="${block.id}" class="w-full min-h-[74px] bg-white border border-zinc-300 rounded px-2 py-2" placeholder="Write something...">${escapeHTML(block.text)}</textarea>${mentionPills ? `<div class="flex gap-1 flex-wrap">${mentionPills}</div>`:''}${slashMenu}</div>`;
     }
 
     function bindWorkspaceBlockEvents(el, activePage) {
