@@ -498,99 +498,80 @@
     function resourceLibraryDefaults() {
       return [
         {
-          id: 'domain-kaha-se-le',
-          title: 'Domain Kaha Se Le',
-          icon: '🌐',
-          description: 'Reliable registrars with clear pricing, support quality, and easy DNS management.',
+          id: 'domains',
+          title: 'Domains',
+          description: 'Domain registrars with transparent pricing and straightforward DNS setup.',
           items: [
-            { id: crypto.randomUUID(), title: 'Hostinger Domains', details: '.com from ~$9.99/yr; renewal varies by extension.', pros: 'Simple dashboard, affordable starter bundles.', cons: 'Renewal can be higher than intro price.', link: 'https://www.hostinger.com/domain-checker' },
-            { id: crypto.randomUUID(), title: 'GoDaddy', details: '.com often discounted in year 1; premium support upsells.', pros: 'Huge catalog, fast checkout, global trust.', cons: 'Frequent add-on upsells, higher renewal in many cases.', link: 'https://www.godaddy.com/domains' },
-            { id: crypto.randomUUID(), title: 'Namecheap', details: '.com usually ~$10-14/yr with free Whois privacy.', pros: 'Transparent UI, solid support, privacy included.', cons: 'Checkout cross-sells can be noisy.', link: 'https://www.namecheap.com/domains/' },
-            { id: crypto.randomUUID(), title: 'BigRock (India-friendly)', details: '.in/.com options, local payment methods.', pros: 'Popular in India, easy invoicing.', cons: 'UI and support quality can feel inconsistent.', link: 'https://www.bigrock.in/domains/domain-registration.php' },
-            { id: crypto.randomUUID(), title: 'Porkbun', details: 'Often among the lowest total yearly cost.', pros: 'Great pricing, free extras, clean experience.', cons: 'Smaller brand compared to legacy registrars.', link: 'https://porkbun.com/domain/search' }
+            { id: crypto.randomUUID(), title: 'Namecheap', cost: 'Low', beginner: true, note: 'Simple dashboard with domain privacy included for many plans.', details: 'Good first choice for new founders.', link: 'https://www.namecheap.com/domains/' },
+            { id: crypto.randomUUID(), title: 'Porkbun', cost: 'Low', beginner: true, note: 'Often one of the lowest total yearly costs with useful free extras.', details: 'Great for buying multiple domains.', link: 'https://porkbun.com/domain/search' },
+            { id: crypto.randomUUID(), title: 'Cloudflare Registrar', cost: 'Low', beginner: false, note: 'Sells at-cost domains and pairs well with Cloudflare DNS tools.', details: 'Best when you also use Cloudflare services.', link: 'https://www.cloudflare.com/products/registrar/' },
+            { id: crypto.randomUUID(), title: 'GoDaddy', cost: 'Medium', beginner: true, note: 'Widely used registrar with broad extension support and fast checkout.', details: 'Review add-ons before completing payment.', link: 'https://www.godaddy.com/domains' }
           ]
         },
         {
-          id: 'app-kaise-banaye',
-          title: 'App Kaise Banaye',
-          icon: '🛠️',
-          description: 'No-code and beginner-friendly stacks to launch MVPs quickly.',
+          id: 'app-building-tools',
+          title: 'App Building Tools',
+          description: 'No-code and low-code tools to launch MVPs with minimal engineering overhead.',
           items: [
-            { id: crypto.randomUUID(), title: 'Bubble', details: 'Best for web apps with workflows and database.', pros: 'Powerful visual logic and plugins.', cons: 'Steeper learning curve than simpler builders.', link: 'https://bubble.io/' },
-            { id: crypto.randomUUID(), title: 'Glide', details: 'Turns sheets/data into polished mobile-first apps.', pros: 'Fast build speed, excellent for internal tools.', cons: 'Complex custom logic can be limiting.', link: 'https://www.glideapps.com/' },
-            { id: crypto.randomUUID(), title: 'FlutterFlow', details: 'Visual builder generating Flutter code.', pros: 'Good for scalable mobile UI + Firebase.', cons: 'Advanced debugging still needs dev skills.', link: 'https://flutterflow.io/' },
-            { id: crypto.randomUUID(), title: 'Beginner Stack Suggestion', details: 'Frontend: Next.js + Tailwind, Backend: Supabase, Payments: Razorpay/Stripe.', pros: 'Modern, affordable, and production-ready.', cons: 'Needs basic JS + deployment understanding.', link: 'https://nextjs.org/' }
+            { id: crypto.randomUUID(), title: 'Bubble', cost: 'Medium', beginner: false, note: 'Powerful workflow logic and plugins for full-featured web apps.', details: 'Ideal once your MVP needs custom logic.', link: 'https://bubble.io/' },
+            { id: crypto.randomUUID(), title: 'Glide', cost: 'Low', beginner: true, note: 'Fastest path for internal tools and simple mobile-first products.', details: 'Excellent for data-driven prototypes.', link: 'https://www.glideapps.com/' },
+            { id: crypto.randomUUID(), title: 'FlutterFlow', cost: 'Medium', beginner: false, note: 'Visual builder that exports Flutter code for scale-ready apps.', details: 'Useful when you need more design control.', link: 'https://flutterflow.io/' },
+            { id: crypto.randomUUID(), title: 'Framer', cost: 'Low', beginner: true, note: 'Great for polished landing pages and early validation sites.', details: 'Use with analytics to test messaging quickly.', link: 'https://www.framer.com/' }
           ]
         },
         {
-          id: 'community',
-          title: 'Community',
-          icon: '🤝',
-          description: 'High-signal founder groups, forums, and operator circles.',
+          id: 'communities',
+          title: 'Communities',
+          description: 'Founder communities that provide feedback, accountability, and peer support.',
           items: [
-            { id: crypto.randomUUID(), title: 'Headstart Network (India)', details: 'Founder meetups, chapters, ecosystem intros.', pros: 'Strong local community support.', cons: 'Quality varies by city chapter.', link: 'https://headstart.in/' },
-            { id: crypto.randomUUID(), title: 'Product Hunt Community', details: 'Global makers forum and launch feedback.', pros: 'Great for launches and visibility.', cons: 'Very competitive for attention.', link: 'https://www.producthunt.com/' },
-            { id: crypto.randomUUID(), title: 'Indie Hackers', details: 'Founder stories, growth experiments, SaaS discussions.', pros: 'Transparent real-world journey sharing.', cons: 'Advice can be opinion-heavy.', link: 'https://www.indiehackers.com/' },
-            { id: crypto.randomUUID(), title: 'Y Combinator Startup School', details: 'Free founder content + network access.', pros: 'Structured startup playbooks.', cons: 'Best value if you engage consistently.', link: 'https://www.startupschool.org/' },
-            { id: crypto.randomUUID(), title: 'Find Startup Discord/WhatsApp', details: 'Search “Indian startup founders Discord/WhatsApp” for niche cohorts.', pros: 'Fast peer support and warm intros.', cons: 'Requires moderation and curation for quality.', link: 'https://www.google.com/search?q=indian+startup+founders+discord+whatsapp+group' }
+            { id: crypto.randomUUID(), title: 'Indie Hackers', cost: 'Free', beginner: true, note: 'Strong founder discussions on growth, pricing, and product iteration.', details: 'Search old threads before posting your question.', link: 'https://www.indiehackers.com/' },
+            { id: crypto.randomUUID(), title: 'Product Hunt Community', cost: 'Free', beginner: true, note: 'Launch feedback and maker conversations from a global audience.', details: 'Engage before launch day to build visibility.', link: 'https://www.producthunt.com/' },
+            { id: crypto.randomUUID(), title: 'Y Combinator Startup School', cost: 'Free', beginner: true, note: 'Structured startup lessons and network access for early teams.', details: 'Most value comes from consistent weekly participation.', link: 'https://www.startupschool.org/' },
+            { id: crypto.randomUUID(), title: 'Headstart Network', cost: 'Free', beginner: true, note: 'Founder meetups and local ecosystem support in India.', details: 'Join your nearest chapter for regular events.', link: 'https://headstart.in/' }
           ]
         },
         {
           id: 'competitions',
           title: 'Competitions',
-          icon: '🏆',
-          description: 'India-focused startup competitions, grants, and accelerators.',
+          description: 'Accelerator and grant programs that can unlock visibility and non-dilutive support.',
           items: [
-            { id: crypto.randomUUID(), title: 'Startup India Seed Fund Scheme', details: 'Government-backed support via incubators.', pros: 'Non-dilutive + ecosystem credibility.', cons: 'Application cycles and eligibility constraints.', link: 'https://seedfund.startupindia.gov.in/' },
-            { id: crypto.randomUUID(), title: 'Atal Innovation Mission (AIM)', details: 'Programs for innovation and entrepreneurship.', pros: 'Strong institutional network.', cons: 'Can involve process-heavy submissions.', link: 'https://aim.gov.in/' },
-            { id: crypto.randomUUID(), title: 'NSRCEL Programs (IIM Bangalore)', details: 'Thematic accelerators and mentoring.', pros: 'Strong mentor network and brand value.', cons: 'Highly selective cohorts.', link: 'https://www.nsrcel.org/' },
-            { id: crypto.randomUUID(), title: 'T-Hub Programs', details: 'Hyderabad-based accelerator and corporate connects.', pros: 'Access to enterprise partnerships.', cons: 'Competition for limited slots.', link: 'https://t-hub.co/' }
+            { id: crypto.randomUUID(), title: 'Startup India Seed Fund Scheme', cost: 'Free', beginner: true, note: 'Government-backed funding routed through incubators.', details: 'Prepare documents early because cycles are time-bound.', link: 'https://seedfund.startupindia.gov.in/' },
+            { id: crypto.randomUUID(), title: 'NSRCEL Programs', cost: 'Free', beginner: false, note: 'High-quality thematic accelerators with strong mentors.', details: 'Applications are selective; sharpen your problem statement.', link: 'https://www.nsrcel.org/' },
+            { id: crypto.randomUUID(), title: 'T-Hub Programs', cost: 'Low', beginner: false, note: 'Program tracks with enterprise connections and expert support.', details: 'Best for startups ready for structured growth.', link: 'https://t-hub.co/' },
+            { id: crypto.randomUUID(), title: 'Atal Innovation Mission', cost: 'Free', beginner: true, note: 'Innovation-focused initiatives and entrepreneurship programs.', details: 'Check active tracks and eligibility before applying.', link: 'https://aim.gov.in/' }
           ]
         },
         {
-          id: 'startup-investment',
-          title: 'Startup Investment',
-          icon: '💰',
-          description: 'Fundraising routes, investor networks, and pitch prep assets.',
+          id: 'investment-funding',
+          title: 'Investment & Funding',
+          description: 'Angel and early-stage funding platforms for discovery, networking, and deal flow.',
           items: [
-            { id: crypto.randomUUID(), title: 'AngelList India / Wellfound', details: 'Investor discovery and startup talent reach.', pros: 'Visibility across investors + hires.', cons: 'Requires clear profile quality to stand out.', link: 'https://wellfound.com/' },
-            { id: crypto.randomUUID(), title: 'Indian Angel Network', details: 'One of India’s largest angel platforms.', pros: 'Sector-diverse angel access.', cons: 'Can be relationship-driven and selective.', link: 'https://www.indianangelnetwork.com/' },
-            { id: crypto.randomUUID(), title: 'LetsVenture', details: 'Syndicates and early-stage fundraising platform.', pros: 'Structured fundraising workflows.', cons: 'Prepared docs required for momentum.', link: 'https://www.letsventure.com/' },
-            { id: crypto.randomUUID(), title: 'Sequoia Arc / Surge / Accel Atoms style programs', details: 'Early-stage founder programs with mentorship.', pros: 'Capital + playbooks + network effects.', cons: 'Very competitive acceptance rates.', link: 'https://www.sequoiacap.com/india/' },
-            { id: crypto.randomUUID(), title: 'Pitch Deck Resources', details: 'Use YC deck templates + Guy Kawasaki 10/20/30 framing.', pros: 'Battle-tested storytelling structure.', cons: 'Still needs custom traction narrative.', link: 'https://www.ycombinator.com/library/2u-how-to-build-your-seed-round-pitch-deck' }
+            { id: crypto.randomUUID(), title: 'Wellfound', cost: 'Free', beginner: true, note: 'Useful profile-driven platform for startup visibility and connections.', details: 'Keep your profile concise and traction-focused.', link: 'https://wellfound.com/' },
+            { id: crypto.randomUUID(), title: 'LetsVenture', cost: 'Medium', beginner: false, note: 'Structured fundraising workflows and syndicate access.', details: 'Prepare deck, metrics, and diligence docs in advance.', link: 'https://www.letsventure.com/' },
+            { id: crypto.randomUUID(), title: 'Indian Angel Network', cost: 'High', beginner: false, note: 'Established angel network with broad sector coverage.', details: 'Warm introductions improve response rates significantly.', link: 'https://www.indianangelnetwork.com/' },
+            { id: crypto.randomUUID(), title: 'Y Combinator Pitch Deck Guide', cost: 'Free', beginner: true, note: 'Practical framework for creating investor-ready deck narratives.', details: 'Use it to tighten clarity and storyline before meetings.', link: 'https://www.ycombinator.com/library/2u-how-to-build-your-seed-round-pitch-deck' }
           ]
         },
         {
           id: 'books',
           title: 'Books',
-          icon: '📖',
-          description: 'Top founder books with practical, execution-heavy lessons.',
+          description: 'Foundational books for startup execution, product thinking, and fundraising.',
           items: [
-            { id: crypto.randomUUID(), title: 'The Lean Startup', details: 'Validated learning and fast iteration loops.', link: 'https://www.goodreads.com/book/show/10127019-the-lean-startup' },
-            { id: crypto.randomUUID(), title: 'Zero to One', details: 'Building monopolistic advantage through uniqueness.', link: 'https://www.goodreads.com/book/show/18050143-zero-to-one' },
-            { id: crypto.randomUUID(), title: 'The Hard Thing About Hard Things', details: 'Leadership under startup chaos and hard calls.', link: 'https://www.goodreads.com/book/show/18176747-the-hard-thing-about-hard-things' },
-            { id: crypto.randomUUID(), title: 'Blitzscaling', details: 'Trade-offs of speed-driven growth.', link: 'https://www.goodreads.com/book/show/37662535-blitzscaling' },
-            { id: crypto.randomUUID(), title: 'Crossing the Chasm', details: 'How to move from early adopters to mainstream.', link: 'https://www.goodreads.com/book/show/13131365-crossing-the-chasm' },
-            { id: crypto.randomUUID(), title: 'Traction', details: '19 customer acquisition channels playbook.', link: 'https://www.goodreads.com/book/show/22091581-traction' },
-            { id: crypto.randomUUID(), title: 'Inspired', details: 'How strong product teams build winning products.', link: 'https://www.goodreads.com/book/show/35249663-inspired' },
-            { id: crypto.randomUUID(), title: 'The Mom Test', details: 'Get honest customer insights without biased questions.', link: 'https://www.goodreads.com/book/show/23636015-the-mom-test' },
-            { id: crypto.randomUUID(), title: 'Rework', details: 'Simple operating principles for modern teams.', link: 'https://www.goodreads.com/book/show/6732019-rework' },
-            { id: crypto.randomUUID(), title: 'Shoe Dog', details: 'Founder resilience, brand building, and grit.', link: 'https://www.goodreads.com/book/show/27220736-shoe-dog' },
-            { id: crypto.randomUUID(), title: 'Venture Deals', details: 'Understand term sheets and fundraising mechanics.', link: 'https://www.goodreads.com/book/show/12605157-venture-deals' }
+            { id: crypto.randomUUID(), title: 'The Lean Startup', cost: 'Low', beginner: true, note: 'Strong guide to validated learning and rapid iteration.', details: 'Apply one experiment framework each week.', link: 'https://www.goodreads.com/book/show/10127019-the-lean-startup' },
+            { id: crypto.randomUUID(), title: 'The Mom Test', cost: 'Low', beginner: true, note: 'Teaches how to run customer interviews without biased questions.', details: 'Use it before writing major product features.', link: 'https://www.goodreads.com/book/show/23636015-the-mom-test' },
+            { id: crypto.randomUUID(), title: 'Zero to One', cost: 'Low', beginner: true, note: 'Framework for differentiation and long-term strategic advantage.', details: 'Helpful when refining your startup thesis.', link: 'https://www.goodreads.com/book/show/18050143-zero-to-one' },
+            { id: crypto.randomUUID(), title: 'Venture Deals', cost: 'Medium', beginner: false, note: 'Detailed explanation of term sheets and fundraising mechanics.', details: 'Read before negotiating your first priced round.', link: 'https://www.goodreads.com/book/show/12605157-venture-deals' }
           ]
         },
         {
-          id: 'best-people-in-business',
-          title: 'Best People in Business',
-          icon: '👤',
-          description: 'Founders, investors, and operators worth following.',
+          id: 'people-to-follow',
+          title: 'People to Follow',
+          description: 'Founders and investors known for practical startup insights.',
           items: [
-            { id: crypto.randomUUID(), title: 'Nithin Kamath (Zerodha)', details: 'Bootstrapped execution and capital discipline.', link: 'https://www.linkedin.com/in/nithinkamath/' },
-            { id: crypto.randomUUID(), title: 'Kunal Shah (CRED)', details: 'Consumer psychology and positioning insights.', link: 'https://twitter.com/kunalb11' },
-            { id: crypto.randomUUID(), title: 'Ritesh Agarwal (OYO)', details: 'Scale operations and global expansion lessons.', link: 'https://www.linkedin.com/in/ritesh-agarwal-59ba3b2a/' },
-            { id: crypto.randomUUID(), title: 'Naval Ravikant', details: 'Startup leverage, investing, and judgment frameworks.', link: 'https://twitter.com/naval' },
-            { id: crypto.randomUUID(), title: 'Paul Graham', details: 'Startup essays and founder-first thinking.', link: 'https://twitter.com/paulg' },
-            { id: crypto.randomUUID(), title: 'Nikhil Kamath', details: 'Founder-operator and fintech ecosystem perspective.', link: 'https://www.linkedin.com/in/nikhilkamathcio/' }
+            { id: crypto.randomUUID(), title: 'Naval Ravikant', cost: 'Free', beginner: true, note: 'Thoughts on leverage, decision-making, and long-term thinking.', details: 'Follow for concise strategy principles.', link: 'https://twitter.com/naval' },
+            { id: crypto.randomUUID(), title: 'Paul Graham', cost: 'Free', beginner: true, note: 'Classic startup essays with clear founder-first advice.', details: 'Start with essays on product-market fit.', link: 'https://twitter.com/paulg' },
+            { id: crypto.randomUUID(), title: 'Nithin Kamath', cost: 'Free', beginner: true, note: 'Operator perspective on disciplined growth and business durability.', details: 'Strong practical lens for bootstrap founders.', link: 'https://www.linkedin.com/in/nithinkamath/' },
+            { id: crypto.randomUUID(), title: 'Kunal Shah', cost: 'Free', beginner: true, note: 'Useful consumer psychology and distribution insights.', details: 'Good source for positioning ideas.', link: 'https://twitter.com/kunalb11' }
           ]
         }
       ];
@@ -604,6 +585,7 @@
       if (!Array.isArray(state.resources.library) || !state.resources.library.length) {
         state.resources.library = resourceLibraryDefaults();
       }
+      if (typeof state.resources.activeTab !== 'string') state.resources.activeTab = 'templates';
       state.resources.customFormOpen = Boolean(state.resources.customFormOpen);
     }
 
@@ -611,109 +593,156 @@
       ensureResourcesState();
       const el = document.getElementById('section-resources');
       const query = state.resources.search.trim().toLowerCase();
+      const templates = [
+        { id: 'template-domain-comparison', title: 'Domain Comparison Template', note: 'Compare registrar pricing, renewal, add-ons, support quality, and DNS control in one place.' },
+        { id: 'template-no-code-decision', title: 'No-Code Tool Decision Matrix', note: 'Score tools by learning curve, flexibility, integrations, speed, and monthly cost.' },
+        { id: 'template-community-tracker', title: 'Community & Networking Tracker', note: 'Track founder communities, top contacts, follow-ups, and opportunities generated.' },
+        { id: 'template-competition-tracker', title: 'Competition Application Tracker', note: 'Monitor deadlines, requirements, status, outcomes, and next application actions.' },
+        { id: 'template-books-notes', title: 'Book Reading & Notes Template', note: 'Capture key lessons, action items, and experiments to apply in your startup.' }
+      ];
+      const tabIds = ['templates', ...state.resources.library.map(section => section.id)];
+      if (!tabIds.includes(state.resources.activeTab)) state.resources.activeTab = 'templates';
+
       const libraries = state.resources.library.map(section => ({
         ...section,
         items: (section.items || []).filter(item => {
           if (!query) return true;
-          const indexText = `${item.title} ${item.details || ''} ${item.pros || ''} ${item.cons || ''} ${item.link || ''}`.toLowerCase();
-          return indexText.includes(query);
+          return `${item.title} ${item.details || ''} ${item.note || ''} ${item.cost || ''} ${item.link || ''}`.toLowerCase().includes(query);
         })
       }));
       const customFiltered = state.resources.customResources.filter(item => {
         if (!query) return true;
         return `${item.title} ${item.details || ''} ${item.link || ''}`.toLowerCase().includes(query);
       });
-      const hasResults = libraries.some(section => section.items.length) || customFiltered.length;
+      const bookmarkedItems = libraries.flatMap(section => section.items).concat(customFiltered).filter(item => state.resources.bookmarks.includes(item.id));
+
+      const activeLibrary = libraries.find(section => section.id === state.resources.activeTab);
+      const tabContentMarkup = state.resources.activeTab === 'templates'
+        ? `<div class="grid md:grid-cols-2 gap-3">${templates.map(item => `
+            <div class="rounded-xl border border-orange-100 bg-white p-3 sm:p-4">
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="text-sm sm:text-base font-semibold text-zinc-900">${escapeHTML(item.title)}</h4>
+                <span class="text-[11px] px-2 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-700">Template</span>
+              </div>
+              <p class="text-xs sm:text-sm text-zinc-600 mt-2">${escapeHTML(item.note)}</p>
+            </div>
+          `).join('')}</div>`
+        : `<article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">${escapeHTML(activeLibrary?.title || '')}</h3>
+                <p class="text-xs sm:text-sm text-zinc-600 mt-1">${escapeHTML(activeLibrary?.description || '')}</p>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${(activeLibrary?.items || []).length} resources</span>
+            </div>
+            ${(activeLibrary?.items || []).length ? `<div class="grid md:grid-cols-2 gap-3">
+              ${(activeLibrary?.items || []).map(item => {
+                const bookmarked = state.resources.bookmarks.includes(item.id);
+                return `
+                  <div class="rounded-xl border border-gray-200 bg-barya-soft/40 p-3 sm:p-4">
+                    <div class="flex items-start justify-between gap-2">
+                      <p class="font-semibold text-zinc-900">${escapeHTML(item.title)}</p>
+                      <button data-bookmark-resource="${item.id}" class="text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${bookmarked ? 'bg-orange-500/15 border-orange-300 text-orange-700' : 'bg-white border-gray-300 text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      ${item.beginner ? '<span class="text-[11px] px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">Recommended for Beginners</span>' : ''}
+                      ${item.cost ? `<span class="text-[11px] px-2 py-0.5 rounded-full border border-orange-200 bg-orange-50 text-orange-700">Cost: ${escapeHTML(item.cost)}</span>` : ''}
+                    </div>
+                    ${item.note ? `<p class="text-xs sm:text-sm text-zinc-700 mt-2">${escapeHTML(item.note)}</p>` : ''}
+                    ${item.details ? `<p class="text-xs text-zinc-500 mt-1">${escapeHTML(item.details)}</p>` : ''}
+                    <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
+                  </div>
+                `;
+              }).join('')}
+            </div>` : `<div>${emptyStateMarkup('', 'No resources found in this category', 'Try another tab or clear your search query.')}</div>`}
+          </article>`;
 
       el.innerHTML = `
-        <div class="bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent border border-orange-500/25 rounded-xl p-4 sm:p-5">
-          <h2 class="text-xl sm:text-2xl font-semibold text-barya-accent">📚 Founder Resource Hub</h2>
-          <p class="text-sm text-zinc-600 mt-1">Search, save bookmarks, add custom links, and backup your resource stack.</p>
+        <div class="bg-white border border-orange-200 rounded-xl p-4 sm:p-5">
+          <h2 class="text-xl sm:text-2xl font-semibold text-barya-accent">Resources</h2>
+          <p class="text-sm text-zinc-600 mt-1">Curated tools, communities, books and guides to help you build your startup</p>
         </div>
 
         <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
           <div class="grid md:grid-cols-[1fr_auto_auto_auto] gap-2">
-            <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search domains, tools, books, investors..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" />
-            <button id="toggleCustomResourceForm" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-500/10 text-orange-600">${state.resources.customFormOpen ? 'Close Form' : 'Add My Own Resource'}</button>
-            <button id="exportResources" class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft">Export Resources</button>
-            <label class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft cursor-pointer text-center">Import Resources<input id="importResources" type="file" accept="application/json" class="hidden"></label>
+            <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search resources..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" />
+            <button id="toggleCustomResourceForm" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">${state.resources.customFormOpen ? 'Close Form' : 'Add My Own Resource'}</button>
+            <button id="exportResources" class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft text-zinc-700">Export Resources</button>
+            <label class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft cursor-pointer text-center text-zinc-700">Import Resources<input id="importResources" type="file" accept="application/json" class="hidden"></label>
           </div>
           ${state.resources.customFormOpen ? `
             <form id="customResourceForm" class="grid md:grid-cols-4 gap-2 bg-barya-soft border border-gray-200 rounded-lg p-2.5">
               <input id="customResourceTitle" required placeholder="Resource title" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
               <input id="customResourceLink" required type="url" placeholder="https://example.com" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-              <input id="customResourceDetails" placeholder="Why this is useful" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-              <button class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-500/10 text-orange-600">Save Resource</button>
+              <input id="customResourceDetails" placeholder="Practical note" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
+              <button class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Save Resource</button>
             </form>
           ` : ''}
-          <p class="text-xs text-zinc-500">Bookmarked: <span class="font-semibold text-orange-600">${state.resources.bookmarks.length}</span> • Custom added: <span class="font-semibold text-orange-600">${state.resources.customResources.length}</span></p>
         </section>
 
-        ${!hasResults ? emptyStateMarkup('🔎', 'No resources found', 'Try a broader keyword or clear search filters.') : ''}
+        <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
+          <div class="flex flex-wrap gap-2">
+            ${tabIds.map(tabId => {
+              const label = tabId === 'templates' ? 'Templates' : (libraries.find(s => s.id === tabId)?.title || tabId);
+              const active = state.resources.activeTab === tabId;
+              return `<button data-resource-tab="${tabId}" class="px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${active ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-300 bg-white text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${escapeHTML(label)}</button>`;
+            }).join('')}
+          </div>
+          ${tabContentMarkup}
+        </section>
 
-        <div class="grid lg:grid-cols-2 gap-4">
-          ${libraries.map(section => `
-            <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 ${section.items.length ? '' : 'opacity-70'}">
-              <div class="flex items-start justify-between gap-3 mb-3">
-                <div>
-                  <h3 class="text-base font-semibold text-barya-accent">${section.icon} ${escapeHTML(section.title)}</h3>
-                  <p class="text-xs text-zinc-500 mt-1">${escapeHTML(section.description || '')}</p>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full bg-orange-500/10 text-orange-600 border border-orange-300">${section.items.length} items</span>
+        <section class="grid lg:grid-cols-2 gap-4">
+          <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">My Bookmarked Resources</h3>
+                <p class="text-xs sm:text-sm text-zinc-600 mt-1">Quick access to the links you marked for follow-up.</p>
               </div>
-              <div class="space-y-2">
-                ${section.items.map(item => {
-                  const bookmarked = state.resources.bookmarks.includes(item.id);
-                  return `
-                    <div class="rounded-lg border border-gray-200 p-2.5 bg-barya-soft/60">
-                      <div class="flex items-start justify-between gap-2">
-                        <div>
-                          <p class="font-medium">${escapeHTML(item.title)}</p>
-                          ${item.details ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.details)}</p>` : ''}
-                        </div>
-                        <button data-bookmark-resource="${item.id}" class="text-xs px-2 py-1 rounded border ${bookmarked ? 'bg-orange-500/15 border-orange-300 text-orange-600' : 'bg-white border-gray-300 text-zinc-600'}">${bookmarked ? 'Saved' : 'Save'}</button>
-                      </div>
-                      ${(item.pros || item.cons) ? `
-                        <div class="grid sm:grid-cols-2 gap-1 mt-2 text-xs">
-                          ${item.pros ? `<p class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-700"><strong>Pros:</strong> ${escapeHTML(item.pros)}</p>` : ''}
-                          ${item.cons ? `<p class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-amber-700"><strong>Cons:</strong> ${escapeHTML(item.cons)}</p>` : ''}
-                        </div>
-                      ` : ''}
-                      <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-600 hover:text-orange-700 underline">Open link ↗</a>
-                    </div>
-                  `;
-                }).join('') || `<div>${emptyStateMarkup('📭', 'No matching resources in this card', 'Try removing a search filter.')}</div>`}
-              </div>
-            </article>
-          `).join('')}
-        </div>
-
-        <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <h3 class="text-base font-semibold text-barya-accent">🧩 My Custom Resources</h3>
-              <p class="text-xs text-zinc-500 mt-1">Your manually added links are saved to localStorage.</p>
+              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${bookmarkedItems.length} saved</span>
             </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-orange-500/10 text-orange-600 border border-orange-300">${customFiltered.length} visible</span>
-          </div>
-          <div class="space-y-2">
-            ${customFiltered.map(item => `
-              <div class="rounded-lg border border-gray-200 p-2.5 bg-barya-soft/70">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <p class="font-medium">${escapeHTML(item.title)}</p>
-                    ${item.details ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.details)}</p>` : ''}
+            <div class="space-y-2">
+              ${bookmarkedItems.map(item => `
+                <div class="rounded-lg border border-gray-200 bg-barya-soft/50 p-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <p class="font-medium text-zinc-900">${escapeHTML(item.title)}</p>
+                      ${item.note ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.note)}</p>` : ''}
+                    </div>
+                    <button data-bookmark-resource="${item.id}" class="text-xs px-2.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Bookmarked</button>
                   </div>
-                  <div class="flex items-center gap-1.5">
-                    <button data-bookmark-resource="${item.id}" class="text-xs px-2 py-1 rounded border ${state.resources.bookmarks.includes(item.id) ? 'bg-orange-500/15 border-orange-300 text-orange-600' : 'bg-white border-gray-300 text-zinc-600'}">${state.resources.bookmarks.includes(item.id) ? 'Saved' : 'Save'}</button>
-                    <button data-delete-custom-resource="${item.id}" class="text-xs px-2 py-1 rounded border border-rose-300 bg-rose-50 text-rose-600">Delete</button>
-                  </div>
+                  <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-1.5 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
                 </div>
-                <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-600 hover:text-orange-700 underline">Open link ↗</a>
+              `).join('') || emptyStateMarkup('', 'No bookmarks yet', 'Bookmark resources to build your personal shortlist.')}
+            </div>
+          </article>
+
+          <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">My Custom Resources</h3>
+                <p class="text-xs sm:text-sm text-zinc-600 mt-1">Resources added by you are stored locally in your workspace.</p>
               </div>
-            `).join('') || emptyStateMarkup('➕', 'No custom resources yet', 'Use "Add My Own Resource" to save personal links.')}
-          </div>
-        </article>
+              <button id="addCustomResourceShortcut" class="text-xs px-2.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Add My Own Resource</button>
+            </div>
+            <div class="space-y-2">
+              ${customFiltered.map(item => `
+                <div class="rounded-lg border border-gray-200 bg-barya-soft/70 p-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <p class="font-medium text-zinc-900">${escapeHTML(item.title)}</p>
+                      ${item.details ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.details)}</p>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <button data-bookmark-resource="${item.id}" class="text-xs px-2 py-1 rounded border ${state.resources.bookmarks.includes(item.id) ? 'bg-orange-500/15 border-orange-300 text-orange-700' : 'bg-white border-gray-300 text-zinc-700'}">${state.resources.bookmarks.includes(item.id) ? 'Bookmarked' : 'Bookmark'}</button>
+                      <button data-delete-custom-resource="${item.id}" class="text-xs px-2 py-1 rounded border border-rose-300 bg-rose-50 text-rose-600">Delete</button>
+                    </div>
+                  </div>
+                  <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
+                </div>
+              `).join('') || emptyStateMarkup('', 'No custom resources yet', 'Use Add My Own Resource to save links that are specific to your workflow.')}
+            </div>
+          </article>
+        </section>
       `;
 
       document.getElementById('resourcesSearch').oninput = (e) => {
@@ -726,6 +755,18 @@
         saveStateRaw();
         renderResources();
       };
+      document.getElementById('addCustomResourceShortcut').onclick = () => {
+        state.resources.customFormOpen = true;
+        saveStateRaw();
+        renderResources();
+      };
+      el.querySelectorAll('[data-resource-tab]').forEach(btn => {
+        btn.onclick = () => {
+          state.resources.activeTab = btn.dataset.resourceTab;
+          saveStateRaw();
+          renderResources();
+        };
+      });
       const customForm = document.getElementById('customResourceForm');
       if (customForm) {
         customForm.onsubmit = (e) => {
@@ -762,7 +803,7 @@
       document.getElementById('importResources').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
         state.resources = deepMerge({
           search: '',
-          customFormOpen: false,
+          activeTab: 'templates',
           bookmarks: [],
           customResources: [],
           library: resourceLibraryDefaults()
