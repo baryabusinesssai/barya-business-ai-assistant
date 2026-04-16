@@ -2566,7 +2566,6 @@ Use the 'Add Block' button below to get started.</p>
           ts: new Date().toISOString()
         });
       }
-      if (typeof state.ai.thinkStepByStep !== 'boolean') state.ai.thinkStepByStep = false;
       if (!Array.isArray(state.ai.promptSuggestions)) state.ai.promptSuggestions = [];
     }
 
@@ -2597,9 +2596,11 @@ Use the 'Add Block' button below to get started.</p>
       const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
       const runway = Number(state.dashboard.metrics.runway || 0);
       return [
-        { key: 'runway', match: /(runway|burn|cashflow|cash flow)/i, answer: `Your runway is around ${runway} months with net monthly cashflow near ${money(cash)}. The right move is a two-track plan: reduce burn quickly while improving near-term cash inflow so you gain decision freedom without freezing growth.`, why: 'Runway is strategic oxygen: when cash pressure is high, teams make reactive decisions and product quality drops. Extending runway gives a founder negotiation leverage, better hiring choices, and enough time to test what actually drives revenue.', steps: ['Run a 48-hour cash visibility audit and categorize every expense into “growth critical,” “temporarily reducible,” and “non-essential.” This gives immediate control instead of emotional cost-cutting.', 'Renegotiate your top vendor and contractor commitments with clear targets (longer terms, lower monthly minimums, performance-linked payments). Founders often unlock savings here faster than expected.', 'Launch one cash acceleration initiative in the next 7 days: annual prepay incentive, early-renewal discount, or bundled offer for existing customers. This can improve runway before major product changes land.', 'Create a weekly runway dashboard with one owner and one review ritual. Track burn, collections, and conversion so financial discipline becomes operational habit.', 'Protect one growth engine even during cost control (for example onboarding or top-performing acquisition channel). Cutting everything equally hurts recovery speed.'], tip: 'A founder who protects optionality can choose better opportunities; a founder who ignores cash gets forced into short-term compromises.', next: 'If you want, I can build a week-by-week 30-day runway extension plan based on your current fixed and variable costs.' },
-        { key: 'churn', match: /(churn|retention|cancel|renewal)/i, answer: 'Treat churn as a failed promise signal, not only a support issue. The most effective strategy is to identify where users fail to reach meaningful value early, then redesign that journey with tight feedback loops.', why: 'Retention is compounding growth. If users leave quickly, every acquisition dollar becomes expensive leakage and team morale drops because effort does not translate into durable outcomes.', steps: ['Segment churn by user type, source channel, and time-to-cancel window so you know whether the issue is expectation mismatch, onboarding friction, or weak recurring value.', 'Interview recent churned users with a structured script focused on “what outcome you expected vs what happened.” This uncovers language and promise gaps that analytics misses.', 'Identify one “first value moment” that predicts long-term retention, then redesign onboarding to push users toward that moment in fewer steps.', 'Build a proactive rescue flow for at-risk users (in-app prompts, human check-in, short guided session). A small intervention before cancellation often saves high-LTV users.', 'Review churn drivers weekly with product, growth, and support together so fixes are cross-functional instead of isolated.'], tip: 'Founders who reduce churn usually improve positioning and onboarding clarity before adding new features.', next: 'Share your top 3 churn reasons and I can turn them into a focused 2-week retention experiment plan.' },
-        { key: 'default', match: /.*/i, answer: 'Start with one clearly framed founder decision and evaluate it through impact, risk, speed, and resource reality. Then execute a short sprint with measurable outcomes so you learn fast and avoid analysis paralysis.', why: 'Most startup mistakes come from vague priorities and scattered execution, not lack of effort. A structured approach helps you align team energy, preserve cash, and convert uncertainty into useful data.', steps: ['Write the decision in one line and define what success looks like in 14 to 30 days. This turns abstract thinking into measurable execution.', 'List your constraints honestly: cash, people, time, and technical capacity. Great strategy is constraint-aware, not aspirational.', 'Generate two to three options and compare pros, trade-offs, and failure risks before choosing. This improves decision quality under pressure.', 'Pick one option, assign ownership, and define weekly checkpoints with leading indicators (not only lagging outcomes).', 'Run the sprint, review real signals, and adjust quickly. Consistent adaptation is what separates resilient founders from reactive founders.'], tip: 'Deep thinking is valuable only when it leads to clear execution ownership and fast learning loops.', next: 'Tell me your current decision and I will convert it into a detailed execution plan with milestones, risks, and fallback options.' }
+        { key: 'runway', match: /(runway|burn|cashflow|cash flow|cost|expense|revenue)/i, opening: `Your current runway is roughly ${runway} months, with estimated monthly net cashflow near ${money(cash)}. The smartest founder move now is not “just cutting costs,” but redesigning your operating rhythm so every dollar is tied to either customer value or near-term cash recovery.`, why: 'Runway determines the quality of every other decision. With limited cash, hiring, pricing, and product bets all carry higher consequence, so disciplined financial strategy creates freedom to learn and execute instead of reacting under pressure.', actionTracks: ['cash visibility and burn control', 'cash acceleration from current customers', 'focus discipline on one growth engine'], risks: ['Cutting too deep in customer-facing functions can reduce retention and worsen revenue.', 'Aggressive discounting can improve short-term cash but hurt long-term pricing power.'], next: 'Send me your top five expenses and current MRR trend, and I’ll turn this into a 30-day runway defense plan with exact priorities.' },
+        { key: 'churn', match: /(churn|retention|cancel|renewal|activation|onboarding)/i, opening: 'Treat churn as a strategy problem, not just a support metric. In most early-stage companies, churn means users are not consistently reaching a meaningful outcome quickly enough, or your promise and delivery are misaligned.', why: 'Retention compounds growth: lower churn reduces acquisition pressure, improves unit economics, and gives the team confidence because product effort starts translating into durable customer value.', actionTracks: ['identify churn pattern by segment and timing', 'repair onboarding around first-value speed', 'build targeted save flows for high-risk accounts'], risks: ['Adding features before fixing activation often increases complexity without improving retention.', 'Broad retention campaigns usually underperform compared to segment-specific interventions.'], next: 'Share your first 7-day activation rate and top cancellation reasons; I can design a practical two-week retention sprint.' },
+        { key: 'g2m', match: /(gtm|go to market|sales|pipeline|lead|acquisition|distribution)/i, opening: 'The best GTM plan is not “more channels”; it is one repeatable channel-model pair you can measure, learn from, and scale. Early growth improves when messaging, audience, and conversion path are tightly connected.', why: 'Founders lose months when distribution is broad but shallow. A focused GTM system improves learning speed, reduces CAC waste, and creates confidence in forecasting.', actionTracks: ['tighten ICP and message-market fit', 'improve one conversion path end-to-end', 'set weekly pipeline and conversion review discipline'], risks: ['Expanding channels before fixing conversion quality raises costs quickly.', 'Inconsistent follow-up causes avoidable pipeline leakage even with strong top-of-funnel.'], next: 'If you share your current channel mix and funnel numbers, I can recommend the highest-leverage GTM sequence for the next 21 days.' },
+        { key: 'hiring', match: /(hire|hiring|team|role|recruit|talent)/i, opening: 'Hiring should solve a bottleneck, not reduce founder discomfort. The right approach is to map which constraint is truly limiting growth and decide whether process, tooling, or a new person is the fastest fix.', why: 'Each early hire is a force multiplier or a drag multiplier. Good hiring improves velocity and decision quality; premature hiring adds burn and management overhead before clear output appears.', actionTracks: ['define bottleneck and expected role outcomes', 'evaluate alternatives before opening headcount', 'design a scorecard and 30-60-90 day success plan'], risks: ['Hiring too senior too early can create complexity your stage does not need.', 'Hiring without clear ownership and metrics causes ambiguity and rework.'], next: 'Tell me the role you’re considering and your current team structure; I’ll help you decide whether to hire now or defer.' },
+        { key: 'default', match: /.*/i, opening: 'The highest-quality founder decisions come from combining speed with structured reasoning: clarify the decision, pressure-test alternatives, and commit to a measurable execution sprint.', why: 'Startups fail less from lack of effort and more from scattered priorities. A clear framework lets you deploy limited cash and attention where outcomes matter most.', actionTracks: ['frame the decision and success metric', 'compare options with explicit trade-offs', 'execute in short cycles with fast review'], risks: ['Moving fast without a metric creates activity without learning.', 'Over-analysis delays execution and can hide weak assumptions.'], next: 'Share your exact decision in one sentence, and I’ll build a tailored action plan with milestones and fallback options.' }
       ];
     }
 
@@ -2610,68 +2611,77 @@ Use the 'Add Block' button below to get started.</p>
       const base = templates.find(template => template.match.test(lower)) || templates.at(-1);
       const context = latestFounderContext();
       const multiParts = parseMultiPartQuestion(q);
-      const hasMultiPart = multiParts.length > 1;
-      const reasoning = state.ai.thinkStepByStep
-        ? [
-            `Understand context: recent focus = ${context.topKeywords.join(', ') || 'general strategy'}.`,
-            'Identify the core founder constraint and decision deadline.',
-            'Prioritize actions by highest near-term business impact.',
-            'Convert strategy into immediate execution steps.'
-          ]
-        : [];
 
-      let answer = base.answer;
-      if (context.topKeywords.length) {
-        answer += ` Since your recent messages focus on ${context.topKeywords.join(', ')}, I would prioritize decisions that improve these areas first so effort compounds instead of fragmenting across too many goals.`;
-      }
-      if (hasMultiPart) {
-        answer = `You asked ${multiParts.length} connected questions, so here is one integrated founder plan that balances survival, learning speed, and execution clarity: ${answer}`;
-      }
-
-      const stepPrefix = hasMultiPart
-        ? [`Break the ${multiParts.length} question threads into separate mini-decisions, but keep one owner and one success metric per thread so execution stays coordinated.`]
-        : [];
-      const fallbackSteps = [
-        'Translate the advice into a one-week sprint with named owners, clear deadlines, and one measurable business indicator per task.',
-        'Document your assumptions before execution so you can compare expected vs actual results and learn faster.',
-        'Review progress mid-week, remove blockers aggressively, and decide whether to continue, pivot, or stop based on evidence.'
-      ];
-      const steps = [...stepPrefix, ...(base.steps || []), ...fallbackSteps].slice(0, 6);
-      const why = `${base.why} In practical terms, this improves founder focus, protects cash efficiency, and increases confidence when communicating with team members or investors.`;
-      const tip = `${base.tip} When trade-offs are unclear, choose the path that creates the fastest reliable learning, not just the most optimistic upside.`;
-      const next = `${base.next} If you share your current numbers and team constraints, I can tailor this into an execution-ready plan.`;
-
-      const minWords = 150;
       const getWords = (txt) => String(txt || '').trim().split(/\s+/).filter(Boolean).length;
-      const totalWords = getWords(answer) + getWords(why) + getWords(steps.join(' ')) + getWords(tip) + getWords(next);
-      const depthBooster = totalWords < minWords
-        ? ' Also consider the trade-off between short-term speed and long-term system health: quick fixes can unlock momentum, but sustainable growth requires repeatable processes, clear ownership, and disciplined review cycles. A strong founder approach is to test one focused change, measure impact, and then scale only what consistently improves user outcomes and business metrics.'
+      const recentReference = context.lastUserMessage && context.lastUserMessage !== q
+        ? ` Building on your earlier question about "${context.lastUserMessage.slice(0, 70)}${context.lastUserMessage.length > 70 ? '...' : ''}", this recommendation keeps continuity so your decisions stack rather than reset.`
         : '';
+      const keywordReference = context.topKeywords.length
+        ? ` I’m intentionally prioritizing ${context.topKeywords.join(', ')} because those themes appear repeatedly in your recent messages and likely represent your real bottlenecks.`
+        : '';
+      const multipartLead = multiParts.length > 1
+        ? `You asked ${multiParts.length} connected questions, so I’ll give one integrated answer that sequences decisions in the right order. `
+        : '';
+      const answer = `${multipartLead}${base.opening}${recentReference}${keywordReference}`.trim();
+
+      const why = `${base.why} From a founder lens, this matters because execution capacity is always limited: when priorities are explicit, your team can align faster, stakeholders trust your decision logic, and you avoid burning cycles on low-leverage work.`;
+
+      const steps = [
+        `Clarify the exact outcome for the next 14–30 days in one measurable sentence (for example, “increase weekly qualified demos by 25%” or “extend runway by 2 months”). This creates decision precision and avoids vague execution.`,
+        `Audit your current constraints honestly: available cash, team bandwidth, technical limits, and decision deadlines. Strategy only works when it respects reality.`,
+        `Choose one primary execution track: ${base.actionTracks[0]}. Define the owner, target metric, and first milestone so momentum starts immediately.`,
+        `Launch a supporting track for leverage: ${base.actionTracks[1]}. Keep scope tight and instrument outcomes so you can see signal within days, not months.`,
+        `Protect continuity through the third track: ${base.actionTracks[2]}. This prevents short-term fixes from creating long-term instability in the business.`,
+        `Review outcomes weekly with explicit trade-off discussion. Ask: what worked, what failed, and what should stop now to free capacity for higher-impact bets.`
+      ].slice(0, multiParts.length > 2 ? 7 : 6);
+
+      const tip = `Key insights & trade-offs: ${base.risks[0]} ${base.risks[1]} Favor options that generate reliable learning quickly, even if they feel less dramatic than big swings. In early-stage execution, repeatable wins usually outperform heroic moves.`;
+      const next = base.next;
+
+      const minWords = 180;
+      const maxWords = 350;
+      let totalWords = getWords(answer) + getWords(why) + getWords(steps.join(' ')) + getWords(tip) + getWords(next);
+      let expandedWhy = why;
+      let expandedTip = tip;
+      if (totalWords < minWords) {
+        expandedWhy += ' It also improves communication quality with co-founders, team members, and investors because priorities, assumptions, and expected outcomes become explicit rather than implied.';
+        expandedTip += ' As a rule, do not scale a tactic until you can explain why it worked and which condition made it effective.';
+        totalWords = getWords(answer) + getWords(expandedWhy) + getWords(steps.join(' ')) + getWords(expandedTip) + getWords(next);
+      }
+      if (totalWords > maxWords) {
+        expandedTip = expandedTip.split('. ').slice(0, 3).join('. ').trim();
+      }
       return {
-        answer: `${answer}${depthBooster}`,
-        why,
+        answer,
+        why: expandedWhy,
         steps,
-        tip,
-        next,
-        reasoning,
-        multiParts
+        tip: expandedTip,
+        next
       };
     }
 
     function computePromptSuggestions() {
       const context = latestFounderContext(10);
-      const baseSuggestions = [
-        'Build me a 30-day execution sprint with weekly milestones.',
-        'Audit my founder calendar and remove low-leverage tasks.',
-        'Create a cash preservation plan for the next 60 days.',
-        'Draft a high-signal weekly investor update from my metrics.',
-        'Design a retention rescue plan for users dropping in week 1.'
+      const adaptiveSuggestions = [
+        'Act as my strategic co-founder and challenge my current plan with better alternatives.',
+        'Turn my current goal into a 14-day execution roadmap with owners, metrics, and risks.',
+        'What should I stop doing this month to improve focus and execution speed?',
+        'Convert my latest business challenge into a decision memo with trade-offs.',
+        'Draft a founder-ready update I can send to investors with clear narrative and metrics.',
+        'Help me choose between growth, retention, and runway priorities for the next 30 days.'
       ];
-      const keywordSuggestions = context.topKeywords.map(keyword => `Give me a tactical plan to improve ${keyword} in the next 2 weeks.`);
+      const keywordSuggestions = context.topKeywords.map((keyword, idx) => {
+        const variants = [
+          `Create an advanced but practical plan to improve ${keyword} over the next 3 weeks.`,
+          `Diagnose why ${keyword} may be underperforming and give me a founder action plan.`,
+          `Give me a step-by-step operating playbook for ${keyword} with measurable checkpoints.`
+        ];
+        return variants[idx % variants.length];
+      });
       const lastMessageSuggestion = context.lastUserMessage
-        ? [`Continue from my previous question and convert it into an action checklist: "${context.lastUserMessage.slice(0, 70)}..."`]
+        ? [`Continue this thread and deepen your answer with concrete milestones: "${context.lastUserMessage.slice(0, 80)}${context.lastUserMessage.length > 80 ? '...' : ''}"`]
         : [];
-      state.ai.promptSuggestions = [...keywordSuggestions, ...lastMessageSuggestion, ...baseSuggestions].slice(0, 6);
+      state.ai.promptSuggestions = [...lastMessageSuggestion, ...keywordSuggestions, ...adaptiveSuggestions].slice(0, 6);
     }
 
     function renderAI() {
@@ -2691,14 +2701,10 @@ Use the 'Add Block' button below to get started.</p>
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="text-xl sm:text-2xl font-semibold text-[#f97316]">Barya AI · Smart Reasoning Assistant</h2>
-              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Long-form, deep-thinking founder guidance with context-aware execution plans.</p>
+              <p class="text-xs sm:text-sm text-zinc-400 mt-1">Long-form, deep-thinking founder guidance with context-aware execution and practical trade-offs.</p>
             </div>
             <div class="flex items-center gap-2">
               <button id="aiShowRelated" class="px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 text-sm">Show Related</button>
-              <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0d121a] border border-orange-500/30">
-                <input id="thinkToggle" type="checkbox" ${state.ai.thinkStepByStep ? 'checked' : ''} class="accent-orange-400">
-                <span class="text-sm text-zinc-200">Think Step-by-Step</span>
-              </label>
             </div>
           </div>
 
@@ -2751,13 +2757,10 @@ Use the 'Add Block' button below to get started.</p>
               <p>${escapeHTML(structured.why)}</p>
               <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Detailed Action Steps</p>
               <ol class="list-decimal pl-5 space-y-1">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Founder Insight</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Key Insights & Trade-offs</p>
               <p>${escapeHTML(structured.tip)}</p>
-              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Next Move</p>
+              <p class="text-[11px] uppercase tracking-wide text-orange-300 pt-1">Next Best Step</p>
               <p>${escapeHTML(structured.next)}</p>
-              ${(state.ai.thinkStepByStep && structured.reasoning?.length)
-                ? `<details class="pt-2"><summary class="cursor-pointer text-xs text-orange-200">Reasoning Path</summary><ul class="list-disc pl-5 mt-2 text-sm text-zinc-300">${structured.reasoning.map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul></details>`
-                : ''}
             </div>
           `;
         }
@@ -2791,11 +2794,6 @@ Use the 'Add Block' button below to get started.</p>
         const hinted = latestUser ? (wikiLinkTitles(latestUser.message)[0] || '') : '';
         const ref = findRefByTitle(hinted) || (buildKnowledgeGraph().nodes.find(node => node.section === 'ai')?.ref || '');
         if (ref) showRelated(ref);
-      };
-      document.getElementById('thinkToggle').onchange = (e) => {
-        state.ai.thinkStepByStep = !!e.target.checked;
-        saveStateRaw();
-        renderAI();
       };
       document.getElementById('clearChat').onclick = () => {
         if (!confirm('Clear entire Barya AI chat history? This action cannot be undone.')) return;
