@@ -359,6 +359,28 @@
       background: rgba(15, 23, 42, 0.52);
       backdrop-filter: blur(4px);
     }
+    .how-it-works-backdrop {
+      background: rgba(148, 163, 184, 0.35);
+      backdrop-filter: blur(10px);
+      animation: howItWorksFadeIn 220ms ease both;
+    }
+    .how-it-works-modal {
+      width: min(94vw, 900px);
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(241, 245, 249, 0.76));
+      box-shadow: 0 24px 42px rgba(15, 23, 42, 0.2);
+      backdrop-filter: blur(16px);
+      animation: howItWorksModalIn 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+    @keyframes howItWorksFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes howItWorksModalIn {
+      from { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.98); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
@@ -366,7 +388,7 @@
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
           <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-400/40 bg-gradient-to-br from-teal-300/20 via-teal-400/15 to-slate-900/20 flex items-center justify-center shadow-[0_10px_24px_rgba(20,184,166,0.2)]">
@@ -380,6 +402,10 @@
         <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-500 text-slate-100">✕</button>
       </div>
       <nav class="space-y-1.5" id="mainNav"></nav>
+      <button id="howItWorksBtn" class="mt-auto w-full rounded-xl border border-teal-200 bg-teal-50/90 text-teal-700 px-3 py-2.5 text-sm font-semibold shadow-sm hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">
+        <span class="mr-1.5" aria-hidden="true">▶</span>
+        <span>How it Works</span>
+      </button>
     </aside>
 
     <div class="flex-1 lg:ml-0 w-full">
@@ -441,6 +467,21 @@
     </div>
     <div class="p-5" id="memoryModalBody"></div>
   </dialog>
+
+  <div id="howItWorksModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 how-it-works-backdrop">
+    <div class="how-it-works-modal p-4 sm:p-5">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <h3 class="text-base sm:text-lg font-semibold text-slate-900">How Barya Works - 1 Minute Demo</h3>
+        <button id="closeHowItWorksModal" class="h-8 w-8 rounded-full border border-slate-200 bg-white/80 text-slate-500 hover:text-slate-800 hover:bg-white" aria-label="Close video modal">✕</button>
+      </div>
+      <div class="w-full overflow-hidden rounded-xl border border-slate-200 bg-black">
+        <video id="howItWorksVideo" class="w-full h-auto max-h-[70vh]" controls preload="metadata">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
 
   <div id="saveToast" class="fixed bottom-5 left-1/2 z-50 px-3 py-2 rounded-full border border-teal-200 bg-white/95 text-teal-700 text-xs font-medium shadow-lg backdrop-blur-sm">
     <span class="inline-flex items-center gap-1.5">
@@ -1152,6 +1193,11 @@
       document.getElementById('closeSidebar').onclick = closeSidebar;
       document.getElementById('overlay').onclick = closeSidebar;
       document.getElementById('closeMemoryModal').onclick = () => document.getElementById('memoryModal').close();
+      document.getElementById('howItWorksBtn').onclick = openHowItWorksModal;
+      document.getElementById('closeHowItWorksModal').onclick = closeHowItWorksModal;
+      document.getElementById('howItWorksModal').addEventListener('click', (event) => {
+        if (event.target.id === 'howItWorksModal') closeHowItWorksModal();
+      });
       document.addEventListener('click', (event) => {
         const startBtn = event.target.closest('[data-start-here]');
         if (!startBtn) return;
@@ -1182,6 +1228,25 @@
       document.getElementById('overlay').classList.add('hidden');
     }
 
+    function openHowItWorksModal() {
+      const modal = document.getElementById('howItWorksModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeHowItWorksModal() {
+      const modal = document.getElementById('howItWorksModal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      const video = document.getElementById('howItWorksVideo');
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+    }
+
     function applyThemePreference() {
       const isDark = state.settings?.preferences?.darkMode === true;
       document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
@@ -1200,6 +1265,7 @@
           closeSidebar();
           const modal = document.getElementById('memoryModal');
           if (modal?.open) modal.close();
+          closeHowItWorksModal();
         }
       });
     }
