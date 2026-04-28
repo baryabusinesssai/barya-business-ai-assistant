@@ -3694,6 +3694,34 @@ Use the 'Add Block' button below to get started.</p>
       if (!state.ai.composer || typeof state.ai.composer !== 'object') state.ai.composer = {};
       if (typeof state.ai.composer.text !== 'string') state.ai.composer.text = '';
       if (!state.ai.composer.attachment || typeof state.ai.composer.attachment !== 'object') state.ai.composer.attachment = null;
+      if (typeof state.ai.composer.deepThinking !== 'boolean') state.ai.composer.deepThinking = false;
+    }
+
+    function getAIPersonalizationContext() {
+      const founder = state.settings?.founder || {};
+      const business = state.settings?.business || {};
+      const prefs = state.settings?.preferences || {};
+      const name = String(founder.name || '').trim();
+      const role = String(founder.role || '').trim();
+      const stage = String(business.stage || '').trim();
+      const languageCode = normalizeLanguageCode(prefs.language || 'en');
+      const dateFormat = String(prefs.dateFormat || 'MM/DD/YYYY').trim();
+      const currencyCode = String(prefs.currency || '').trim();
+      const languageName = LANGUAGE_NAMES[languageCode] || 'English';
+      const style = [];
+      if (languageName) style.push(`${languageName} communication`);
+      if (dateFormat) style.push(`${dateFormat} date format`);
+      if (currencyCode) style.push(`${currencyCode} currency context`);
+      const founderIdentity = [name, role].filter(Boolean).join(', ');
+      const founderPrefix = founderIdentity ? `For ${founderIdentity}` : 'For your founder profile';
+      const stageLine = stage ? `, currently at the ${stage} stage` : '';
+      return {
+        name,
+        role,
+        stage,
+        styleLabel: style.join(' · ') || 'founder-friendly communication',
+        profileLine: `${founderPrefix}${stageLine}`
+      };
     }
 
     function latestFounderContext(limit = 8) {
@@ -3737,7 +3765,9 @@ Use the 'Add Block' button below to get started.</p>
       const templates = aiTemplateLibrary();
       const base = templates.find(template => template.match.test(lower)) || templates.at(-1);
       const context = latestFounderContext();
+      const personalization = getAIPersonalizationContext();
       const multiParts = parseMultiPartQuestion(q);
+      const isDeepThinking = state.ai.composer.deepThinking === true;
 
       const getWords = (txt) => String(txt || '').trim().split(/\s+/).filter(Boolean).length;
       const recentReference = context.lastUserMessage && context.lastUserMessage !== q
@@ -3749,7 +3779,8 @@ Use the 'Add Block' button below to get started.</p>
       const multipartLead = multiParts.length > 1
         ? `You asked ${multiParts.length} connected questions, so I’ll give one integrated answer that sequences decisions in the right order. `
         : '';
-      const answer = `${multipartLead}${base.opening}${recentReference}${keywordReference}`.trim();
+      const personalizationLead = `${personalization.profileLine}, here is a tailored recommendation with ${personalization.styleLabel}.`;
+      const answer = `${personalizationLead} ${multipartLead}${base.opening}${recentReference}${keywordReference}`.trim();
 
       const why = `${base.why} From a founder lens, this matters because execution capacity is always limited: when priorities are explicit, your team can align faster, stakeholders trust your decision logic, and you avoid burning cycles on low-leverage work.`;
 
@@ -3761,11 +3792,19 @@ Use the 'Add Block' button below to get started.</p>
         `Protect continuity through the third track: ${base.actionTracks[2]}. This prevents short-term fixes from creating long-term instability in the business.`,
         `Review outcomes weekly with explicit trade-off discussion. Ask: what worked, what failed, and what should stop now to free capacity for higher-impact bets.`
       ].slice(0, multiParts.length > 2 ? 7 : 6);
+      if (isDeepThinking) {
+        steps.push(
+          'Before committing, pressure-test your preferred option against two realistic downside scenarios and define early warning indicators that trigger a contingency plan.',
+          'Close each week with a short founder memo: decision made, evidence observed, and what changes next week. This improves strategic consistency and reduces reactive pivots.'
+        );
+      }
 
       const tip = `Key insights & trade-offs: ${base.risks[0]} ${base.risks[1]} Favor options that generate reliable learning quickly, even if they feel less dramatic than big swings. In early-stage execution, repeatable wins usually outperform heroic moves.`;
-      const next = base.next;
+      const next = isDeepThinking
+        ? `${base.next} If you want, I can also produce a step-by-step decision tree with assumptions, leading indicators, and fallback moves.`
+        : base.next;
 
-      const minWords = 180;
+      const minWords = isDeepThinking ? 230 : 180;
       const maxWords = 350;
       let totalWords = getWords(answer) + getWords(why) + getWords(steps.join(' ')) + getWords(tip) + getWords(next);
       let expandedWhy = why;
@@ -3789,11 +3828,12 @@ Use the 'Add Block' button below to get started.</p>
 
     function aiAttachmentStructuredResponse(prompt, attachment) {
       const base = aiStructuredResponse(prompt || `Review this ${attachment?.kind || 'resource'} and guide me.`);
+      const personalization = getAIPersonalizationContext();
       const name = attachment?.name || attachment?.value || 'uploaded resource';
       const typeLabel = attachment?.kind === 'link' ? 'link' : 'document';
       const sourceLabel = attachment?.kind === 'link' ? `the link you shared (${name})` : `your file "${name}"`;
       return {
-        answer: `Great context addition—I've incorporated ${sourceLabel} into the recommendation so this isn't generic advice. The strongest strategic signal from this ${typeLabel} is that your next gains likely come from tighter prioritization, clearer owner accountability, and reducing decision latency. In founder terms: you probably don't need more ideas right now, you need a cleaner execution sequence with explicit trade-offs. I’ll treat this attachment as an operating input and map it to measurable actions you can validate quickly.`,
+        answer: `${personalization.profileLine}, I’ve incorporated ${sourceLabel} so this is grounded in your real operating context, not generic advice. The strongest strategic signal from this ${typeLabel} is that your next gains likely come from tighter prioritization, clearer owner accountability, and reducing decision latency. In founder terms: you probably don't need more ideas right now, you need a cleaner execution sequence with explicit trade-offs. I’ll treat this attachment as an operating input and map it to measurable actions you can validate quickly.`,
         why: `${base.why} Reading between the lines of ${sourceLabel}, the pattern suggests the core issue is sequencing and focus quality, not lack of effort. Teams usually stall when important insights sit as static notes instead of being converted into time-bound experiments with defined owners and success thresholds.`,
         steps: [
           `Extract exactly three decisions from ${typeLabel === 'link' ? 'the linked page' : 'this file'}: one to do now, one to delay, and one to stop. This forces strategic clarity immediately.`,
@@ -3851,6 +3891,7 @@ Use the 'Add Block' button below to get started.</p>
       ensureAIState();
       computePromptSuggestions();
       const el = document.getElementById('section-ai');
+      const personalization = getAIPersonalizationContext();
       const quickActions = [
         'Analyze this week’s metrics and suggest one decisive priority.',
         'Create a 14-day GTM sprint with milestones and risks.',
@@ -3860,37 +3901,39 @@ Use the 'Add Block' button below to get started.</p>
         'Compare three strategic options with trade-offs and fallback plans.'
       ];
       el.innerHTML = `
-        <div class="rounded-3xl border border-sky-100 bg-gradient-to-b from-[#f9fcff] via-[#f7fbff] to-[#f6fffc] shadow-[0_24px_60px_rgba(15,23,42,0.10)] p-5 sm:p-7">
-          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div class="rounded-[2rem] border border-sky-100/90 bg-gradient-to-b from-[#fafdff] via-[#f8fcff] to-[#f4fffb] shadow-[0_30px_80px_rgba(15,23,42,0.12)] p-6 sm:p-8">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
             <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Barya AI</h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Calm, structured, long-form reasoning for founder-level decisions.</p>
+              <h2 class="text-2xl sm:text-[30px] font-semibold tracking-tight text-slate-900">Barya AI</h2>
+              <p class="text-sm text-slate-500 mt-1.5">Premium founder reasoning with calm, personalized guidance.</p>
+              <p class="text-xs text-teal-700/90 mt-2 bg-teal-50 border border-teal-100 rounded-full px-3 py-1 inline-block">${escapeHTML(personalization.profileLine)}</p>
             </div>
             <button id="aiShowRelated" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">Show Related</button>
           </div>
 
-          <div class="mb-4 rounded-2xl border border-sky-100 bg-white/90 px-3 py-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <div class="mb-6 rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
             <span class="font-semibold text-slate-600">Capabilities</span>
             ${['Text', 'Documents', 'Links', 'Images (Soon)'].map(cap => `<span class="px-2.5 py-1 rounded-full border border-sky-100 bg-sky-50 text-sky-700">${cap}</span>`).join('')}
+            <button id="deepThinkingToggle" type="button" class="ml-auto px-3 py-1.5 rounded-full border text-xs font-medium transition ${state.ai.composer.deepThinking ? 'border-teal-300 bg-teal-50 text-teal-700 shadow-[0_0_0_3px_rgba(20,184,166,0.15)]' : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700'}">Think Step-by-Step ${state.ai.composer.deepThinking ? 'On' : 'Off'}</button>
           </div>
 
-          <div class="grid xl:grid-cols-[1fr_320px] gap-5">
+          <div class="grid xl:grid-cols-[1fr_320px] gap-6">
             <div class="min-w-0 space-y-4">
               <div class="flex flex-wrap gap-2">
                 ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-full border border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700 transition">${q}</button>`).join('')}
               </div>
 
-              <div id="chatBox" class="space-y-4 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
+              <div id="chatBox" class="space-y-5 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
 
               <form id="chatForm" class="space-y-3">
                 <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} rounded-xl border border-teal-100 bg-teal-50/70 p-2"></div>
-                <div class="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] p-3 transition focus-within:border-teal-300 focus-within:shadow-[0_0_0_3px_rgba(20,184,166,0.15),0_14px_34px_rgba(15,23,42,0.12)]">
-                  <textarea id="chatInput" rows="4" placeholder="Ask Barya AI anything about strategy, growth, product, operations, or execution..." class="w-full bg-transparent border-0 rounded-xl px-3 py-2.5 text-slate-700 text-[15px] leading-relaxed outline-none focus:ring-0 resize-y" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
-                  <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div class="rounded-3xl border border-slate-200/90 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.10)] p-4 transition focus-within:border-teal-300 focus-within:shadow-[0_0_0_3px_rgba(20,184,166,0.18),0_22px_44px_rgba(15,23,42,0.13)]">
+                  <textarea id="chatInput" rows="4" placeholder="Ask Barya AI anything about strategy, growth, product, operations, or execution..." class="w-full bg-transparent border-0 rounded-2xl px-3 py-2.5 text-slate-700 text-[15px] leading-7 outline-none focus:ring-0 resize-y" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
+                  <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
                     <div class="flex items-center gap-2">
                       <label class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm cursor-pointer hover:border-teal-300 hover:text-teal-700 transition inline-flex items-center gap-1.5">
-                        <span>📎</span><span>Attach File</span>
-                        <input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx" class="hidden">
+                        <span>📎</span><span>Attach</span>
+                        <input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx,.png,.jpg,.jpeg,.webp" class="hidden">
                       </label>
                       <button id="attachLinkBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">Paste Link</button>
                     </div>
@@ -3929,7 +3972,7 @@ Use the 'Add Block' button below to get started.</p>
         } else {
           const structured = item.structured || aiStructuredResponse(item.message || '');
           wrap.innerHTML = `
-            <div class="max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 space-y-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.09)]">
+          <div class="max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 space-y-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.09)]">
               <p class="text-[11px] uppercase tracking-wide text-teal-600">Clear Answer</p>
               <p class="text-slate-700">${escapeHTML(structured.answer)}</p>
               <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Why It Matters</p>
@@ -3981,7 +4024,7 @@ Use the 'Add Block' button below to get started.</p>
         const chatBox = document.getElementById('chatBox');
         appendMessage(userMsg);
         const typing = document.createElement('div');
-        typing.innerHTML = `<div class="max-w-fit bg-white border border-slate-200 rounded-2xl px-3.5 py-2.5 text-sm text-slate-500 shadow-sm">Barya AI is thinking deeply<span class="animate-pulse">...</span></div>`;
+        typing.innerHTML = `<div class="max-w-fit bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500 shadow-sm"><span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-teal-400 animate-pulse"></span><span class="h-2 w-2 rounded-full bg-teal-400/80 animate-pulse [animation-delay:120ms]"></span><span class="h-2 w-2 rounded-full bg-teal-400/70 animate-pulse [animation-delay:220ms]"></span></span><span class="ml-2">Barya AI is thinking${state.ai.composer.deepThinking ? ' step-by-step' : ''}...</span></div>`;
         chatBox.appendChild(typing);
         chatBox.scrollTop = chatBox.scrollHeight;
         const structured = attachment ? aiAttachmentStructuredResponse(q, attachment) : aiStructuredResponse(q);
@@ -4023,6 +4066,11 @@ Use the 'Add Block' button below to get started.</p>
         }
         state.ai.composer.attachment = { kind: 'link', value: normalized, name: normalized, ts: new Date().toISOString() };
         renderAttachmentPreview();
+      };
+      document.getElementById('deepThinkingToggle').onclick = () => {
+        state.ai.composer.deepThinking = !state.ai.composer.deepThinking;
+        saveStateRaw();
+        renderAI();
       };
       document.getElementById('aiShowRelated').onclick = () => {
         const latestUser = [...state.ai.history].reverse().find(msg => msg.role === 'user');
