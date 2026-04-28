@@ -384,12 +384,60 @@
     @media (max-width: 1023px) {
       #sidebar { width: min(84vw, 290px); }
     }
+    #guidedTourOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+    }
+    .tour-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      transition: opacity 260ms ease;
+    }
+    .tour-spotlight {
+      position: fixed;
+      z-index: 96;
+      border-radius: 16px;
+      border: 2px solid rgba(45, 212, 191, 0.95);
+      box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.72), 0 0 0 1px rgba(45, 212, 191, 0.4), 0 20px 40px rgba(15, 23, 42, 0.45);
+      transition: all 360ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+    .tour-panel {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 97;
+      width: min(92vw, 360px);
+      border-radius: 16px;
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+      backdrop-filter: blur(8px);
+      padding: 1rem;
+      animation: tourPanelIn 280ms ease both;
+    }
+    .tour-progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #cbd5e1;
+    }
+    .tour-progress-dot.active {
+      background: #14b8a6;
+      transform: scale(1.2);
+    }
+    @keyframes tourPanelIn {
+      from { opacity: 0; transform: translate3d(0, 14px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
   </style>
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
-      <div class="flex items-start justify-between mb-7">
+      <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
           <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-400/40 bg-gradient-to-br from-teal-300/20 via-teal-400/15 to-slate-900/20 flex items-center justify-center shadow-[0_10px_24px_rgba(20,184,166,0.2)]">
             <span class="text-sm font-semibold tracking-tight text-teal-200">BΞ</span>
@@ -417,6 +465,7 @@
         <div class="flex items-center gap-3">
           <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-teal-300 bg-teal-50 px-2 py-1 rounded-full text-teal-700">⌘/Ctrl+K Search</span>
           <span id="localFirstBadge" class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
+          <button id="takeTourBtn" class="px-3 py-1.5 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-xs sm:text-sm font-semibold hover:bg-teal-100">Take a Tour</button>
           <div class="text-right">
             <p id="headerFounderName" class="text-sm font-medium">Your Name</p>
             <p id="headerFounderRole" class="text-xs text-zinc-400">Your Role</p>
@@ -489,10 +538,28 @@
       <span>Saved</span>
     </span>
   </div>
+  <div id="guidedTourOverlay" class="hidden" aria-live="polite">
+    <div class="tour-backdrop"></div>
+    <div id="tourSpotlight" class="tour-spotlight"></div>
+    <div class="tour-panel">
+      <p id="tourStepLabel" class="text-xs uppercase tracking-[0.14em] text-teal-700 font-semibold">Step 1 of 7</p>
+      <h3 id="tourStepTitle" class="mt-1 text-lg font-bold text-slate-900"></h3>
+      <p id="tourStepDescription" class="mt-2 text-sm leading-6 text-slate-600"></p>
+      <div id="tourStepDots" class="mt-3 flex items-center gap-1.5"></div>
+      <div class="mt-4 flex items-center justify-between">
+        <button id="tourSkipBtn" class="text-sm text-slate-500 underline hover:text-slate-700">Skip Tour</button>
+        <div class="flex items-center gap-2">
+          <button id="tourPrevBtn" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50">Previous</button>
+          <button id="tourNextBtn" class="px-4 py-2 rounded-lg bg-barya-accent text-white text-sm font-semibold hover:bg-teal-600">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const STORAGE_KEY = 'baryaWorkspaceV2';
     const ONBOARDING_TOUR_STORAGE_KEY = 'baryaWelcomeTourSeenV1';
+    const GUIDED_TOUR_TOTAL_STEPS = 7;
     const CHECKLIST_STORAGE_KEY = 'baryaGettingStartedChecklistV1';
     const LANGUAGE_STORAGE_KEY = 'baryaWorkspaceLanguage';
     const WELCOME_TOUR_STEPS = [
@@ -822,7 +889,17 @@
     let renderQueued = false;
     let workspacePendingAnimation = { pageId: null, blockId: null };
     let welcomeTourStep = 0;
+    let guidedTourStep = 0;
     let checklistState = loadChecklistState();
+    const GUIDED_TOUR_STEPS = [
+      { title: 'Welcome to Barya', description: 'Barya is your private space to plan and run your startup. Use it daily to stay clear and focused.', target: '#tourWelcomeArea', section: null },
+      { title: 'Dashboard', description: 'See key numbers, growth, and runway in one place. This helps you make faster decisions.', target: '#section-dashboard', section: 'dashboard' },
+      { title: 'Strategy Generator + Research', description: 'Write your idea, test assumptions, and run research mode. It helps you choose the right next move.', target: '#section-planning', section: 'planning' },
+      { title: 'Barya AI Assistant', description: 'Ask questions and get instant guidance. Use this when you are stuck or need clear next steps.', target: '#section-ai', section: 'ai' },
+      { title: 'Workspace Block Editor', description: 'Build pages with notes, plans, and linked items. Keep all your work organized in one clean place.', target: '#section-workspace', section: 'workspace' },
+      { title: 'Tasks & Memory', description: 'Track what to do in Tasks and save lessons in Memory. This keeps execution and learnings together.', target: '#section-tasks', section: 'tasks' },
+      { title: 'Need Help?', description: 'Use "How it Works" anytime for a quick guide, then click Take a Tour again when you want a refresher.', target: '#howItWorksBtn', section: null }
+    ];
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1049,8 +1126,9 @@
       applyThemePreference();
       renderHeaderFounderProfile();
       setupWelcomeTour();
+      setupGuidedTour();
       translateDom(document.body);
-      maybeOpenWelcomeTour();
+      maybeOpenGuidedTour();
       window.addEventListener('storage', (event) => {
         if (event.key !== STORAGE_KEY || !event.newValue) return;
         try {
@@ -1101,6 +1179,91 @@
       if (!modal) return;
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+    }
+
+    function setupGuidedTour() {
+      const startBtn = document.getElementById('takeTourBtn');
+      const overlay = document.getElementById('guidedTourOverlay');
+      const nextBtn = document.getElementById('tourNextBtn');
+      const prevBtn = document.getElementById('tourPrevBtn');
+      const skipBtn = document.getElementById('tourSkipBtn');
+      if (!startBtn || !overlay || !nextBtn || !prevBtn || !skipBtn) return;
+
+      const renderDots = () => {
+        const dots = document.getElementById('tourStepDots');
+        if (!dots) return;
+        dots.innerHTML = GUIDED_TOUR_STEPS.map((_, index) => `<span class="tour-progress-dot ${index === guidedTourStep ? 'active' : ''}"></span>`).join('');
+      };
+
+      const updateSpotlight = () => {
+        const step = GUIDED_TOUR_STEPS[guidedTourStep];
+        const target = document.querySelector(step.target);
+        const spotlight = document.getElementById('tourSpotlight');
+        if (!target || !spotlight) return;
+        const rect = target.getBoundingClientRect();
+        const pad = 8;
+        spotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
+        spotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
+        spotlight.style.width = `${Math.max(120, rect.width + pad * 2)}px`;
+        spotlight.style.height = `${Math.max(56, rect.height + pad * 2)}px`;
+      };
+
+      const renderGuidedStep = () => {
+        const step = GUIDED_TOUR_STEPS[guidedTourStep];
+        if (step.section) switchSection(step.section);
+        const stepLabel = document.getElementById('tourStepLabel');
+        const stepTitle = document.getElementById('tourStepTitle');
+        const stepDescription = document.getElementById('tourStepDescription');
+        const nextLabel = guidedTourStep === GUIDED_TOUR_STEPS.length - 1 ? 'Finish' : 'Next';
+        if (stepLabel) stepLabel.textContent = `Step ${guidedTourStep + 1} of ${GUIDED_TOUR_TOTAL_STEPS}`;
+        if (stepTitle) stepTitle.textContent = step.title;
+        if (stepDescription) stepDescription.textContent = step.description;
+        nextBtn.textContent = nextLabel;
+        prevBtn.disabled = guidedTourStep === 0;
+        prevBtn.classList.toggle('opacity-50', guidedTourStep === 0);
+        renderDots();
+        setTimeout(updateSpotlight, 260);
+      };
+
+      const closeGuidedTour = () => {
+        overlay.classList.add('hidden');
+        localStorage.setItem(ONBOARDING_TOUR_STORAGE_KEY, 'true');
+      };
+
+      const startGuidedTour = () => {
+        guidedTourStep = 0;
+        overlay.classList.remove('hidden');
+        renderGuidedStep();
+      };
+
+      startBtn.onclick = startGuidedTour;
+      nextBtn.onclick = () => {
+        if (guidedTourStep >= GUIDED_TOUR_STEPS.length - 1) {
+          closeGuidedTour();
+          return;
+        }
+        guidedTourStep += 1;
+        renderGuidedStep();
+      };
+      prevBtn.onclick = () => {
+        guidedTourStep = Math.max(0, guidedTourStep - 1);
+        renderGuidedStep();
+      };
+      skipBtn.onclick = closeGuidedTour;
+      window.addEventListener('resize', () => {
+        if (!overlay.classList.contains('hidden')) updateSpotlight();
+      });
+      window.addEventListener('scroll', () => {
+        if (!overlay.classList.contains('hidden')) updateSpotlight();
+      }, { passive: true });
+    }
+
+    function maybeOpenGuidedTour() {
+      if (localStorage.getItem(ONBOARDING_TOUR_STORAGE_KEY) === 'true') return;
+      const overlay = document.getElementById('guidedTourOverlay');
+      const startBtn = document.getElementById('takeTourBtn');
+      if (!overlay || !startBtn) return;
+      setTimeout(() => startBtn.click(), 260);
     }
 
     function renderNav() {
