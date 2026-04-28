@@ -3791,18 +3791,19 @@ Use the 'Add Block' button below to get started.</p>
       const base = aiStructuredResponse(prompt || `Review this ${attachment?.kind || 'resource'} and guide me.`);
       const name = attachment?.name || attachment?.value || 'uploaded resource';
       const typeLabel = attachment?.kind === 'link' ? 'link' : 'document';
+      const sourceLabel = attachment?.kind === 'link' ? `the link you shared (${name})` : `your file "${name}"`;
       return {
-        answer: `I reviewed your ${typeLabel} (${name}) and extracted the primary strategic signal: the strongest near-term gains come from tightening message-to-outcome clarity, removing execution bottlenecks, and prioritizing one measurable growth path over parallel experiments.`,
-        why: `${base.why} From the uploaded ${typeLabel}, I infer your current challenge is less about effort and more about sequencing. High-performing teams do fewer things with clearer accountability, which is the fastest route to consistent momentum.`,
+        answer: `Great context addition—I've incorporated ${sourceLabel} into the recommendation so this isn't generic advice. The strongest strategic signal from this ${typeLabel} is that your next gains likely come from tighter prioritization, clearer owner accountability, and reducing decision latency. In founder terms: you probably don't need more ideas right now, you need a cleaner execution sequence with explicit trade-offs. I’ll treat this attachment as an operating input and map it to measurable actions you can validate quickly.`,
+        why: `${base.why} Reading between the lines of ${sourceLabel}, the pattern suggests the core issue is sequencing and focus quality, not lack of effort. Teams usually stall when important insights sit as static notes instead of being converted into time-bound experiments with defined owners and success thresholds.`,
         steps: [
-          `Summarize the ${typeLabel} into three constraints, three opportunities, and one immediate decision that cannot wait.`,
-          `Translate what you shared into a focused 2-week operating plan with one owner per milestone and explicit success metrics.`,
-          `Convert the strongest insight from the ${typeLabel} into customer-facing action (messaging, product experience, or sales motion) within 72 hours.`,
-          `Set up a lightweight review rhythm so every new signal from this ${typeLabel} updates your priorities rather than sitting as static research.`,
-          `Capture assumptions that still need validation and run fast tests before making irreversible commitments.`
+          `Extract exactly three decisions from ${typeLabel === 'link' ? 'the linked page' : 'this file'}: one to do now, one to delay, and one to stop. This forces strategic clarity immediately.`,
+          `Convert those decisions into a 14-day sprint with named owners, measurable outcomes, and a review date. Keep each milestone binary (done / not done).`,
+          `Translate the top insight from ${sourceLabel} into one customer-facing change in messaging, onboarding, or sales narrative within 72 hours.`,
+          `Define two risk controls before execution: what signal means “continue,” and what signal means “pivot or pause.” This prevents sunk-cost drift.`,
+          `Run a weekly review loop that compares expected outcome vs actual signal, then update priorities from evidence instead of intuition.`
         ],
-        tip: `Attached-context insight: treat the uploaded ${typeLabel} as a decision input, not a decision replacement. Pair this analysis with live customer evidence before scaling.`,
-        next: `If you want, I can now convert this ${typeLabel} into a founder-ready brief with execution owners, timeline, and risk controls.`
+        tip: `Attachment intelligence note: use ${typeLabel === 'link' ? 'that link' : 'this file'} as a live decision system, not a passive reference. The highest-performing founder teams turn context into rapid experiments, then into repeatable operating rules.`,
+        next: `If helpful, I can convert ${sourceLabel} into a one-page execution brief with priorities, owners, dependencies, and fallback options.`
       };
     }
 
@@ -3816,6 +3817,22 @@ Use the 'Add Block' button below to get started.</p>
         'Draft a founder-ready update I can send to investors with clear narrative and metrics.',
         'Help me choose between growth, retention, and runway priorities for the next 30 days.'
       ];
+      const latestAssistant = [...state.ai.history].reverse().find(msg => msg.role === 'assistant');
+      const latestAttachment = [...state.ai.history].reverse().find(msg => msg.role === 'user' && msg.attachment)?.attachment;
+      const continuationSuggestions = latestAssistant
+        ? [
+          'Pressure-test your previous recommendation with two realistic downside scenarios and mitigations.',
+          'Translate your last answer into a weekly founder operating checklist I can actually run.',
+          'Summarize the current strategy in plain language I can share with my team in 60 seconds.'
+        ]
+        : [];
+      const attachmentSuggestions = latestAttachment
+        ? [
+          `Turn insights from ${latestAttachment.name || latestAttachment.value} into a 30-day plan with clear owners.`,
+          `List the top assumptions inside ${latestAttachment.name || latestAttachment.value} and how to validate each this week.`,
+          `Find conflicts between my latest goals and ${latestAttachment.name || latestAttachment.value}, then resolve them.`
+        ]
+        : [];
       const keywordSuggestions = context.topKeywords.map((keyword, idx) => {
         const variants = [
           `Create an advanced but practical plan to improve ${keyword} over the next 3 weeks.`,
@@ -3827,7 +3844,7 @@ Use the 'Add Block' button below to get started.</p>
       const lastMessageSuggestion = context.lastUserMessage
         ? [`Continue this thread and deepen your answer with concrete milestones: "${context.lastUserMessage.slice(0, 80)}${context.lastUserMessage.length > 80 ? '...' : ''}"`]
         : [];
-      state.ai.promptSuggestions = [...lastMessageSuggestion, ...keywordSuggestions, ...adaptiveSuggestions].slice(0, 6);
+      state.ai.promptSuggestions = [...attachmentSuggestions, ...lastMessageSuggestion, ...keywordSuggestions, ...continuationSuggestions, ...adaptiveSuggestions].slice(0, 6);
     }
 
     function renderAI() {
@@ -3843,7 +3860,7 @@ Use the 'Add Block' button below to get started.</p>
         'Compare three strategic options with trade-offs and fallback plans.'
       ];
       el.innerHTML = `
-        <div class="rounded-3xl border border-sky-100 bg-gradient-to-b from-[#f9fcff] via-[#f6fbff] to-[#f7fffd] shadow-[0_18px_45px_rgba(15,23,42,0.08)] p-4 sm:p-6">
+        <div class="rounded-3xl border border-sky-100 bg-gradient-to-b from-[#f9fcff] via-[#f7fbff] to-[#f6fffc] shadow-[0_24px_60px_rgba(15,23,42,0.10)] p-5 sm:p-7">
           <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
               <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Barya AI</h2>
@@ -3857,25 +3874,25 @@ Use the 'Add Block' button below to get started.</p>
             ${['Text', 'Documents', 'Links', 'Images (Soon)'].map(cap => `<span class="px-2.5 py-1 rounded-full border border-sky-100 bg-sky-50 text-sky-700">${cap}</span>`).join('')}
           </div>
 
-          <div class="grid xl:grid-cols-[1fr_300px] gap-4">
+          <div class="grid xl:grid-cols-[1fr_320px] gap-5">
             <div class="min-w-0 space-y-4">
               <div class="flex flex-wrap gap-2">
                 ${quickActions.map(q => `<button data-quick="${q}" class="px-3 py-1.5 text-sm rounded-full border border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700 transition">${q}</button>`).join('')}
               </div>
 
-              <div id="chatBox" class="space-y-3 max-h-[56vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
+              <div id="chatBox" class="space-y-4 max-h-[58vh] overflow-auto scrollbar-thin pr-1 pb-2"></div>
 
               <form id="chatForm" class="space-y-3">
                 <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} rounded-xl border border-teal-100 bg-teal-50/70 p-2"></div>
-                <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-2.5">
-                  <textarea id="chatInput" rows="4" placeholder="Ask Barya AI anything about strategy, growth, product, operations, or execution..." class="w-full bg-transparent border-0 rounded-xl px-2 py-2 text-slate-700 outline-none focus:ring-0 resize-y" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
+                <div class="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] p-3 transition focus-within:border-teal-300 focus-within:shadow-[0_0_0_3px_rgba(20,184,166,0.15),0_14px_34px_rgba(15,23,42,0.12)]">
+                  <textarea id="chatInput" rows="4" placeholder="Ask Barya AI anything about strategy, growth, product, operations, or execution..." class="w-full bg-transparent border-0 rounded-xl px-3 py-2.5 text-slate-700 text-[15px] leading-relaxed outline-none focus:ring-0 resize-y" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
                   <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                     <div class="flex items-center gap-2">
                       <label class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm cursor-pointer hover:border-teal-300 hover:text-teal-700 transition inline-flex items-center gap-1.5">
-                        <span>📎</span><span>Attach</span>
+                        <span>📎</span><span>Attach File</span>
                         <input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx" class="hidden">
                       </label>
-                      <button id="attachLinkBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">+ Link</button>
+                      <button id="attachLinkBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm hover:border-teal-300 hover:text-teal-700 transition">Paste Link</button>
                     </div>
                     <div class="flex items-center gap-2">
                       <button class="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-sky-500 text-white text-sm font-medium hover:opacity-95 shadow-sm">Send</button>
@@ -3888,7 +3905,7 @@ Use the 'Add Block' button below to get started.</p>
               </form>
             </div>
 
-            <aside class="bg-white/95 border border-slate-200 rounded-2xl p-3 space-y-3 h-fit shadow-sm">
+            <aside class="bg-white/95 border border-slate-200 rounded-2xl p-4 space-y-3 h-fit shadow-[0_12px_26px_rgba(15,23,42,0.08)]">
               <p class="text-xs uppercase tracking-wide text-slate-500">Prompt Suggestions</p>
               <div class="space-y-2">
                 ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full text-left text-sm rounded-xl p-2.5 bg-slate-50 border border-slate-200 hover:border-teal-300 hover:bg-teal-50/40 transition">${escapeHTML(s)}</button>`).join('')}
@@ -3903,7 +3920,7 @@ Use the 'Add Block' button below to get started.</p>
         const wrap = document.createElement('div');
         if (item.role === 'user') {
           wrap.innerHTML = `
-            <div class="ml-auto max-w-3xl bg-gradient-to-r from-sky-500 to-teal-500 text-white rounded-2xl p-3 shadow-sm">
+            <div class="ml-auto max-w-3xl bg-gradient-to-r from-sky-500 to-teal-500 text-white rounded-3xl px-4 py-3.5 shadow-[0_10px_24px_rgba(14,116,144,0.28)]">
               <p class="text-[11px] uppercase tracking-wide text-white/80 mb-1">You</p>
               <p class="whitespace-pre-wrap">${escapeHTML(item.message || '')}</p>
               ${item.attachment ? `<p class="mt-2 text-xs text-white/85">Attachment: ${escapeHTML(item.attachment.name || item.attachment.value || '')}</p>` : ''}
@@ -3912,7 +3929,7 @@ Use the 'Add Block' button below to get started.</p>
         } else {
           const structured = item.structured || aiStructuredResponse(item.message || '');
           wrap.innerHTML = `
-            <div class="max-w-4xl bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+            <div class="max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 space-y-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.09)]">
               <p class="text-[11px] uppercase tracking-wide text-teal-600">Clear Answer</p>
               <p class="text-slate-700">${escapeHTML(structured.answer)}</p>
               <p class="text-[11px] uppercase tracking-wide text-teal-600 pt-1">Why It Matters</p>
@@ -3964,7 +3981,7 @@ Use the 'Add Block' button below to get started.</p>
         const chatBox = document.getElementById('chatBox');
         appendMessage(userMsg);
         const typing = document.createElement('div');
-        typing.innerHTML = `<div class="max-w-fit bg-white border border-slate-200 rounded-2xl px-3 py-2 text-sm text-slate-500 shadow-sm">Barya AI is thinking<span class="animate-pulse">...</span></div>`;
+        typing.innerHTML = `<div class="max-w-fit bg-white border border-slate-200 rounded-2xl px-3.5 py-2.5 text-sm text-slate-500 shadow-sm">Barya AI is thinking deeply<span class="animate-pulse">...</span></div>`;
         chatBox.appendChild(typing);
         chatBox.scrollTop = chatBox.scrollHeight;
         const structured = attachment ? aiAttachmentStructuredResponse(q, attachment) : aiStructuredResponse(q);
