@@ -432,51 +432,6 @@
       from { opacity: 0; transform: translate3d(0, 14px, 0); }
       to { opacity: 1; transform: translate3d(0, 0, 0); }
     }
-  
-
-    /* Premium redesign overrides */
-    :root {
-      --ws-bg:#061427;
-      --ws-bg-soft:#0b1d35;
-      --ws-card:#ffffff;
-      --ws-border:#d7e1ef;
-      --ws-teal:#14b8a6;
-      --ws-text:#10233d;
-      --ws-muted:#5c6e86;
-    }
-    body.light-theme{
-      background:
-        radial-gradient(900px 420px at -8% -10%, rgba(20,184,166,.18), transparent 50%),
-        radial-gradient(860px 380px at 100% 0%, rgba(37,99,235,.14), transparent 56%),
-        linear-gradient(180deg, #eef4fc 0%, #eaf1f9 100%);
-      color:var(--ws-text);
-    }
-    .light-theme #sidebar{
-      background:linear-gradient(180deg, #081a31 0%, #0b223f 100%) !important;
-      border-color:rgba(148,163,184,.25) !important;
-      box-shadow: 10px 0 30px rgba(2,6,23,.16);
-    }
-    .light-theme #mainNav .nav-item{
-      border-color:rgba(151,173,203,.28);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      color:#e6f0ff;
-      box-shadow:none;
-    }
-    .light-theme #mainNav .nav-label{color:#e6f0ff; font-weight:560;}
-    .light-theme .active-nav{background:linear-gradient(90deg, rgba(20,184,166,.35), rgba(20,184,166,.15)); color:#d8fff9;}
-    .light-theme .glass-card{
-      background:var(--ws-card)!important;
-      border:1px solid var(--ws-border)!important;
-      box-shadow:0 18px 38px rgba(15,23,42,.09),0 1px 0 rgba(255,255,255,.85) inset!important;
-      border-radius:1rem;
-    }
-    .premium-hover:hover{transform:translateY(-5px) scale(1.01);box-shadow:0 22px 34px rgba(15,23,42,.14);}
-    .light-theme header{background:rgba(255,255,255,.85)!important;backdrop-filter:blur(14px);border-color:#d9e5f3!important;}
-    .light-theme .soft-input:focus{box-shadow:0 0 0 4px rgba(20,184,166,.18);}
-    #saveToast.show{animation: savePulse 700ms ease;}
-    @keyframes savePulse{0%{transform:translate3d(-50%,8px,0) scale(.98)}55%{transform:translate3d(-50%,0,0) scale(1.02)}100%{transform:translate3d(-50%,0,0) scale(1)}}
-    .section-panel.section-enter-active{transition:opacity .34s ease, transform .34s cubic-bezier(.22,.61,.36,1);}
-
   </style>
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
@@ -3552,51 +3507,11 @@ Use the 'Add Block' button below to get started.</p>
                   <button data-view="kanban" class="px-3 py-2 rounded-lg border ${t.view === 'kanban' ? 'bg-teal-100 border-teal-300 text-teal-800' : 'bg-white border-slate-200'}">Kanban</button>
                 </div>
               </div>
-              ${suggestedTasks.length ? `<div class="rounded-xl border border-teal-200 bg-white p-3"><p class="text-sm font-medium text-slate-700 mb-2">Suggested from recent Strategy output</p><div class="flex flex-wrap gap-2">${suggestedTasks.map(s => `<button data-add-suggested="${escapeAttr(s)}" class="text-xs px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700">+ ${escapeHTML(s)}</button>`).join('')}</div></div>` : ''}
-              <div class="grid lg:grid-cols-4 gap-2">
-                <input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm lg:col-span-2" />
-                <select id="taskPriorityFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
-                <select id="taskStatusFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-              </div>
-              <div class="grid xl:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
-                <section class="min-w-0">${activeTasksMarkup}</section>
-                <aside class="space-y-4">
-                  <div class="rounded-xl border border-slate-200 bg-white p-3">
-                    <h3 class="font-semibold text-slate-700 mb-2">Task Editor</h3>
-                    <form id="taskForm" class="space-y-2">
-                      <input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-white border border-slate-200 rounded px-3 py-2" />
-                      <textarea id="taskDescription" rows="3" placeholder="Description" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea>
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-white border border-slate-200 rounded px-3 py-2" />
-                        <select id="taskPriority" class="bg-white border border-slate-200 rounded px-3 py-2">${['High', 'Medium', 'Low'].map(p => `<option ${selectedTask?.priority === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
-                        <select id="taskStatus" class="bg-white border border-slate-200 rounded px-3 py-2">${['To Do', 'In Progress', 'Done'].map(s => `<option ${selectedTask?.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-                        <select id="taskSprint" class="bg-white border border-slate-200 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId === s.id ? 'selected' : ''}>${escapeHTML(s.name)}</option>`).join('')}</select>
-                      </div>
-                      <input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-white border border-slate-200 rounded px-3 py-2" />
-                      <select id="taskLinkRef" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${linkOptions.map(opt => `<option value="${escapeAttr(opt.value)}" ${selectedTask?.linkRef === opt.value ? 'selected' : ''}>${escapeHTML(opt.label)}</option>`).join('')}</select>
-                      <div class="flex gap-2">
-                        <button class="px-3 py-2 rounded bg-teal-600 text-white text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button>
-                        <button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-white border border-slate-200 text-sm">Reset</button>
-                      </div>
-                    </form>
-                  </div>
-                  <div class="rounded-xl border border-slate-200 bg-white p-3">
-                    <h3 class="font-semibold text-slate-700 mb-2">Sprints</h3>
-                    <form id="sprintForm" class="grid gap-2 mb-3">
-                      <input id="sprintName" placeholder="Sprint name" class="bg-white border border-slate-200 rounded px-3 py-2" />
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="sprintStart" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" />
-                        <input id="sprintEnd" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" />
-                      </div>
-                      <button class="px-3 py-2 rounded bg-teal-50 border border-teal-200 text-teal-700 text-sm">Create Sprint</button>
-                    </form>
-                    <div class="space-y-2 max-h-[240px] overflow-auto">${sprintCards}</div>
-                  </div>
-                </aside>
-              </div>
-            </div>
-          </div>
-        </section>`;
+        ${suggestedTasks.length ? `<div class="rounded-xl border border-teal-200 bg-white p-3"><p class="text-sm font-medium text-slate-700 mb-2">Suggested from recent Strategy output</p><div class="flex flex-wrap gap-2">${suggestedTasks.map(s => `<button data-add-suggested="${escapeAttr(s)}" class="text-xs px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700">+ ${escapeHTML(s)}</button>`).join('')}</div></div>`:''}
+              <div class="grid lg:grid-cols-4 gap-2"><input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm lg:col-span-2" /><select id="taskPriorityFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatusFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select></div>
+              <div class="grid xl:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start"><section class="min-w-0">${activeTasksMarkup}</section>
+              <aside class="space-y-4"><div class="rounded-xl border border-slate-200 bg-white p-3"><h3 class="font-semibold text-slate-700 mb-2">Task Editor</h3><form id="taskForm" class="space-y-2"><input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><textarea id="taskDescription" rows="3" placeholder="Description" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea><div class="grid grid-cols-2 gap-2"><input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskPriority" class="bg-white border border-slate-200 rounded px-3 py-2">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatus" class="bg-white border border-slate-200 rounded px-3 py-2">${['To Do','In Progress','Done'].map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select><select id="taskSprint" class="bg-white border border-slate-200 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select></div><input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskLinkRef" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${linkOptions.map(opt => `<option value="${escapeAttr(opt.value)}" ${selectedTask?.linkRef===opt.value?'selected':''}>${escapeHTML(opt.label)}</option>`).join('')}</select><div class="flex gap-2"><button class="px-3 py-2 rounded bg-teal-600 text-white text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button><button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-white border border-slate-200 text-sm">Reset</button></div></form></div>
+              <div class="rounded-xl border border-slate-200 bg-white p-3"><h3 class="font-semibold text-slate-700 mb-2">Sprints</h3><form id="sprintForm" class="grid gap-2 mb-3"><input id="sprintName" placeholder="Sprint name" class="bg-white border border-slate-200 rounded px-3 py-2" /><div class="grid grid-cols-2 gap-2"><input id="sprintStart" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" /><input id="sprintEnd" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" /></div><button class="px-3 py-2 rounded bg-teal-50 border border-teal-200 text-teal-700 text-sm">Create Sprint</button></form><div class="space-y-2 max-h-[240px] overflow-auto">${sprintCards}</div></div></aside></div></div></div></section>`;
 
       el.querySelectorAll('[data-task-tab]').forEach(btn => btn.onclick = () => { t.leftTab = btn.dataset.taskTab; saveState(); });
       el.querySelectorAll('[data-view]').forEach(btn => btn.onclick = () => { t.view = btn.dataset.view; saveState(); });
