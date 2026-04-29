@@ -3387,40 +3387,44 @@ Use the 'Add Block' button below to get started.</p>
       });
     }
 
-    function taskDateInRange(date, start, end) {
-      if (!date) return false;
-      const d = new Date(date);
-      if (Number.isNaN(d.getTime())) return false;
-      const s = new Date(start);
-      const e = new Date(end);
-      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return false;
-      return d >= s && d <= e;
+    function buildTaskLinkOptions() {
+      const options = [{ value: '', label: 'No link' }];
+      (state.workspace?.pages || []).slice(0, 60).forEach(page => options.push({ value: `page:${page.id}`, label: `📄 Workspace: ${page.title || 'Untitled Page'}` }));
+      (state.memory?.insights || []).slice(0, 60).forEach(note => options.push({ value: `note:${note.id}`, label: `🧠 Memory: ${note.title || 'Untitled Note'}` }));
+      (state.strategy?.sessions || []).slice(0, 60).forEach(session => options.push({ value: `strategy:${session.id}`, label: `🔬 Strategy: ${session.query || 'Research Session'}` }));
+      return options;
     }
 
-    function taskMatchesLeftTab(task, tab) {
-      const todayIso = new Date().toISOString().slice(0, 10);
-      const now = new Date();
-      const weekEnd = new Date(now);
-      weekEnd.setDate(now.getDate() + 7);
-      if (tab === 'today') return task.dueDate === todayIso;
-      if (tab === 'week') return !!task.dueDate && new Date(task.dueDate) <= weekEnd && new Date(task.dueDate) >= new Date(todayIso);
-      if (tab === 'sprints') return !!task.sprintId;
-      if (tab === 'completed') return task.status === 'Done';
-      return true;
-    }
-
-    function linkedTaskLabel(task) {
-      if (!task.linkRef) return 'Not linked';
+    function getLinkedItem(task) {
+      if (!task?.linkRef) return null;
       const [kind, id] = String(task.linkRef).split(':');
       if (kind === 'note') {
         const note = (state.memory?.insights || []).find(n => n.id === id);
-        return `🧠 ${note?.title || 'Missing note'}`;
+        return note ? { icon: '🧠', type: 'Memory', title: note.title, target: () => {
+          state.activeSection = 'memory';
+          if (state.memory) state.memory.activeNoteId = id;
+        } } : { icon: '🧠', type: 'Memory', title: 'Missing note', missing: true };
       }
       if (kind === 'page') {
         const page = (state.workspace?.pages || []).find(p => p.id === id);
-        return `📄 ${page?.title || 'Missing page'}`;
+        return page ? { icon: '📄', type: 'Workspace', title: page.title, target: () => {
+          state.activeSection = 'workspace';
+          if (state.workspace) state.workspace.activePageId = id;
+        } } : { icon: '📄', type: 'Workspace', title: 'Missing page', missing: true };
       }
-      return String(task.linkRef);
+      if (kind === 'strategy') {
+        const session = (state.strategy?.sessions || []).find(s => s.id === id);
+        return session ? { icon: '🔬', type: 'Strategy', title: session.query || 'Research Session', target: () => {
+          state.activeSection = 'planning';
+          if (state.strategy) state.strategy.activeSessionId = id;
+        } } : { icon: '🔬', type: 'Strategy', title: 'Missing research output', missing: true };
+      }
+      return { icon: '🔗', type: 'Linked', title: task.linkRef, missing: true };
+    }
+
+    function linkedTaskLabel(task) {
+      const linked = getLinkedItem(task);
+      return linked ? `${linked.icon} ${linked.title}` : 'Not linked';
     }
 
     function renderTasks() {
@@ -3438,6 +3442,12 @@ Use the 'Add Block' button below to get started.</p>
       ];
       const sprintMap = new Map(t.sprints.map(s => [s.id, s]));
       const normalizedSearch = t.search.toLowerCase().trim();
+      const linkOptions = buildTaskLinkOptions();
+      const suggestionSource = (state.strategy?.sessions || []).find(s => s.id === state.strategy?.activeSessionId) || (state.strategy?.sessions || [])[0];
+      const suggestedTasks = [...new Set([...(suggestionSource?.deep?.next7Days || []), ...(suggestionSource?.deep?.priorities || [])])]
+        .map(line => String(line).replace(/^Day\s*\d+-?\d*:\s*/i, '').trim())
+        .filter(Boolean)
+        .slice(0, 4);
       const filtered = t.items.filter(task => {
         const searchText = `${task.title} ${task.description} ${(task.tags || []).join(' ')} ${linkedTaskLabel(task)}`.toLowerCase();
         const bySearch = !normalizedSearch || searchText.includes(normalizedSearch);
@@ -3454,264 +3464,60 @@ Use the 'Add Block' button below to get started.</p>
         return b.updatedAt.localeCompare(a.updatedAt);
       });
       const selectedTask = t.items.find(task => task.id === t.selectedTaskId) || null;
+      const todayIso = new Date().toISOString().slice(0, 10);
 
       const sprintCards = t.sprints.map(sprint => {
         const tasks = t.items.filter(task => task.sprintId === sprint.id);
         const done = tasks.filter(task => task.status === 'Done').length;
         const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
-        return `
-          <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <p class="font-medium">${escapeHTML(sprint.name)}</p>
-                <p class="text-xs text-zinc-500">${escapeHTML(sprint.startDate || 'No start')} → ${escapeHTML(sprint.endDate || 'No end')}</p>
-              </div>
-              <button data-delete-sprint="${sprint.id}" class="text-xs text-red-400">Delete</button>
-            </div>
-            <div class="mt-3 h-2 rounded-full bg-zinc-800 overflow-hidden"><div class="h-full bg-[#14b8a6]" style="width:${pct}%"></div></div>
-            <p class="text-xs text-zinc-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p>
-          </div>
-        `;
-      }).join('') || emptyStateMarkup('🏁', 'No sprints yet.', 'Create a sprint to group this week’s execution tasks.', '', 'Start Here', 'section:tasks');
+        return `<div class="rounded-xl border border-teal-200/60 bg-white p-3 shadow-sm">
+          <div class="flex items-start justify-between gap-2"><div><p class="font-semibold text-slate-800">${escapeHTML(sprint.name)}</p><p class="text-xs text-slate-500">${escapeHTML(sprint.startDate || 'No start')} → ${escapeHTML(sprint.endDate || 'No end')}</p></div><button data-delete-sprint="${sprint.id}" class="text-xs text-rose-500">Delete</button></div>
+          <div class="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-teal-500" style="width:${pct}%"></div></div><p class="text-xs text-slate-500 mt-2">${done}/${tasks.length} completed (${pct}%)</p></div>`;
+      }).join('') || emptyStateMarkup('🏁', 'No sprints yet.', 'Create a sprint to group execution goals.', '', 'Start Here', 'section:tasks');
 
       const taskCard = (task) => {
         const sprint = sprintMap.get(task.sprintId);
-        const prColor = task.priority === 'High' ? 'text-rose-300 border-rose-500/40 bg-rose-500/10' : task.priority === 'Medium' ? 'text-amber-300 border-amber-500/40 bg-amber-500/10' : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10';
-        return `
-          <article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2 ${t.selectedTaskId === task.id ? 'ring-1 ring-orange-500/50' : ''}">
-            <div class="flex items-start justify-between gap-2">
-              <button data-select-task="${task.id}" class="text-left flex-1">
-                <p class="font-medium">${escapeHTML(task.title)}</p>
-                <p class="text-xs text-zinc-400">${escapeHTML(task.description || 'No description')}</p>
-              </button>
-              <span class="text-[11px] px-2 py-0.5 rounded border ${prColor}">${task.priority}</span>
-            </div>
-            <div class="flex flex-wrap gap-1">
-              ${(task.tags || []).map(tag => `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-200 border border-orange-500/25">${escapeHTML(tag)}</span>`).join('') || '<span class="text-[10px] text-zinc-500">No tags</span>'}
-            </div>
-            <div class="text-xs text-zinc-500 flex flex-wrap gap-3">
-              <span>Due: ${escapeHTML(task.dueDate || '—')}</span>
-              <span>Sprint: ${escapeHTML(sprint?.name || 'Backlog')}</span>
-              <button data-jump-link="${task.id}" class="text-orange-300 hover:text-orange-200">${escapeHTML(linkedTaskLabel(task))}</button>
-            </div>
-            <div class="flex gap-2">
-              <button data-show-related="task:${task.id}" class="text-xs px-2 py-1 rounded bg-orange-500/15 text-orange-200 border border-orange-500/30">Show Related</button>
-              <button data-edit-task="${task.id}" class="text-xs px-2 py-1 rounded bg-zinc-800 border border-zinc-700">Edit</button>
-              <button data-delete-task="${task.id}" class="text-xs px-2 py-1 rounded bg-red-500/15 text-red-300 border border-red-500/30">Delete</button>
-            </div>
-          </article>
-        `;
+        const linked = getLinkedItem(task);
+        const overdue = task.dueDate && task.status !== 'Done' && task.dueDate < todayIso;
+        const prClass = task.priority === 'High' ? 'bg-rose-100 text-rose-700 border-rose-200' : task.priority === 'Medium' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        return `<article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card rounded-2xl border ${t.selectedTaskId === task.id ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200'} bg-white p-4 shadow-sm space-y-3">
+          <div class="flex items-start justify-between gap-3"><button data-select-task="${task.id}" class="text-left flex-1"><p class="text-base font-semibold text-slate-800">${escapeHTML(task.title)}</p><p class="text-sm text-slate-500 mt-1">${escapeHTML(task.description || 'No description')}</p></button><span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${prClass}">${task.priority}</span></div>
+          <div class="flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="text-[11px] px-2 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100">${escapeHTML(tag)}</span>`).join('') || '<span class="text-xs text-slate-400">No tags</span>'}</div>
+          <div class="text-xs text-slate-500 flex flex-wrap gap-3"><span class="${overdue ? 'text-rose-600 font-semibold' : ''}">Due: ${escapeHTML(task.dueDate || '—')} ${overdue ? '• Overdue' : ''}</span><span>Sprint: ${escapeHTML(sprint?.name || 'Backlog')}</span>${linked ? `<button data-jump-link="${task.id}" class="text-teal-700 hover:text-teal-600">${linked.icon} ${escapeHTML(linked.title)}</button>` : '<span class="text-slate-400">Not linked</span>'}</div>
+          <div class="flex gap-2"><button data-edit-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200">Edit</button><button data-delete-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-600">Delete</button></div></article>`;
       };
 
-      el.innerHTML = `
-        <section class="bg-gradient-to-br from-[#0b0f14] to-[#090b10] border border-orange-500/20 rounded-2xl shadow-neon overflow-hidden">
-          <div class="grid xl:grid-cols-[220px_1fr] min-h-[76vh]">
-            <aside class="border-r border-zinc-800 bg-[#0b0e13] p-4 space-y-3">
-              <h2 class="text-lg font-semibold text-[#14b8a6]">Task & Sprint Manager</h2>
-              ${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2 rounded-lg border ${t.leftTab === tab.id ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-800 hover:border-orange-500/30'}">${tab.label}</button>`).join('')}
-              <div class="pt-3 border-t border-zinc-800 space-y-2">
-                <button id="exportTasks" class="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Export Tasks & Sprints</button>
-                <label class="block w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm text-center cursor-pointer">Import Tasks & Sprints<input id="importTasks" type="file" accept="application/json" class="hidden"></label>
-                <button id="clearTasks" class="w-full px-3 py-2 rounded bg-red-500/20 border border-red-500/30 text-red-300 text-sm">Clear All Tasks</button>
-              </div>
-            </aside>
-
-            <div class="p-4 sm:p-5 space-y-4">
-              <div class="flex flex-wrap items-center gap-2 justify-between">
-                <div class="flex flex-wrap items-center gap-2">
-                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-orange-500/20 text-orange-200 border border-orange-500/40">+ New Task</button>
-                  <button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">+ New Sprint</button>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button data-view="list" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'list' ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'}">List</button>
-                  <button data-view="kanban" class="px-3 py-2 text-sm rounded-lg border ${t.view === 'kanban' ? 'bg-orange-500/15 border-orange-500/40 text-orange-200' : 'bg-zinc-900 border-zinc-700'}">Kanban</button>
-                </div>
-              </div>
-
-              <div class="grid lg:grid-cols-4 gap-2">
-                <input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm lg:col-span-2" />
-                <select id="taskPriorityFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select>
-                <select id="taskStatusFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select>
-                <select id="taskSprintFilter" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm lg:col-span-2"><option value="all" ${t.sprintFilter==='all'?'selected':''}>All Sprints</option><option value="" ${t.sprintFilter===''?'selected':''}>No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${t.sprintFilter===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select>
-              </div>
-
-              <div class="grid xl:grid-cols-[1fr_340px] gap-4">
-                <section>
-                  ${t.view === 'list' ? `
-                    <div class="space-y-2">${sorted.map(taskCard).join('') || emptyStateMarkup('✅', 'No tasks yet.', 'Add your first task so your execution plan has momentum.', '', 'Start Here', 'section:tasks')}</div>
-                  ` : `
-                    <div class="grid md:grid-cols-3 gap-3">
-                      ${['To Do','In Progress','Done'].map(status => `
-                        <div data-drop-status="${status}" class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3 min-h-[300px]">
-                          <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-medium">${status}</h3>
-                            <span class="text-xs text-zinc-500">${sorted.filter(task => task.status === status).length}</span>
-                          </div>
-                          <div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('') || emptyStateMarkup('📥', 'No tasks in this lane yet.', 'Drag a task here or create one now.', '', 'Start Here', 'section:tasks')}</div>
-                        </div>
-                      `).join('')}
-                    </div>
-                  `}
-                </section>
-
-                <aside class="space-y-4">
-                  <div class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3">
-                    <h3 class="font-semibold mb-2">Task Editor</h3>
-                    <form id="taskForm" class="space-y-2">
-                      <input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                      <textarea id="taskDescription" rows="3" placeholder="Description" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea>
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                        <select id="taskPriority" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select>
-                        <select id="taskStatus" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2">${['To Do','In Progress','Done'].map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select>
-                        <select id="taskSprint" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select>
-                      </div>
-                      <input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                      <select id="taskLinkRef" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2">
-                        <option value="">Link to note/page (optional)</option>
-                        ${(state.memory?.insights || []).slice(0, 30).map(note => `<option value="note:${note.id}" ${selectedTask?.linkRef===`note:${note.id}`?'selected':''}>🧠 ${escapeHTML(note.title)}</option>`).join('')}
-                        ${(state.workspace?.pages || []).slice(0, 30).map(page => `<option value="page:${page.id}" ${selectedTask?.linkRef===`page:${page.id}`?'selected':''}>📄 ${escapeHTML(page.title)}</option>`).join('')}
-                      </select>
-                      <div class="flex gap-2">
-                        <button class="px-3 py-2 rounded bg-orange-500/20 text-orange-200 border border-orange-500/40 text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button>
-                        <button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Reset</button>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div class="bg-[#0e1218] border border-zinc-800 rounded-xl p-3">
-                    <h3 class="font-semibold mb-2">Sprint Mode</h3>
-                    <form id="sprintForm" class="grid grid-cols-1 gap-2 mb-3">
-                      <input id="sprintName" placeholder="Sprint name" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="sprintStart" type="date" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                        <input id="sprintEnd" type="date" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2" />
-                      </div>
-                      <button class="px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-sm">Create Sprint</button>
-                    </form>
-                    <div class="space-y-2 max-h-[260px] overflow-auto scrollbar-thin">${sprintCards}</div>
-                  </div>
-                </aside>
-              </div>
-            </div>
-          </div>
-        </section>
-      `;
+      el.innerHTML = `<section class="rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50 via-cyan-50 to-white p-4 sm:p-6 shadow-lg shadow-teal-100/50 space-y-4">
+        <div class="grid xl:grid-cols-[210px_1fr] gap-4"><aside class="space-y-2">${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="w-full text-left px-3 py-2.5 rounded-xl border ${t.leftTab===tab.id?'bg-teal-100 border-teal-300 text-teal-800':'bg-white border-slate-200 text-slate-600'}">${tab.label}</button>`).join('')}</aside>
+        <div class="space-y-4"><div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-2xl font-semibold text-teal-700">Tasks & Sprint Manager</h2><div class="flex gap-2"><button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-teal-600 text-white">+ New Task</button><button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-white border border-slate-200">+ New Sprint</button><button data-view="list" class="px-3 py-2 rounded-lg border ${t.view==='list'?'bg-teal-100 border-teal-300 text-teal-800':'bg-white border-slate-200'}">List</button><button data-view="kanban" class="px-3 py-2 rounded-lg border ${t.view==='kanban'?'bg-teal-100 border-teal-300 text-teal-800':'bg-white border-slate-200'}">Kanban</button></div></div>
+        ${suggestedTasks.length ? `<div class="rounded-xl border border-teal-200 bg-white p-3"><p class="text-sm font-medium text-slate-700 mb-2">Suggested from recent Strategy output</p><div class="flex flex-wrap gap-2">${suggestedTasks.map(s => `<button data-add-suggested="${escapeAttr(s)}" class="text-xs px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700">+ ${escapeHTML(s)}</button>`).join('')}</div></div>`:''}
+        <div class="grid lg:grid-cols-4 gap-2"><input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm lg:col-span-2" /><select id="taskPriorityFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatusFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="grid xl:grid-cols-[1fr_360px] gap-4"><section>${t.view === 'list' ? `<div class="space-y-3">${sorted.map(taskCard).join('') || emptyStateMarkup('✅', 'No tasks yet.', 'Add your first task.', '', 'Start Here', 'section:tasks')}</div>` : `<div class="grid md:grid-cols-3 gap-3">${['To Do','In Progress','Done'].map(status => `<div data-drop-status="${status}" class="bg-white border border-slate-200 rounded-2xl p-3 min-h-[280px]"><div class="flex items-center justify-between mb-2"><h3 class="font-medium text-slate-700">${status}</h3><span class="text-xs text-slate-400">${sorted.filter(task => task.status === status).length}</span></div><div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('')}</div></div>`).join('')}</div>`}</section>
+        <aside class="space-y-4"><div class="rounded-xl border border-slate-200 bg-white p-3"><h3 class="font-semibold text-slate-700 mb-2">Task Editor</h3><form id="taskForm" class="space-y-2"><input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><textarea id="taskDescription" rows="3" placeholder="Description" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea><div class="grid grid-cols-2 gap-2"><input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskPriority" class="bg-white border border-slate-200 rounded px-3 py-2">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatus" class="bg-white border border-slate-200 rounded px-3 py-2">${['To Do','In Progress','Done'].map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select><select id="taskSprint" class="bg-white border border-slate-200 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select></div><input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskLinkRef" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${linkOptions.map(opt => `<option value="${escapeAttr(opt.value)}" ${selectedTask?.linkRef===opt.value?'selected':''}>${escapeHTML(opt.label)}</option>`).join('')}</select><div class="flex gap-2"><button class="px-3 py-2 rounded bg-teal-600 text-white text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button><button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-white border border-slate-200 text-sm">Reset</button></div></form></div>
+        <div class="rounded-xl border border-slate-200 bg-white p-3"><h3 class="font-semibold text-slate-700 mb-2">Sprints</h3><form id="sprintForm" class="grid gap-2 mb-3"><input id="sprintName" placeholder="Sprint name" class="bg-white border border-slate-200 rounded px-3 py-2" /><div class="grid grid-cols-2 gap-2"><input id="sprintStart" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" /><input id="sprintEnd" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" /></div><button class="px-3 py-2 rounded bg-teal-50 border border-teal-200 text-teal-700 text-sm">Create Sprint</button></form><div class="space-y-2 max-h-[240px] overflow-auto">${sprintCards}</div></div></aside></div></div></div></section>`;
 
       el.querySelectorAll('[data-task-tab]').forEach(btn => btn.onclick = () => { t.leftTab = btn.dataset.taskTab; saveState(); });
       el.querySelectorAll('[data-view]').forEach(btn => btn.onclick = () => { t.view = btn.dataset.view; saveState(); });
       document.getElementById('taskSearch').oninput = (e) => { t.search = e.target.value; saveState(); };
       document.getElementById('taskPriorityFilter').onchange = (e) => { t.priorityFilter = e.target.value; saveState(); };
       document.getElementById('taskStatusFilter').onchange = (e) => { t.statusFilter = e.target.value; saveState(); };
-      document.getElementById('taskSprintFilter').onchange = (e) => { t.sprintFilter = e.target.value; saveState(); };
-
+      el.querySelectorAll('[data-add-suggested]').forEach(btn => btn.onclick = () => {
+        const now = new Date().toISOString();
+        t.items.unshift({ id: crypto.randomUUID(), title: btn.dataset.addSuggested, description: 'Suggested from recent Strategy output', dueDate: '', priority: 'High', status: 'To Do', tags: ['Strategy','Suggested'], sprintId: '', linkRef: suggestionSource ? `strategy:${suggestionSource.id}` : '', createdAt: now, updatedAt: now });
+        saveState();
+      });
       document.getElementById('newTaskBtn').onclick = () => { t.selectedTaskId = null; renderTasks(); };
       document.getElementById('newSprintBtn').onclick = () => document.getElementById('sprintName').focus();
       el.querySelectorAll('[data-select-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.selectTask; renderTasks(); });
       el.querySelectorAll('[data-edit-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.editTask; renderTasks(); });
-      el.querySelectorAll('[data-show-related]').forEach(btn => btn.onclick = () => showRelated(btn.dataset.showRelated));
-      el.querySelectorAll('[data-delete-task]').forEach(btn => btn.onclick = () => {
-        t.items = t.items.filter(task => task.id !== btn.dataset.deleteTask);
-        if (t.selectedTaskId === btn.dataset.deleteTask) t.selectedTaskId = null;
-        saveState();
-      });
-
-      el.querySelectorAll('[data-jump-link]').forEach(btn => btn.onclick = () => {
-        const task = t.items.find(item => item.id === btn.dataset.jumpLink);
-        if (!task?.linkRef) return;
-        const [kind, id] = task.linkRef.split(':');
-        if (kind === 'note') {
-          state.activeSection = 'memory';
-          if (state.memory) state.memory.activeNoteId = id;
-          renderNav();
-          saveState();
-        } else if (kind === 'page') {
-          state.activeSection = 'workspace';
-          if (state.workspace) state.workspace.activePageId = id;
-          renderNav();
-          saveState();
-        }
-      });
-
-      document.getElementById('taskForm').onsubmit = (e) => {
-        e.preventDefault();
-        const title = document.getElementById('taskTitle').value.trim();
-        if (!title) return;
-        const payload = {
-          title,
-          description: document.getElementById('taskDescription').value.trim(),
-          dueDate: document.getElementById('taskDueDate').value,
-          priority: document.getElementById('taskPriority').value,
-          status: document.getElementById('taskStatus').value,
-          sprintId: document.getElementById('taskSprint').value,
-          tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean),
-          linkRef: document.getElementById('taskLinkRef').value,
-          updatedAt: new Date().toISOString()
-        };
-        if (t.selectedTaskId) {
-          const idx = t.items.findIndex(task => task.id === t.selectedTaskId);
-          if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload };
-        } else {
-          const now = new Date().toISOString();
-          const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload };
-          t.items.unshift(newTask);
-          t.selectedTaskId = newTask.id;
-        }
-        saveState();
-      };
+      el.querySelectorAll('[data-delete-task]').forEach(btn => btn.onclick = () => { t.items = t.items.filter(task => task.id !== btn.dataset.deleteTask); if (t.selectedTaskId === btn.dataset.deleteTask) t.selectedTaskId = null; saveState(); });
+      el.querySelectorAll('[data-jump-link]').forEach(btn => btn.onclick = () => { const task = t.items.find(item => item.id === btn.dataset.jumpLink); const linked = getLinkedItem(task); if (!linked?.target) return; linked.target(); renderNav(); saveState(); });
+      document.getElementById('taskForm').onsubmit = (e) => { e.preventDefault(); const title = document.getElementById('taskTitle').value.trim(); if (!title) return; const payload = { title, description: document.getElementById('taskDescription').value.trim(), dueDate: document.getElementById('taskDueDate').value, priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, sprintId: document.getElementById('taskSprint').value, tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean), linkRef: document.getElementById('taskLinkRef').value, updatedAt: new Date().toISOString() }; if (t.selectedTaskId) { const idx = t.items.findIndex(task => task.id === t.selectedTaskId); if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload }; } else { const now = new Date().toISOString(); const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload }; t.items.unshift(newTask); t.selectedTaskId = newTask.id; } saveState(); };
       document.getElementById('taskFormReset').onclick = () => { t.selectedTaskId = null; renderTasks(); };
-
-      document.getElementById('sprintForm').onsubmit = (e) => {
-        e.preventDefault();
-        const name = document.getElementById('sprintName').value.trim();
-        if (!name) return;
-        t.sprints.unshift({
-          id: crypto.randomUUID(),
-          name,
-          startDate: document.getElementById('sprintStart').value,
-          endDate: document.getElementById('sprintEnd').value,
-          createdAt: new Date().toISOString()
-        });
-        document.getElementById('sprintForm').reset();
-        saveState();
-      };
-      el.querySelectorAll('[data-delete-sprint]').forEach(btn => btn.onclick = () => {
-        const sid = btn.dataset.deleteSprint;
-        t.sprints = t.sprints.filter(s => s.id !== sid);
-        t.items.forEach(task => { if (task.sprintId === sid) task.sprintId = ''; });
-        saveState();
-      });
-
-      document.getElementById('exportTasks').onclick = () => downloadJSON('tasks-sprints-export.json', { items: t.items, sprints: t.sprints });
-      document.getElementById('importTasks').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
-        if (!data || typeof data !== 'object') return;
-        t.items = Array.isArray(data.items) ? data.items : [];
-        t.sprints = Array.isArray(data.sprints) ? data.sprints : [];
-        t.selectedTaskId = null;
-        ensureTasksState();
-        saveState();
-      });
-      document.getElementById('clearTasks').onclick = () => {
-        if (!confirm('Clear all tasks and sprints? This cannot be undone.')) return;
-        state.tasks = structuredClone(defaultState.tasks);
-        saveState();
-      };
-
-      el.querySelectorAll('[data-drop-status]').forEach(zone => {
-        zone.ondragover = (evt) => evt.preventDefault();
-        zone.ondrop = (evt) => {
-          evt.preventDefault();
-          const taskId = evt.dataTransfer.getData('text/task-id');
-          const task = t.items.find(item => item.id === taskId);
-          if (!task) return;
-          task.status = zone.dataset.dropStatus;
-          task.updatedAt = new Date().toISOString();
-          saveState();
-        };
-      });
-      el.querySelectorAll('.task-card').forEach(card => {
-        card.ondragstart = (evt) => evt.dataTransfer.setData('text/task-id', card.dataset.taskId || '');
-      });
+      document.getElementById('sprintForm').onsubmit = (e) => { e.preventDefault(); const name = document.getElementById('sprintName').value.trim(); if (!name) return; t.sprints.unshift({ id: crypto.randomUUID(), name, startDate: document.getElementById('sprintStart').value, endDate: document.getElementById('sprintEnd').value, createdAt: new Date().toISOString() }); document.getElementById('sprintForm').reset(); saveState(); };
+      el.querySelectorAll('[data-delete-sprint]').forEach(btn => btn.onclick = () => { const sid = btn.dataset.deleteSprint; t.sprints = t.sprints.filter(s => s.id !== sid); t.items.forEach(task => { if (task.sprintId === sid) task.sprintId = ''; }); saveState(); });
+      el.querySelectorAll('[data-drop-status]').forEach(zone => { zone.ondragover = (evt) => evt.preventDefault(); zone.ondrop = (evt) => { evt.preventDefault(); const taskId = evt.dataTransfer.getData('text/task-id'); const task = t.items.find(item => item.id === taskId); if (!task) return; task.status = zone.dataset.dropStatus; task.updatedAt = new Date().toISOString(); saveState(); }; });
+      el.querySelectorAll('.task-card').forEach(card => { card.ondragstart = (evt) => evt.dataTransfer.setData('text/task-id', card.dataset.taskId || ''); });
     }
 
     function ensureAIState() {
