@@ -1352,15 +1352,13 @@
     const contextLine = buildContextSnapshot(contextSnippets);
     const resources = getUsefulResourcesForDomain(domain);
     const parts = [
-      `1. Clear Answer\n${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
-      `2. Why It Matters\n${config.whyItMatters}`,
-      `3. Action Steps\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
-      `4. Useful Resources\n${resources.map((resource) => `- ${resource}`).join('\n')}`,
-      `5. Founder Note\n${config.founderTip}`
+      `1. Situation\n- ${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
+      `2. Insight\n- ${config.whyItMatters}`,
+      `3. Strategy\n- ${config.founderTip}`,
+      `4. Action Plan\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
+      `5. Tools / Workspace Usage\n${resources.map((resource) => `- Use ${resource} next`).join('\n')}`
     ];
-    if (config.nextMove) {
-      parts.push(`Next Move:\n${config.nextMove}`);
-    }
+    parts.push(`6. Next Step\n- ${config.nextMove || 'Share your stage, budget, and target audience so I can generate your exact next execution sprint.'}`);
     return parts.join('\n\n');
   }
 
