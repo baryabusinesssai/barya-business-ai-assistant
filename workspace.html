@@ -238,6 +238,20 @@
       opacity: 1;
       transform: translate3d(-50%, 0, 0);
     }
+
+    #workspaceLayout {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+    }
+    #mainTaskSection {
+      flex-grow: 1;
+      min-width: 0;
+      padding: 40px;
+      background: #ffffff;
+      color: #1e293b;
+      overflow-y: auto;
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 1ms !important;
@@ -435,7 +449,7 @@
   </style>
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
-  <div class="min-h-screen flex">
+  <div id="workspaceLayout" class="min-h-screen flex">
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
@@ -474,7 +488,7 @@
         </div>
       </header>
 
-      <main id="mainTaskSection" class="flex-grow block visible p-4 sm:p-6 space-y-6 min-h-screen relative z-10 text-[#1e293b]">
+      <main id="mainTaskSection" class="flex-grow block visible space-y-6 min-h-screen z-10 text-[#1e293b]">
         <section id="section-dashboard" class="section-panel active space-y-6"></section>
         <section id="section-workspace" class="section-panel space-y-6"></section>
         <section id="section-tasks" class="section-panel space-y-6"></section>
