@@ -436,7 +436,7 @@
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
   <div class="min-h-screen flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
           <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-400/40 bg-gradient-to-br from-teal-300/20 via-teal-400/15 to-slate-900/20 flex items-center justify-center shadow-[0_10px_24px_rgba(20,184,166,0.2)]">
@@ -456,7 +456,7 @@
       </button>
     </aside>
 
-    <div class="flex-1 lg:ml-0 w-full">
+    <div class="flex-1 lg:ml-0 w-full min-h-screen flex flex-col">
       <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
@@ -474,7 +474,7 @@
         </div>
       </header>
 
-      <main class="p-4 sm:p-6 space-y-6">
+      <main id="mainTaskSection" class="flex-grow block visible p-4 sm:p-6 space-y-6 min-h-screen relative z-10 text-[#1e293b]">
         <section id="section-dashboard" class="section-panel active space-y-6"></section>
         <section id="section-workspace" class="section-panel space-y-6"></section>
         <section id="section-tasks" class="section-panel space-y-6"></section>
@@ -517,7 +517,7 @@
     <div class="p-5" id="memoryModalBody"></div>
   </dialog>
 
-  <div id="howItWorksModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 how-it-works-backdrop">
+  <div id="howItWorksModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 how-it-works-backdrop">
     <div class="how-it-works-modal p-4 sm:p-5">
       <div class="flex items-center justify-between gap-3 mb-3">
         <h3 class="text-base sm:text-lg font-semibold text-slate-900">How Barya Works - 1 Minute Demo</h3>
