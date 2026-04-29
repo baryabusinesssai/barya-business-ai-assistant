@@ -432,6 +432,51 @@
       from { opacity: 0; transform: translate3d(0, 14px, 0); }
       to { opacity: 1; transform: translate3d(0, 0, 0); }
     }
+  
+
+    /* Premium redesign overrides */
+    :root {
+      --ws-bg:#061427;
+      --ws-bg-soft:#0b1d35;
+      --ws-card:#ffffff;
+      --ws-border:#d7e1ef;
+      --ws-teal:#14b8a6;
+      --ws-text:#10233d;
+      --ws-muted:#5c6e86;
+    }
+    body.light-theme{
+      background:
+        radial-gradient(900px 420px at -8% -10%, rgba(20,184,166,.18), transparent 50%),
+        radial-gradient(860px 380px at 100% 0%, rgba(37,99,235,.14), transparent 56%),
+        linear-gradient(180deg, #eef4fc 0%, #eaf1f9 100%);
+      color:var(--ws-text);
+    }
+    .light-theme #sidebar{
+      background:linear-gradient(180deg, #081a31 0%, #0b223f 100%) !important;
+      border-color:rgba(148,163,184,.25) !important;
+      box-shadow: 10px 0 30px rgba(2,6,23,.16);
+    }
+    .light-theme #mainNav .nav-item{
+      border-color:rgba(151,173,203,.28);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color:#e6f0ff;
+      box-shadow:none;
+    }
+    .light-theme #mainNav .nav-label{color:#e6f0ff; font-weight:560;}
+    .light-theme .active-nav{background:linear-gradient(90deg, rgba(20,184,166,.35), rgba(20,184,166,.15)); color:#d8fff9;}
+    .light-theme .glass-card{
+      background:var(--ws-card)!important;
+      border:1px solid var(--ws-border)!important;
+      box-shadow:0 18px 38px rgba(15,23,42,.09),0 1px 0 rgba(255,255,255,.85) inset!important;
+      border-radius:1rem;
+    }
+    .premium-hover:hover{transform:translateY(-5px) scale(1.01);box-shadow:0 22px 34px rgba(15,23,42,.14);}
+    .light-theme header{background:rgba(255,255,255,.85)!important;backdrop-filter:blur(14px);border-color:#d9e5f3!important;}
+    .light-theme .soft-input:focus{box-shadow:0 0 0 4px rgba(20,184,166,.18);}
+    #saveToast.show{animation: savePulse 700ms ease;}
+    @keyframes savePulse{0%{transform:translate3d(-50%,8px,0) scale(.98)}55%{transform:translate3d(-50%,0,0) scale(1.02)}100%{transform:translate3d(-50%,0,0) scale(1)}}
+    .section-panel.section-enter-active{transition:opacity .34s ease, transform .34s cubic-bezier(.22,.61,.36,1);}
+
   </style>
 </head>
 <body class="light-theme text-gray-900 min-h-screen antialiased">
