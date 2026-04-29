@@ -1611,21 +1611,63 @@
       ensureResourcesState();
       const el = document.getElementById('section-resources');
       const query = state.resources.search.trim().toLowerCase();
-      const templates = [
-        { id: 'template-domain-comparison', title: 'Domain Comparison Template', note: 'Compare registrar pricing, renewal, add-ons, support quality, and DNS control in one place.' },
-        { id: 'template-no-code-decision', title: 'No-Code Tool Decision Matrix', note: 'Score tools by learning curve, flexibility, integrations, speed, and monthly cost.' },
-        { id: 'template-community-tracker', title: 'Community & Networking Tracker', note: 'Track founder communities, top contacts, follow-ups, and opportunities generated.' },
-        { id: 'template-competition-tracker', title: 'Competition Application Tracker', note: 'Monitor deadlines, requirements, status, outcomes, and next application actions.' },
-        { id: 'template-books-notes', title: 'Book Reading & Notes Template', note: 'Capture key lessons, action items, and experiments to apply in your startup.' }
+      const filterOptions = [
+        { id: 'all', label: 'All' },
+        { id: 'domains', label: 'Domains' },
+        { id: 'app-building', label: 'App Building' },
+        { id: 'communities', label: 'Communities' },
+        { id: 'competitions', label: 'Competitions' },
+        { id: 'investment', label: 'Investment' },
+        { id: 'books', label: 'Books' },
+        { id: 'people', label: 'People' }
       ];
-      const tabIds = ['templates', ...state.resources.library.map(section => section.id)];
-      if (!tabIds.includes(state.resources.activeTab)) state.resources.activeTab = 'templates';
+      if (![...filterOptions.map(option => option.id), 'templates'].includes(state.resources.activeTab)) state.resources.activeTab = 'all';
+      const templates = [
+        { id: 'template-domain-comparison', title: 'Domain Comparison Sheet', note: 'Compare registrar pricing, renewal, add-ons, support quality, and DNS control in one place.' },
+        { id: 'template-no-code-decision', title: 'No-Code Tool Decision Matrix', note: 'Score tools by learning curve, flexibility, integrations, speed, and monthly cost.' },
+        { id: 'template-competition-tracker', title: 'Competition Application Tracker', note: 'Monitor deadlines, requirements, status, outcomes, and next application actions.' },
+        { id: 'template-books-notes', title: 'Book Reading Notes Template', note: 'Capture key lessons, action items, and experiments to apply in your startup.' }
+      ];
+      const founderTips = {
+        domains: 'Buy with a 2-year horizon in mind. Cheap first-year pricing is meaningless if renewal and support quality are poor.',
+        'app-building': 'Ship fast, but protect future flexibility. Pick tools that support exports and integrations before you scale.',
+        communities: 'One high-trust community can beat ten noisy groups. Focus on places where founders share execution details.',
+        competitions: 'Apply where outcomes create leverage: grants, intros, pilots, or credibility. Track deadlines like product launches.',
+        investment: 'Read investor updates and theses to learn pattern recognition before you ever walk into a pitch conversation.',
+        books: 'Read for implementation, not inspiration. Turn every chapter into one concrete experiment inside your startup.',
+        people: 'Follow operators with scars, not only storytellers. Practical lessons compound when shared by builders in motion.',
+        all: 'Treat this hub like your cofounder’s playbook—save only resources you can apply in the next 30 days.'
+      };
+      const categoryMatchMap = {
+        domains: ['domain'],
+        'app-building': ['app', 'tool', 'build', 'no-code', 'ai'],
+        communities: ['community', 'network', 'forum'],
+        competitions: ['competition', 'accelerator', 'grant'],
+        investment: ['invest', 'fund', 'venture', 'pitch'],
+        books: ['book', 'read'],
+        people: ['follow', 'person', 'founder', 'operator']
+      };
+      const inferCategory = (sectionId, item) => {
+        if (sectionId) return sectionId;
+        const haystack = `${item.title || ''} ${item.note || ''} ${item.details || ''}`.toLowerCase();
+        const found = Object.entries(categoryMatchMap).find(([, keywords]) => keywords.some(keyword => haystack.includes(keyword)));
+        return found ? found[0] : 'app-building';
+      };
+      const normalizeItem = (sectionId, item) => ({
+        ...item,
+        category: inferCategory(sectionId, item),
+        difficulty: item.difficulty || (item.beginner ? 'Beginner' : 'Intermediate'),
+        bestFor: Array.isArray(item.bestFor) ? item.bestFor : [item.beginner ? 'First-time founders' : 'Growth-focused founders', 'Execution speed'],
+        founderTip: item.founderTip || item.details || 'Founder note: shortlist this only if you can apply it to your next weekly sprint.'
+      });
 
       const libraries = state.resources.library.map(section => ({
         ...section,
-        items: (section.items || []).filter(item => {
+        items: (section.items || []).map(item => normalizeItem(section.id, item)).filter(item => {
+          const matchesTab = state.resources.activeTab === 'all' || state.resources.activeTab === item.category;
+          if (!matchesTab) return false;
           if (!query) return true;
-          return `${item.title} ${item.details || ''} ${item.note || ''} ${item.cost || ''} ${item.link || ''}`.toLowerCase().includes(query);
+          return `${item.title} ${item.description || ''} ${item.details || ''} ${item.note || ''} ${item.cost || ''} ${item.link || ''} ${item.difficulty || ''} ${(item.bestFor || []).join(' ')}`.toLowerCase().includes(query);
         })
       }));
       const customFiltered = state.resources.customResources.filter(item => {
@@ -1634,7 +1676,7 @@
       });
       const bookmarkedItems = libraries.flatMap(section => section.items).concat(customFiltered).filter(item => state.resources.bookmarks.includes(item.id));
 
-      const activeLibrary = libraries.find(section => section.id === state.resources.activeTab);
+      const allFilteredItems = libraries.flatMap(section => section.items);
       const tabContentMarkup = state.resources.activeTab === 'templates'
         ? `<div class="grid md:grid-cols-2 gap-3">${templates.map(item => `
             <div class="rounded-xl border border-orange-100 bg-white p-3 sm:p-4">
@@ -1645,29 +1687,32 @@
               <p class="text-xs sm:text-sm text-zinc-600 mt-2">${escapeHTML(item.note)}</p>
             </div>
           `).join('')}</div>`
-        : `<article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
+        : `<article class="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5">
             <div class="flex items-start justify-between gap-3 mb-3">
               <div>
-                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">${escapeHTML(activeLibrary?.title || '')}</h3>
-                <p class="text-xs sm:text-sm text-zinc-600 mt-1">${escapeHTML(activeLibrary?.description || '')}</p>
+                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">Founder Tip</h3>
+                <p class="text-xs sm:text-sm text-zinc-600 mt-1">${escapeHTML(founderTips[state.resources.activeTab] || founderTips.all)}</p>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${(activeLibrary?.items || []).length} resources</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${allFilteredItems.length} resources</span>
             </div>
-            ${(activeLibrary?.items || []).length ? `<div class="grid md:grid-cols-2 gap-3">
-              ${(activeLibrary?.items || []).map(item => {
+            ${allFilteredItems.length ? `<div class="grid md:grid-cols-2 gap-3">
+              ${allFilteredItems.map(item => {
                 const bookmarked = state.resources.bookmarks.includes(item.id);
                 return `
-                  <div class="rounded-xl border border-gray-200 bg-barya-soft/40 p-3 sm:p-4">
+                  <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
                     <div class="flex items-start justify-between gap-2">
                       <p class="font-semibold text-zinc-900">${escapeHTML(item.title)}</p>
                       <button data-bookmark-resource="${item.id}" class="text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${bookmarked ? 'bg-orange-500/15 border-orange-300 text-orange-700' : 'bg-white border-gray-300 text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
                     </div>
+                    <p class="text-xs sm:text-sm text-zinc-600 mt-1.5">${escapeHTML(item.note || item.description || '')}</p>
                     <div class="flex flex-wrap gap-1.5 mt-2">
-                      ${item.beginner ? '<span class="text-[11px] px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">Recommended for Beginners</span>' : ''}
                       ${item.cost ? `<span class="text-[11px] px-2 py-0.5 rounded-full border border-orange-200 bg-orange-50 text-orange-700">Cost: ${escapeHTML(item.cost)}</span>` : ''}
+                      <span class="text-[11px] px-2 py-0.5 rounded-full border border-teal-200 bg-teal-50 text-teal-700">Difficulty: ${escapeHTML(item.difficulty)}</span>
                     </div>
-                    ${item.note ? `<p class="text-xs sm:text-sm text-zinc-700 mt-2">${escapeHTML(item.note)}</p>` : ''}
-                    ${item.details ? `<p class="text-xs text-zinc-500 mt-1">${escapeHTML(item.details)}</p>` : ''}
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      ${(item.bestFor || []).map(tag => `<span class="text-[11px] px-2 py-0.5 rounded-full border border-gray-200 bg-gray-50 text-zinc-600">Best for: ${escapeHTML(tag)}</span>`).join('')}
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-2">${escapeHTML(item.founderTip)}</p>
                     <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
                   </div>
                 `;
@@ -1678,13 +1723,13 @@
       el.innerHTML = `
         <div class="bg-white border border-orange-200 rounded-xl p-4 sm:p-5">
           <h2 class="text-xl sm:text-2xl font-semibold text-barya-accent">Resources</h2>
-          <p class="text-sm text-zinc-600 mt-1">Curated tools, communities, books and guides to help you build your startup</p>
+          <p class="text-sm text-zinc-600 mt-1">Curated tools, communities, books, and guides to help you build faster and smarter</p>
         </div>
 
         <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
-          <div class="grid md:grid-cols-[1fr_auto_auto_auto] gap-2">
-            <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search resources..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" />
-            <button id="toggleCustomResourceForm" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">${state.resources.customFormOpen ? 'Close Form' : 'Add My Own Resource'}</button>
+          <div class="grid md:grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+            <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search by title, use case, cost, difficulty, or founder note..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" />
+            <button id="toggleCustomResourceForm" class="px-4 py-2 rounded-lg border border-orange-300 bg-orange-500 text-white font-medium">${state.resources.customFormOpen ? 'Close Form' : 'Add My Own Resource'}</button>
             <button id="exportResources" class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft text-zinc-700">Export Resources</button>
             <label class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft cursor-pointer text-center text-zinc-700">Import Resources<input id="importResources" type="file" accept="application/json" class="hidden"></label>
           </div>
@@ -1700,10 +1745,10 @@
 
         <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
           <div class="flex flex-wrap gap-2">
-            ${tabIds.map(tabId => {
-              const label = tabId === 'templates' ? 'Templates' : (libraries.find(s => s.id === tabId)?.title || tabId);
-              const active = state.resources.activeTab === tabId;
-              return `<button data-resource-tab="${tabId}" class="px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${active ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-300 bg-white text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${escapeHTML(label)}</button>`;
+            ${[...filterOptions, { id: 'templates', label: 'Templates' }].map(tabId => {
+              const label = tabId.label;
+              const active = state.resources.activeTab === tabId.id;
+              return `<button data-resource-tab="${tabId.id}" class="px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${active ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-300 bg-white text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${escapeHTML(label)}</button>`;
             }).join('')}
           </div>
           ${tabContentMarkup}
