@@ -3360,7 +3360,7 @@ Use the 'Add Block' button below to get started.</p>
       if (!Array.isArray(state.tasks.items)) state.tasks.items = [];
       if (!Array.isArray(state.tasks.sprints)) state.tasks.sprints = [];
       if (!state.tasks.leftTab) state.tasks.leftTab = 'all';
-      if (!state.tasks.view) state.tasks.view = 'list';
+      if (!state.tasks.view) state.tasks.view = 'kanban';
       if (typeof state.tasks.search !== 'string') state.tasks.search = '';
       if (!state.tasks.priorityFilter) state.tasks.priorityFilter = 'All';
       if (!state.tasks.statusFilter) state.tasks.statusFilter = 'All';
@@ -3501,7 +3501,7 @@ Use the 'Add Block' button below to get started.</p>
               <header class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-2xl font-semibold text-teal-700">Tasks & Sprint Manager</h2>
                 <div class="flex flex-wrap gap-2">
-                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-teal-600 text-white">+ New Task</button>
+                  <button id="newTaskBtn" class="px-3 py-2 rounded-lg bg-teal-600 text-white">Add New Task</button>
                   <button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-white border border-slate-200">+ New Sprint</button>
                   <button data-view="list" class="px-3 py-2 rounded-lg border ${t.view === 'list' ? 'bg-teal-100 border-teal-300 text-teal-800' : 'bg-white border-slate-200'}">List</button>
                   <button data-view="kanban" class="px-3 py-2 rounded-lg border ${t.view === 'kanban' ? 'bg-teal-100 border-teal-300 text-teal-800' : 'bg-white border-slate-200'}">Kanban</button>
