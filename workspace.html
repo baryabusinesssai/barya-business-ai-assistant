@@ -3483,6 +3483,21 @@ Use the 'Add Block' button below to get started.</p>
       return linked ? `${linked.icon} ${linked.title}` : 'Not linked';
     }
 
+    function taskMatchesLeftTab(task, leftTab) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayIso = today.toISOString().slice(0, 10);
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const weekEndIso = weekEnd.toISOString().slice(0, 10);
+
+      if (leftTab === 'today') return task.dueDate === todayIso;
+      if (leftTab === 'week') return !!task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso;
+      if (leftTab === 'sprints') return !!task.sprintId;
+      if (leftTab === 'completed') return task.status === 'Done';
+      return true;
+    }
+
     function renderTasks() {
       ensureTasksState();
       const el = document.getElementById('section-tasks');
