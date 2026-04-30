@@ -243,14 +243,43 @@
       display: flex;
       flex-direction: row;
       width: 100%;
+      overflow: visible;
     }
+    #sidebar { width: 260px; }
     #mainTaskSection {
-      flex-grow: 1;
+      flex: 1;
       min-width: 0;
+      width: 100%;
       padding: 40px;
       background: #ffffff;
       color: #1e293b;
       overflow-y: auto;
+      overflow-x: visible;
+      position: relative;
+      z-index: 1;
+      opacity: 1;
+      display: block;
+    }
+    @media (min-width: 1024px) {
+      #workspaceLayout {
+        display: flex;
+        flex-direction: row;
+        overflow: visible;
+      }
+      #sidebar {
+        position: relative;
+        flex: 0 0 260px;
+        width: 260px;
+        transform: none;
+        z-index: 20;
+      }
+      #mainTaskSection {
+        flex: 1;
+        width: calc(100% - 260px);
+        position: relative;
+        opacity: 1;
+        display: block;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
