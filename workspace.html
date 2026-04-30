@@ -554,7 +554,13 @@
       background: radial-gradient(circle at 16% -10%, rgba(34,211,238,.14), transparent 38%), radial-gradient(circle at 86% -14%, rgba(20,184,166,.12), transparent 42%), #0a0a0a !important;
       color: #f1f1f1 !important;
     }
-    #sidebar, header, .glass-card, [class*="bg-white"], [class*="bg-zinc-900"], [class*="bg-black/"], [class*="bg-slate-900"] {
+    body:not(.light-theme) #sidebar,
+    body:not(.light-theme) header,
+    body:not(.light-theme) .glass-card,
+    body:not(.light-theme) [class*="bg-white"],
+    body:not(.light-theme) [class*="bg-zinc-900"],
+    body:not(.light-theme) [class*="bg-black/"],
+    body:not(.light-theme) [class*="bg-slate-900"] {
       background-color: #111111 !important;
       border-color: rgba(148,163,184,.2) !important;
     }
