@@ -259,14 +259,17 @@
       height: 100dvh;
       overflow: hidden;
     }
-    #sidebar { width: 260px; }
+    #sidebar {
+      width: 260px;
+      height: 100dvh;
+    }
     #mainTaskSection {
       flex: 1;
       min-width: 0;
       min-height: 0;
       width: 100%;
-      height: 100%;
-      padding: 0.5rem 0.75rem 0.75rem;
+      height: calc(100dvh - var(--workspace-header-height, 74px));
+      padding: 0.4rem 0.7rem 0.55rem;
       background: #ffffff;
       color: #1e293b;
       overflow-y: hidden;
@@ -286,7 +289,11 @@
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
-      padding-bottom: 0.35rem;
+      padding: 0.2rem 0 0.3rem;
+    }
+    #mainTaskSection > .section-panel > * {
+      flex: 1 1 auto;
+      min-height: 100%;
     }
     @media (min-width: 1024px) {
       #workspaceLayout {
@@ -295,18 +302,23 @@
         overflow: hidden;
       }
       #sidebar {
-        position: relative;
+        position: fixed;
+        inset: 0 auto 0 0;
         flex: 0 0 260px;
         width: 260px;
         transform: none;
-        z-index: 20;
+        z-index: 40;
       }
       #mainTaskSection {
         flex: 1;
-        width: calc(100% - 260px);
+        width: 100%;
         position: relative;
         opacity: 1;
-        padding: 0.6rem 0.95rem 0.85rem;
+        padding: 0.45rem 0.8rem 0.6rem;
+      }
+      #workspaceMainColumn {
+        margin-left: 260px;
+        width: calc(100% - 260px);
       }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -527,8 +539,8 @@
       </button>
     </aside>
 
-    <div class="flex-1 lg:ml-0 w-full min-h-0 h-dvh flex flex-col overflow-hidden">
-      <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 shrink-0">
+    <div id="workspaceMainColumn" class="flex-1 lg:ml-0 w-full min-h-0 h-dvh flex flex-col overflow-hidden">
+      <header id="workspaceHeader" class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
           <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
           <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-teal-500 max-w-[56vw] truncate" />
