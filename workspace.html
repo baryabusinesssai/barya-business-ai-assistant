@@ -269,7 +269,7 @@
       min-height: 0;
       width: 100%;
       height: calc(100dvh - var(--workspace-header-height, 74px));
-      padding: 0.2rem 0.55rem 0.35rem;
+      padding: 0.15rem 0.45rem 0.25rem;
       background: #ffffff;
       color: #1e293b;
       overflow-y: hidden;
@@ -289,7 +289,7 @@
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 0.08rem 0 0.14rem;
+      padding: 0.05rem 0 0.1rem;
     }
     #mainTaskSection > .section-panel > * {
       flex: 1 1 auto;
@@ -314,7 +314,7 @@
         width: 100%;
         position: relative;
         opacity: 1;
-        padding: 0.22rem 0.65rem 0.4rem;
+        padding: 0.16rem 0.55rem 0.28rem;
       }
       #workspaceMainColumn {
         margin-left: 260px;
@@ -333,20 +333,28 @@
     /* Global spacing tightening for workspace sections */
     #mainTaskSection section > :first-child { margin-top: 0 !important; }
     #mainTaskSection section > :last-child { margin-bottom: 0 !important; }
-    #mainTaskSection section .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
-    #mainTaskSection section .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem !important; }
-    #mainTaskSection section .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
-    #mainTaskSection section .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem !important; }
-    #mainTaskSection section .gap-4 { gap: 0.75rem !important; }
-    #mainTaskSection section .gap-3 { gap: 0.625rem !important; }
-    #mainTaskSection section .p-6 { padding: 1.1rem !important; }
-    #mainTaskSection section .p-5 { padding: 0.95rem !important; }
-    #mainTaskSection section .p-4 { padding: 0.85rem !important; }
-    #mainTaskSection section .sm\:p-6 { padding: 1rem !important; }
-    #mainTaskSection section .sm\:p-5 { padding: 0.9rem !important; }
-    #mainTaskSection section .sm\:p-4 { padding: 0.8rem !important; }
-    #mainTaskSection section .py-3 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
-    #mainTaskSection section .py-2\.5 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+    #mainTaskSection section .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.85rem !important; }
+    #mainTaskSection section .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
+    #mainTaskSection section .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.65rem !important; }
+    #mainTaskSection section .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.55rem !important; }
+    #mainTaskSection section .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.45rem !important; }
+    #mainTaskSection section .gap-6 { gap: 0.9rem !important; }
+    #mainTaskSection section .gap-5 { gap: 0.8rem !important; }
+    #mainTaskSection section .gap-4 { gap: 0.65rem !important; }
+    #mainTaskSection section .gap-3 { gap: 0.55rem !important; }
+    #mainTaskSection section .p-6 { padding: 0.95rem !important; }
+    #mainTaskSection section .p-5 { padding: 0.82rem !important; }
+    #mainTaskSection section .p-4 { padding: 0.72rem !important; }
+    #mainTaskSection section .sm\:p-6 { padding: 0.9rem !important; }
+    #mainTaskSection section .sm\:p-5 { padding: 0.8rem !important; }
+    #mainTaskSection section .sm\:p-4 { padding: 0.7rem !important; }
+    #mainTaskSection section .py-4 { padding-top: 0.72rem !important; padding-bottom: 0.72rem !important; }
+    #mainTaskSection section .py-3 { padding-top: 0.52rem !important; padding-bottom: 0.52rem !important; }
+    #mainTaskSection section .py-2\.5 { padding-top: 0.44rem !important; padding-bottom: 0.44rem !important; }
+    #mainTaskSection section :is(.mt-8, .my-8) { margin-top: 1.15rem !important; margin-bottom: 1.15rem !important; }
+    #mainTaskSection section :is(.mt-6, .my-6) { margin-top: 0.95rem !important; margin-bottom: 0.95rem !important; }
+    #mainTaskSection section :is(.mb-8, .my-8) { margin-bottom: 1.15rem !important; }
+    #mainTaskSection section :is(.mb-6, .my-6) { margin-bottom: 0.95rem !important; }
     .ring-progress {
       width: 132px;
       height: 132px;
