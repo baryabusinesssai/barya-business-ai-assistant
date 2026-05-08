@@ -546,11 +546,139 @@
       from { opacity: 0; transform: translate3d(0, 14px, 0); }
       to { opacity: 1; transform: translate3d(0, 0, 0); }
     }
+
+    /* Responsive workspace hardening: stable mobile viewport, scrollable panels, and safe sidebar drawer. */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { width: 100%; max-width: 100%; min-height: 100%; overflow: hidden; }
+    body { overscroll-behavior: none; }
+    img, video, canvas, svg { max-width: 100%; height: auto; }
+    section, article, aside, div, form, label { min-width: 0; }
+    button, input, select, textarea { max-width: 100%; }
+    button { touch-action: manipulation; }
+
+    #workspaceLayout {
+      height: 100vh;
+      height: 100svh;
+      min-height: 100vh;
+      min-height: 100svh;
+      max-width: 100vw;
+      overflow: hidden;
+    }
+    @supports (height: 100dvh) {
+      #workspaceLayout {
+        height: 100dvh;
+        min-height: 100dvh;
+      }
+    }
+    #sidebar {
+      height: 100vh;
+      height: 100svh;
+      max-width: 88vw;
+      -webkit-overflow-scrolling: touch;
+    }
+    @supports (height: 100dvh) {
+      #sidebar { height: 100dvh; }
+    }
+    #workspaceMainColumn {
+      height: 100vh;
+      height: 100svh;
+      min-height: 0;
+      max-width: 100vw;
+    }
+    @supports (height: 100dvh) {
+      #workspaceMainColumn { height: 100dvh; }
+    }
+    #workspaceHeader {
+      min-height: 60px;
+      max-width: 100%;
+    }
+    #mainTaskSection {
+      min-height: 0;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    #mainTaskSection > .section-panel {
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .section-panel.active { min-height: 0; }
+    .section-panel :is(.grid, .flex) { min-width: 0; }
+    .section-panel :is(h1, h2, h3, h4, p, span, li, label, button, a) { overflow-wrap: anywhere; }
+    .section-panel :is(input, textarea, select) { min-width: 0; }
+
+    @media (max-width: 1023px) {
+      body.sidebar-open { overflow: hidden; }
+      #sidebar {
+        width: min(86vw, 20rem) !important;
+        z-index: 60;
+        box-shadow: 24px 0 60px rgba(15, 23, 42, 0.28);
+      }
+      #overlay { z-index: 50; }
+      #workspaceMainColumn { width: 100%; margin-left: 0 !important; }
+      #workspaceHeader {
+        position: sticky;
+        top: 0;
+        padding: 0.65rem 0.75rem !important;
+        gap: 0.6rem;
+      }
+      #openSidebar {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+        border-color: #cbd5e1 !important;
+        background: #ffffff;
+        color: #0f172a;
+      }
+      #workspaceTitle {
+        max-width: min(48vw, 22rem) !important;
+        font-size: clamp(1.05rem, 4vw, 1.35rem) !important;
+      }
+      #workspaceHeader > div:last-child { gap: 0.45rem; }
+      #takeTourBtn { padding-inline: 0.65rem; white-space: nowrap; }
+      #headerFounderName, #headerFounderRole { max-width: 6.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #mainTaskSection { padding: 0.65rem !important; }
+      #mainTaskSection > .section-panel { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+      #mainNav .nav-item { min-height: 2.85rem; }
+    }
+
+    @media (max-width: 640px) {
+      #workspaceHeader { flex-wrap: wrap; align-items: center; }
+      #workspaceHeader > div:first-child { flex: 1 1 100%; width: 100%; }
+      #workspaceHeader > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+        scrollbar-width: none;
+      }
+      #workspaceHeader > div:last-child::-webkit-scrollbar { display: none; }
+      #workspaceTitle { flex: 1 1 auto; max-width: calc(100vw - 5.5rem) !important; }
+      #headerFounderAvatar { width: 2.25rem !important; height: 2.25rem !important; flex: 0 0 auto; }
+      #mainTaskSection { padding: 0.55rem !important; }
+      .section-panel :is(.rounded-2xl, .rounded-xl) { border-radius: 0.9rem !important; }
+      .section-panel :is(.p-6, .sm\:p-6, .p-5, .sm\:p-5, .p-4, .sm\:p-4) { padding: 0.9rem !important; }
+      .section-panel :is(.min-h-\[70vh\], .min-h-\[72vh\], .min-h-\[78vh\]) { min-height: auto !important; }
+      .section-panel :is(.max-h-\[62vh\], .max-h-\[58vh\], .max-h-\[70vh\], .max-h-\[78vh\]) { max-height: none !important; }
+      .section-panel :is(input, select, textarea, button) { font-size: 16px; }
+      .section-panel form :is(button, input, select, textarea) { width: 100%; }
+      #workspaceHowModal, #welcomeTourModal, #memoryModal { max-width: calc(100vw - 1rem); }
+      .tour-panel { left: 0.75rem; right: 0.75rem; bottom: 0.75rem; width: auto; }
+    }
+
+    @media (max-width: 420px) {
+      #workspaceHeader { min-height: auto; }
+      #takeTourBtn { font-size: 0.75rem; }
+      #headerFounderName, #headerFounderRole { display: none; }
+      #mainTaskSection { padding: 0.45rem !important; }
+    }
+
   </style>
 </head>
-<body class="light-theme text-gray-900 h-dvh antialiased overflow-hidden">
-  <div id="workspaceLayout" class="h-dvh w-full flex">
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+<body class="light-theme text-gray-900 antialiased overflow-hidden">
+  <div id="workspaceLayout" class="w-full flex">
+    <aside id="sidebar" aria-hidden="false" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
           <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-400/40 bg-gradient-to-br from-teal-300/20 via-teal-400/15 to-slate-900/20 flex items-center justify-center shadow-[0_10px_24px_rgba(20,184,166,0.2)]">
@@ -561,7 +689,7 @@
             <p class="text-[11px] font-medium tracking-[0.14em] uppercase text-slate-300/95">Your Private AI Co-Founder</p>
           </div>
         </div>
-        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-500 text-slate-100">✕</button>
+        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-500 text-slate-100" aria-label="Close workspace navigation">✕</button>
       </div>
       <nav class="space-y-1.5" id="mainNav"></nav>
       <button id="howItWorksBtn" class="mt-auto w-full rounded-xl border border-teal-200 bg-teal-50/90 text-teal-700 px-3 py-2.5 text-sm font-semibold shadow-sm hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">
@@ -570,10 +698,10 @@
       </button>
     </aside>
 
-    <div id="workspaceMainColumn" class="flex-1 lg:ml-0 w-full min-h-0 h-dvh flex flex-col overflow-hidden">
+    <div id="workspaceMainColumn" class="flex-1 lg:ml-0 w-full min-h-0 flex flex-col overflow-hidden">
       <header id="workspaceHeader" class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-          <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700">☰</button>
+          <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700" aria-label="Open workspace navigation" aria-controls="sidebar">☰</button>
           <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-teal-500 max-w-[56vw] truncate" />
         </div>
         <div class="flex items-center gap-3">
@@ -1498,12 +1626,20 @@
     }
 
     function openSidebar() {
-      document.getElementById('sidebar').classList.remove('-translate-x-full');
-      document.getElementById('overlay').classList.remove('hidden');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.setAttribute('aria-hidden', 'false');
+      overlay.classList.remove('hidden');
+      document.body.classList.add('sidebar-open');
     }
     function closeSidebar() {
-      document.getElementById('sidebar').classList.add('-translate-x-full');
-      document.getElementById('overlay').classList.add('hidden');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.add('-translate-x-full');
+      sidebar.setAttribute('aria-hidden', window.matchMedia('(max-width: 1023px)').matches ? 'true' : 'false');
+      overlay.classList.add('hidden');
+      document.body.classList.remove('sidebar-open');
     }
 
     function openHowItWorksModal() {
