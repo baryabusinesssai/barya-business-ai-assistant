@@ -931,9 +931,214 @@
     }
 
 
+    /* Premium dark workspace redesign layer: screenshot-inspired shell, topbar, cards and forms. */
+    body.premium-dark {
+      color-scheme: dark;
+      background:
+        radial-gradient(circle at 18% -8%, rgba(124, 58, 237, 0.28), transparent 32%),
+        radial-gradient(circle at 85% 0%, rgba(20, 184, 166, 0.16), transparent 30%),
+        radial-gradient(circle at 50% 110%, rgba(59, 130, 246, 0.11), transparent 34%),
+        #07070a !important;
+      color: #f8fafc !important;
+    }
+    body.premium-dark #workspaceLayout,
+    body.premium-dark #workspaceMainColumn {
+      background: transparent !important;
+    }
+    body.premium-dark #workspaceMainColumn {
+      position: relative;
+    }
+    body.premium-dark #workspaceMainColumn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.014) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(circle at 50% 0%, black, transparent 78%);
+      opacity: 0.45;
+    }
+    body.premium-dark .premium-topbar {
+      min-height: 76px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+      background: linear-gradient(180deg, rgba(8, 10, 18, 0.88), rgba(8, 10, 18, 0.68)) !important;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28), inset 0 -1px 0 rgba(255,255,255,0.025);
+      backdrop-filter: blur(24px);
+    }
+    body.premium-dark #workspaceTitle {
+      color: #ffffff !important;
+      text-shadow: 0 0 28px rgba(124, 58, 237, 0.18);
+    }
+    body.premium-dark #workspaceTitle::placeholder { color: #94a3b8 !important; }
+    .premium-search {
+      height: 42px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 0 0.72rem;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.56));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 18px 38px rgba(0,0,0,0.20);
+    }
+    .premium-search:focus-within,
+    .premium-search:hover {
+      border-color: rgba(139, 92, 246, 0.52);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10), 0 0 30px rgba(124, 58, 237, 0.16);
+    }
+    .premium-kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 26px;
+      border-radius: 9px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(15, 23, 42, 0.86);
+      color: #cbd5e1 !important;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .premium-pill {
+      border: 1px solid rgba(45, 212, 191, 0.20);
+      border-radius: 999px;
+      background: rgba(20, 184, 166, 0.10);
+      color: #99f6e4 !important;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 0.55rem 0.78rem;
+      box-shadow: 0 0 24px rgba(20, 184, 166, 0.08);
+    }
+    .premium-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid rgba(196, 181, 253, 0.22);
+      padding: 0 1rem;
+      background: linear-gradient(135deg, #7c3aed, #6d28d9 55%, #2563eb);
+      color: #ffffff !important;
+      font-size: 0.875rem;
+      font-weight: 800;
+      box-shadow: 0 16px 36px rgba(109, 40, 217, 0.34), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    .premium-icon-btn {
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.15) !important;
+      background: rgba(15, 23, 42, 0.64) !important;
+      color: #f8fafc !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 30px rgba(0,0,0,0.22);
+    }
+    .premium-icon-btn:hover {
+      border-color: rgba(139, 92, 246, 0.55) !important;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10), 0 0 30px rgba(139, 92, 246, 0.20);
+    }
+    .premium-avatar {
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12), 0 0 32px rgba(124, 58, 237, 0.46) !important;
+    }
+    body.premium-dark #mainTaskSection {
+      background:
+        radial-gradient(circle at 18% 0%, rgba(124, 58, 237, 0.18), transparent 30%),
+        radial-gradient(circle at 92% 8%, rgba(20, 184, 166, 0.12), transparent 26%),
+        #08080c !important;
+      color: #e5e7eb !important;
+      padding: 1rem !important;
+    }
+    body.premium-dark #mainTaskSection > .section-panel {
+      color: #e5e7eb !important;
+    }
+    body.premium-dark .section-panel:not(#section-dashboard) {
+      background: transparent !important;
+    }
+    body.premium-dark .section-panel:not(#section-dashboard) > section,
+    body.premium-dark .section-panel:not(#section-dashboard) > div:first-child {
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 26px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.76), rgba(3, 7, 18, 0.72));
+      box-shadow: 0 28px 80px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.04);
+      backdrop-filter: blur(18px);
+    }
+    body.premium-dark .glass-card,
+    body.premium-dark .section-panel :is(article, aside, section, div).glass-card {
+      border-color: rgba(148, 163, 184, 0.14) !important;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.74), rgba(15, 23, 42, 0.38)) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 18px 55px rgba(0,0,0,0.24) !important;
+      backdrop-filter: blur(18px);
+    }
+    body.premium-dark :is(.bg-white, .bg-slate-50, .bg-gray-50, .bg-zinc-50) {
+      background: rgba(15, 23, 42, 0.66) !important;
+    }
+    body.premium-dark :is(.border-gray-200, .border-gray-300, .border-zinc-200, .border-zinc-300, .border-orange-100, .border-teal-200) {
+      border-color: rgba(148, 163, 184, 0.14) !important;
+    }
+    body.premium-dark :is(h1,h2,h3,h4,h5,h6,.font-semibold,.font-bold,.font-extrabold) { color: #ffffff !important; }
+    body.premium-dark :is(p,span,label,li,td,th,small,div,a,button) { color: inherit; }
+    body.premium-dark :is(.text-slate-600,.text-slate-700,.text-gray-600,.text-gray-700,.text-zinc-600,.text-zinc-700,.text-zinc-800) { color: #cbd5e1 !important; }
+    body.premium-dark :is(.text-slate-400,.text-gray-400,.text-zinc-400,.text-zinc-500,.text-gray-500) { color: #94a3b8 !important; }
+    body.premium-dark :is(input, textarea, select) {
+      background: rgba(2, 6, 23, 0.58) !important;
+      border-color: rgba(148, 163, 184, 0.16) !important;
+      color: #f8fafc !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+    }
+    body.premium-dark :is(input, textarea, select)::placeholder { color: #64748b !important; opacity: 1; }
+    body.premium-dark :is(input, textarea, select):focus {
+      border-color: rgba(34, 211, 238, 0.62) !important;
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.10), 0 0 24px rgba(124, 58, 237, 0.12) !important;
+    }
+    body.premium-dark button[class*="bg-orange"],
+    body.premium-dark button[class*="bg-teal"],
+    body.premium-dark .bg-barya-accent {
+      background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+      border-color: rgba(196, 181, 253, 0.25) !important;
+      color: #ffffff !important;
+    }
+    body.premium-dark .ring-progress {
+      background: conic-gradient(#8b5cf6 var(--pct), rgba(30, 41, 59, 0.9) 0) !important;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.22);
+    }
+    body.premium-dark .ring-progress > div {
+      background: #080b14 !important;
+      border-color: rgba(255,255,255,0.07) !important;
+    }
+    body.premium-dark .tour-panel,
+    body.premium-dark .how-it-works-modal {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.92)) !important;
+      border-color: rgba(148, 163, 184, 0.16) !important;
+      color: #f8fafc !important;
+    }
+    body.premium-dark #saveToast {
+      background: rgba(8, 13, 28, 0.96) !important;
+      border-color: rgba(139, 92, 246, 0.44) !important;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.38), 0 0 28px rgba(139,92,246,0.18);
+    }
+    @media (max-width: 1023px) {
+      body.premium-dark #openSidebar {
+        border-color: rgba(148, 163, 184, 0.15) !important;
+        background: rgba(15, 23, 42, 0.64) !important;
+        color: #f8fafc !important;
+      }
+      body.premium-dark #workspaceHeader { min-height: 68px; }
+      body.premium-dark #mainTaskSection { padding: 0.75rem !important; }
+    }
+    @media (max-width: 640px) {
+      body.premium-dark .premium-topbar { padding: 0.8rem !important; }
+      body.premium-dark #workspaceTitle { max-width: calc(100vw - 5.5rem) !important; }
+      .premium-action-btn { width: 42px; padding: 0; }
+      body.premium-dark #mainTaskSection { padding: 0.55rem !important; }
+    }
+
+
   </style>
 </head>
-<body class="light-theme text-slate-800 antialiased overflow-hidden">
+<body class="premium-dark dark-mode-enabled text-slate-100 antialiased overflow-hidden">
   <div id="workspaceLayout" class="w-full flex">
     <aside id="sidebar" aria-hidden="false" class="premium-sidebar fixed lg:static inset-y-0 left-0 z-50 w-[270px] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div id="tourWelcomeArea" class="relative mb-7">
@@ -975,20 +1180,31 @@
     </aside>
 
     <div id="workspaceMainColumn" class="flex-1 lg:ml-0 w-full min-h-0 flex flex-col overflow-hidden">
-      <header id="workspaceHeader" class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0">
+      <header id="workspaceHeader" class="premium-topbar sticky top-0 z-30 px-4 sm:px-6 py-4 flex items-center justify-between gap-4 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-          <button id="openSidebar" class="lg:hidden p-2 rounded border border-zinc-700" aria-label="Open workspace navigation" aria-controls="sidebar">☰</button>
-          <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-semibold outline-none border-b border-transparent focus:border-teal-500 max-w-[56vw] truncate" />
-        </div>
-        <div class="flex items-center gap-3">
-          <span id="globalSearchHint" class="hidden md:inline-flex text-[11px] border border-teal-300 bg-teal-50 px-2 py-1 rounded-full text-teal-700">⌘/Ctrl+K Search</span>
-          <span id="localFirstBadge" class="hidden sm:inline-flex text-xs bg-barya-soft border border-zinc-700 px-2 py-1 rounded-full">Local-First</span>
-          <button id="takeTourBtn" class="px-3 py-1.5 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-xs sm:text-sm font-semibold hover:bg-teal-100">Take a Tour</button>
-          <div class="text-right">
-            <p id="headerFounderName" class="text-sm font-medium">Your Name</p>
-            <p id="headerFounderRole" class="text-xs text-zinc-400">Your Role</p>
+          <button id="openSidebar" class="lg:hidden premium-icon-btn" aria-label="Open workspace navigation" aria-controls="sidebar">☰</button>
+          <div class="min-w-0">
+            <input id="workspaceTitle" class="soft-input bg-transparent text-xl sm:text-2xl font-bold tracking-tight outline-none border-b border-transparent focus:border-violet-400 max-w-[44vw] truncate" />
+            <p class="hidden sm:block mt-1 text-xs text-slate-400">All your work, organized. Plan, execute and grow.</p>
           </div>
-          <div id="headerFounderAvatar" class="w-10 h-10 rounded-full overflow-hidden border border-teal-200 bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">YN</div>
+        </div>
+        <div class="flex items-center gap-3 min-w-0">
+          <label class="premium-search hidden md:flex items-center gap-2 min-w-[280px] lg:min-w-[360px]" aria-label="Search workspace">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-400" aria-hidden="true"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input id="globalWorkspaceSearch" readonly placeholder="Search anything in your workspace..." class="flex-1 bg-transparent border-0 px-0 py-0 text-sm outline-none cursor-pointer" />
+            <span id="globalSearchHint" class="premium-kbd">⌘ K</span>
+          </label>
+          <span id="localFirstBadge" class="hidden xl:inline-flex premium-pill">Local-First</span>
+          <button id="headerQuickActionBtn" class="premium-action-btn" type="button"><span class="text-xl leading-none">＋</span><span class="hidden sm:inline">Quick Action</span></button>
+          <button id="takeTourBtn" class="premium-icon-btn hidden sm:inline-grid" type="button" title="Take a Tour">?</button>
+          <button id="headerNotificationsBtn" class="premium-icon-btn" type="button" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true"><path d="M15 17H9m9-1v-5a6 6 0 1 0-12 0v5l-2 2h16l-2-2Zm-4 4a2 2 0 0 1-4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="hidden sm:block text-right">
+            <p id="headerFounderName" class="text-sm font-semibold text-white">Your Name</p>
+            <p id="headerFounderRole" class="text-xs text-slate-400">Your Role</p>
+          </div>
+          <div id="headerFounderAvatar" class="premium-avatar w-10 h-10 rounded-full overflow-hidden border border-violet-400/40 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold grid place-items-center">YN</div>
         </div>
       </header>
 
@@ -1562,10 +1778,10 @@
       if (nameEl) nameEl.textContent = name;
       if (roleEl) roleEl.textContent = role;
       if (avatarEl) {
-        avatarEl.className = 'w-10 h-10 rounded-full overflow-hidden';
+        avatarEl.className = 'premium-avatar w-10 h-10 rounded-full overflow-hidden';
         avatarEl.innerHTML = photo
-          ? `<img src="${escapeAttr(photo)}" alt="${escapeAttr(name)} profile photo" class="w-10 h-10 rounded-full object-cover border border-teal-200 shadow-sm" />`
-          : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 text-white font-bold grid place-items-center">${escapeHTML(initials)}</div>`;
+          ? `<img src="${escapeAttr(photo)}" alt="${escapeAttr(name)} profile photo" class="w-10 h-10 rounded-full object-cover border border-violet-400/40 shadow-[0_0_28px_rgba(124,58,237,.38)]" />`
+          : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold grid place-items-center">${escapeHTML(initials)}</div>`;
       }
     }
 
@@ -1636,6 +1852,7 @@
       setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
       renderNav();
       setupBaseEvents();
+      setupHeaderActions();
       setupGlobalShortcuts();
       updateRecommendations();
       renderActiveSection();
@@ -1941,10 +2158,26 @@
     }
 
     function applyThemePreference() {
-      if (state.settings?.preferences) state.settings.preferences.darkMode = false;
-      document.documentElement.style.colorScheme = 'light';
-      document.body.classList.remove('premium-dark', 'dark-mode-enabled');
-      document.body.classList.add('light-theme');
+      if (state.settings?.preferences) state.settings.preferences.darkMode = true;
+      document.documentElement.style.colorScheme = 'dark';
+      document.body.classList.remove('light-theme');
+      document.body.classList.add('premium-dark', 'dark-mode-enabled');
+    }
+
+    function setupHeaderActions() {
+      const search = document.getElementById('globalWorkspaceSearch');
+      if (search) {
+        const triggerSearch = () => {
+          search.blur();
+          focusSectionSearch();
+        };
+        search.addEventListener('focus', triggerSearch);
+        search.addEventListener('click', triggerSearch);
+      }
+      document.getElementById('headerQuickActionBtn')?.addEventListener('click', () => switchSection('planning'));
+      document.getElementById('headerNotificationsBtn')?.addEventListener('click', () => {
+        showSavedToast();
+      });
     }
 
     function setupGlobalShortcuts() {
