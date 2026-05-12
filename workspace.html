@@ -683,385 +683,67 @@
     }
 
 
-    /* Premium dark workspace redesign: glassmorphism, neon accents, and dashboard-grade polish. */
-    :root {
-      color-scheme: dark;
-      --premium-bg: #0a0a0a;
-      --premium-bg-soft: #111111;
-      --premium-surface: rgba(17, 17, 17, 0.72);
-      --premium-surface-strong: rgba(18, 18, 24, 0.86);
-      --premium-surface-elevated: rgba(26, 26, 32, 0.78);
-      --premium-border: rgba(255, 255, 255, 0.10);
-      --premium-border-strong: rgba(168, 85, 247, 0.34);
-      --premium-text: #f8fafc;
-      --premium-muted: #a1a1aa;
-      --premium-muted-strong: #d4d4d8;
-      --premium-purple: #a855f7;
-      --premium-teal: #14b8a6;
-      --premium-cyan: #22d3ee;
-      --premium-success: #34d399;
-      --premium-warning: #f59e0b;
-      --premium-danger: #fb7185;
-      --premium-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
-      --premium-shadow-soft: 0 16px 44px rgba(0, 0, 0, 0.36);
-      --premium-glow: 0 0 0 1px rgba(168, 85, 247, 0.18), 0 0 38px rgba(168, 85, 247, 0.16), 0 0 28px rgba(20, 184, 166, 0.10);
+    /* Stable light workspace finish: keep the app readable and full-height without the premium dark layer. */
+    body.light-theme {
+      background: #f8fafc;
+      color: #1f2937;
+      color-scheme: light;
     }
-
-    html,
-    body.premium-dark,
-    body.dark-mode-enabled,
-    body.light-theme.premium-dark {
-      background:
-        radial-gradient(circle at 12% 10%, rgba(168, 85, 247, 0.22), transparent 30%),
-        radial-gradient(circle at 78% 6%, rgba(34, 211, 238, 0.14), transparent 28%),
-        radial-gradient(circle at 70% 84%, rgba(20, 184, 166, 0.12), transparent 34%),
-        linear-gradient(135deg, #050505 0%, #0a0a0a 42%, #111111 100%) !important;
-      color: var(--premium-text) !important;
-      color-scheme: dark !important;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      letter-spacing: -0.01em;
+    .light-theme #workspaceLayout,
+    .light-theme #workspaceMainColumn {
+      background: #f8fafc;
     }
-
-    body.premium-dark::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: radial-gradient(circle at 50% 20%, black, transparent 78%);
+    .light-theme #sidebar {
+      background: #ffffff !important;
+      border-color: #e5e7eb !important;
     }
-
-    body.premium-dark #workspaceLayout,
-    body.premium-dark #workspaceMainColumn {
-      position: relative;
-      z-index: 1;
-      background: transparent !important;
+    .light-theme #workspaceHeader {
+      background: #ffffff !important;
+      border-color: #e5e7eb !important;
     }
-
-    body.premium-dark #sidebar {
-      background:
-        linear-gradient(180deg, rgba(10, 10, 10, 0.94), rgba(17, 17, 17, 0.88)),
-        radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.22), transparent 42%) !important;
-      border-right: 1px solid rgba(255, 255, 255, 0.10) !important;
-      box-shadow: 24px 0 70px rgba(0, 0, 0, 0.52), inset -1px 0 0 rgba(168, 85, 247, 0.16);
-      backdrop-filter: blur(24px) saturate(145%);
-      -webkit-backdrop-filter: blur(24px) saturate(145%);
+    .light-theme #mainTaskSection {
+      background: #f8fafc !important;
+      color: #1f2937 !important;
     }
-
-    body.premium-dark #tourWelcomeArea {
-      padding: 0.45rem;
-      margin-inline: -0.25rem;
-      border-radius: 1.25rem;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(20, 184, 166, 0.08));
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .light-theme .section-panel.active {
+      display: flex;
+      flex-direction: column;
     }
-
-    body.premium-dark #tourWelcomeArea > div > div:first-child,
-    body.premium-dark #headerFounderAvatar {
-      border: 1px solid rgba(34, 211, 238, 0.42) !important;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.95), rgba(20, 184, 166, 0.86)) !important;
-      box-shadow: 0 0 28px rgba(168, 85, 247, 0.28), 0 12px 30px rgba(20, 184, 166, 0.14) !important;
+    .light-theme .section-panel > section {
+      width: 100%;
+    }
+    .light-theme #mainNav .active-nav,
+    .light-theme #mainNav .active-nav .nav-label {
+      color: #0f766e !important;
+    }
+    .light-theme :is(.bg-teal-600, .bg-teal-500, .bg-barya-accent),
+    .light-theme button:is(.bg-teal-600, .bg-teal-500, .bg-barya-accent),
+    .light-theme button[class*="bg-teal"] {
+      background: #0f766e !important;
+      border-color: #0f766e !important;
       color: #ffffff !important;
     }
-
-    body.premium-dark #tourWelcomeArea h1,
-    body.premium-dark #workspaceTitle {
+    .light-theme :is(.bg-teal-600, .bg-teal-500, .bg-barya-accent) *,
+    .light-theme button:is(.bg-teal-600, .bg-teal-500, .bg-barya-accent) * {
       color: #ffffff !important;
-      text-shadow: 0 0 30px rgba(168, 85, 247, 0.24);
-    }
-
-    body.premium-dark #tourWelcomeArea p,
-    body.premium-dark #headerFounderRole,
-    body.premium-dark .text-zinc-400,
-    body.premium-dark .text-zinc-500,
-    body.premium-dark .text-slate-400,
-    body.premium-dark .text-gray-500,
-    body.premium-dark .text-gray-400 {
-      color: var(--premium-muted) !important;
-    }
-
-    body.premium-dark #mainNav { gap: 0.6rem; }
-
-    body.premium-dark #mainNav .nav-item {
-      min-height: 3rem;
-      border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)) !important;
-      color: var(--premium-muted-strong) !important;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 28px rgba(0, 0, 0, 0.16) !important;
-      backdrop-filter: blur(16px);
-    }
-
-    body.premium-dark #mainNav .nav-item:hover {
-      border-color: rgba(34, 211, 238, 0.32) !important;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.16), rgba(20, 184, 166, 0.10)) !important;
-      box-shadow: var(--premium-glow) !important;
-      transform: translateY(-2px) translateZ(0);
-    }
-
-    body.premium-dark #mainNav .active-nav {
-      border-color: rgba(168, 85, 247, 0.46) !important;
-      color: #ffffff !important;
-      background:
-        linear-gradient(135deg, rgba(168, 85, 247, 0.34), rgba(20, 184, 166, 0.18)),
-        rgba(255, 255, 255, 0.06) !important;
-      box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.28), 0 18px 42px rgba(168, 85, 247, 0.22), inset 0 1px 0 rgba(255,255,255,0.12) !important;
-    }
-
-    body.premium-dark #mainNav .active-nav::before {
-      content: '';
-      position: absolute;
-      left: -1px;
-      top: 22%;
-      bottom: 22%;
-      width: 3px;
-      border-radius: 99px;
-      background: linear-gradient(180deg, var(--premium-purple), var(--premium-cyan), var(--premium-teal));
-      box-shadow: 0 0 22px rgba(168, 85, 247, 0.75);
-    }
-
-    body.premium-dark #mainNav .nav-icon {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.24), rgba(34, 211, 238, 0.13)) !important;
-      border-color: rgba(255, 255, 255, 0.10) !important;
-      color: #e9d5ff !important;
-    }
-
-    body.premium-dark #mainNav .active-nav .nav-icon {
-      color: #ffffff !important;
-      border-color: rgba(34, 211, 238, 0.36) !important;
-      box-shadow: 0 0 20px rgba(34, 211, 238, 0.18);
-    }
-
-    body.premium-dark #mainNav .nav-label { color: inherit !important; font-weight: 650; }
-
-    body.premium-dark #workspaceHeader {
-      background: rgba(10, 10, 10, 0.68) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
-      backdrop-filter: blur(22px) saturate(150%);
-      -webkit-backdrop-filter: blur(22px) saturate(150%);
-    }
-
-    body.premium-dark #openSidebar,
-    body.premium-dark #closeSidebar,
-    body.premium-dark #takeTourBtn,
-    body.premium-dark #howItWorksBtn,
-    body.premium-dark #globalSearchHint,
-    body.premium-dark #localFirstBadge {
-      border-color: rgba(255, 255, 255, 0.12) !important;
-      background: rgba(255, 255, 255, 0.06) !important;
-      color: #f8fafc !important;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.22);
-      backdrop-filter: blur(14px);
-    }
-
-    body.premium-dark #takeTourBtn,
-    body.premium-dark #howItWorksBtn {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.26), rgba(20, 184, 166, 0.18)) !important;
-    }
-
-    body.premium-dark #mainTaskSection {
-      padding: 1rem !important;
-      background: transparent !important;
-      color: var(--premium-text) !important;
-    }
-
-    body.premium-dark .section-panel {
-      padding: 0.25rem;
-      scrollbar-color: rgba(168, 85, 247, 0.45) rgba(255, 255, 255, 0.06);
-    }
-
-    body.premium-dark .section-panel > section,
-    body.premium-dark .section-panel > article,
-    body.premium-dark .glass-card,
-    body.premium-dark :is(article, div).glass-card {
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
-        rgba(17, 17, 17, 0.66) !important;
-      border: 1px solid var(--premium-border) !important;
-      border-radius: 1.35rem !important;
-      box-shadow: var(--premium-shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
-      backdrop-filter: blur(22px) saturate(145%) !important;
-      -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
-    }
-
-    body.premium-dark .section-panel :is(.bg-white, .bg-orange-50, .bg-orange-50\/40, .bg-orange-50\/60, .bg-teal-50, .bg-teal-50\/60, .bg-barya-soft, .bg-slate-50, .bg-gray-50, .bg-zinc-50) {
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)) !important;
-      color: var(--premium-text) !important;
-    }
-
-    body.premium-dark .section-panel :is(.rounded-2xl, .rounded-xl, .rounded-lg):not(input):not(textarea):not(select):not(button) {
-      border-color: rgba(255, 255, 255, 0.10) !important;
-    }
-
-    body.premium-dark .section-panel :is(.shadow-sm, .shadow, .shadow-lg, .shadow-xl, .shadow-2xl) {
-      box-shadow: var(--premium-shadow-soft) !important;
-    }
-
-    body.premium-dark .section-panel :is(h1, h2, h3, h4, h5, h6, strong, b, .font-bold, .font-semibold, .font-extrabold),
-    body.premium-dark #headerFounderName {
-      color: #ffffff !important;
-    }
-
-    body.premium-dark .section-panel :is(p, span, label, li, td, th, dt, dd, small, div, a, button),
-    body.premium-dark #mainTaskSection {
-      color: var(--premium-muted-strong) !important;
-    }
-
-    body.premium-dark .section-panel :is(.text-orange-500, .text-orange-600, .text-orange-700, .text-teal-500, .text-teal-600, .text-teal-700, .text-barya-accent) {
-      color: var(--premium-cyan) !important;
-    }
-
-    body.premium-dark .section-panel :is(.text-emerald-500, .text-emerald-600, .text-green-600) { color: var(--premium-success) !important; }
-    body.premium-dark .section-panel :is(.text-red-500, .text-red-600, .text-rose-600) { color: var(--premium-danger) !important; }
-    body.premium-dark .section-panel :is(.text-blue-500, .text-blue-600, .text-indigo-600, .text-violet-600, .text-purple-600) { color: #c084fc !important; }
-
-    body.premium-dark .section-panel :is(.border-orange-100, .border-orange-200, .border-orange-300, .border-teal-100, .border-teal-200, .border-gray-200, .border-zinc-200, .border-slate-200, .border-slate-700, .border-zinc-700) {
-      border-color: rgba(255, 255, 255, 0.11) !important;
-    }
-
-    body.premium-dark :is(input, textarea, select) {
-      background: rgba(255, 255, 255, 0.065) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      color: #ffffff !important;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px rgba(0, 0, 0, 0.16) !important;
-      backdrop-filter: blur(14px);
-    }
-
-    body.premium-dark :is(input, textarea, select):focus,
-    body.premium-dark :is(input, textarea, select):focus-visible {
-      outline: none !important;
-      border-color: rgba(34, 211, 238, 0.72) !important;
-      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14), 0 0 28px rgba(168, 85, 247, 0.16) !important;
-    }
-
-    body.premium-dark :is(input::placeholder, textarea::placeholder) { color: #71717a !important; opacity: 1; }
-    body.premium-dark select option { background: #111111; color: #f8fafc; }
-
-    body.premium-dark button[class*="bg-orange"],
-    body.premium-dark button[class*="bg-barya-accent"],
-    body.premium-dark .bg-orange-500,
-    body.premium-dark .bg-barya-accent,
-    body.premium-dark .section-panel button[type="submit"] {
-      background: linear-gradient(135deg, var(--premium-purple), var(--premium-teal)) !important;
-      color: #ffffff !important;
-      border-color: rgba(255, 255, 255, 0.14) !important;
-      box-shadow: 0 16px 34px rgba(168, 85, 247, 0.22), 0 10px 28px rgba(20, 184, 166, 0.14) !important;
-    }
-
-    body.premium-dark button:hover,
-    body.premium-dark a:hover {
-      filter: brightness(1.08);
-    }
-
-    body.premium-dark .premium-hover:hover,
-    body.premium-dark .section-panel article:hover {
-      border-color: rgba(34, 211, 238, 0.22) !important;
-      box-shadow: var(--premium-glow), var(--premium-shadow-soft) !important;
-    }
-
-    body.premium-dark .ring-progress {
-      background: conic-gradient(var(--premium-purple) 0, var(--premium-cyan) var(--pct), rgba(255, 255, 255, 0.08) 0) !important;
-      box-shadow: 0 0 40px rgba(168, 85, 247, 0.20);
-    }
-
-    body.premium-dark .ring-progress > div {
-      background: rgba(10, 10, 10, 0.86) !important;
-      border-color: rgba(255, 255, 255, 0.10) !important;
-      backdrop-filter: blur(14px);
-    }
-
-    body.premium-dark canvas {
-      filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.32));
-    }
-
-    body.premium-dark table {
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    body.premium-dark thead,
-    body.premium-dark .section-panel :is(.bg-orange-100, .bg-teal-100, .bg-slate-100, .bg-gray-100) {
-      background: rgba(168, 85, 247, 0.10) !important;
-    }
-
-    body.premium-dark tr,
-    body.premium-dark hr,
-    body.premium-dark .divide-y > :not([hidden]) ~ :not([hidden]) {
-      border-color: rgba(255, 255, 255, 0.08) !important;
-    }
-
-    body.premium-dark .scrollbar-thin::-webkit-scrollbar-thumb,
-    body.premium-dark .section-panel::-webkit-scrollbar-thumb,
-    body.premium-dark #sidebar::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, rgba(168, 85, 247, 0.72), rgba(34, 211, 238, 0.50));
-      border-radius: 999px;
-    }
-
-    body.premium-dark .scrollbar-thin::-webkit-scrollbar-track,
-    body.premium-dark .section-panel::-webkit-scrollbar-track,
-    body.premium-dark #sidebar::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    body.premium-dark #overlay,
-    body.premium-dark .welcome-tour-backdrop,
-    body.premium-dark .how-it-works-backdrop {
-      background: rgba(0, 0, 0, 0.72) !important;
-      backdrop-filter: blur(10px);
-    }
-
-    body.premium-dark #welcomeTourModal > div,
-    body.premium-dark #memoryModal,
-    body.premium-dark .how-it-works-modal,
-    body.premium-dark .tour-panel,
-    body.premium-dark #saveToast {
-      background: linear-gradient(145deg, rgba(24, 24, 28, 0.92), rgba(10, 10, 10, 0.88)) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      color: var(--premium-text) !important;
-      box-shadow: var(--premium-shadow), var(--premium-glow) !important;
-      backdrop-filter: blur(24px) saturate(145%);
-    }
-
-    body.premium-dark .tour-spotlight {
-      border-color: rgba(34, 211, 238, 0.96) !important;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(168, 85, 247, 0.50), 0 0 44px rgba(34, 211, 238, 0.34) !important;
-    }
-
-    @media (min-width: 1024px) {
-      body.premium-dark #workspaceMainColumn {
-        margin-left: 260px;
-        width: calc(100% - 260px);
-      }
-      body.premium-dark #mainTaskSection { padding: 1.15rem 1.25rem 1.25rem !important; }
-    }
-
-    @media (max-width: 1023px) {
-      body.premium-dark #sidebar { box-shadow: 24px 0 80px rgba(0, 0, 0, 0.72); }
-      body.premium-dark #openSidebar { background: rgba(255, 255, 255, 0.08) !important; color: #fff !important; }
     }
 
   </style>
 </head>
-<body class="dark-mode-enabled premium-dark text-gray-100 antialiased overflow-hidden">
+<body class="light-theme text-slate-800 antialiased overflow-hidden">
   <div id="workspaceLayout" class="w-full flex">
-    <aside id="sidebar" aria-hidden="false" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-[#1e2937] border-r border-[#334155] px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+    <aside id="sidebar" aria-hidden="false" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-white border-r border-gray-200 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
       <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
         <div class="flex items-start gap-3">
-          <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-400/40 bg-gradient-to-br from-teal-300/20 via-teal-400/15 to-slate-900/20 flex items-center justify-center shadow-[0_10px_24px_rgba(20,184,166,0.2)]">
-            <span class="text-sm font-semibold tracking-tight text-teal-200">BΞ</span>
+          <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-200 bg-teal-50 flex items-center justify-center shadow-sm">
+            <span class="text-sm font-semibold tracking-tight text-teal-700">BΞ</span>
           </div>
           <div class="space-y-1">
-            <h1 class="text-2xl font-extrabold tracking-tight text-teal-300 leading-none">Barya</h1>
-            <p class="text-[11px] font-medium tracking-[0.14em] uppercase text-slate-300/95">Your Private AI Co-Founder</p>
+            <h1 class="text-2xl font-extrabold tracking-tight text-teal-700 leading-none">Barya</h1>
+            <p class="text-[11px] font-medium tracking-[0.14em] uppercase text-slate-500">Your Private AI Co-Founder</p>
           </div>
         </div>
-        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-500 text-slate-100" aria-label="Close workspace navigation">✕</button>
+        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-300 text-slate-700" aria-label="Close workspace navigation">✕</button>
       </div>
       <nav class="space-y-1.5" id="mainNav"></nav>
       <button id="howItWorksBtn" class="mt-auto w-full rounded-xl border border-teal-200 bg-teal-50/90 text-teal-700 px-3 py-2.5 text-sm font-semibold shadow-sm hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">
@@ -1484,7 +1166,7 @@
             { id: 'mtg-weekly', title: 'Weekly Leadership Sync', datetime: '2026-04-20T09:30', participants: 'Shruti Barya, Ayaan Mehta', agenda: 'Roadmap updates, hiring priorities, KPI review.', recurring: true }
           ]
         },
-        preferences: { currency: '', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: true }
+        preferences: { currency: '', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: false }
       },
       knowledgeGraph: {
         search: '',
@@ -2034,11 +1716,10 @@
     }
 
     function applyThemePreference() {
-      const isDark = state.settings?.preferences?.darkMode !== false;
-      document.documentElement.style.colorScheme = 'dark';
-      document.body.classList.add('premium-dark');
-      document.body.classList.toggle('light-theme', !isDark);
-      document.body.classList.toggle('dark-mode-enabled', isDark);
+      if (state.settings?.preferences) state.settings.preferences.darkMode = false;
+      document.documentElement.style.colorScheme = 'light';
+      document.body.classList.remove('premium-dark', 'dark-mode-enabled');
+      document.body.classList.add('light-theme');
     }
 
     function setupGlobalShortcuts() {
@@ -6057,7 +5738,7 @@ Use the 'Add Block' button below to get started.</p>
               </label>
               <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>
               <label class="block text-sm">Date Format<select data-setting="preferences.dateFormat" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.dateFormat==='MM/DD/YYYY'?'selected':''}>MM/DD/YYYY</option><option ${s.preferences.dateFormat==='DD/MM/YYYY'?'selected':''}>DD/MM/YYYY</option><option ${s.preferences.dateFormat==='YYYY-MM-DD'?'selected':''}>YYYY-MM-DD</option></select></label>
-              <label class="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-3 py-2"><span>Dark Mode</span><input type="checkbox" data-setting="preferences.darkMode" ${s.preferences.darkMode ? 'checked' : ''} class="accent-orange-500" /></label>
+              <div class="flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50 px-3 py-2"><span>Theme</span><span class="text-sm font-semibold text-teal-700">Light</span></div>
             </article>
 
             <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
