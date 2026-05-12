@@ -2605,46 +2605,51 @@
     function ensureResourcesState() {
       if (!state.resources || typeof state.resources !== 'object') state.resources = {};
       if (typeof state.resources.search !== 'string') state.resources.search = '';
+      if (typeof state.resources.activeTab !== 'string') state.resources.activeTab = 'all';
+      if (typeof state.resources.quickView !== 'string') state.resources.quickView = 'all';
+      if (typeof state.resources.aiPrompt !== 'string') state.resources.aiPrompt = '';
+      if (typeof state.resources.aiResponse !== 'string') state.resources.aiResponse = '';
       if (!Array.isArray(state.resources.bookmarks)) state.resources.bookmarks = [];
       if (!Array.isArray(state.resources.customResources)) state.resources.customResources = [];
+      if (!Array.isArray(state.resources.recentlyUsed)) state.resources.recentlyUsed = [];
+      if (!Array.isArray(state.resources.trash)) state.resources.trash = [];
       if (!Array.isArray(state.resources.library) || !state.resources.library.length) {
         state.resources.library = resourceLibraryDefaults();
       }
-      if (typeof state.resources.activeTab !== 'string') state.resources.activeTab = 'templates';
       state.resources.customFormOpen = Boolean(state.resources.customFormOpen);
+      state.resources.addMenuOpen = Boolean(state.resources.addMenuOpen);
     }
 
     function renderResources() {
       ensureResourcesState();
       const el = document.getElementById('section-resources');
       const query = state.resources.search.trim().toLowerCase();
-      const filterOptions = [
-        { id: 'all', label: 'All' },
-        { id: 'domains', label: 'Domains' },
-        { id: 'app-building', label: 'App Building' },
-        { id: 'communities', label: 'Communities' },
-        { id: 'competitions', label: 'Competitions' },
-        { id: 'investment', label: 'Investment' },
-        { id: 'books', label: 'Books' },
-        { id: 'people', label: 'People' }
+      const nowLabel = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      const topCategories = [
+        { id: 'templates', label: 'Templates', icon: '🧩', color: 'from-violet-500 to-fuchsia-500', keywords: ['template', 'matrix', 'sheet'] },
+        { id: 'guides', label: 'Guides', icon: '📘', color: 'from-sky-500 to-cyan-400', keywords: ['book', 'guide', 'learn', 'read', 'people'] },
+        { id: 'frameworks', label: 'Frameworks', icon: '🧠', color: 'from-purple-500 to-indigo-500', keywords: ['framework', 'decision', 'matrix'] },
+        { id: 'playbooks', label: 'Playbooks', icon: '🚀', color: 'from-orange-500 to-amber-400', keywords: ['competition', 'accelerator', 'fund', 'venture', 'pitch'] },
+        { id: 'tools', label: 'Tools', icon: '🛠️', color: 'from-teal-400 to-emerald-400', keywords: ['tool', 'app', 'domain', 'build', 'no-code', 'ai'] },
+        { id: 'checklists', label: 'Checklists', icon: '✅', color: 'from-lime-400 to-teal-400', keywords: ['checklist', 'tracker'] },
+        { id: 'documents', label: 'Documents', icon: '📄', color: 'from-blue-500 to-violet-500', keywords: ['document', 'doc', 'notes'] },
+        { id: 'others', label: 'Others', icon: '✨', color: 'from-zinc-500 to-slate-400', keywords: [] }
       ];
-      if (![...filterOptions.map(option => option.id), 'templates'].includes(state.resources.activeTab)) state.resources.activeTab = 'all';
-      const templates = [
-        { id: 'template-domain-comparison', title: 'Domain Comparison Sheet', note: 'Compare registrar pricing, renewal, add-ons, support quality, and DNS control in one place.' },
-        { id: 'template-no-code-decision', title: 'No-Code Tool Decision Matrix', note: 'Score tools by learning curve, flexibility, integrations, speed, and monthly cost.' },
-        { id: 'template-competition-tracker', title: 'Competition Application Tracker', note: 'Monitor deadlines, requirements, status, outcomes, and next application actions.' },
-        { id: 'template-books-notes', title: 'Book Reading Notes Template', note: 'Capture key lessons, action items, and experiments to apply in your startup.' }
-      ];
-      const founderTips = {
-        domains: 'Buy with a 2-year horizon in mind. Cheap first-year pricing is meaningless if renewal and support quality are poor.',
-        'app-building': 'Ship fast, but protect future flexibility. Pick tools that support exports and integrations before you scale.',
-        communities: 'One high-trust community can beat ten noisy groups. Focus on places where founders share execution details.',
-        competitions: 'Apply where outcomes create leverage: grants, intros, pilots, or credibility. Track deadlines like product launches.',
-        investment: 'Read investor updates and theses to learn pattern recognition before you ever walk into a pitch conversation.',
-        books: 'Read for implementation, not inspiration. Turn every chapter into one concrete experiment inside your startup.',
-        people: 'Follow operators with scars, not only storytellers. Practical lessons compound when shared by builders in motion.',
-        all: 'Treat this hub like your cofounder’s playbook—save only resources you can apply in the next 30 days.'
+      const legacyCategoryLabels = {
+        domains: 'Tools',
+        'app-building': 'Tools',
+        communities: 'Guides',
+        competitions: 'Playbooks',
+        investment: 'Playbooks',
+        books: 'Guides',
+        people: 'Guides'
       };
+      const templates = [
+        { id: 'template-domain-comparison', title: 'Domain Comparison Sheet', type: 'Template', category: 'Templates', owner: 'Barya', note: 'Compare registrar pricing, renewal, add-ons, support quality, and DNS control in one place.', size: '18 KB', dateAdded: 'Built-in', link: '#' },
+        { id: 'template-no-code-decision', title: 'No-Code Tool Decision Matrix', type: 'Template', category: 'Frameworks', owner: 'Barya', note: 'Score tools by learning curve, flexibility, integrations, speed, and monthly cost.', size: '24 KB', dateAdded: 'Built-in', link: '#' },
+        { id: 'template-competition-tracker', title: 'Competition Application Tracker', type: 'Template', category: 'Checklists', owner: 'Barya', note: 'Monitor deadlines, requirements, status, outcomes, and next application actions.', size: '22 KB', dateAdded: 'Built-in', link: '#' },
+        { id: 'template-books-notes', title: 'Book Reading Notes Template', type: 'Document', category: 'Documents', owner: 'Barya', note: 'Capture key lessons, action items, and experiments to apply in your startup.', size: '14 KB', dateAdded: 'Built-in', link: '#' }
+      ];
       const categoryMatchMap = {
         domains: ['domain'],
         'app-building': ['app', 'tool', 'build', 'no-code', 'ai'],
@@ -2654,174 +2659,292 @@
         books: ['book', 'read'],
         people: ['follow', 'person', 'founder', 'operator']
       };
-      const inferCategory = (sectionId, item) => {
+      const inferLegacyCategory = (sectionId, item) => {
         if (sectionId) return sectionId;
         const haystack = `${item.title || ''} ${item.note || ''} ${item.details || ''}`.toLowerCase();
         const found = Object.entries(categoryMatchMap).find(([, keywords]) => keywords.some(keyword => haystack.includes(keyword)));
         return found ? found[0] : 'app-building';
       };
-      const normalizeItem = (sectionId, item) => ({
-        ...item,
-        category: inferCategory(sectionId, item),
-        difficulty: item.difficulty || (item.beginner ? 'Beginner' : 'Intermediate'),
-        bestFor: Array.isArray(item.bestFor) ? item.bestFor : [item.beginner ? 'First-time founders' : 'Growth-focused founders', 'Execution speed'],
-        founderTip: item.founderTip || item.details || 'Founder note: shortlist this only if you can apply it to your next weekly sprint.'
-      });
-
-      const libraries = state.resources.library.map(section => ({
-        ...section,
-        items: (section.items || []).map(item => normalizeItem(section.id, item)).filter(item => {
-          const matchesTab = state.resources.activeTab === 'all' || state.resources.activeTab === item.category;
-          if (!matchesTab) return false;
-          if (!query) return true;
-          return `${item.title} ${item.description || ''} ${item.details || ''} ${item.note || ''} ${item.cost || ''} ${item.link || ''} ${item.difficulty || ''} ${(item.bestFor || []).join(' ')}`.toLowerCase().includes(query);
-        })
+      const inferType = (item, categoryLabel = '') => {
+        if (item.type) return item.type;
+        const haystack = `${item.title || ''} ${item.note || ''} ${item.details || ''} ${categoryLabel}`.toLowerCase();
+        if (haystack.includes('template') || haystack.includes('sheet')) return 'Template';
+        if (haystack.includes('framework') || haystack.includes('matrix')) return 'Framework';
+        if (haystack.includes('checklist') || haystack.includes('tracker')) return 'Checklist';
+        if (haystack.includes('tool') || haystack.includes('domain') || haystack.includes('app')) return 'Tool';
+        if (haystack.includes('book') || haystack.includes('guide') || haystack.includes('follow')) return 'Guide';
+        return item.custom ? 'Document' : 'Resource';
+      };
+      const normalizeSize = (item) => item.size || item.fileSize || (item.custom ? 'Saved link' : 'External');
+      const formatDate = (value) => {
+        if (!value) return 'Built-in';
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+      const normalizeItem = (sectionId, item) => {
+        const legacyCategory = inferLegacyCategory(sectionId, item);
+        const category = item.categoryLabel || item.categoryName || legacyCategoryLabels[legacyCategory] || item.category || 'Others';
+        const type = inferType(item, category);
+        return {
+          ...item,
+          id: item.id,
+          title: item.title || 'Untitled resource',
+          type,
+          category,
+          legacyCategory,
+          owner: item.owner || (item.custom ? 'You' : 'Barya'),
+          dateAdded: item.dateAdded || formatDate(item.ts || item.createdAt),
+          size: normalizeSize(item),
+          description: item.description || item.note || item.details || 'Helpful material saved inside your Resources hub.',
+          difficulty: item.difficulty || (item.beginner ? 'Beginner' : 'Intermediate'),
+          link: item.link || '#',
+          custom: Boolean(item.custom)
+        };
+      };
+      const libraryResources = state.resources.library.flatMap(section => (section.items || []).map(item => normalizeItem(section.id, item)));
+      const customResources = state.resources.customResources.map(item => normalizeItem(item.legacyCategory || '', item));
+      const trashResources = state.resources.trash.map(item => normalizeItem(item.legacyCategory || '', { ...item, categoryLabel: item.categoryLabel || item.category || 'Others' }));
+      const allResources = templates.concat(libraryResources, customResources);
+      const resourceById = new Map(allResources.concat(trashResources).map(item => [item.id, item]));
+      const matchesQuery = (item) => !query || `${item.title} ${item.type} ${item.category} ${item.owner} ${item.description} ${item.note || ''} ${item.details || ''} ${item.link || ''}`.toLowerCase().includes(query);
+      const matchesActiveCategory = (item) => state.resources.activeTab === 'all' || item.category.toLowerCase() === state.resources.activeTab;
+      if (!['all', ...topCategories.map(category => category.label.toLowerCase())].includes(state.resources.activeTab)) state.resources.activeTab = 'all';
+      const bookmarkedItems = allResources.filter(item => state.resources.bookmarks.includes(item.id));
+      const quickPool = (() => {
+        if (state.resources.quickView === 'favorites') return bookmarkedItems;
+        if (state.resources.quickView === 'recent') return state.resources.recentlyUsed.map(id => resourceById.get(id)).filter(Boolean);
+        if (state.resources.quickView === 'shared') return libraryResources;
+        if (state.resources.quickView === 'team') return allResources.filter(item => item.owner !== 'You');
+        if (state.resources.quickView === 'trash') return trashResources;
+        return allResources;
+      })();
+      const filteredResources = quickPool.filter(item => matchesQuery(item) && matchesActiveCategory(item));
+      const recentItems = state.resources.recentlyUsed.map(id => resourceById.get(id)).filter(Boolean).slice(0, 6);
+      const featuredResources = [
+        ...bookmarkedItems.slice(0, 1),
+        ...templates.slice(0, 2),
+        ...libraryResources.slice(0, 2)
+      ].filter((item, index, list) => item && list.findIndex(match => match.id === item.id) === index).slice(0, 4);
+      const categoryCounts = topCategories.map(category => ({
+        ...category,
+        count: allResources.filter(item => item.category.toLowerCase() === category.label.toLowerCase()).length
       }));
-      const customFiltered = state.resources.customResources.filter(item => {
-        if (!query) return true;
-        return `${item.title} ${item.details || ''} ${item.link || ''}`.toLowerCase().includes(query);
-      });
-      const bookmarkedItems = libraries.flatMap(section => section.items).concat(customFiltered).filter(item => state.resources.bookmarks.includes(item.id));
-
-      const allFilteredItems = libraries.flatMap(section => section.items);
-      const tabContentMarkup = state.resources.activeTab === 'templates'
-        ? `<div class="grid md:grid-cols-2 gap-3">${templates.map(item => `
-            <div class="rounded-xl border border-orange-100 bg-white p-3 sm:p-4">
-              <div class="flex items-start justify-between gap-2">
-                <h4 class="text-sm sm:text-base font-semibold text-zinc-900">${escapeHTML(item.title)}</h4>
-                <span class="text-[11px] px-2 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-700">Template</span>
+      const customCount = state.resources.customResources.length;
+      const estimatedStorageKb = Math.max(12, Math.round(JSON.stringify(state.resources).length / 1024));
+      const storageLimitKb = 512;
+      const storagePercent = Math.min(100, Math.round((estimatedStorageKb / storageLimitKb) * 100));
+      const aiSuggestions = query
+        ? filteredResources.slice(0, 3).map(item => `${item.type}: ${item.title}`)
+        : [
+          'Turn your best founder notes into reusable templates.',
+          'Bookmark resources you will use in the next 30 days.',
+          'Export your library weekly as a lightweight backup.'
+        ];
+      const quickAccessItems = [
+        { id: 'favorites', label: 'Favorites', count: bookmarkedItems.length, icon: '⭐' },
+        { id: 'recent', label: 'Recent Files', count: recentItems.length, icon: '🕘' },
+        { id: 'shared', label: 'Shared with Me', count: libraryResources.length, icon: '🤝' },
+        { id: 'team', label: 'Team Resources', count: allResources.filter(item => item.owner !== 'You').length, icon: '👥' },
+        { id: 'trash', label: 'Trash', count: trashResources.length, icon: '🗑️' }
+      ];
+      const resourceRows = filteredResources.slice(0, 80).map(item => {
+        const bookmarked = state.resources.bookmarks.includes(item.id);
+        return `
+          <tr class="border-b border-white/10 hover:bg-white/[0.04] transition-colors">
+            <td class="py-3 pr-3">
+              <div class="font-semibold text-white">${escapeHTML(item.title)}</div>
+              <div class="text-xs text-slate-400 line-clamp-1">${escapeHTML(item.description)}</div>
+            </td>
+            <td class="py-3 pr-3"><span class="rounded-full border border-purple-300/30 bg-purple-400/10 px-2.5 py-1 text-xs font-medium text-purple-100">${escapeHTML(item.type)}</span></td>
+            <td class="py-3 pr-3 text-sm text-slate-300">${escapeHTML(item.category)}</td>
+            <td class="py-3 pr-3 text-sm text-slate-300">${escapeHTML(item.owner)}</td>
+            <td class="py-3 pr-3 text-sm text-slate-400">${escapeHTML(item.dateAdded)}</td>
+            <td class="py-3 pr-3 text-sm text-slate-400">${escapeHTML(item.size)}</td>
+            <td class="py-3">
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-open-resource="${escapeAttr(item.id)}" class="rounded-lg border border-teal-300/30 bg-teal-400/10 px-2 py-1 text-xs font-semibold text-teal-100 hover:bg-teal-400/20">Open</button>
+                <button type="button" data-download-resource="${escapeAttr(item.id)}" class="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-white/10">Download</button>
+                <button type="button" data-bookmark-resource="${escapeAttr(item.id)}" class="rounded-lg border ${bookmarked ? 'border-amber-300/50 bg-amber-300/15 text-amber-100' : 'border-white/15 bg-white/5 text-slate-200'} px-2 py-1 text-xs font-semibold hover:bg-white/10">${bookmarked ? 'Saved' : 'Save'}</button>
+                ${item.custom ? `<button type="button" data-delete-custom-resource="${escapeAttr(item.id)}" class="rounded-lg border border-rose-300/30 bg-rose-400/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-400/20">Delete</button>` : ''}
               </div>
-              <p class="text-xs sm:text-sm text-zinc-600 mt-2">${escapeHTML(item.note)}</p>
-            </div>
-          `).join('')}</div>`
-        : `<article class="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5">
-            <div class="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">Founder Tip</h3>
-                <p class="text-xs sm:text-sm text-zinc-600 mt-1">${escapeHTML(founderTips[state.resources.activeTab] || founderTips.all)}</p>
-              </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${allFilteredItems.length} resources</span>
-            </div>
-            ${allFilteredItems.length ? `<div class="grid md:grid-cols-2 gap-3">
-              ${allFilteredItems.map(item => {
-                const bookmarked = state.resources.bookmarks.includes(item.id);
-                return `
-                  <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
-                    <div class="flex items-start justify-between gap-2">
-                      <p class="font-semibold text-zinc-900">${escapeHTML(item.title)}</p>
-                      <button data-bookmark-resource="${item.id}" class="text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${bookmarked ? 'bg-orange-500/15 border-orange-300 text-orange-700' : 'bg-white border-gray-300 text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
-                    </div>
-                    <p class="text-xs sm:text-sm text-zinc-600 mt-1.5">${escapeHTML(item.note || item.description || '')}</p>
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                      ${item.cost ? `<span class="text-[11px] px-2 py-0.5 rounded-full border border-orange-200 bg-orange-50 text-orange-700">Cost: ${escapeHTML(item.cost)}</span>` : ''}
-                      <span class="text-[11px] px-2 py-0.5 rounded-full border border-teal-200 bg-teal-50 text-teal-700">Difficulty: ${escapeHTML(item.difficulty)}</span>
-                    </div>
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                      ${(item.bestFor || []).map(tag => `<span class="text-[11px] px-2 py-0.5 rounded-full border border-gray-200 bg-gray-50 text-zinc-600">Best for: ${escapeHTML(tag)}</span>`).join('')}
-                    </div>
-                    <p class="text-xs text-zinc-500 mt-2">${escapeHTML(item.founderTip)}</p>
-                    <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
-                  </div>
-                `;
-              }).join('')}
-            </div>` : `<div>${emptyStateMarkup('📚', 'No resources found in this category', 'Try another tab or clear your search query.', '', 'Start Here', 'section:resources')}</div>`}
-          </article>`;
+            </td>
+          </tr>`;
+      }).join('');
 
       el.innerHTML = `
-        <div class="bg-white border border-orange-200 rounded-xl p-4 sm:p-5">
-          <h2 class="text-xl sm:text-2xl font-semibold text-barya-accent">Resources</h2>
-          <p class="text-sm text-zinc-600 mt-1">Curated tools, communities, books, and guides to help you build faster and smarter</p>
-        </div>
-
-        <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
-          <div class="grid md:grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
-            <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search by title, use case, cost, difficulty, or founder note..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" />
-            <button id="toggleCustomResourceForm" class="px-4 py-2 rounded-lg border border-orange-300 bg-orange-500 text-white font-medium">${state.resources.customFormOpen ? 'Close Form' : 'Add My Own Resource'}</button>
-            <button id="exportResources" class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft text-zinc-700">Export Resources</button>
-            <label class="px-3 py-2 rounded-lg border border-gray-300 bg-barya-soft cursor-pointer text-center text-zinc-700">Import Resources<input id="importResources" type="file" accept="application/json" class="hidden"></label>
+        <div class="min-h-full rounded-[2rem] border border-white/10 bg-[#080b18] p-4 text-slate-100 shadow-2xl shadow-purple-950/30 sm:p-6">
+          <div class="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#11162b] via-[#0b1020] to-[#07151a] p-5 sm:p-7">
+            <div class="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl"></div>
+            <div class="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-teal-400/20 blur-3xl"></div>
+            <div class="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p class="mb-2 inline-flex rounded-full border border-teal-300/30 bg-teal-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-teal-100">Knowledge Library</p>
+                <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Resources</h2>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">All your templates, guides, frameworks, tools and helpful materials — in one place.</p>
+              </div>
+              <div class="flex flex-wrap gap-2 text-xs text-slate-300">
+                <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5">${allResources.length} total resources</span>
+                <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5">${bookmarkedItems.length} favorites</span>
+                <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5">Updated ${escapeHTML(nowLabel)}</span>
+              </div>
+            </div>
           </div>
+
+          <div class="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center">
+            <label class="relative flex-1">
+              <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
+              <input id="resourcesSearch" value="${escapeAttr(state.resources.search)}" placeholder="Search resources…" class="w-full rounded-2xl border border-white/10 bg-white/[0.06] py-3 pl-10 pr-20 text-sm text-white outline-none placeholder:text-slate-500 focus:border-teal-300/50 focus:ring-4 focus:ring-teal-300/10" />
+              <button type="button" id="resourceCommandHint" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-semibold text-slate-300">⌘ K</button>
+            </label>
+            <div class="relative">
+              <button id="toggleAddResourceMenu" type="button" class="w-full rounded-2xl bg-gradient-to-r from-purple-500 to-teal-400 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-950/30 hover:brightness-110 lg:w-auto">+ Add New</button>
+              <div id="resourceAddMenu" class="${state.resources.addMenuOpen ? '' : 'hidden'} absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-white/10 bg-[#111827] p-2 shadow-2xl shadow-black/40">
+                ${[
+                  ['upload', 'Upload File', 'Store file metadata in your library.'],
+                  ['document', 'Create Document', 'Start a blank resource document.'],
+                  ['template', 'Add Template', 'Save a reusable template.'],
+                  ['ai-output', 'Save AI Output', 'Capture Barya guidance.'],
+                  ['framework', 'Create Framework', 'Add a decision framework.'],
+                  ['import', 'Import Resource', 'Import exported JSON.']
+                ].map(([action, label, description]) => `<button type="button" data-add-resource-action="${action}" class="block w-full rounded-xl px-3 py-2 text-left hover:bg-white/10"><span class="block text-sm font-semibold text-white">${label}</span><span class="text-xs text-slate-400">${description}</span></button>`).join('')}
+              </div>
+            </div>
+            <button id="exportResources" type="button" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10">Export</button>
+            <label class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-center text-sm font-semibold text-slate-100 hover:bg-white/10 cursor-pointer">Import<input id="importResources" type="file" accept="application/json" class="hidden"></label>
+            <input id="resourceUploadInput" type="file" class="hidden" multiple>
+          </div>
+
           ${state.resources.customFormOpen ? `
-            <form id="customResourceForm" class="grid md:grid-cols-4 gap-2 bg-barya-soft border border-gray-200 rounded-lg p-2.5">
-              <input id="customResourceTitle" required placeholder="Resource title" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-              <input id="customResourceLink" required type="url" placeholder="https://example.com" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-              <input id="customResourceDetails" placeholder="Practical note" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-              <button class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Save Resource</button>
-            </form>
-          ` : ''}
-        </section>
+            <form id="customResourceForm" class="mt-5 rounded-3xl border border-teal-300/20 bg-teal-300/[0.06] p-4">
+              <div class="grid gap-3 lg:grid-cols-5">
+                <label class="text-xs font-semibold uppercase tracking-wide text-teal-100 lg:col-span-2">Resource Name<input id="customResourceTitle" required placeholder="e.g. Investor update template" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case text-white outline-none placeholder:text-slate-500"></label>
+                <label class="text-xs font-semibold uppercase tracking-wide text-teal-100">Type<select id="customResourceType" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case text-white outline-none"><option>Document</option><option>Template</option><option>Guide</option><option>Framework</option><option>Tool</option><option>Checklist</option><option>Playbook</option></select></label>
+                <label class="text-xs font-semibold uppercase tracking-wide text-teal-100">Category<select id="customResourceCategory" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case text-white outline-none">${topCategories.map(category => `<option>${escapeHTML(category.label)}</option>`).join('')}</select></label>
+                <label class="text-xs font-semibold uppercase tracking-wide text-teal-100">Link<input id="customResourceLink" placeholder="https:// or local note" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case text-white outline-none placeholder:text-slate-500"></label>
+              </div>
+              <label class="mt-3 block text-xs font-semibold uppercase tracking-wide text-teal-100">Description<textarea id="customResourceDetails" rows="3" placeholder="What is this resource for?" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case text-white outline-none placeholder:text-slate-500"></textarea></label>
+              <div class="mt-3 flex flex-wrap justify-end gap-2">
+                <button id="cancelCustomResourceForm" type="button" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200">Cancel</button>
+                <button type="submit" class="rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2 text-sm font-bold text-white">Save Resource</button>
+              </div>
+            </form>` : ''}
 
-        <section class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 space-y-3">
-          <div class="flex flex-wrap gap-2">
-            ${[...filterOptions, { id: 'templates', label: 'Templates' }].map(tabId => {
-              const label = tabId.label;
-              const active = state.resources.activeTab === tabId.id;
-              return `<button data-resource-tab="${tabId.id}" class="px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${active ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-300 bg-white text-zinc-700 hover:border-orange-300 hover:text-orange-700'}">${escapeHTML(label)}</button>`;
-            }).join('')}
+          <div class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
+            ${categoryCounts.map(category => `
+              <button type="button" data-resource-tab="${category.label.toLowerCase()}" class="group rounded-2xl border ${state.resources.activeTab === category.label.toLowerCase() ? 'border-teal-300/60 bg-white/12' : 'border-white/10 bg-white/[0.055]'} p-3 text-left hover:-translate-y-0.5 hover:border-teal-300/40 hover:bg-white/10 transition">
+                <div class="mb-3 flex items-center justify-between"><span class="text-2xl">${category.icon}</span><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r ${category.color}"></span></div>
+                <p class="text-sm font-bold text-white">${category.label}</p>
+                <p class="text-xs text-slate-400">${category.count} items</p>
+              </button>`).join('')}
           </div>
-          ${tabContentMarkup}
-        </section>
 
-        <section class="grid lg:grid-cols-2 gap-4">
-          <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
-            <div class="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">My Bookmarked Resources</h3>
-                <p class="text-xs sm:text-sm text-zinc-600 mt-1">Quick access to the links you marked for follow-up.</p>
-              </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">${bookmarkedItems.length} saved</span>
-            </div>
-            <div class="space-y-2">
-              ${bookmarkedItems.map(item => `
-                <div class="rounded-lg border border-gray-200 bg-barya-soft/50 p-2.5">
-                  <div class="flex items-start justify-between gap-2">
-                    <div>
-                      <p class="font-medium text-zinc-900">${escapeHTML(item.title)}</p>
-                      ${item.note ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.note)}</p>` : ''}
-                    </div>
-                    <button data-bookmark-resource="${item.id}" class="text-xs px-2.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Bookmarked</button>
-                  </div>
-                  <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-1.5 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
+          <div class="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <main class="space-y-5">
+              <section class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div><h3 class="text-lg font-bold text-white">Featured Resources</h3><p class="text-sm text-slate-400">High-impact materials to open or download first.</p></div>
+                  <button type="button" data-resource-tab="all" data-resource-clear-quick="true" class="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10">View all</button>
                 </div>
-              `).join('') || emptyStateMarkup('🔖', 'No bookmarks yet', 'Bookmark resources to build your personal shortlist.', '', 'Start Here', 'section:resources')}
-            </div>
-          </article>
+                <div class="grid gap-3 md:grid-cols-2">
+                  ${featuredResources.map(item => `
+                    <article class="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.09] to-white/[0.035] p-4">
+                      <div class="mb-3 flex items-start justify-between gap-3"><span class="rounded-full border border-teal-300/30 bg-teal-300/10 px-2.5 py-1 text-xs font-semibold text-teal-100">${escapeHTML(item.type)}</span><button type="button" data-bookmark-resource="${escapeAttr(item.id)}" class="text-lg" title="Bookmark">${state.resources.bookmarks.includes(item.id) ? '★' : '☆'}</button></div>
+                      <h4 class="font-bold text-white">${escapeHTML(item.title)}</h4>
+                      <p class="mt-2 min-h-[2.5rem] text-sm leading-5 text-slate-400">${escapeHTML(item.description)}</p>
+                      <div class="mt-4 flex gap-2"><button type="button" data-open-resource="${escapeAttr(item.id)}" class="rounded-xl bg-teal-400/15 px-3 py-2 text-xs font-bold text-teal-100 hover:bg-teal-400/25">Open</button><button type="button" data-download-resource="${escapeAttr(item.id)}" class="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Download</button></div>
+                    </article>`).join('')}
+                </div>
+              </section>
 
-          <article class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
-            <div class="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <h3 class="text-base sm:text-lg font-semibold text-barya-accent">My Custom Resources</h3>
-                <p class="text-xs sm:text-sm text-zinc-600 mt-1">Resources added by you are stored locally in your workspace.</p>
-              </div>
-              <button id="addCustomResourceShortcut" class="text-xs px-2.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700">Add My Own Resource</button>
-            </div>
-            <div class="space-y-2">
-              ${customFiltered.map(item => `
-                <div class="rounded-lg border border-gray-200 bg-barya-soft/70 p-2.5">
-                  <div class="flex items-start justify-between gap-2">
-                    <div>
-                      <p class="font-medium text-zinc-900">${escapeHTML(item.title)}</p>
-                      ${item.details ? `<p class="text-xs text-zinc-600 mt-0.5">${escapeHTML(item.details)}</p>` : ''}
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                      <button data-bookmark-resource="${item.id}" class="text-xs px-2 py-1 rounded border ${state.resources.bookmarks.includes(item.id) ? 'bg-orange-500/15 border-orange-300 text-orange-700' : 'bg-white border-gray-300 text-zinc-700'}">${state.resources.bookmarks.includes(item.id) ? 'Bookmarked' : 'Bookmark'}</button>
-                      <button data-delete-custom-resource="${item.id}" class="text-xs px-2 py-1 rounded border border-rose-300 bg-rose-50 text-rose-600">Delete</button>
-                    </div>
-                  </div>
-                  <a href="${escapeAttr(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-orange-700 hover:text-orange-800 underline">Open resource</a>
+              <section class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div><h3 class="text-lg font-bold text-white">Main Resources Table</h3><p class="text-sm text-slate-400">Search, save, open, download, import, export, and manage resources from one table.</p></div>
+                  <button type="button" data-resource-tab="all" data-resource-clear-quick="true" class="rounded-xl border border-purple-300/25 bg-purple-400/10 px-3 py-2 text-xs font-semibold text-purple-100">All Categories</button>
                 </div>
-              `).join('') || emptyStateMarkup('🧰', 'No custom resources yet', 'Use Add My Own Resource to save links that are specific to your workflow.', '', 'Start Here', 'resource-form')}
-            </div>
-          </article>
-        </section>
-      `;
+                <div class="overflow-x-auto rounded-2xl border border-white/10">
+                  <table class="min-w-[980px] w-full text-left">
+                    <thead class="bg-white/[0.06] text-xs uppercase tracking-wide text-slate-400"><tr><th class="py-3 pl-4 pr-3">Resource Name</th><th class="py-3 pr-3">Type</th><th class="py-3 pr-3">Category</th><th class="py-3 pr-3">Owner</th><th class="py-3 pr-3">Date Added</th><th class="py-3 pr-3">File Size</th><th class="py-3 pr-4">Actions</th></tr></thead>
+                    <tbody class="divide-y divide-white/5 text-sm">${resourceRows || `<tr><td colspan="7" class="p-8 text-center text-slate-400">No resources found. Try another search or add a new resource.</td></tr>`}</tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="grid gap-5 lg:grid-cols-2">
+                <article class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                  <h3 class="text-lg font-bold text-white">Recently Used</h3>
+                  <div class="mt-3 space-y-2">${recentItems.map(item => `<button type="button" data-open-resource="${escapeAttr(item.id)}" class="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left hover:bg-white/10"><span><span class="block text-sm font-semibold text-white">${escapeHTML(item.title)}</span><span class="text-xs text-slate-400">${escapeHTML(item.type)} • ${escapeHTML(item.category)}</span></span><span class="text-slate-400">↗</span></button>`).join('') || `<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-400">Open a resource and it will appear here.</p>`}</div>
+                </article>
+                <article class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                  <h3 class="text-lg font-bold text-white">Storage Usage</h3>
+                  <p class="mt-1 text-sm text-slate-400">Local browser storage estimate for resources data.</p>
+                  <div class="mt-5 h-3 overflow-hidden rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-teal-400" style="width:${storagePercent}%"></div></div>
+                  <div class="mt-3 flex justify-between text-xs text-slate-400"><span>${estimatedStorageKb} KB used</span><span>${storageLimitKb} KB soft limit</span></div>
+                </article>
+              </section>
+            </main>
+
+            <aside class="space-y-5">
+              <section class="rounded-3xl border border-teal-300/20 bg-gradient-to-br from-teal-400/12 via-purple-500/10 to-white/[0.035] p-4">
+                <h3 class="text-lg font-bold text-white">Barya AI Assistant</h3>
+                <p class="mt-1 text-sm text-slate-400">Ask Barya anything… and get smart resource guidance.</p>
+                <div class="mt-4 flex gap-2"><input id="resourceAiPrompt" value="${escapeAttr(state.resources.aiPrompt)}" placeholder="Ask Barya anything…" class="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500"><button id="askResourceAi" type="button" class="rounded-xl bg-teal-400 px-3 py-2 text-sm font-bold text-slate-950">Ask</button></div>
+                <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-slate-300">${escapeHTML(state.resources.aiResponse || 'Tell me what you are trying to build, and I will suggest the best templates, tools, and frameworks from your library.')}</div>
+                <div class="mt-4 space-y-2"><p class="text-xs font-semibold uppercase tracking-wide text-teal-100">Smart suggestions</p>${aiSuggestions.map(suggestion => `<button type="button" data-ai-suggestion="${escapeAttr(suggestion)}" class="block w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left text-xs text-slate-300 hover:bg-white/10">${escapeHTML(suggestion)}</button>`).join('')}</div>
+              </section>
+
+              <section class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                <h3 class="text-lg font-bold text-white">Quick Access</h3>
+                <div class="mt-3 grid gap-2">${quickAccessItems.map(item => `<button type="button" data-quick-resource="${item.id}" class="flex items-center justify-between rounded-2xl border ${state.resources.quickView === item.id ? 'border-purple-300/40 bg-purple-400/10' : 'border-white/10 bg-white/[0.04]'} px-3 py-2 text-left hover:bg-white/10"><span class="flex items-center gap-2 text-sm font-semibold text-white"><span>${item.icon}</span>${item.label}</span><span class="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-300">${item.count}</span></button>`).join('')}</div>
+              </section>
+
+              <section class="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                <div class="mb-3 flex items-center justify-between"><h3 class="text-lg font-bold text-white">My Custom Resources</h3><button id="addCustomResourceShortcut" type="button" class="rounded-xl border border-teal-300/25 px-3 py-1.5 text-xs font-semibold text-teal-100 hover:bg-teal-300/10">Add</button></div>
+                <div class="space-y-2">${customResources.slice(0, 5).map(item => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div class="flex items-start justify-between gap-2"><div><p class="text-sm font-semibold text-white">${escapeHTML(item.title)}</p><p class="text-xs text-slate-400">${escapeHTML(item.type)} • ${escapeHTML(item.category)}</p></div><button type="button" data-delete-custom-resource="${escapeAttr(item.id)}" class="text-xs text-rose-200">Delete</button></div><button type="button" data-open-resource="${escapeAttr(item.id)}" class="mt-2 text-xs font-semibold text-teal-100">Open resource</button></div>`).join('') || `<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-400">No custom resources yet. Use + Add New to create one.</p>`}</div>
+              </section>
+            </aside>
+          </div>
+        </div>`;
+
+      const markRecent = (id) => {
+        state.resources.recentlyUsed = [id].concat(state.resources.recentlyUsed.filter(existing => existing !== id)).slice(0, 12);
+        saveStateRaw();
+      };
+      const downloadResource = (item) => downloadJSON(`${(item.title || 'resource').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'resource'}.json`, item);
+      const createResource = ({ title, type = 'Document', category = 'Documents', details = '', link = '#', size = 'Local note' }) => {
+        state.resources.customResources.unshift({
+          id: crypto.randomUUID(),
+          title,
+          link,
+          details,
+          type,
+          categoryLabel: category,
+          owner: 'You',
+          size,
+          custom: true,
+          ts: new Date().toISOString()
+        });
+        state.resources.customFormOpen = false;
+        state.resources.addMenuOpen = false;
+        saveState();
+      };
 
       document.getElementById('resourcesSearch').oninput = (e) => {
         state.resources.search = e.target.value || '';
         saveStateRaw();
         queueRenderActiveSection();
       };
-      document.getElementById('toggleCustomResourceForm').onclick = () => {
-        state.resources.customFormOpen = !state.resources.customFormOpen;
+      document.getElementById('resourceCommandHint').onclick = () => document.getElementById('resourcesSearch')?.focus();
+      if (!window.__baryaResourceShortcutBound) {
+        window.__baryaResourceShortcutBound = true;
+        window.addEventListener('keydown', (event) => {
+          if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && state.activeSection === 'resources') {
+            event.preventDefault();
+            document.getElementById('resourcesSearch')?.focus();
+          }
+        });
+      }
+      document.getElementById('toggleAddResourceMenu').onclick = () => {
+        state.resources.addMenuOpen = !state.resources.addMenuOpen;
         saveStateRaw();
         renderResources();
       };
@@ -2830,27 +2953,64 @@
         saveStateRaw();
         renderResources();
       };
-      el.querySelectorAll('[data-resource-tab]').forEach(btn => {
+      document.querySelectorAll('[data-resource-tab]').forEach(btn => {
         btn.onclick = () => {
           state.resources.activeTab = btn.dataset.resourceTab;
+          if (btn.dataset.resourceClearQuick === 'true' || btn.dataset.resourceTab !== 'all') state.resources.quickView = 'all';
           saveStateRaw();
           renderResources();
         };
       });
+      document.querySelectorAll('[data-add-resource-action]').forEach(btn => {
+        btn.onclick = () => {
+          const action = btn.dataset.addResourceAction;
+          if (action === 'import') return document.getElementById('importResources')?.click();
+          if (action === 'upload') return document.getElementById('resourceUploadInput')?.click();
+          if (action === 'document') return createResource({ title: 'Untitled Document', type: 'Document', category: 'Documents', details: 'New document created from Resources.' });
+          if (action === 'template') return createResource({ title: 'New Template', type: 'Template', category: 'Templates', details: 'Reusable template ready to customize.' });
+          if (action === 'framework') return createResource({ title: 'New Framework', type: 'Framework', category: 'Frameworks', details: 'Decision framework ready to customize.' });
+          if (action === 'ai-output') return createResource({ title: 'Saved AI Output', type: 'Guide', category: 'Guides', details: state.resources.aiResponse || 'Saved guidance from Barya AI Assistant.' });
+        };
+      });
       const customForm = document.getElementById('customResourceForm');
       if (customForm) {
+        document.getElementById('cancelCustomResourceForm').onclick = () => {
+          state.resources.customFormOpen = false;
+          saveStateRaw();
+          renderResources();
+        };
         customForm.onsubmit = (e) => {
           e.preventDefault();
           const title = document.getElementById('customResourceTitle').value.trim();
-          const link = document.getElementById('customResourceLink').value.trim();
+          const link = document.getElementById('customResourceLink').value.trim() || '#';
           const details = document.getElementById('customResourceDetails').value.trim();
-          if (!title || !link) return;
-          state.resources.customResources.unshift({ id: crypto.randomUUID(), title, link, details, custom: true, ts: new Date().toISOString() });
-          state.resources.customFormOpen = false;
-          saveState();
+          const type = document.getElementById('customResourceType').value;
+          const category = document.getElementById('customResourceCategory').value;
+          if (!title) return;
+          createResource({ title, link, details, type, category });
         };
       }
-      el.querySelectorAll('[data-bookmark-resource]').forEach(btn => {
+      document.querySelectorAll('[data-open-resource]').forEach(btn => {
+        btn.onclick = () => {
+          const item = resourceById.get(btn.dataset.openResource);
+          if (!item) return;
+          markRecent(item.id);
+          if (item.link && item.link !== '#') {
+            window.open(item.link, '_blank', 'noopener,noreferrer');
+          } else {
+            alert(`${item.title}\n\n${item.description || item.details || 'This saved resource does not have an external link yet.'}`);
+          }
+        };
+      });
+      document.querySelectorAll('[data-download-resource]').forEach(btn => {
+        btn.onclick = () => {
+          const item = resourceById.get(btn.dataset.downloadResource);
+          if (!item) return;
+          markRecent(item.id);
+          downloadResource(item);
+        };
+      });
+      document.querySelectorAll('[data-bookmark-resource]').forEach(btn => {
         btn.onclick = () => {
           const id = btn.dataset.bookmarkResource;
           if (state.resources.bookmarks.includes(id)) {
@@ -2861,21 +3021,68 @@
           saveState();
         };
       });
-      el.querySelectorAll('[data-delete-custom-resource]').forEach(btn => {
+      document.querySelectorAll('[data-delete-custom-resource]').forEach(btn => {
         btn.onclick = () => {
           const id = btn.dataset.deleteCustomResource;
+          const deleted = state.resources.customResources.find(item => item.id === id);
+          if (deleted) state.resources.trash.unshift({ ...deleted, deletedAt: new Date().toISOString() });
+          state.resources.trash = state.resources.trash.slice(0, 25);
           state.resources.customResources = state.resources.customResources.filter(item => item.id !== id);
           state.resources.bookmarks = state.resources.bookmarks.filter(bookmark => bookmark !== id);
+          state.resources.recentlyUsed = state.resources.recentlyUsed.filter(recentId => recentId !== id);
           saveState();
         };
       });
+      document.querySelectorAll('[data-quick-resource]').forEach(btn => {
+        btn.onclick = () => {
+          state.resources.quickView = btn.dataset.quickResource;
+          state.resources.search = '';
+          state.resources.activeTab = 'all';
+          saveState();
+        };
+      });
+      document.querySelectorAll('[data-ai-suggestion]').forEach(btn => {
+        btn.onclick = () => {
+          state.resources.aiPrompt = btn.dataset.aiSuggestion;
+          state.resources.aiResponse = `Suggested next step: ${btn.dataset.aiSuggestion} Open the matching resources, bookmark the best one, then export your library for backup.`;
+          saveState();
+        };
+      });
+      document.getElementById('askResourceAi').onclick = () => {
+        const prompt = document.getElementById('resourceAiPrompt').value.trim();
+        state.resources.aiPrompt = prompt;
+        const suggestion = filteredResources[0] || allResources[0];
+        state.resources.aiResponse = prompt
+          ? `For “${prompt}”, start with ${suggestion ? suggestion.title : 'your highest-priority saved resource'}. Bookmark it, use the table actions to open or download it, and add any missing template as a custom resource.`
+          : 'Ask about fundraising, product, operations, templates, tools, or frameworks and I will guide you to the best resource.';
+        saveState();
+      };
+      document.getElementById('resourceAiPrompt').oninput = (e) => {
+        state.resources.aiPrompt = e.target.value || '';
+        saveStateRaw();
+      };
+      document.getElementById('resourceUploadInput').onchange = (e) => {
+        Array.from(e.target.files || []).forEach(file => createResource({
+          title: file.name,
+          type: 'Document',
+          category: 'Documents',
+          details: `Uploaded file metadata saved locally. Type: ${file.type || 'Unknown file type'}.`,
+          size: file.size >= 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(file.size / 1024))} KB`
+        }));
+        e.target.value = '';
+      };
       document.getElementById('exportResources').onclick = () => downloadJSON('barya-resources.json', state.resources);
       document.getElementById('importResources').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
         state.resources = deepMerge({
           search: '',
-          activeTab: 'templates',
+          activeTab: 'all',
+          quickView: 'all',
+          aiPrompt: '',
+          aiResponse: '',
           bookmarks: [],
           customResources: [],
+          recentlyUsed: [],
+          trash: [],
           library: resourceLibraryDefaults()
         }, data || {});
         ensureResourcesState();
