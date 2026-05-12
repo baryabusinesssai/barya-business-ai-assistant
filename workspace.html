@@ -4253,7 +4253,8 @@
         task.description = String(task.description || '');
         task.dueDate = task.dueDate || '';
         if (!['High', 'Medium', 'Low'].includes(task.priority)) task.priority = 'Medium';
-        if (!['To Do', 'In Progress', 'Done'].includes(task.status)) task.status = 'To Do';
+        if (!['To Do', 'In Progress', 'Review', 'Done'].includes(task.status)) task.status = task.status === 'Archived' ? 'Done' : 'To Do';
+        if (typeof task.archived !== 'boolean') task.archived = false;
         if (!Array.isArray(task.tags)) task.tags = String(task.tags || '').split(',').map(t => t.trim()).filter(Boolean);
         if (!task.createdAt) task.createdAt = new Date().toISOString();
         if (!task.updatedAt) task.updatedAt = task.createdAt;
@@ -4272,7 +4273,7 @@
         const mk = (title, priority, status, offset) => {
           const due = new Date(now);
           due.setDate(due.getDate() + offset);
-          return { id: crypto.randomUUID(), title, description: '', dueDate: due.toISOString().slice(0, 10), priority, status, tags: [], sprintId: '', linkRef: '', createdAt: now.toISOString(), updatedAt: now.toISOString() };
+          return { id: crypto.randomUUID(), title, description: '', dueDate: due.toISOString().slice(0, 10), priority, status, tags: [], sprintId: '', linkRef: '', archived: false, createdAt: now.toISOString(), updatedAt: now.toISOString() };
         };
         state.tasks.items = [
           mk('Define launch landing page copy', 'High', 'To Do', 2),
@@ -4330,11 +4331,14 @@
       weekEnd.setDate(weekEnd.getDate() + 7);
       const weekEndIso = weekEnd.toISOString().slice(0, 10);
 
-      if (leftTab === 'today') return task.dueDate === todayIso;
-      if (leftTab === 'week') return !!task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso;
-      if (leftTab === 'sprints') return !!task.sprintId;
-      if (leftTab === 'completed') return task.status === 'Done';
-      return true;
+      if (leftTab === 'my') return !task.archived;
+      if (leftTab === 'assigned') return !task.archived;
+      if (leftTab === 'completed') return !task.archived && task.status === 'Done';
+      if (leftTab === 'archived') return !!task.archived;
+      if (leftTab === 'today') return !task.archived && task.dueDate === todayIso;
+      if (leftTab === 'week') return !task.archived && !!task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso;
+      if (leftTab === 'sprints') return !task.archived && !!task.sprintId;
+      return !task.archived;
     }
 
     function renderTasks() {
@@ -4342,13 +4346,14 @@
       const el = document.getElementById('section-tasks');
       const t = state.tasks;
       const priorities = ['All', 'High', 'Medium', 'Low'];
-      const statuses = ['All', 'To Do', 'In Progress', 'Done'];
+      const statuses = ['All', 'To Do', 'In Progress', 'Review', 'Done'];
+      const boardStatuses = ['To Do', 'In Progress', 'Review', 'Done'];
       const leftTabs = [
         { id: 'all', label: 'All Tasks' },
-        { id: 'today', label: 'Today' },
-        { id: 'week', label: 'This Week' },
-        { id: 'sprints', label: 'Sprints' },
-        { id: 'completed', label: 'Completed' }
+        { id: 'my', label: 'My Tasks' },
+        { id: 'assigned', label: 'Assigned to Me' },
+        { id: 'completed', label: 'Completed' },
+        { id: 'archived', label: 'Archived' }
       ];
       const sprintMap = new Map(t.sprints.map(s => [s.id, s]));
       const normalizedSearch = t.search.toLowerCase().trim();
@@ -4358,6 +4363,11 @@
         .map(line => String(line).replace(/^Day\s*\d+-?\d*:\s*/i, '').trim())
         .filter(Boolean)
         .slice(0, 4);
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const weekEnd = new Date();
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const weekEndIso = weekEnd.toISOString().slice(0, 10);
+      const progressByStatus = { 'To Do': 12, 'In Progress': 48, 'Review': 78, 'Done': 100 };
       const filtered = t.items.filter(task => {
         const searchText = `${task.title} ${task.description} ${(task.tags || []).join(' ')} ${linkedTaskLabel(task)}`.toLowerCase();
         const bySearch = !normalizedSearch || searchText.includes(normalizedSearch);
@@ -4368,71 +4378,112 @@
         return bySearch && byPriority && byStatus && bySprint && byLeft;
       });
       const sorted = [...filtered].sort((a, b) => {
-        if (a.status !== b.status) return ['To Do', 'In Progress', 'Done'].indexOf(a.status) - ['To Do', 'In Progress', 'Done'].indexOf(b.status);
+        if (a.status !== b.status) return boardStatuses.indexOf(a.status) - boardStatuses.indexOf(b.status);
         if (!!a.dueDate !== !!b.dueDate) return a.dueDate ? -1 : 1;
         if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
-        return b.updatedAt.localeCompare(a.updatedAt);
+        return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
       });
       const selectedTask = t.items.find(task => task.id === t.selectedTaskId) || null;
-      const todayIso = new Date().toISOString().slice(0, 10);
+      const activeTasks = t.items.filter(task => !task.archived);
+      const completedCount = activeTasks.filter(task => task.status === 'Done').length;
+      const inProgressCount = activeTasks.filter(task => task.status === 'In Progress' || task.status === 'Review').length;
+      const overdueCount = activeTasks.filter(task => task.dueDate && task.dueDate < todayIso && task.status !== 'Done').length;
+      const weeklyFocusCount = activeTasks.filter(task => task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso && task.status !== 'Done').length;
+      const completionPct = activeTasks.length ? Math.round((completedCount / activeTasks.length) * 100) : 0;
+      const upcomingDeadlines = activeTasks
+        .filter(task => task.dueDate && task.status !== 'Done')
+        .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+        .slice(0, 5);
+      const weeklyTrend = [18, 32, 46, 58, 72, 63, Math.max(24, completionPct)].map((value, index) => ({ label: ['M','T','W','T','F','S','S'][index], value }));
 
       const sprintCards = t.sprints.map(sprint => {
-        const tasks = t.items.filter(task => task.sprintId === sprint.id);
+        const tasks = t.items.filter(task => task.sprintId === sprint.id && !task.archived);
         const done = tasks.filter(task => task.status === 'Done').length;
         const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
-        return `<div class="rounded-xl border border-teal-200/60 bg-white p-3 shadow-sm">
-          <div class="flex items-start justify-between gap-2"><div><p class="font-semibold text-slate-800">${escapeHTML(sprint.name)}</p><p class="text-xs text-slate-500">${escapeHTML(sprint.startDate || 'No start')} → ${escapeHTML(sprint.endDate || 'No end')}</p></div><button data-delete-sprint="${sprint.id}" class="text-xs text-rose-500">Delete</button></div>
-          <div class="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-teal-500" style="width:${pct}%"></div></div><p class="text-xs text-slate-500 mt-2">${done}/${tasks.length} completed (${pct}%)</p></div>`;
-      }).join('') || emptyStateMarkup('🏁', 'No sprints yet.', 'Create a sprint to group execution goals.', '', 'Start Here', 'section:tasks');
+        return `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-2"><div><p class="font-semibold text-white">${escapeHTML(sprint.name)}</p><p class="text-xs text-slate-400">${escapeHTML(sprint.startDate || 'No start')} → ${escapeHTML(sprint.endDate || 'No end')}</p></div><button data-delete-sprint="${sprint.id}" class="text-xs text-rose-300 hover:text-rose-200">Delete</button></div>
+          <div class="mt-3 h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bg-gradient-to-r from-teal-400 to-violet-400" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${done}/${tasks.length} completed (${pct}%)</p></div>`;
+      }).join('') || `<div class="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-slate-400">No sprints yet. Create one below to group execution goals.</div>`;
 
       const taskCard = (task) => {
         const sprint = sprintMap.get(task.sprintId);
         const linked = getLinkedItem(task);
         const overdue = task.dueDate && task.status !== 'Done' && task.dueDate < todayIso;
-        const prClass = task.priority === 'High' ? 'bg-rose-100 text-rose-700 border-rose-200' : task.priority === 'Medium' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
-        return `<article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card rounded-2xl border ${t.selectedTaskId === task.id ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200'} bg-white p-4 shadow-sm space-y-3">
-          <div class="flex items-start justify-between gap-3"><div class="flex items-start gap-2 flex-1"><input type="checkbox" data-toggle-complete="${task.id}" ${task.status === 'Done' ? 'checked' : ''} class="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600"/><button data-select-task="${task.id}" class="text-left flex-1"><p class="text-base font-semibold text-slate-800">${escapeHTML(task.title)}</p><p class="text-sm text-slate-500 mt-1">${escapeHTML(task.description || 'No description')}</p></button></div><span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${prClass}">${task.priority}</span></div>
-          <div class="flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="text-[11px] px-2 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100">${escapeHTML(tag)}</span>`).join('') || '<span class="text-xs text-slate-400">No tags</span>'}</div>
-          <div class="text-xs text-slate-500 flex flex-wrap gap-3"><span class="${overdue ? 'text-rose-600 font-semibold' : ''}">Due: ${escapeHTML(task.dueDate || '—')} ${overdue ? '• Overdue' : ''}</span><span>Sprint: ${escapeHTML(sprint?.name || 'Backlog')}</span>${linked ? `<button data-jump-link="${task.id}" class="text-teal-700 hover:text-teal-600">${linked.icon} ${escapeHTML(linked.title)}</button>` : '<span class="text-slate-400">Not linked</span>'}</div>
-          <div class="flex gap-2"><button data-edit-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200">Edit</button><button data-delete-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-600">Delete</button></div></article>`;
+        const progress = progressByStatus[task.status] ?? 12;
+        const prClass = task.priority === 'High'
+          ? 'bg-rose-500/15 text-rose-200 border-rose-400/30'
+          : task.priority === 'Medium'
+            ? 'bg-amber-400/15 text-amber-100 border-amber-300/30'
+            : 'bg-emerald-400/15 text-emerald-100 border-emerald-300/30';
+        const avatarLabel = escapeHTML((state.settings?.founder?.name || 'Barya').trim().slice(0, 1).toUpperCase() || 'B');
+        return `<article draggable="${t.view === 'kanban'}" data-task-id="${task.id}" class="task-card group rounded-3xl border ${t.selectedTaskId === task.id ? 'border-teal-300/80 ring-2 ring-teal-300/20' : 'border-white/10'} bg-slate-950/70 p-4 shadow-xl shadow-black/20 space-y-4 transition hover:-translate-y-0.5 hover:border-teal-300/50 hover:bg-slate-900/90">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 flex-1 min-w-0"><input type="checkbox" data-toggle-complete="${task.id}" ${task.status === 'Done' ? 'checked' : ''} class="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-900 text-teal-500"/><button data-select-task="${task.id}" class="text-left flex-1 min-w-0"><p class="text-sm font-semibold text-white leading-6">${escapeHTML(task.title)}</p><p class="text-xs text-slate-400 mt-1 line-clamp-2">${escapeHTML(task.description || 'No description')}</p></button></div>
+            <span class="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${prClass}">${task.priority}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-xs"><span class="text-slate-300">${escapeHTML(sprint?.name || 'Backlog')}</span><span class="${overdue ? 'text-rose-300 font-semibold' : 'text-slate-400'}">${escapeHTML(task.dueDate || 'No due date')}${overdue ? ' • Overdue' : ''}</span></div>
+          <div class="flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="text-[10px] px-2 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">${escapeHTML(tag)}</span>`).join('') || '<span class="text-[11px] text-slate-500">No tags</span>'}</div>
+          <div class="space-y-2"><div class="flex items-center justify-between text-[11px] text-slate-400"><span>Progress</span><span>${progress}%</span></div><div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-violet-400" style="width:${progress}%"></div></div></div>
+          <div class="flex items-center justify-between gap-3 pt-1"><div class="flex items-center gap-2"><span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-violet-500 to-teal-400 text-xs font-bold text-white shadow-lg shadow-teal-500/10">${avatarLabel}</span>${linked ? `<button data-jump-link="${task.id}" class="max-w-[8rem] truncate text-xs text-teal-300 hover:text-teal-200">${linked.icon} ${escapeHTML(linked.title)}</button>` : '<span class="text-xs text-slate-500">Not linked</span>'}</div><div class="flex gap-1.5"><button data-edit-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-200 hover:bg-white/10">Edit</button><button data-archive-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-violet-500/10 border border-violet-400/20 text-violet-100 hover:bg-violet-500/20">${task.archived ? 'Unarchive' : 'Archive'}</button><button data-delete-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-400/20 text-rose-200 hover:bg-rose-500/20">Delete</button></div></div>
+        </article>`;
       };
 
       const activeTasksMarkup = t.view === 'list'
-        ? `<div class="space-y-3">${sorted.map(taskCard).join('') || emptyStateMarkup('✅', 'No tasks yet.', 'Add your first task.', '', 'Start Here', 'section:tasks')}</div>`
-        : `<div class="grid md:grid-cols-3 gap-3">${['To Do', 'In Progress', 'Done'].map(status => `<div data-drop-status="${status}" class="bg-white border border-slate-200 rounded-2xl p-3 min-h-[280px]"><div class="flex items-center justify-between mb-2"><h3 class="font-medium text-slate-700">${status}</h3><span class="text-xs text-slate-400">${sorted.filter(task => task.status === status).length}</span></div><div class="space-y-2">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="text-xs text-slate-400">No tasks</p>'}</div></div>`).join('')}</div>`;
+        ? `<div class="space-y-3">${sorted.map(taskCard).join('') || `<div class="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center text-slate-400">No tasks match this view.</div>`}</div>`
+        : `<div class="grid xl:grid-cols-4 md:grid-cols-2 gap-4">${boardStatuses.map(status => `<div data-drop-status="${status}" class="rounded-3xl border border-white/10 bg-white/[0.035] p-3 min-h-[420px] transition hover:border-teal-300/30"><div class="flex items-center justify-between mb-3 px-1"><h3 class="font-semibold text-white">${status}</h3><span class="text-xs text-slate-400 rounded-full bg-white/5 px-2 py-1">${sorted.filter(task => task.status === status).length}</span></div><div class="space-y-3">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-xs text-slate-500">Drop tasks here</p>'}</div></div>`).join('')}</div>`;
 
       el.innerHTML = `
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-5">
-          <header class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-2xl font-semibold text-slate-900">Tasks & Sprints</h2>
-            <div class="flex gap-2">
-              <button data-view="kanban" class="px-4 py-2 rounded-lg border text-sm font-medium ${t.view === 'kanban' ? 'bg-teal-100 border-teal-300 text-teal-800' : 'bg-white border-slate-200 text-slate-700'}">Kanban View</button>
-              <button data-view="list" class="px-4 py-2 rounded-lg border text-sm font-medium ${t.view === 'list' ? 'bg-teal-100 border-teal-300 text-teal-800' : 'bg-white border-slate-200 text-slate-700'}">List View</button>
+        <section class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 p-5 sm:p-7 shadow-2xl shadow-black/30 text-slate-100">
+          <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,.28),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(20,184,166,.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,.96),rgba(2,6,23,.98))]"></div>
+          <div class="relative space-y-6">
+            <header class="flex flex-wrap items-end justify-between gap-4">
+              <div><p class="text-sm font-semibold uppercase tracking-[0.3em] text-teal-300">Tasks</p><h2 class="mt-2 text-3xl sm:text-4xl font-bold text-white">Tasks</h2><p class="mt-2 text-slate-400">Plan. Prioritize. Execute.</p></div>
+              <div class="flex gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
+                <button data-view="kanban" class="px-4 py-2 rounded-xl text-sm font-semibold ${t.view === 'kanban' ? 'bg-gradient-to-r from-violet-500 to-teal-500 text-white shadow-lg' : 'text-slate-300 hover:bg-white/5'}">Kanban</button>
+                <button data-view="list" class="px-4 py-2 rounded-xl text-sm font-semibold ${t.view === 'list' ? 'bg-gradient-to-r from-violet-500 to-teal-500 text-white shadow-lg' : 'text-slate-300 hover:bg-white/5'}">List</button>
+              </div>
+            </header>
+
+            <div class="flex flex-col lg:flex-row gap-3">
+              <label class="relative flex-1"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">⌕</span><input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="w-full rounded-2xl border border-white/10 bg-white/[0.06] py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 outline-none focus:border-teal-300/60 focus:ring-2 focus:ring-teal-300/10" /></label>
+              <details class="relative group"><summary id="newTaskBtn" class="list-none cursor-pointer rounded-2xl bg-gradient-to-r from-violet-500 to-teal-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/20">+ New Task</summary><div class="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl"><button data-new-task-type="task" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Task</button><button data-new-task-type="reminder" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Reminder</button><button data-new-task-type="goal" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Goal</button><button data-new-task-type="ai" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">AI Generated Task</button></div></details>
             </div>
-          </header>
-          <button id="newTaskBtn" class="w-full md:w-auto px-6 py-3 rounded-xl bg-teal-600 text-white text-base font-semibold shadow-sm hover:bg-teal-700">+ Add New Task</button>
-          <div class="grid lg:grid-cols-4 gap-2">
-            <input id="taskSearch" value="${escapeAttr(t.search)}" placeholder="Search tasks..." class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm lg:col-span-2" />
-            <select id="taskPriorityFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select>
-            <select id="taskStatusFilter" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select>
-          </div>
-          <section class="min-w-0 space-y-3">${activeTasksMarkup}</section>
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 class="font-semibold text-slate-700 mb-2">Task Details</h3>
-            <form id="taskForm" class="space-y-2"><input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><textarea id="taskDescription" rows="2" placeholder="Description" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${escapeHTML(selectedTask?.description || '')}</textarea><div class="grid sm:grid-cols-4 gap-2"><input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskPriority" class="bg-white border border-slate-200 rounded px-3 py-2">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatus" class="bg-white border border-slate-200 rounded px-3 py-2">${['To Do','In Progress','Done'].map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select><select id="taskSprint" class="bg-white border border-slate-200 rounded px-3 py-2"><option value="">No Sprint</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select></div><input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full bg-white border border-slate-200 rounded px-3 py-2" /><select id="taskLinkRef" class="w-full bg-white border border-slate-200 rounded px-3 py-2">${linkOptions.map(opt => `<option value="${escapeAttr(opt.value)}" ${selectedTask?.linkRef===opt.value?'selected':''}>${escapeHTML(opt.label)}</option>`).join('')}</select><div class="flex gap-2"><button class="px-3 py-2 rounded bg-teal-600 text-white text-sm">${selectedTask ? 'Update Task' : 'Create Task'}</button><button id="taskFormReset" type="button" class="px-3 py-2 rounded bg-white border border-slate-200 text-sm">Reset</button></div></form>
-          </div>
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-            <div class="flex items-center justify-between gap-2">
-              <h3 class="text-lg font-semibold text-slate-800">Sprints</h3>
-              <button id="newSprintBtn" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm">New Sprint</button>
+
+            <nav class="flex gap-2 overflow-x-auto pb-1">${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="shrink-0 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${t.leftTab === tab.id ? 'border-teal-300/60 bg-teal-400/10 text-teal-100' : 'border-white/10 bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.07]'}">${tab.label}</button>`).join('')}</nav>
+
+            <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
+              ${[
+                ['Total Tasks', activeTasks.length, 'from active workspace'],
+                ['In Progress', inProgressCount, 'moving now'],
+                ['Completed', completedCount, `${completionPct}% done`],
+                ['Overdue', overdueCount, 'need attention'],
+                ['Weekly Focus', weeklyFocusCount, 'due in 7 days']
+              ].map(([label, value, hint]) => `<div class="rounded-3xl border border-white/10 bg-white/[0.055] p-4"><p class="text-xs uppercase tracking-[0.18em] text-slate-500">${label}</p><p class="mt-3 text-3xl font-bold text-white">${value}</p><p class="mt-1 text-xs text-slate-400">${hint}</p></div>`).join('')}
             </div>
-            <form id="sprintForm" class="grid gap-2 sm:grid-cols-4">
-              <input id="sprintName" placeholder="Sprint name" class="sm:col-span-2 bg-white border border-slate-200 rounded px-3 py-2" />
-              <input id="sprintStart" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" />
-              <input id="sprintEnd" type="date" class="bg-white border border-slate-200 rounded px-3 py-2" />
-              <button class="sm:col-span-4 px-3 py-2 rounded bg-teal-50 border border-teal-200 text-teal-700 text-sm">Create Sprint</button>
-            </form>
-            <div class="space-y-2">${sprintCards}</div>
+
+            <div class="grid 2xl:grid-cols-[minmax(0,1fr)_360px] gap-5">
+              <main class="min-w-0 space-y-4">
+                <div class="grid lg:grid-cols-3 gap-3 rounded-3xl border border-white/10 bg-white/[0.035] p-3">
+                  <select id="taskPriorityFilter" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200">${priorities.map(p => `<option ${t.priorityFilter===p?'selected':''}>${p}</option>`).join('')}</select>
+                  <select id="taskStatusFilter" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200">${statuses.map(s => `<option ${t.statusFilter===s?'selected':''}>${s}</option>`).join('')}</select>
+                  <select id="taskSprintFilter" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200"><option value="all">All Projects / Sprints</option>${t.sprints.map(s => `<option value="${s.id}" ${t.sprintFilter===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select>
+                </div>
+                ${activeTasksMarkup}
+              </main>
+
+              <aside class="space-y-4">
+                <section class="rounded-3xl border border-teal-300/20 bg-teal-400/[0.06] p-4 shadow-xl shadow-teal-950/20"><h3 class="text-lg font-bold text-white">Barya AI Task Assistant</h3><p class="mt-1 text-xs text-slate-400">Daily task suggestions, smart prioritization, and productivity advice.</p><form id="taskAiForm" class="mt-4 flex gap-2"><input id="taskAiInput" placeholder="Ask Barya anything..." class="min-w-0 flex-1 rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500"/><button class="rounded-2xl bg-teal-400 px-3 py-2 text-sm font-bold text-slate-950">Ask</button></form><div id="taskAiReply" class="mt-3 rounded-2xl border border-white/10 bg-slate-950/70 p-3 text-sm text-slate-300">Focus on overdue high-priority work first, then move one item into Review before starting more.</div><div class="mt-4 space-y-2">${(suggestedTasks.length ? suggestedTasks : ['Clarify this week’s top outcome', 'Review overdue customer follow-ups', 'Move one in-progress task to review']).map(item => `<button data-add-suggested="${escapeAttr(item)}" class="block w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left text-xs text-slate-300 hover:border-teal-300/40">+ ${escapeHTML(item)}</button>`).join('')}</div></section>
+                <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-4"><h3 class="font-bold text-white">Upcoming Deadlines</h3><div class="mt-3 space-y-2">${upcomingDeadlines.map(task => `<button data-select-task="${task.id}" class="flex w-full items-center justify-between gap-3 rounded-2xl bg-slate-950/70 px-3 py-2 text-left text-sm"><span class="truncate text-slate-200">${escapeHTML(task.title)}</span><span class="text-xs ${task.dueDate < todayIso ? 'text-rose-300' : 'text-teal-300'}">${escapeHTML(task.dueDate)}</span></button>`).join('') || '<p class="text-sm text-slate-500">No upcoming deadlines.</p>'}</div></section>
+                <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-4"><h3 class="font-bold text-white">Task Breakdown</h3><div class="mt-4 grid place-items-center"><div class="grid h-32 w-32 place-items-center rounded-full" style="background: conic-gradient(#2dd4bf ${completionPct}%, rgba(255,255,255,.08) 0)"><div class="grid h-24 w-24 place-items-center rounded-full bg-slate-950 text-center"><strong class="text-2xl text-white">${completionPct}%</strong><span class="text-[10px] text-slate-500">complete</span></div></div></div></section>
+              </aside>
+            </div>
+
+            <div class="grid xl:grid-cols-[minmax(0,1fr)_420px] gap-5">
+              <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><div class="flex items-center justify-between"><div><h3 class="font-bold text-white">Productivity Graph</h3><p class="text-xs text-slate-500">Weekly completion trend</p></div><span class="text-xs text-teal-300">Live</span></div><div class="mt-5 flex h-40 items-end gap-3">${weeklyTrend.map(bar => `<div class="flex flex-1 flex-col items-center gap-2"><div class="w-full rounded-t-2xl bg-gradient-to-t from-violet-500 to-teal-300" style="height:${bar.value}%"></div><span class="text-xs text-slate-500">${bar.label}</span></div>`).join('')}</div></section>
+              <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><div class="flex items-center justify-between gap-2"><h3 class="text-lg font-bold text-white">Task Details</h3><button id="taskFormReset" type="button" class="rounded-xl border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/10">Reset</button></div><form id="taskForm" class="mt-4 space-y-3"><input id="taskTitle" required placeholder="Task title" value="${escapeAttr(selectedTask?.title || '')}" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500" /><textarea id="taskDescription" rows="2" placeholder="Description" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500">${escapeHTML(selectedTask?.description || '')}</textarea><div class="grid sm:grid-cols-2 gap-2"><input id="taskDueDate" type="date" value="${escapeAttr(selectedTask?.dueDate || '')}" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200" /><select id="taskPriority" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200">${['High','Medium','Low'].map(p => `<option ${selectedTask?.priority===p?'selected':''}>${p}</option>`).join('')}</select><select id="taskStatus" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200">${boardStatuses.map(s => `<option ${selectedTask?.status===s?'selected':''}>${s}</option>`).join('')}</select><select id="taskSprint" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200"><option value="">No Project</option>${t.sprints.map(s => `<option value="${s.id}" ${selectedTask?.sprintId===s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}</select></div><input id="taskTags" value="${escapeAttr((selectedTask?.tags || []).join(', '))}" placeholder="Tags (comma separated)" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500" /><select id="taskLinkRef" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200">${linkOptions.map(opt => `<option value="${escapeAttr(opt.value)}" ${selectedTask?.linkRef===opt.value?'selected':''}>${escapeHTML(opt.label)}</option>`).join('')}</select><button class="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-teal-500 px-4 py-3 text-sm font-bold text-white">${selectedTask ? 'Update Task' : 'Create Task'}</button></form></section>
+            </div>
+
+            <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><div class="flex items-center justify-between gap-2"><h3 class="text-lg font-bold text-white">Sprints</h3><button id="newSprintBtn" class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">New Sprint</button></div><form id="sprintForm" class="mt-4 grid gap-2 sm:grid-cols-4"><input id="sprintName" placeholder="Sprint name" class="sm:col-span-2 rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500" /><input id="sprintStart" type="date" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200" /><input id="sprintEnd" type="date" class="rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-200" /><button class="sm:col-span-4 rounded-2xl border border-teal-300/30 bg-teal-400/10 px-3 py-2 text-sm font-semibold text-teal-100">Create Sprint</button></form><div class="mt-4 grid md:grid-cols-2 xl:grid-cols-3 gap-3">${sprintCards}</div></section>
           </div>
         </section>`;
 
@@ -4441,16 +4492,32 @@
       document.getElementById('taskSearch').oninput = (e) => { t.search = e.target.value; saveState(); };
       document.getElementById('taskPriorityFilter').onchange = (e) => { t.priorityFilter = e.target.value; saveState(); };
       document.getElementById('taskStatusFilter').onchange = (e) => { t.statusFilter = e.target.value; saveState(); };
+      document.getElementById('taskSprintFilter').onchange = (e) => { t.sprintFilter = e.target.value; saveState(); };
+      el.querySelectorAll('[data-new-task-type]').forEach(btn => btn.onclick = () => {
+        t.selectedTaskId = null;
+        renderTasks();
+        const titleInput = document.getElementById('taskTitle');
+        const descriptionInput = document.getElementById('taskDescription');
+        if (btn.dataset.newTaskType === 'reminder') titleInput.value = 'Reminder: ';
+        if (btn.dataset.newTaskType === 'goal') titleInput.value = 'Goal: ';
+        if (btn.dataset.newTaskType === 'ai') {
+          const idea = suggestedTasks[0] || 'AI Generated Task: Review highest-impact priority';
+          titleInput.value = idea;
+          descriptionInput.value = 'Drafted by Barya AI based on your current workspace priorities.';
+        }
+        titleInput.focus();
+      });
       el.querySelectorAll('[data-add-suggested]').forEach(btn => btn.onclick = () => {
         const now = new Date().toISOString();
-        t.items.unshift({ id: crypto.randomUUID(), title: btn.dataset.addSuggested, description: 'Suggested from recent Strategy output', dueDate: '', priority: 'High', status: 'To Do', tags: ['Strategy','Suggested'], sprintId: '', linkRef: suggestionSource ? `strategy:${suggestionSource.id}` : '', createdAt: now, updatedAt: now });
+        t.items.unshift({ id: crypto.randomUUID(), title: btn.dataset.addSuggested, description: 'Suggested from Barya AI Task Assistant', dueDate: '', priority: 'High', status: 'To Do', tags: ['AI','Suggested'], sprintId: '', linkRef: suggestionSource ? `strategy:${suggestionSource.id}` : '', archived: false, createdAt: now, updatedAt: now });
         saveState();
       });
-      document.getElementById('newTaskBtn').onclick = () => { t.selectedTaskId = null; renderTasks(); };
+      document.getElementById('newTaskBtn').onclick = () => { t.selectedTaskId = null; };
       document.getElementById('newSprintBtn').onclick = () => document.getElementById('sprintName').focus();
       el.querySelectorAll('[data-select-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.selectTask; renderTasks(); });
       el.querySelectorAll('[data-edit-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.editTask; renderTasks(); });
       el.querySelectorAll('[data-delete-task]').forEach(btn => btn.onclick = () => { t.items = t.items.filter(task => task.id !== btn.dataset.deleteTask); if (t.selectedTaskId === btn.dataset.deleteTask) t.selectedTaskId = null; saveState(); });
+      el.querySelectorAll('[data-archive-task]').forEach(btn => btn.onclick = () => { const task = t.items.find(item => item.id === btn.dataset.archiveTask); if (!task) return; task.archived = !task.archived; task.updatedAt = new Date().toISOString(); if (t.selectedTaskId === task.id && task.archived) t.selectedTaskId = null; saveState(); });
       el.querySelectorAll('[data-toggle-complete]').forEach(box => box.onchange = () => {
         const task = t.items.find(item => item.id === box.dataset.toggleComplete);
         if (!task) return;
@@ -4459,12 +4526,22 @@
         saveState();
       });
       el.querySelectorAll('[data-jump-link]').forEach(btn => btn.onclick = () => { const task = t.items.find(item => item.id === btn.dataset.jumpLink); const linked = getLinkedItem(task); if (!linked?.target) return; linked.target(); renderNav(); saveState(); });
-      document.getElementById('taskForm').onsubmit = (e) => { e.preventDefault(); const title = document.getElementById('taskTitle').value.trim(); if (!title) return; const payload = { title, description: document.getElementById('taskDescription').value.trim(), dueDate: document.getElementById('taskDueDate').value, priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, sprintId: document.getElementById('taskSprint').value, tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean), linkRef: document.getElementById('taskLinkRef').value, updatedAt: new Date().toISOString() }; if (t.selectedTaskId) { const idx = t.items.findIndex(task => task.id === t.selectedTaskId); if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload }; } else { const now = new Date().toISOString(); const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload }; t.items.unshift(newTask); t.selectedTaskId = newTask.id; } saveState(); };
+      document.getElementById('taskForm').onsubmit = (e) => { e.preventDefault(); const title = document.getElementById('taskTitle').value.trim(); if (!title) return; const payload = { title, description: document.getElementById('taskDescription').value.trim(), dueDate: document.getElementById('taskDueDate').value, priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, sprintId: document.getElementById('taskSprint').value, tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean), linkRef: document.getElementById('taskLinkRef').value, archived: selectedTask?.archived || false, updatedAt: new Date().toISOString() }; if (t.selectedTaskId) { const idx = t.items.findIndex(task => task.id === t.selectedTaskId); if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload }; } else { const now = new Date().toISOString(); const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload }; t.items.unshift(newTask); t.selectedTaskId = newTask.id; } saveState(); };
       document.getElementById('taskFormReset').onclick = () => { t.selectedTaskId = null; renderTasks(); };
       document.getElementById('sprintForm').onsubmit = (e) => { e.preventDefault(); const name = document.getElementById('sprintName').value.trim(); if (!name) return; t.sprints.unshift({ id: crypto.randomUUID(), name, startDate: document.getElementById('sprintStart').value, endDate: document.getElementById('sprintEnd').value, createdAt: new Date().toISOString() }); document.getElementById('sprintForm').reset(); saveState(); };
       el.querySelectorAll('[data-delete-sprint]').forEach(btn => btn.onclick = () => { const sid = btn.dataset.deleteSprint; t.sprints = t.sprints.filter(s => s.id !== sid); t.items.forEach(task => { if (task.sprintId === sid) task.sprintId = ''; }); saveState(); });
-      el.querySelectorAll('[data-drop-status]').forEach(zone => { zone.ondragover = (evt) => evt.preventDefault(); zone.ondrop = (evt) => { evt.preventDefault(); const taskId = evt.dataTransfer.getData('text/task-id'); const task = t.items.find(item => item.id === taskId); if (!task) return; task.status = zone.dataset.dropStatus; task.updatedAt = new Date().toISOString(); saveState(); }; });
-      el.querySelectorAll('.task-card').forEach(card => { card.ondragstart = (evt) => evt.dataTransfer.setData('text/task-id', card.dataset.taskId || ''); });
+      el.querySelectorAll('[data-drop-status]').forEach(zone => { zone.ondragover = (evt) => { evt.preventDefault(); zone.classList.add('border-teal-300/60'); }; zone.ondragleave = () => zone.classList.remove('border-teal-300/60'); zone.ondrop = (evt) => { evt.preventDefault(); zone.classList.remove('border-teal-300/60'); const taskId = evt.dataTransfer.getData('text/task-id'); const task = t.items.find(item => item.id === taskId); if (!task) return; task.status = zone.dataset.dropStatus; task.updatedAt = new Date().toISOString(); saveState(); }; });
+      el.querySelectorAll('.task-card').forEach(card => { card.ondragstart = (evt) => { evt.dataTransfer.setData('text/task-id', card.dataset.taskId || ''); card.classList.add('opacity-60'); }; card.ondragend = () => card.classList.remove('opacity-60'); });
+      document.getElementById('taskAiForm').onsubmit = (e) => {
+        e.preventDefault();
+        const input = document.getElementById('taskAiInput');
+        const reply = document.getElementById('taskAiReply');
+        const q = input.value.trim();
+        if (!q) return;
+        const high = activeTasks.filter(task => task.priority === 'High' && task.status !== 'Done').length;
+        reply.textContent = `Barya suggests: protect focus by finishing ${high ? 'one high-priority task' : 'one active task'} before adding new work. If this is urgent, create it as High priority and set a due date today.`;
+        input.value = '';
+      };
     }
 
     function ensureAIState() {
