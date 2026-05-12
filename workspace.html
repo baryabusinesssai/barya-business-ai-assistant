@@ -728,26 +728,248 @@
       color: #ffffff !important;
     }
 
+    /* Premium screenshot-matched sidebar */
+    #sidebar.premium-sidebar {
+      width: 270px;
+      padding: 1.25rem 1.15rem 1.45rem;
+      background:
+        radial-gradient(circle at 28% 5%, rgba(129, 92, 255, 0.25), transparent 24%),
+        radial-gradient(circle at 86% 62%, rgba(88, 56, 214, 0.2), transparent 30%),
+        linear-gradient(168deg, #080d1f 0%, #09091a 45%, #050814 100%) !important;
+      border-right: 1px solid rgba(122, 108, 255, 0.22) !important;
+      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.035), 18px 0 45px rgba(0, 0, 0, 0.34);
+      color: #f8fbff !important;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(132, 92, 255, 0.55) rgba(255, 255, 255, 0.04);
+    }
+    #sidebar.premium-sidebar::-webkit-scrollbar { width: 6px; }
+    #sidebar.premium-sidebar::-webkit-scrollbar-thumb { background: rgba(132, 92, 255, 0.5); border-radius: 999px; }
+    #sidebar.premium-sidebar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); }
+    #sidebar.premium-sidebar,
+    #sidebar.premium-sidebar :is(h1, h2, h3, p, span, button, a, div) { color: #f8fbff !important; }
+    #sidebar.premium-sidebar .premium-logo-mark {
+      width: 4.45rem;
+      height: 3.45rem;
+      filter: drop-shadow(0 0 16px rgba(147, 95, 255, 0.68));
+    }
+    #sidebar.premium-sidebar .brand-b {
+      font-size: 3rem;
+      line-height: 0.9;
+      font-weight: 900;
+      letter-spacing: -0.12em;
+      background: linear-gradient(180deg, #f4eaff 0%, #9f74ff 45%, #6736ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent !important;
+      text-shadow: 0 0 25px rgba(152, 97, 255, 0.78);
+    }
+    #sidebar.premium-sidebar .brand-lines {
+      display: grid;
+      gap: 0.34rem;
+      padding-top: 0.22rem;
+    }
+    #sidebar.premium-sidebar .brand-lines i {
+      display: block;
+      width: 1.25rem;
+      height: 0.42rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #c9a8ff, #7b49ff);
+      box-shadow: 0 0 12px rgba(147, 95, 255, 0.66);
+    }
+    #sidebar.premium-sidebar .sidebar-tagline { color: #c9c8dc !important; }
+    #sidebar.premium-sidebar #mainNav {
+      display: grid;
+      gap: 0.43rem;
+      margin-top: 0.75rem;
+    }
+    #sidebar.premium-sidebar #mainNav .nav-item {
+      min-height: 3.02rem;
+      border: 1px solid transparent;
+      border-left: 0;
+      border-radius: 0.85rem;
+      padding: 0.66rem 0.82rem;
+      color: #e8e7f8 !important;
+      background: transparent;
+      box-shadow: none;
+      gap: 0.82rem;
+    }
+    #sidebar.premium-sidebar #mainNav .nav-item:hover {
+      border-color: rgba(149, 117, 255, 0.28);
+      background: rgba(116, 74, 255, 0.1);
+      box-shadow: 0 12px 25px rgba(68, 39, 162, 0.16);
+      transform: translateX(2px) translateZ(0);
+    }
+    #sidebar.premium-sidebar #mainNav .nav-item.active-nav {
+      background: linear-gradient(92deg, rgba(119, 61, 255, 0.98), rgba(93, 57, 183, 0.78));
+      border-color: rgba(176, 149, 255, 0.3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 28px rgba(111, 57, 255, 0.36);
+      font-weight: 700;
+    }
+    #sidebar.premium-sidebar #mainNav .nav-icon {
+      width: 1.45rem;
+      height: 1.45rem;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #ebeaff !important;
+      box-shadow: none;
+    }
+    #sidebar.premium-sidebar #mainNav .nav-icon svg {
+      width: 1.35rem;
+      height: 1.35rem;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      fill: none;
+    }
+    #sidebar.premium-sidebar #mainNav .nav-label {
+      color: #f0efff !important;
+      font-size: 0.93rem;
+      font-weight: 500;
+    }
+    #sidebar.premium-sidebar .barya-ai-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(151, 113, 255, 0.34);
+      background:
+        radial-gradient(circle at 74% 33%, rgba(151, 128, 255, 0.72), transparent 28%),
+        radial-gradient(circle at 88% 75%, rgba(70, 36, 160, 0.72), transparent 34%),
+        linear-gradient(135deg, rgba(80, 52, 176, 0.74), rgba(80, 31, 214, 0.78) 45%, rgba(18, 22, 55, 0.98));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 18px 40px rgba(21, 13, 68, 0.38);
+    }
+    #sidebar.premium-sidebar .barya-ai-card::after {
+      content: "";
+      position: absolute;
+      right: -1.25rem;
+      bottom: -1.7rem;
+      width: 8.8rem;
+      height: 8.8rem;
+      background: radial-gradient(circle, rgba(115, 83, 245, 0.28), transparent 68%);
+      pointer-events: none;
+    }
+    #sidebar.premium-sidebar .robot-avatar {
+      position: relative;
+      width: 6.35rem;
+      height: 5.7rem;
+      margin: 0 auto 0.4rem;
+      filter: drop-shadow(0 18px 22px rgba(5, 8, 30, 0.36));
+    }
+    #sidebar.premium-sidebar .robot-avatar .robot-head {
+      position: absolute;
+      left: 50%;
+      top: 1.18rem;
+      width: 4.35rem;
+      height: 3.08rem;
+      transform: translateX(-50%);
+      border-radius: 1.32rem;
+      background: linear-gradient(180deg, #17244e, #080b24 68%);
+      box-shadow: inset 0 0 0 1px rgba(149, 181, 255, 0.2), 0 0 24px rgba(76, 115, 255, 0.48);
+      z-index: 2;
+    }
+    #sidebar.premium-sidebar .robot-avatar .robot-head::before,
+    #sidebar.premium-sidebar .robot-avatar .robot-head::after {
+      content: "";
+      position: absolute;
+      top: 1.22rem;
+      width: 0.48rem;
+      height: 0.78rem;
+      border-radius: 999px;
+      background: #79a6ff;
+      box-shadow: 0 0 11px rgba(121, 166, 255, 0.92);
+    }
+    #sidebar.premium-sidebar .robot-avatar .robot-head::before { left: 1.16rem; }
+    #sidebar.premium-sidebar .robot-avatar .robot-head::after { right: 1.16rem; }
+    #sidebar.premium-sidebar .robot-avatar .robot-smile {
+      position: absolute;
+      left: 50%;
+      top: 2.92rem;
+      width: 1.05rem;
+      height: 0.42rem;
+      transform: translateX(-50%);
+      border-bottom: 2px solid rgba(121, 166, 255, 0.9);
+      border-radius: 0 0 999px 999px;
+      z-index: 3;
+    }
+    #sidebar.premium-sidebar .robot-avatar .robot-ear {
+      position: absolute;
+      top: 1.83rem;
+      width: 1.04rem;
+      height: 1.78rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #97a4ff, #5442d7);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+      z-index: 1;
+    }
+    #sidebar.premium-sidebar .robot-avatar .robot-ear.left { left: 0.34rem; }
+    #sidebar.premium-sidebar .robot-avatar .robot-ear.right { right: 0.34rem; }
+    #sidebar.premium-sidebar .robot-avatar .robot-body {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 4.6rem;
+      height: 2.4rem;
+      transform: translateX(-50%);
+      border-radius: 2rem 2rem 0.85rem 0.85rem;
+      background: linear-gradient(180deg, rgba(119, 142, 255, 0.9), rgba(38, 26, 99, 0.95));
+      z-index: 0;
+    }
+    #sidebar.premium-sidebar .barya-ai-card p { color: #edeaff !important; }
+    #sidebar.premium-sidebar .chat-barya-btn {
+      background: linear-gradient(92deg, #8b5cff, #6538dc) !important;
+      border: 1px solid rgba(213, 196, 255, 0.28) !important;
+      color: #ffffff !important;
+      box-shadow: 0 14px 24px rgba(44, 25, 119, 0.32);
+    }
+    #sidebar.premium-sidebar #howItWorksBtn {
+      background: rgba(12, 16, 38, 0.72) !important;
+      border: 1px solid rgba(103, 92, 190, 0.26) !important;
+      color: #f2f0ff !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    #sidebar.premium-sidebar #howItWorksBtn:hover {
+      background: rgba(116, 74, 255, 0.18) !important;
+      border-color: rgba(151, 113, 255, 0.5) !important;
+    }
+
+
   </style>
 </head>
 <body class="light-theme text-slate-800 antialiased overflow-hidden">
   <div id="workspaceLayout" class="w-full flex">
-    <aside id="sidebar" aria-hidden="false" class="fixed lg:static inset-y-0 left-0 z-50 w-[270px] bg-white border-r border-gray-200 px-4 py-5 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
-      <div id="tourWelcomeArea" class="flex items-start justify-between mb-7">
-        <div class="flex items-start gap-3">
-          <div class="mt-0.5 h-10 w-10 rounded-xl border border-teal-200 bg-teal-50 flex items-center justify-center shadow-sm">
-            <span class="text-sm font-semibold tracking-tight text-teal-700">BΞ</span>
+    <aside id="sidebar" aria-hidden="false" class="premium-sidebar fixed lg:static inset-y-0 left-0 z-50 w-[270px] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+      <div id="tourWelcomeArea" class="relative mb-7">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="premium-logo-mark flex items-start gap-1.5" aria-hidden="true">
+              <span class="brand-b">B</span>
+              <span class="brand-lines"><i></i><i></i><i></i></span>
+            </div>
+            <h1 class="mt-3 text-2xl font-extrabold tracking-tight leading-none">Barya</h1>
+            <p class="sidebar-tagline mt-2 text-sm font-medium leading-snug">Your Private AI Co-Founder</p>
           </div>
-          <div class="space-y-1">
-            <h1 class="text-2xl font-extrabold tracking-tight text-teal-700 leading-none">Barya</h1>
-            <p class="text-[11px] font-medium tracking-[0.14em] uppercase text-slate-500">Your Private AI Co-Founder</p>
-          </div>
+          <button id="closeSidebar" class="lg:hidden p-2 rounded-xl border border-white/10 bg-white/5 text-white" aria-label="Close workspace navigation">✕</button>
         </div>
-        <button id="closeSidebar" class="lg:hidden p-2 rounded border border-slate-300 text-slate-700" aria-label="Close workspace navigation">✕</button>
       </div>
-      <nav class="space-y-1.5" id="mainNav"></nav>
-      <button id="howItWorksBtn" class="mt-auto w-full rounded-xl border border-teal-200 bg-teal-50/90 text-teal-700 px-3 py-2.5 text-sm font-semibold shadow-sm hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">
-        <span class="mr-1.5" aria-hidden="true">▶</span>
+
+      <section class="barya-ai-card mb-5 rounded-2xl p-4" aria-label="Barya AI private assistant">
+        <div class="robot-avatar" aria-hidden="true">
+          <span class="robot-ear left"></span>
+          <span class="robot-ear right"></span>
+          <span class="robot-body"></span>
+          <span class="robot-head"></span>
+          <span class="robot-smile"></span>
+        </div>
+        <h2 class="text-base font-bold leading-none">Barya AI</h2>
+        <p class="mt-3 text-xs font-medium leading-5">Always here. Always private. Always for you.</p>
+        <button id="chatWithBaryaBtn" class="chat-barya-btn mt-4 flex w-full items-center justify-between rounded-xl px-4 py-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300" type="button">
+          <span>Chat with Barya</span>
+          <span class="text-lg leading-none" aria-hidden="true">→</span>
+        </button>
+      </section>
+
+      <nav id="mainNav" aria-label="Main workspace navigation"></nav>
+
+      <button id="howItWorksBtn" class="mt-auto flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300">
+        <span class="inline-grid h-5 w-5 place-items-center rounded-full bg-violet-500/30 text-[10px]" aria-hidden="true">▶</span>
         <span>How it Works</span>
       </button>
     </aside>
@@ -983,15 +1205,14 @@
       }
     };
     const navItems = [
-      { id: 'dashboard', key: 'Dashboard', icon: '◻' },
-      { id: 'workspace', key: 'Workspace', icon: '▦' },
-      { id: 'tasks', key: 'Tasks', icon: '✓' },
-      { id: 'resources', key: 'Resources', icon: '⧉' },
-      { id: 'ai', key: 'Barya AI', icon: '✦' },
-      { id: 'memory', key: 'Memory', icon: '◉' },
-      { id: 'planning', key: 'Business Planning', icon: '◌' },
-      { id: 'settings', key: 'Settings', icon: '⚙' },
-      { id: 'knowledge-graph', key: 'Knowledge Graph', icon: '⌘' }
+      { id: 'dashboard', key: 'Dashboard', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg>' },
+      { id: 'workspace', key: 'Workspace', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>' },
+      { id: 'tasks', key: 'Tasks', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12.2 2.1 2.1 4.9-5"></path></svg>' },
+      { id: 'resources', key: 'Resources', icon: '<svg viewBox="0 0 24 24"><path d="M6 4.5h10.5l1.5 1.6v13.4H6z"></path><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"></path></svg>' },
+      { id: 'memory', key: 'Memory', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"></circle><circle cx="12" cy="12" r="3.2"></circle><path d="M19.2 12h-3.8"></path></svg>' },
+      { id: 'planning', key: 'Business Planning', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.7"></circle><path d="M12 7v5l3.4 2"></path></svg>' },
+      { id: 'settings', key: 'Settings', icon: '<svg viewBox="0 0 24 24"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z"></path><path d="M18.6 13.4c.1-.5.1-.9.1-1.4s0-.9-.1-1.4l2-1.5-2-3.4-2.4 1a8 8 0 0 0-2.4-1.4L13.5 3h-4l-.4 2.3c-.9.3-1.7.8-2.4 1.4l-2.4-1-2 3.4 2 1.5c-.1.5-.1.9-.1 1.4s0 .9.1 1.4l-2 1.5 2 3.4 2.4-1c.7.6 1.5 1.1 2.4 1.4l.4 2.3h4l.4-2.3c.9-.3 1.7-.8 2.4-1.4l2.4 1 2-3.4-2.1-1.5Z"></path></svg>' },
+      { id: 'knowledge-graph', key: 'Knowledge Graph', icon: '<svg viewBox="0 0 24 24"><path d="M8 5.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM16 12.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M10.5 10.1 13.5 14M16 12.5V6.5M16 6.5h3M16 6.5h-3"></path></svg>' }
     ];
     const CURRENCY_META = {
       USD: { symbol: '$' },
@@ -1653,6 +1874,10 @@
       document.getElementById('closeSidebar').onclick = closeSidebar;
       document.getElementById('overlay').onclick = closeSidebar;
       document.getElementById('closeMemoryModal').onclick = () => document.getElementById('memoryModal').close();
+      document.getElementById('chatWithBaryaBtn').onclick = () => {
+        switchSection('ai');
+        closeSidebar();
+      };
       document.getElementById('howItWorksBtn').onclick = openHowItWorksModal;
       document.getElementById('closeHowItWorksModal').onclick = closeHowItWorksModal;
       document.getElementById('howItWorksModal').addEventListener('click', (event) => {
