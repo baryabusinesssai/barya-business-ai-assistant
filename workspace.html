@@ -3850,119 +3850,113 @@
       const backlinks = activePage ? (connections.backlinks.get(activePage.id) || []) : [];
       const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
 
+      const workspacePages = state.workspace.pages || [];
+      const taskItems = state.tasks?.items || [];
+      const activeProjectsCount = Math.max(1, workspacePages.filter(page => page.objectType === 'Project').length || Math.ceil(workspacePages.length / 3));
+      const inProgressTasksCount = taskItems.filter(task => task.status === 'In Progress').length;
+      const completedTasksCount = taskItems.filter(task => task.status === 'Done').length;
+      const documentsCount = Math.max(1, workspacePages.filter(page => ['Document', 'Page', 'Note'].includes(page.objectType)).length);
+      const membersCount = Math.max(3, Math.min(12, activeProjectsCount + 3));
+      const totalTasksCount = Math.max(1, taskItems.length);
+      const openTasksCount = taskItems.filter(task => task.status !== 'Done').length;
+      const projectsForTable = (workspacePages.filter(page => page.objectType === 'Project').length ? workspacePages.filter(page => page.objectType === 'Project') : workspacePages.slice(0, 4)).slice(0, 5);
+      const fallbackProjects = projectsForTable.length ? projectsForTable : [
+        { id: 'demo-launch', title: 'Founder Launch System', objectType: 'Project', updatedAt: new Date().toISOString() },
+        { id: 'demo-data', title: 'Customer Data Room', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 7).toISOString() },
+        { id: 'demo-growth', title: 'Growth Experiments', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 14).toISOString() }
+      ];
+      const statCards = [
+        ['Active Projects', activeProjectsCount, '+12%', 'from last month', 'from-violet-500 to-fuchsia-500'],
+        ['Tasks In Progress', inProgressTasksCount || Math.ceil(totalTasksCount * 0.42), '+8%', 'moving this week', 'from-cyan-400 to-teal-400'],
+        ['Completed Tasks', completedTasksCount, '+24%', 'execution velocity', 'from-emerald-400 to-cyan-400'],
+        ['Documents', documentsCount, '+5', 'knowledge assets', 'from-blue-400 to-violet-500'],
+        ['Workspace Members', membersCount, '+2', 'active collaborators', 'from-pink-400 to-orange-400']
+      ];
+      const activityItems = [
+        ['📄', 'Strategy brief updated', activePage?.title || 'Workspace OS', 'Amina', '3m ago'],
+        ['✅', 'Task moved to Done', taskItems.find(task => task.status === 'Done')?.title || 'Validate pricing page', 'Sam', '18m ago'],
+        ['🔗', 'Backlink created', backlinks[0] ? (pageMap.get(backlinks[0].fromId)?.title || 'Linked page') : 'Investor notes → Launch plan', 'Barya', '42m ago'],
+        ['📊', 'Data room reviewed', 'Monthly metrics snapshot', 'Noor', '1h ago']
+      ];
+      const kanbanTasks = (taskItems.length ? taskItems : [
+        { id: 'demo-task-1', title: 'Map onboarding flow', status: 'To Do', priority: 'High', tags: ['UX', 'Launch'] },
+        { id: 'demo-task-2', title: 'Draft customer interview script', status: 'To Do', priority: 'Medium', tags: ['Research'] },
+        { id: 'demo-task-3', title: 'Build pricing experiment', status: 'In Progress', priority: 'High', tags: ['Growth', 'Data'] },
+        { id: 'demo-task-4', title: 'Publish roadmap memo', status: 'Done', priority: 'Low', tags: ['Docs'] }
+      ]).slice(0, 9);
+      const ownerAvatars = ['A', 'S', 'N', 'B'];
+      const workspaceTopTabClass = 'rounded-full px-4 py-2 text-sm font-semibold transition border';
+      const workspacePanelClass = 'glass-card rounded-[1.4rem] border border-white/10 bg-slate-950/60 shadow-2xl shadow-black/25';
+
       el.innerHTML = `
-        <div class="bg-white border border-orange-100 rounded-2xl p-4 sm:p-6 space-y-5 shadow-sm">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="space-y-1">
-              <h2 class="text-3xl font-bold text-orange-500">Workspace</h2>
-              <p class="text-sm text-zinc-600">Keep your ideas, notes, and plans in one place and connect them.</p>
+        <div class="workspace-premium-shell min-h-full w-full overflow-auto rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_12%_2%,rgba(139,92,246,0.22),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(20,184,166,0.18),transparent_26%),linear-gradient(135deg,rgba(8,8,12,0.96),rgba(10,14,28,0.94))] p-4 sm:p-5 lg:p-6 text-slate-100 space-y-5 scrollbar-thin">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 via-indigo-500 to-teal-400 text-xl font-black shadow-[0_0_34px_rgba(139,92,246,0.45)]">W</div>
+              <div class="min-w-0">
+                <h2 class="text-3xl font-black tracking-tight text-white">Workspace</h2>
+                <p class="text-sm text-slate-400">All your work, organized. Plan, execute and grow.</p>
+              </div>
             </div>
-            <div class="flex gap-2">
-              <button id="workspaceHowBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-200 text-orange-500 font-medium hover:bg-orange-50 transition">How it works?</button>
-              <button id="workspaceNewPage" class="px-4 py-2 rounded-lg bg-orange-500 text-white border border-orange-500 font-semibold hover:bg-orange-600 transition">+ New Page</button>
+            <label class="flex min-h-[48px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 shadow-inner shadow-black/20 xl:max-w-2xl" aria-label="Search anything in your workspace">
+              <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-400"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input readonly placeholder="Search anything in your workspace..." class="flex-1 cursor-pointer border-0 bg-transparent text-sm outline-none placeholder:text-slate-500" />
+              <span class="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[11px] font-bold text-slate-300">⌘/Ctrl+K</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <button id="workspaceNewPage" class="rounded-2xl border border-violet-300/30 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_28px_rgba(124,58,237,0.3)]">+ New ▾</button>
+              <button class="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.06]" aria-label="Notifications">🔔</button>
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 font-black text-white premium-avatar">${escapeHTML((state.founderProfile?.name || 'Barya').slice(0,1).toUpperCase())}</div>
             </div>
           </div>
 
-          <div id="workspaceHowPanel" class="hidden rounded-xl border border-orange-200 bg-orange-50/70 p-4 text-sm text-zinc-700 space-y-1">
-            <p class="font-semibold text-orange-600">Start in 3 easy steps:</p>
-            <p>1) Select a page on the left, or create a new one.</p>
-            <p>2) Write in the center editor. Type <span class="font-semibold text-orange-600">/</span> to add blocks.</p>
-            <p>3) Use Connections on the right to link pages and see Linked From.</p>
-          </div>
+          <nav class="flex gap-2 overflow-x-auto rounded-[1.3rem] border border-white/10 bg-black/20 p-2">
+            ${['Overview','Projects','Documents','Data','Notes','Files'].map((tab, index) => `<button class="${workspaceTopTabClass} ${index === 0 ? 'border-violet-300/40 bg-violet-500/20 text-violet-100 shadow-[0_0_22px_rgba(139,92,246,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${tab}</button>`).join('')}
+          </nav>
 
-          <div class="grid xl:grid-cols-[280px_1fr_300px] gap-4">
-            <aside class="bg-white border border-orange-100 rounded-xl p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2">
-              <h3 class="text-sm font-semibold text-zinc-700 px-1">My Pages</h3>
-              ${(state.workspace.pages || []).map(page => `
-                <button data-open-page="${page.id}" class="w-full text-left rounded-xl px-3 py-3 border transition ${page.id===state.workspace.activePageId ? 'border-orange-400 bg-orange-50' : 'border-zinc-200 bg-white hover:border-orange-300'} ${workspacePendingAnimation.pageId === page.id ? 'workspace-fade-in' : ''}">
-                  <div class="flex items-center justify-between gap-2">
-                    <p class="font-medium truncate text-zinc-800">${escapeHTML(page.title || 'Untitled')}</p>
-                    <span class="text-[10px] px-2 py-0.5 rounded-full border border-orange-300 text-orange-600 bg-orange-50">${escapeHTML(page.objectType || 'Page')}</span>
-                  </div>
-                  <p class="text-xs text-zinc-500 mt-1 truncate">${escapeHTML(pagePreview(page))}</p>
-                </button>
-              `).join('') || emptyStateMarkup('🗂️', 'No pages yet.', 'Create your first page to start organizing ideas.', '', 'Start Here', 'section:workspace')}
+          <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            ${statCards.map(([label, value, growth, note, gradient]) => `<article class="${workspacePanelClass} premium-hover p-4"><div class="flex items-start justify-between"><p class="text-xs uppercase tracking-[0.18em] text-slate-500">${label}</p><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r ${gradient} shadow-[0_0_16px_currentColor]"></span></div><div class="mt-4 flex items-end justify-between gap-3"><p class="text-3xl font-black text-white">${value}</p><div class="text-right"><p class="text-sm font-bold text-teal-300">${growth}</p><p class="text-[11px] text-slate-500">${note}</p></div></div></article>`).join('')}
+          </section>
+
+          <div class="grid gap-5 2xl:grid-cols-[1fr_360px]">
+            <main class="space-y-5 min-w-0">
+              <section class="${workspacePanelClass} p-5">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">Project progress</p><h3 class="mt-1 text-xl font-bold text-white">Execution velocity</h3></div><div class="flex rounded-full border border-white/10 bg-black/25 p-1"><button class="rounded-full bg-violet-500 px-4 py-1.5 text-xs font-bold text-white">Weekly</button><button class="rounded-full px-4 py-1.5 text-xs font-bold text-slate-400">Monthly</button></div></div>
+                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.75),rgba(2,6,23,0.65))] p-4">
+                  <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_44px]"></div>
+                  <svg viewBox="0 0 760 260" class="relative h-[260px] w-full drop-shadow-[0_0_18px_rgba(45,212,191,0.35)]" role="img" aria-label="Multi-colored weekly project progress line chart">
+                    <defs><linearGradient id="lineA" x1="0" x2="1"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><linearGradient id="lineB" x1="0" x2="1"><stop stop-color="#14b8a6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+                    <path d="M40 210 C120 150 145 175 210 122 S330 70 405 116 520 176 600 82 690 70 730 44" fill="none" stroke="url(#lineA)" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M40 185 C105 192 150 105 225 136 S345 204 430 142 520 92 610 126 685 98 730 78" fill="none" stroke="url(#lineB)" stroke-width="4" stroke-linecap="round" opacity="0.92"/>
+                    ${[40,155,270,385,500,615,730].map((x,i)=>`<g><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="5" fill="#fff"/><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="12" fill="#8b5cf6" opacity="0.16"/></g>`).join('')}
+                  </svg>
+                </div>
+              </section>
+
+              <section class="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
+                <article class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Recent Activity</h3><span class="text-xs text-slate-500">Live local feed</span></div><div class="space-y-3">${activityItems.map(([icon,title,detail,user,time]) => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3"><span class="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/15 text-lg">${icon}</span><div class="min-w-0 flex-1"><p class="font-semibold text-white">${escapeHTML(title)}</p><p class="truncate text-xs text-slate-400">${escapeHTML(detail)}</p></div><div class="text-right"><span class="inline-grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-teal-400 to-violet-500 text-xs font-black text-white">${escapeHTML(user.slice(0,1))}</span><p class="mt-1 text-[11px] text-slate-500">${time}</p></div></div>`).join('')}</div></article>
+                <article class="${workspacePanelClass} overflow-hidden p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Your Projects</h3><button id="workspaceShowRelated" class="text-xs font-bold text-violet-300">Open graph →</button></div><div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="text-xs uppercase tracking-[0.14em] text-slate-500"><tr><th class="py-3 pr-4">Project Name</th><th class="py-3 pr-4">Progress</th><th class="py-3 pr-4">Owner</th><th class="py-3 pr-4">Due Date</th><th class="py-3">Status</th></tr></thead><tbody>${fallbackProjects.map((project, idx) => { const pct = Math.min(95, 42 + idx * 17 + completedTasksCount * 3); return `<tr class="border-t border-white/10"><td class="py-3 pr-4 font-semibold text-white">${escapeHTML(project.title || 'Untitled Project')}</td><td class="py-3 pr-4"><div class="h-2 w-28 rounded-full bg-slate-800"><div class="h-2 rounded-full bg-gradient-to-r from-violet-500 to-teal-400" style="width:${pct}%"></div></div><span class="text-[11px] text-slate-500">${pct}%</span></td><td class="py-3 pr-4"><div class="flex -space-x-2">${ownerAvatars.slice(0,2 + (idx % 2)).map(a=>`<span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">${a}</span>`).join('')}</div></td><td class="py-3 pr-4 text-slate-400">${new Date(Date.now()+86400000*(idx+5)*3).toISOString().slice(0,10)}</td><td class="py-3"><span class="rounded-full border border-teal-300/30 bg-teal-400/10 px-2 py-1 text-xs font-bold text-teal-200">${idx === 0 ? 'On Track' : idx === 1 ? 'Review' : 'Active'}</span></td></tr>`; }).join('')}</tbody></table></div></article>
+              </section>
+
+              <section class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><div><h3 class="text-lg font-bold text-white">Task Board</h3><p class="text-xs text-slate-500">Drag cards between To Do, In Progress and Done.</p></div><button data-section-go="tasks" class="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-bold text-slate-200">Full Tasks</button></div><div class="grid gap-3 lg:grid-cols-3">${['To Do','In Progress','Done'].map(status => `<div data-ws-drop-status="${status}" class="min-h-[270px] rounded-2xl border border-white/10 bg-black/20 p-3"><div class="mb-3 flex items-center justify-between"><h4 class="font-bold text-white">${status}</h4><span class="text-xs text-slate-500">${kanbanTasks.filter(task => task.status === status).length}</span></div><div class="space-y-3">${kanbanTasks.filter(task => task.status === status).map(task => `<article draggable="true" data-ws-task-id="${escapeAttr(task.id)}" class="cursor-grab rounded-2xl border border-white/10 bg-white/[0.055] p-3 shadow-lg shadow-black/20"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-white">${escapeHTML(task.title)}</p><span class="rounded-full px-2 py-1 text-[10px] font-bold ${task.priority === 'High' ? 'bg-rose-500/15 text-rose-200' : task.priority === 'Medium' ? 'bg-amber-500/15 text-amber-200' : 'bg-teal-500/15 text-teal-200'}">${escapeHTML(task.priority || 'Medium')}</span></div><div class="mt-3 flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-[11px] text-violet-100">${escapeHTML(tag)}</span>`).join('')}</div><div class="mt-3 flex -space-x-2"><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-gradient-to-br from-teal-400 to-violet-500 text-[11px] font-black text-white">A</span><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">B</span></div></article>`).join('') || '<p class="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-slate-500">No tasks</p>'}</div></div>`).join('')}</div></section>
+
+              <section class="${workspacePanelClass} p-5 space-y-4">
+                <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-teal-300">Block editor · relations · backlinks</p><h3 class="mt-1 text-xl font-bold text-white">Workspace Pages</h3><p class="text-sm text-slate-400">Keep notes, plans, databases and linked objects connected.</p></div><button id="workspaceHowBtn" class="rounded-xl border border-violet-300/25 bg-violet-500/10 px-3 py-2 text-sm font-bold text-violet-100">How it works?</button></div>
+                <div id="workspaceHowPanel" class="hidden rounded-2xl border border-violet-300/20 bg-violet-500/10 p-4 text-sm text-slate-300 space-y-1"><p class="font-semibold text-violet-100">Start in 3 easy steps:</p><p>1) Select a page, or create a new one.</p><p>2) Write in the center editor. Type <span class="font-semibold text-violet-200">/</span> to add blocks.</p><p>3) Use Connections to link pages and see Linked From.</p></div>
+                <div class="grid gap-4 xl:grid-cols-[280px_1fr_300px]">
+                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2"><h4 class="px-1 text-sm font-bold text-slate-200">My Pages</h4>${workspacePages.map(page => `<button data-open-page="${page.id}" class="w-full rounded-xl border px-3 py-3 text-left transition ${page.id===state.workspace.activePageId ? 'border-violet-300/50 bg-violet-500/15' : 'border-white/10 bg-white/[0.04] hover:border-violet-300/30'} ${workspacePendingAnimation.pageId === page.id ? 'workspace-fade-in' : ''}"><div class="flex items-center justify-between gap-2"><p class="truncate font-semibold text-white">${escapeHTML(page.title || 'Untitled')}</p><span class="rounded-full border border-teal-300/25 bg-teal-400/10 px-2 py-0.5 text-[10px] text-teal-100">${escapeHTML(page.objectType || 'Page')}</span></div><p class="mt-1 truncate text-xs text-slate-500">${escapeHTML(pagePreview(page))}</p></button>`).join('') || emptyStateMarkup('🗂️', 'No pages yet.', 'Create your first page to start organizing ideas.', '', 'Start Here', 'section:workspace')}</aside>
+                  <section class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4 min-h-[70vh]">${activePage ? `<div class="flex flex-wrap gap-2 items-center"><input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xl font-bold text-white outline-none" placeholder="Untitled page" /><select id="workspaceObjectType" class="rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm">${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}</select><button id="workspaceDeletePage" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Delete</button></div><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3 space-y-3"><div class="flex items-center justify-between"><h4 class="font-bold text-white">Editor</h4><p class="text-xs text-slate-500">Type / to add heading, list, checkbox etc.</p></div><div id="workspaceBlocks" class="space-y-2">${(activePage.blocks || []).map((block, idx) => { const cmdOpen = block.commandOpen ? '' : 'hidden'; const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase())); return `<article class="workspace-block group rounded-xl border border-white/10 bg-slate-950/45 p-2 transition hover:border-violet-300/40 ${workspacePendingAnimation.blockId === block.id ? 'workspace-fade-in' : ''}" draggable="true" data-block-id="${block.id}"><div class="mb-2 flex items-center gap-2"><button class="cursor-grab text-slate-500 hover:text-violet-200" data-drag-handle="${block.id}">⋮⋮</button><span class="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-slate-300">${blockTypeLabel(block.type)}</span><button data-delete-block="${block.id}" class="ml-auto text-xs text-rose-300">Remove</button></div>${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}</article>`; }).join('') || `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-6 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the 'Add Block' button below to get started.</p></div>`}</div><button id="workspaceAddBlock" class="rounded-xl border border-violet-300/30 bg-violet-500/15 px-3 py-2 font-bold text-violet-100">+ Add Block</button></div><section class="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h4 class="mb-3 font-bold text-white">Safety & Backup</h4><div class="flex flex-wrap gap-2"><button id="workspaceExport" class="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Export All Workspace</button><label class="cursor-pointer rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label><button id="workspaceClear" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Clear Workspace</button></div></section>` : `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-8 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the '+ New' button above to get started.</p></div>`}</section>
+                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4"><h4 class="text-sm font-bold text-slate-200">Connections</h4><div class="rounded-xl border border-teal-300/20 bg-teal-400/10 p-3 text-sm text-slate-300 whitespace-pre-line">How to add links:\n- Type [[ and then the page name\n- Or use Add Link below to connect pages</div>${activePage ? `<div class="space-y-2"><p class="text-xs uppercase text-slate-500">Connected Pages</p><div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-xs text-violet-100">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🔗', 'No connections yet.', 'Link this page to another one to build your graph.', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2"><p class="text-xs uppercase text-slate-500">Linked From</p><div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full rounded-xl border border-white/10 bg-white/[0.04] px-2 py-2 text-left text-sm">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🧭', 'No pages link here yet.', 'Mention this page in another page using [[Page Name]].', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2 border-t border-white/10 pt-3"><p class="text-xs uppercase text-slate-500">Add Link</p><select id="workspaceQuickLinkSelect" class="w-full rounded-xl border border-white/10 bg-slate-950/70 px-2 py-2 text-sm"><option value="">Select page...</option>${workspacePages.filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)}</option>`).join('')}</select><button id="workspaceQuickLinkBtn" class="w-full rounded-xl border border-teal-300/25 bg-teal-400/10 px-3 py-2 font-bold text-teal-100">Add Link</button></div>` : emptyStateMarkup('📄', 'No page selected yet.', 'Open a page and connections will show here.', '', 'Start Here', 'section:workspace')}</aside>
+                </div>
+              </section>
+            </main>
+
+            <aside class="${workspacePanelClass} h-fit p-5 2xl:sticky 2xl:top-4">
+              <div class="mb-4 flex items-center gap-3"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-teal-400 text-xl">✦</div><div><h3 class="text-lg font-bold text-white">Barya AI</h3><p class="text-xs text-slate-500">Private workspace copilot</p></div></div>
+              <div class="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-3"><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">I found ${openTasksCount} open execution items. Want a focused sprint plan?</div><div class="ml-auto max-w-[86%] rounded-2xl rounded-tr-sm bg-teal-400/15 p-3 text-sm text-teal-50">Yes — prioritize by revenue impact.</div><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">Recommendation: ship the highest-signal customer task, then update your related notes.</div></div>
+              <label class="mt-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] p-2"><input placeholder="Ask Barya anything..." class="flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none" /><button class="rounded-xl bg-gradient-to-r from-violet-600 to-teal-500 px-3 py-2 text-sm font-bold text-white">Ask</button></label>
+              <div class="mt-5 space-y-2"><p class="text-xs uppercase tracking-[0.16em] text-slate-500">Smart recommendations</p>${['Turn this page into a launch checklist','Connect tasks to investor update notes','Review stale documents before Friday'].map(item => `<button class="w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left text-sm text-slate-200 hover:border-teal-300/30">${item}</button>`).join('')}</div>
             </aside>
-
-            <section class="bg-white border border-orange-100 rounded-xl p-4 space-y-4 min-h-[70vh]">
-              ${activePage ? `
-                <div class="flex flex-wrap gap-2 items-center">
-                  <input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xl font-semibold focus:border-orange-400 outline-none" placeholder="Untitled page" />
-                  <select id="workspaceObjectType" class="bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm">
-                    ${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}
-                  </select>
-                  <button id="workspaceShowRelated" class="px-3 py-2 rounded bg-orange-50 border border-orange-200 text-orange-600">Show Connected</button>
-                  <button id="workspaceDeletePage" class="px-3 py-2 rounded bg-red-50 border border-red-200 text-red-500">Delete</button>
-                </div>
-
-                <div class="bg-orange-50/40 border border-orange-100 rounded-xl p-3 space-y-3">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-semibold text-zinc-800">Editor</h4>
-                    <p class="text-xs text-zinc-600">Type / to add heading, list, checkbox etc.</p>
-                  </div>
-                  <div id="workspaceBlocks" class="space-y-2">
-                    ${(activePage.blocks || []).map((block, idx) => {
-                      const cmdOpen = block.commandOpen ? '' : 'hidden';
-                      const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase()));
-                      return `
-                      <article class="workspace-block group border border-zinc-200 rounded-lg bg-white p-2 transition hover:border-orange-300 ${workspacePendingAnimation.blockId === block.id ? 'workspace-fade-in' : ''}" draggable="true" data-block-id="${block.id}">
-                        <div class="flex items-center gap-2 mb-2">
-                          <button class="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-orange-500" data-drag-handle="${block.id}">⋮⋮</button>
-                          <span class="text-[11px] px-2 py-0.5 rounded-full border border-zinc-300 text-zinc-600">${blockTypeLabel(block.type)}</span>
-                          <button data-delete-block="${block.id}" class="ml-auto text-xs text-red-400">Remove</button>
-                        </div>
-                        ${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}
-                      </article>`;
-                    }).join('') || `<div class="rounded-xl border border-dashed border-orange-300 bg-white p-6 text-center text-zinc-700">
-                      <p class="text-2xl mb-2">✨</p>
-                      <p class="whitespace-pre-line font-medium">This is your personal workspace ✨
-Write your idea, build plans, and connect everything.
-Use the 'Add Block' button below to get started.</p>
-                    </div>`}
-                  </div>
-                  <button id="workspaceAddBlock" class="px-3 py-2 rounded-lg border border-orange-300 bg-orange-100 text-orange-700 hover:bg-orange-200 transition">+ Add Block</button>
-                </div>
-
-                <section class="bg-white border border-zinc-200 rounded-xl p-4">
-                  <h3 class="font-semibold mb-3">Safety & Backup</h3>
-                  <div class="flex flex-wrap gap-2">
-                    <button id="workspaceExport" class="px-3 py-2 rounded bg-white border border-zinc-300">Export All Workspace</button>
-                    <label class="px-3 py-2 rounded bg-white border border-zinc-300 cursor-pointer">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label>
-                    <button id="workspaceClear" class="px-3 py-2 rounded bg-red-50 border border-red-200 text-red-500">Clear Workspace</button>
-                  </div>
-                </section>
-              ` : `<div class="rounded-xl border border-dashed border-orange-300 bg-orange-50 p-8 text-center text-zinc-700">
-                <p class="text-2xl mb-2">✨</p>
-                <p class="whitespace-pre-line font-medium">This is your personal workspace ✨
-Write your idea, build plans, and connect everything.
-Use the 'Add Block' button below to get started.</p>
-              </div>`}
-            </section>
-
-            <aside class="bg-white border border-orange-100 rounded-xl p-4 space-y-4">
-              <h3 class="text-sm font-semibold text-zinc-700">Connections</h3>
-              <div class="rounded-lg border border-orange-100 bg-orange-50/70 p-3 text-sm text-zinc-700 whitespace-pre-line">How to add links:
-- In any page, type [[ and then the page name
-- Or use the 'Add Link' button below to connect to another page</div>
-              ${activePage ? `
-                <div class="space-y-2">
-                  <p class="text-xs uppercase text-zinc-500">Connected Pages</p>
-                  <div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-200 hover:bg-orange-200 transition">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🔗', 'No connections yet.', 'Link this page to another one to build your graph.', '', 'Start Here', 'section:workspace')}</div>
-                </div>
-                <div class="space-y-2">
-                  <p class="text-xs uppercase text-zinc-500">Linked From</p>
-                  <div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full text-left text-sm px-2 py-1 rounded border border-zinc-200 hover:border-orange-300 bg-white">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🧭', 'No pages link here yet.', 'Mention this page in another page using [[Page Name]].', '', 'Start Here', 'section:workspace')}</div>
-                </div>
-                <div class="pt-2 border-t border-zinc-200 space-y-2">
-                  <p class="text-xs uppercase text-zinc-500">Add Link</p>
-                  <select id="workspaceQuickLinkSelect" class="w-full bg-white border border-zinc-300 rounded px-2 py-1 text-sm">
-                    <option value="">Select page...</option>
-                    ${(state.workspace.pages || []).filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)}</option>`).join('')}
-                  </select>
-                  <button id="workspaceQuickLinkBtn" class="w-full px-3 py-2 rounded border border-orange-300 bg-orange-100 text-orange-700">Add Link</button>
-                </div>
-              ` : emptyStateMarkup('📄', 'No page selected yet.', 'Open a page and connections will show here.', '', 'Start Here', 'section:workspace')}
-            </section>
           </div>
         </div>
       `;
@@ -3973,6 +3967,28 @@ Use the 'Add Block' button below to get started.</p>
       el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
         state.workspace.activePageId = btn.dataset.openPage;
         saveState();
+      });
+
+      let workspaceTaskDragId = null;
+      el.querySelectorAll('[data-ws-task-id]').forEach(card => {
+        card.addEventListener('dragstart', () => {
+          workspaceTaskDragId = card.dataset.wsTaskId;
+          card.classList.add('opacity-60');
+        });
+        card.addEventListener('dragend', () => {
+          workspaceTaskDragId = null;
+          card.classList.remove('opacity-60');
+        });
+      });
+      el.querySelectorAll('[data-ws-drop-status]').forEach(column => {
+        column.addEventListener('dragover', (evt) => evt.preventDefault());
+        column.addEventListener('drop', () => {
+          if (!workspaceTaskDragId || !state.tasks?.items) return;
+          const task = state.tasks.items.find(item => item.id === workspaceTaskDragId);
+          if (!task) return;
+          task.status = column.dataset.wsDropStatus;
+          saveState();
+        });
       });
 
       if (!activePage) return;
