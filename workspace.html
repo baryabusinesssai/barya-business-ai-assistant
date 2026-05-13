@@ -4739,7 +4739,7 @@
         : `<div class="grid xl:grid-cols-4 md:grid-cols-2 gap-4">${boardStatuses.map(status => `<div data-drop-status="${status}" class="rounded-3xl border border-white/10 bg-white/[0.035] p-3 min-h-[420px] transition hover:border-teal-300/30"><div class="flex items-center justify-between mb-3 px-1"><h3 class="font-semibold text-white">${status}</h3><span class="text-xs text-slate-400 rounded-full bg-white/5 px-2 py-1">${sorted.filter(task => task.status === status).length}</span></div><div class="space-y-3">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-xs text-slate-500">Drop tasks here</p>'}</div></div>`).join('')}</div>`;
 
       el.innerHTML = `
-        <section class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 p-5 sm:p-7 shadow-2xl shadow-black/30 text-slate-100">
+        <section class="relative min-h-full overflow-visible rounded-[2rem] border border-white/10 bg-slate-950 p-5 sm:p-7 shadow-2xl shadow-black/30 text-slate-100">
           <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,.28),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(20,184,166,.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,.96),rgba(2,6,23,.98))]"></div>
           <div class="relative space-y-6">
             <header class="flex flex-wrap items-end justify-between gap-4">
