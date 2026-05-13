@@ -2817,7 +2817,7 @@
     function focusSectionSearch() {
       const searchBySection = {
         dashboard: ['txCategory'],
-        workspace: ['workspacePageTitle'],
+        workspace: ['workspaceOsSearch'],
         tasks: ['taskSearch'],
         resources: ['resourcesSearch'],
         ai: ['chatInput'],
@@ -4375,6 +4375,64 @@
       if (!state.workspace.activePageId && state.workspace.pages[0]) state.workspace.activePageId = state.workspace.pages[0].id;
       if (!Array.isArray(state.workspace.databases)) state.workspace.databases = [];
       if (!state.workspace.activeDatabaseId && state.workspace.databases[0]) state.workspace.activeDatabaseId = state.workspace.databases[0].id;
+
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || state.settings?.business || {};
+      const now = new Date().toISOString();
+      const businessName = profile.businessName || profile.name || state.settings?.business?.name || state.title || 'your company';
+      const businessTypeText = `${profile.businessType || ''} ${profile.industry || ''} ${businessName}`.toLowerCase();
+      const isSaas = businessTypeText.includes('saas') || businessTypeText.includes('software') || businessTypeText.includes('app');
+      const projectBlueprints = isSaas
+        ? ['MVP Launch', 'Onboarding Flow', 'Pricing Strategy', 'User Research']
+        : [`${businessName} Launch Plan`, 'Customer Discovery', 'Revenue System', 'Brand & Growth Sprint'];
+      if (!state.workspace.workspaceOsSeeded) {
+        const existingTitles = new Set(state.workspace.pages.map(page => page.title.toLowerCase()));
+        projectBlueprints.forEach((title, index) => {
+          if (existingTitles.has(title.toLowerCase())) return;
+          state.workspace.pages.push({
+            id: crypto.randomUUID(),
+            title,
+            objectType: 'Project',
+            updatedAt: now,
+            meta: {
+              status: ['Planning', 'Active', 'Review', 'Active'][index] || 'Planning',
+              progress: [18, 46, 62, 30][index] || 15,
+              dueDate: new Date(Date.now() + (index + 2) * 7 * 86400000).toISOString().slice(0, 10),
+              owner: profile.founderName || state.settings?.founder?.name || 'Founder',
+              priority: ['High', 'High', 'Medium', 'Medium'][index] || 'Medium',
+              linkedTasks: Math.max(2, index + 2),
+              linkedFiles: index + 1
+            },
+            relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, []])),
+            blocks: [
+              { id: crypto.randomUUID(), type: 'heading', level: 1, text: title },
+              { id: crypto.randomUUID(), type: 'text', text: `Execution workspace for ${businessName}: ${profile.mainGoal || 'turn strategy into traction'}.` },
+              { id: crypto.randomUUID(), type: 'todo', text: 'Define success metric and first owner', checked: false }
+            ]
+          });
+        });
+        state.workspace.documents = state.workspace.documents || [
+          { id: crypto.randomUUID(), title: `${businessName} Business Plan`, category: 'Business Plans', lastEdited: now, summary: `AI summary of positioning, model, customer, and current goal: ${profile.mainGoal || 'growth'}.`, folder: 'Strategy' },
+          { id: crypto.randomUUID(), title: 'Product Strategy Memo', category: 'Strategy Docs', lastEdited: now, summary: 'Clarifies roadmap bets, target customer, and weekly decision rules.', folder: 'Product' },
+          { id: crypto.randomUUID(), title: 'Investor Update Draft', category: 'Investor Notes', lastEdited: now, summary: 'Monthly narrative with wins, metrics, asks, and risks.', folder: 'Fundraising' }
+        ];
+        state.workspace.notes = state.workspace.notes || [
+          { id: crypto.randomUUID(), title: 'Business Ideas', preview: `Potential moves for ${businessName}, prioritized by speed to evidence.`, timestamp: now, tags: ['Ideas', 'Founder'], pinned: true },
+          { id: crypto.randomUUID(), title: 'Roadmap Thoughts', preview: 'What must ship next, what can wait, and what needs customer proof.', timestamp: now, tags: ['Roadmap', 'Product'], pinned: true },
+          { id: crypto.randomUUID(), title: 'Growth Experiments', preview: 'Low-cost experiments to test messaging, channels, and conversion.', timestamp: now, tags: ['Growth', 'Experiments'], pinned: false }
+        ];
+        state.workspace.files = state.workspace.files || [
+          { id: crypto.randomUUID(), name: 'Founder Operating Plan.pdf', size: '1.8 MB', uploadDate: now, category: 'PDFs', section: 'Recent Files', summary: 'AI-ready execution plan and weekly operating cadence.' },
+          { id: crypto.randomUUID(), name: 'KPI Forecast.csv', size: '420 KB', uploadDate: now, category: 'CSVs', section: 'AI Generated Files', summary: 'Starter revenue, user, conversion, burn, and runway forecast.' },
+          { id: crypto.randomUUID(), name: 'Pitch Narrative.docx', size: '760 KB', uploadDate: now, category: 'Docs', section: 'Shared Files', summary: 'Draft story for customer, investor, and team communication.' }
+        ];
+        state.workspace.dataMetrics = state.workspace.dataMetrics || { revenue: 12500, activeUsers: 840, weeklyGrowth: 12.4, conversionRate: 6.8, monthlyBurn: 7200, runway: 8.5 };
+        state.workspace.workspaceOsSeeded = true;
+      }
+      if (!Array.isArray(state.workspace.documents)) state.workspace.documents = [];
+      if (!Array.isArray(state.workspace.notes)) state.workspace.notes = [];
+      if (!Array.isArray(state.workspace.files)) state.workspace.files = [];
+      if (!state.workspace.dataMetrics || typeof state.workspace.dataMetrics !== 'object') state.workspace.dataMetrics = { revenue: 0, activeUsers: 0, weeklyGrowth: 0, conversionRate: 0, monthlyBurn: 0, runway: 0 };
+      if (!state.workspace.ui || typeof state.workspace.ui !== 'object') state.workspace.ui = { tab: 'overview', search: '', projectView: 'cards', notesView: 'grid', noteTag: 'All' };
     }
 
     function getActiveWorkspacePage() {
@@ -4605,26 +4663,26 @@
     function renderWorkspace() {
       ensureWorkspaceState();
       const el = document.getElementById('section-workspace');
-      const activePage = getActiveWorkspacePage();
-      const connections = computeWorkspaceConnections();
-      const pageMap = workspacePageMap();
-      const backlinks = activePage ? (connections.backlinks.get(activePage.id) || []) : [];
-      const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
-
-      const workspacePages = state.workspace.pages || [];
-      const taskItems = state.tasks?.items || [];
-      const activeProjectsCount = Math.max(1, workspacePages.filter(page => page.objectType === 'Project').length || Math.ceil(workspacePages.length / 3));
-      const inProgressTasksCount = taskItems.filter(task => task.status === 'In Progress').length;
-      const completedTasksCount = taskItems.filter(task => task.status === 'Done').length;
-      const documentsCount = Math.max(1, workspacePages.filter(page => ['Document', 'Page', 'Note'].includes(page.objectType)).length);
-      const membersCount = Math.max(3, Math.min(12, activeProjectsCount + 3));
-      const totalTasksCount = Math.max(1, taskItems.length);
-      const openTasksCount = taskItems.filter(task => task.status !== 'Done').length;
-      const projectsForTable = (workspacePages.filter(page => page.objectType === 'Project').length ? workspacePages.filter(page => page.objectType === 'Project') : workspacePages.slice(0, 4)).slice(0, 5);
-      const fallbackProjects = projectsForTable.length ? projectsForTable : [
-        { id: 'demo-launch', title: 'Founder Launch System', objectType: 'Project', updatedAt: new Date().toISOString() },
-        { id: 'demo-data', title: 'Customer Data Room', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 7).toISOString() },
-        { id: 'demo-growth', title: 'Growth Experiments', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 14).toISOString() }
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || state.settings?.business || {};
+      const founderName = profile.founderName || state.settings?.founder?.name || 'Founder';
+      const businessName = profile.businessName || state.settings?.business?.name || state.title || 'your company';
+      const mainGoal = profile.mainGoal || state.settings?.business?.mainGoal || 'build a focused, revenue-ready business';
+      const stage = profile.businessStage || state.settings?.business?.stage || 'Founder OS';
+      const ws = state.workspace;
+      const ui = ws.ui || (ws.ui = { tab: 'overview', search: '', projectView: 'cards', notesView: 'grid', noteTag: 'All' });
+      const q = String(ui.search || '').trim().toLowerCase();
+      const projectPages = (ws.pages || []).filter(page => page.objectType === 'Project');
+      const documents = ws.documents || [];
+      const notes = ws.notes || [];
+      const files = ws.files || [];
+      const metrics = ws.dataMetrics || {};
+      const tasks = state.tasks?.items || [];
+      const allSearchItems = [
+        ...projectPages.map(item => ({ type: 'Project', title: item.title, body: `${item.meta?.status || ''} ${item.meta?.priority || ''}`, id: item.id })),
+        ...documents.map(item => ({ type: 'Document', title: item.title, body: `${item.category} ${item.summary}`, id: item.id })),
+        ...notes.map(item => ({ type: 'Note', title: item.title, body: `${item.preview} ${(item.tags || []).join(' ')}`, id: item.id })),
+        ...files.map(item => ({ type: 'File', title: item.name, body: `${item.category} ${item.summary}`, id: item.id })),
+        ...Object.entries(metrics).map(([key, value]) => ({ type: 'Data', title: key.replace(/([A-Z])/g, ' $1'), body: String(value), id: key }))
       ];
       const statCards = [
         ['Active Projects', activeProjectsCount, '+12%', 'from last month', 'from-violet-500 to-fuchsia-500'],
@@ -4829,67 +4887,99 @@
         workspacePendingAnimation.blockId = createdBlock.id;
         updatePageUpdatedAt(activePage);
         saveState();
+      const matches = (items, fields) => !q ? items : items.filter(item => fields.some(field => String(item[field] || '').toLowerCase().includes(q)));
+      const filteredProjects = matches(projectPages, ['title', 'objectType']);
+      const filteredDocs = matches(documents, ['title', 'category', 'summary']);
+      const filteredNotes = matches(notes, ['title', 'preview']);
+      const filteredFiles = matches(files, ['name', 'category', 'summary']);
+      const instantResults = q ? allSearchItems.filter(item => `${item.type} ${item.title} ${item.body}`.toLowerCase().includes(q)).slice(0, 6) : [];
+      const activeTab = ['overview','projects','documents','data','notes','files'].includes(ui.tab) ? ui.tab : 'overview';
+      ui.tab = activeTab;
+      const moneyValue = (value) => `${state.settings?.preferences?.currency || 'USD'} ${Number(value || 0).toLocaleString()}`;
+      const pct = (value) => `${Number(value || 0).toFixed(Number(value || 0) % 1 ? 1 : 0)}%`;
+      const panel = 'rounded-[1.6rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-xl';
+      const chip = 'rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-bold text-slate-200';
+      const empty = (icon, title, text, action) => `<div class="${panel} border-dashed text-center"><div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-500/15 text-2xl">${icon}</div><h3 class="mt-4 text-lg font-black text-white">${escapeHTML(title)}</h3><p class="mx-auto mt-2 max-w-md text-sm text-slate-400">${escapeHTML(text)}</p><button data-workspace-action="${action}" class="mt-4 rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2.5 text-sm font-black text-white">Start here</button></div>`;
+      const statusClass = (status) => ({ Planning: 'border-sky-300/30 bg-sky-400/10 text-sky-100', Active: 'border-teal-300/30 bg-teal-400/10 text-teal-100', Review: 'border-amber-300/30 bg-amber-400/10 text-amber-100', Completed: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100' })[status] || 'border-white/10 bg-white/[0.06] text-slate-200';
+      const projectCard = (project) => {
+        const meta = project.meta || {};
+        const progress = Number(meta.progress || 0);
+        return `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4 transition hover:-translate-y-0.5 hover:border-violet-300/40 hover:shadow-[0_0_34px_rgba(139,92,246,.16)]">
+          <div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[.18em] text-slate-500">${escapeHTML(meta.priority || 'Medium')} priority</p><h3 class="mt-1 text-lg font-black text-white">${escapeHTML(project.title)}</h3></div><span class="rounded-full border px-3 py-1 text-xs font-bold ${statusClass(meta.status)}">${escapeHTML(meta.status || 'Planning')}</span></div>
+          <div class="mt-4"><div class="flex justify-between text-xs text-slate-400"><span>Progress</span><span>${progress}%</span></div><div class="mt-2 h-2 rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-teal-300" style="width:${Math.min(100, progress)}%"></div></div></div>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm"><div class="rounded-2xl bg-white/[0.04] p-3"><p class="text-xs text-slate-500">Owner</p><p class="font-bold text-slate-100">${escapeHTML(meta.owner || founderName)}</p></div><div class="rounded-2xl bg-white/[0.04] p-3"><p class="text-xs text-slate-500">Due</p><p class="font-bold text-slate-100">${escapeHTML(meta.dueDate || 'This month')}</p></div></div>
+          <div class="mt-4 flex flex-wrap gap-2"><span class="${chip}">${Number(meta.linkedTasks || 0)} tasks</span><span class="${chip}">${Number(meta.linkedFiles || 0)} files</span><button data-open-project="${project.id}" class="ml-auto text-xs font-bold text-teal-200">Open →</button></div>
+        </article>`;
       };
+      const docCard = (doc) => `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[.18em] text-violet-200">${escapeHTML(doc.category || 'Document')}</p><h3 class="mt-1 text-lg font-black text-white">${escapeHTML(doc.title)}</h3></div><button class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200">Edit</button></div><p class="mt-3 text-sm leading-6 text-slate-400">${escapeHTML(doc.summary || 'AI summary will appear here.')}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>${escapeHTML(doc.folder || 'Workspace')}</span><span>Edited ${new Date(doc.lastEdited || Date.now()).toLocaleDateString()}</span></div></article>`;
+      const noteCard = (note) => `<article class="rounded-[1.4rem] border ${note.pinned ? 'border-violet-300/35 bg-violet-500/10' : 'border-white/10 bg-slate-950/45'} p-4"><div class="flex items-center justify-between"><h3 class="font-black text-white">${note.pinned ? '📌 ' : ''}${escapeHTML(note.title)}</h3><button data-pin-note="${note.id}" class="text-xs text-teal-200">${note.pinned ? 'Unpin' : 'Pin'}</button></div><p class="mt-3 text-sm leading-6 text-slate-400">${escapeHTML(note.preview)}</p><div class="mt-4 flex flex-wrap gap-2">${(note.tags || []).map(tag => `<span class="${chip}">#${escapeHTML(tag)}</span>`).join('')}<span class="ml-auto text-xs text-slate-500">${new Date(note.timestamp || Date.now()).toLocaleString()}</span></div></article>`;
+      const fileCard = (file) => `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex items-start gap-3"><div class="grid h-11 w-11 place-items-center rounded-2xl bg-teal-400/10 text-xl">${file.category === 'Images' ? '🖼️' : file.category === 'CSVs' ? '📊' : file.category === 'Slides' ? '🪄' : '📄'}</div><div class="min-w-0 flex-1"><h3 class="truncate font-black text-white">${escapeHTML(file.name)}</h3><p class="mt-1 text-xs text-slate-500">${escapeHTML(file.size)} · ${escapeHTML(file.category)} · ${new Date(file.uploadDate || Date.now()).toLocaleDateString()}</p></div><button class="rounded-xl border border-white/10 px-3 py-2 text-slate-300">⋯</button></div><p class="mt-3 text-sm text-slate-400">${escapeHTML(file.summary || 'AI summary pending.')}</p></article>`;
+      const kpiCards = [
+        ['Revenue', moneyValue(metrics.revenue), '+18%', 'MRR and closed revenue signal'],
+        ['Active Users', Number(metrics.activeUsers || 0).toLocaleString(), '+9%', 'Engaged users or qualified accounts'],
+        ['Weekly Growth', pct(metrics.weeklyGrowth), '+3.1%', 'Week-over-week momentum'],
+        ['Conversion Rate', pct(metrics.conversionRate), '+1.4%', 'Visitor or lead conversion'],
+        ['Monthly Burn', moneyValue(metrics.monthlyBurn), '-4%', 'Operating spend control'],
+        ['Runway', `${Number(metrics.runway || 0).toFixed(1)} mo`, '+0.6', 'Estimated cash runway']
+      ];
+      const tabs = [['overview','Overview'],['projects','Projects'],['documents','Documents'],['data','Data'],['notes','Notes'],['files','Files']];
+      const currentSprint = `Sprint ${Math.max(1, new Date().getUTCMonth() + 1)} · ${stage}`;
+      const weeklyPriorities = [`Ship the highest-impact milestone for ${businessName}`, `Talk to 5 target customers about ${mainGoal}`, 'Update metrics, notes, and decisions before Friday'];
+      const suggestions = ['Generate a customer research project from your main challenge', 'Summarize pinned notes into a founder memo', 'Organize stale files into Launch, Finance, and Research folders'];
+      const content = {
+        overview: `<div class="grid gap-5 xl:grid-cols-[1.35fr_.9fr]"><div class="space-y-5"><section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[.22em] text-teal-200">Current sprint</p><h3 class="mt-1 text-2xl font-black text-white">${escapeHTML(currentSprint)}</h3><p class="mt-2 text-sm text-slate-400">Business goal: ${escapeHTML(mainGoal)}</p></div><button data-workspace-tab-jump="projects" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-3 text-sm font-black text-white">Continue Working</button></div><div class="mt-5 grid gap-3 md:grid-cols-3">${projectPages.slice(0,3).map(project => `<button data-open-project="${project.id}" class="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left"><p class="font-bold text-white">${escapeHTML(project.title)}</p><p class="mt-2 text-xs text-slate-400">${project.meta?.progress || 0}% complete · ${escapeHTML(project.meta?.status || 'Planning')}</p></button>`).join('')}</div></section><section class="grid gap-5 lg:grid-cols-2"><div class="${panel}"><h3 class="text-lg font-black text-white">Active Projects</h3><div class="mt-4 space-y-3">${projectPages.slice(0,4).map(project => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div class="flex justify-between gap-3"><span class="font-bold text-white">${escapeHTML(project.title)}</span><span class="text-xs text-teal-200">${project.meta?.progress || 0}%</span></div></div>`).join('') || empty('🧭','No projects yet.','Start building your workspace.','ai-project')}</div></div><div class="${panel}"><h3 class="text-lg font-black text-white">Recent Documents</h3><div class="mt-4 space-y-3">${documents.slice(0,4).map(doc => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><p class="font-bold text-white">${escapeHTML(doc.title)}</p><p class="mt-1 text-xs text-slate-400">${escapeHTML(doc.category)} · ${escapeHTML(doc.summary).slice(0,80)}</p></div>`).join('') || empty('📄','Your workspace documents will appear here.','Create or generate your first founder document.','new-doc')}</div></div></section></div><aside class="space-y-5"><section class="${panel}"><h3 class="text-lg font-black text-white">AI Suggestions</h3><div class="mt-4 space-y-3">${suggestions.map(item => `<button class="w-full rounded-2xl border border-violet-300/20 bg-violet-500/10 p-3 text-left text-sm text-violet-50">✦ ${escapeHTML(item)}</button>`).join('')}</div></section><section class="${panel}"><h3 class="text-lg font-black text-white">Weekly Priorities</h3><ol class="mt-4 space-y-3">${weeklyPriorities.map((item, i) => `<li class="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-200"><span class="font-black text-teal-200">${i+1}</span>${escapeHTML(item)}</li>`).join('')}</ol></section><section class="${panel}"><h3 class="text-lg font-black text-white">Workspace Health</h3><div class="mt-4 h-3 rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-teal-300" style="width:${Math.min(94, 42 + projectPages.length * 8)}%"></div></div><p class="mt-3 text-sm text-slate-400">${projectPages.length} workstreams, ${documents.length} docs, ${notes.length} notes, ${files.length} files. Your OS is organized and execution-ready.</p></section><section class="${panel}"><h3 class="text-lg font-black text-white">Recent Activity</h3><div class="mt-4 space-y-3">${['AI generated starter projects','Updated weekly priorities','Created KPI forecast','Pinned growth experiments'].map(item => `<p class="rounded-2xl bg-white/[0.04] p-3 text-sm text-slate-300">${escapeHTML(item)}</p>`).join('')}</div></section><section class="${panel}"><h3 class="text-lg font-black text-white">Upcoming Tasks</h3><div class="mt-4 space-y-2">${(tasks.length ? tasks : weeklyPriorities.map((title, i) => ({ title, priority: i ? 'Medium' : 'High' }))).slice(0,4).map(task => `<div class="flex justify-between rounded-2xl bg-white/[0.04] p-3 text-sm"><span class="text-slate-200">${escapeHTML(task.title)}</span><span class="text-xs text-violet-200">${escapeHTML(task.priority || 'Medium')}</span></div>`).join('')}</div></section></aside></div>`,
+        projects: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Project Management</h3><p class="mt-1 text-sm text-slate-400">Kanban, table, and cards for founder execution.</p></div><div class="flex flex-wrap gap-2"><button data-project-view="cards" class="${chip}">Cards</button><button data-project-view="kanban" class="${chip}">Kanban</button><button data-project-view="table" class="${chip}">Table</button><button data-workspace-action="new-project" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Project</button><button data-workspace-action="ai-project" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Generate Project</button><button data-workspace-action="import-project" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Import Project</button></div></div>${!filteredProjects.length ? empty('🧭','No projects yet.','Start building your workspace with an AI-generated project plan.','ai-project') : ui.projectView === 'table' ? `<div class="mt-5 overflow-x-auto"><table class="w-full min-w-[760px] text-left text-sm"><thead class="text-xs uppercase tracking-[.18em] text-slate-500"><tr><th class="p-3">Project</th><th>Status</th><th>Progress</th><th>Due</th><th>Owner</th><th>Priority</th><th>Links</th></tr></thead><tbody>${filteredProjects.map(p => `<tr class="border-t border-white/10"><td class="p-3 font-bold text-white">${escapeHTML(p.title)}</td><td>${escapeHTML(p.meta?.status || 'Planning')}</td><td>${p.meta?.progress || 0}%</td><td>${escapeHTML(p.meta?.dueDate || '')}</td><td>${escapeHTML(p.meta?.owner || founderName)}</td><td>${escapeHTML(p.meta?.priority || 'Medium')}</td><td>${p.meta?.linkedTasks || 0} tasks · ${p.meta?.linkedFiles || 0} files</td></tr>`).join('')}</tbody></table></div>` : ui.projectView === 'kanban' ? `<div class="mt-5 grid gap-4 lg:grid-cols-4">${['Planning','Active','Review','Completed'].map(status => `<div class="rounded-[1.2rem] border border-white/10 bg-black/20 p-3"><h4 class="font-black text-white">${status}</h4><div class="mt-3 space-y-3">${filteredProjects.filter(p => (p.meta?.status || 'Planning') === status).map(projectCard).join('') || `<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">No ${status.toLowerCase()} projects.</p>`}</div></div>`).join('')}</div>` : `<div class="mt-5 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">${filteredProjects.map(projectCard).join('')}</div>`}</section>`,
+        documents: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Founder Knowledge System</h3><p class="mt-1 text-sm text-slate-400">Business plans, strategy docs, meeting notes, specs, investor notes, and research.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="new-doc" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Document</button><button data-workspace-action="ai-doc" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Generate Doc</button><button data-workspace-action="import-file" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Import File</button></div></div><div class="mt-5 flex flex-wrap gap-2">${['Business Plans','Strategy Docs','Meeting Notes','Product Specs','Investor Notes','Research Docs'].map(folder => `<span class="${chip}">📁 ${folder}</span>`).join('')}</div>${filteredDocs.length ? `<div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">${filteredDocs.map(docCard).join('')}</div><div class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4"><p class="text-xs uppercase tracking-[.18em] text-slate-500">Markdown editor</p><textarea class="mt-3 min-h-[150px] w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100" placeholder="# Draft your next strategic doc...\n\nUse markdown, tasks, and AI summaries."></textarea></div>` : empty('📄','Your workspace documents will appear here.','Create documents, generate templates, or import files into your founder knowledge base.','new-doc')}</section>`,
+        data: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Business Intelligence Hub</h3><p class="mt-1 text-sm text-slate-400">Clean startup KPIs for revenue, growth, burn, runway, and conversion.</p></div><button data-workspace-action="ai-data" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Analyze Metrics</button></div><div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">${kpiCards.map(([label,value,trend,desc]) => `<article class="rounded-[1.3rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex justify-between"><p class="text-sm text-slate-400">${label}</p><span class="text-xs font-bold text-teal-200">${trend}</span></div><p class="mt-2 text-3xl font-black text-white">${value}</p><div class="mt-4 flex h-16 items-end gap-1">${[35,55,42,68,60,78,72].map(h => `<span class="flex-1 rounded-t bg-gradient-to-t from-violet-600 to-teal-300" style="height:${h}%"></span>`).join('')}</div><p class="mt-3 text-xs text-slate-500">${desc}</p></article>`).join('')}</div><div class="mt-5 rounded-[1.3rem] border border-violet-300/20 bg-violet-500/10 p-5"><h4 class="font-black text-white">AI analysis summary</h4><p class="mt-2 text-sm leading-6 text-violet-50">Revenue momentum is healthy for ${escapeHTML(businessName)}. Keep burn below ${moneyValue(metrics.monthlyBurn)} while pushing conversion above ${pct(Number(metrics.conversionRate || 0) + 1.2)}. Next best move: connect one project milestone to each metric owner.</p></div></section>`,
+        notes: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Founder Thinking Space</h3><p class="mt-1 text-sm text-slate-400">Fast notes, pinned ideas, smart tags, markdown, and AI summaries.</p></div><div class="flex flex-wrap gap-2"><button data-notes-view="grid" class="${chip}">Grid</button><button data-notes-view="list" class="${chip}">List</button><button data-workspace-action="new-note" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Note</button><button data-workspace-action="ai-note" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Summarize</button></div></div><div class="mt-5 flex flex-wrap gap-2">${['All', ...new Set(notes.flatMap(note => note.tags || []))].map(tag => `<button data-note-tag="${escapeAttr(tag)}" class="${chip} ${ui.noteTag === tag ? 'border-teal-300/40 bg-teal-400/10 text-teal-100' : ''}">#${escapeHTML(tag)}</button>`).join('')}</div>${filteredNotes.length ? `<div class="mt-5 grid gap-4 ${ui.notesView === 'list' ? 'grid-cols-1' : 'md:grid-cols-2 xl:grid-cols-3'}">${filteredNotes.filter(note => !ui.noteTag || ui.noteTag === 'All' || (note.tags || []).includes(ui.noteTag)).map(noteCard).join('')}</div>` : empty('📝','No notes yet.','Capture business ideas, roadmap thoughts, and growth experiments.','new-note')}</section>`,
+        files: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Files & Uploads</h3><p class="mt-1 text-sm text-slate-400">PDFs, images, docs, CSVs, and slides with AI summaries.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="upload-file" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">Upload File</button><button data-workspace-action="folder" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">Create Folder</button><button data-workspace-action="ai-file" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">AI Analyze File</button></div></div><div class="mt-5 rounded-[1.3rem] border border-dashed border-teal-300/30 bg-teal-400/10 p-6 text-center"><div class="text-3xl">☁️</div><p class="mt-2 font-black text-white">Drag and drop files here</p><p class="mt-1 text-sm text-slate-400">Supported: PDFs, Images, Docs, CSVs, Slides</p></div><div class="mt-5 grid gap-5 xl:grid-cols-[220px_1fr]"><aside class="space-y-2">${['Recent Files','Shared Files','AI Generated Files','Archived'].map(section => `<button class="w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left text-sm font-bold text-slate-200">${section}</button>`).join('')}</aside><div>${filteredFiles.length ? `<div class="grid gap-4 md:grid-cols-2">${filteredFiles.map(fileCard).join('')}</div>` : empty('📁','Upload files to organize your business.','Add source material and Barya will summarize, tag, and organize it.','upload-file')}</div></div></section>`
+      }[activeTab];
 
-      document.getElementById('workspaceQuickLinkBtn')?.addEventListener('click', () => {
-        const id = document.getElementById('workspaceQuickLinkSelect')?.value;
-        if (!id) return;
-        if (!activePage.relations['Linked Notes'].includes(id)) activePage.relations['Linked Notes'].push(id);
-        updatePageUpdatedAt(activePage);
-        saveState();
+      el.innerHTML = `<div class="min-h-full overflow-auto rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(139,92,246,.28),transparent_30%),radial-gradient(circle_at_92%_8%,rgba(20,184,166,.18),transparent_28%),linear-gradient(135deg,#05050b,#0b1020)] p-4 sm:p-6 text-slate-100 scrollbar-thin"><header class="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between"><div><p class="text-xs uppercase tracking-[.28em] text-violet-200">AI-powered founder operating system</p><h2 class="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-white">${escapeHTML(businessName)} Workspace</h2><p class="mt-3 max-w-3xl text-sm sm:text-base text-slate-300">Calm command center for ${escapeHTML(founderName)} — organized around ${escapeHTML(mainGoal)}.</p></div><div class="flex flex-wrap gap-2"><span class="${chip}">${escapeHTML(stage)}</span><span class="${chip}">${projectPages.length} projects</span><span class="${chip}">${documents.length + notes.length + files.length} knowledge assets</span></div></header><div class="relative mb-5"><label class="flex items-center gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.07] px-4 py-3 shadow-[0_0_30px_rgba(139,92,246,.12)]"><span>⌘</span><input id="workspaceOsSearch" value="${escapeAttr(ui.search || '')}" placeholder="Search anything in your workspace…" class="flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-slate-500" /><button data-workspace-action="ai-priority" class="rounded-xl bg-violet-500/20 px-3 py-2 text-xs font-black text-violet-100">AI Prioritize</button></label>${instantResults.length ? `<div id="workspaceInstantResults" class="absolute left-0 right-0 top-[calc(100%+.5rem)] z-20 rounded-[1.4rem] border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl">${instantResults.map(result => `<button data-search-open="${result.id}" data-search-type="${escapeAttr(result.type)}" class="w-full rounded-2xl px-3 py-2 text-left hover:bg-white/[0.06]"><p class="text-[11px] uppercase tracking-[.18em] text-teal-200">${escapeHTML(result.type)}</p><p class="font-bold text-white">${escapeHTML(result.title)}</p></button>`).join('')}</div>` : ''}</div><nav class="mb-5 flex gap-2 overflow-x-auto pb-1">${tabs.map(([id,label]) => `<button data-workspace-tab="${id}" class="shrink-0 rounded-2xl border px-4 py-2.5 text-sm font-black transition ${activeTab === id ? 'border-violet-300/50 bg-violet-500/20 text-white shadow-[0_0_24px_rgba(139,92,246,.18)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${label}</button>`).join('')}</nav>${content}<aside class="mt-5 rounded-[1.6rem] border border-teal-300/20 bg-teal-400/10 p-5"><div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h3 class="font-black text-white">Workspace AI</h3><p class="mt-1 text-sm text-teal-50/80">Suggest projects, summarize notes, organize files, analyze documents, generate templates, and recommend priorities.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="ai-project" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Suggest Project</button><button data-workspace-action="ai-doc" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Generate Template</button></div></div></aside></div>`;
+
+      const saveAndRender = () => { saveState(); };
+      document.getElementById('workspaceOsSearch')?.addEventListener('input', (e) => { ws.ui.search = e.target.value; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-tab]').forEach(btn => btn.onclick = () => { ws.ui.tab = btn.dataset.workspaceTab; ws.ui.search = ''; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-tab-jump]').forEach(btn => btn.onclick = () => { ws.ui.tab = btn.dataset.workspaceTabJump; saveAndRender(); });
+      el.querySelectorAll('[data-project-view]').forEach(btn => btn.onclick = () => { ws.ui.projectView = btn.dataset.projectView; saveAndRender(); });
+      el.querySelectorAll('[data-notes-view]').forEach(btn => btn.onclick = () => { ws.ui.notesView = btn.dataset.notesView; saveAndRender(); });
+      el.querySelectorAll('[data-note-tag]').forEach(btn => btn.onclick = () => { ws.ui.noteTag = btn.dataset.noteTag; saveAndRender(); });
+      el.querySelectorAll('[data-open-project]').forEach(btn => btn.onclick = () => { ws.activePageId = btn.dataset.openProject; ws.ui.tab = 'projects'; saveAndRender(); });
+      el.querySelectorAll('[data-search-open]').forEach(btn => btn.onclick = () => {
+        const tabByType = { Project: 'projects', Document: 'documents', Note: 'notes', File: 'files', Data: 'data' };
+        ws.ui.tab = tabByType[btn.dataset.searchType] || 'overview';
+        ws.ui.search = '';
+        if (btn.dataset.searchType === 'Project') ws.activePageId = btn.dataset.searchOpen;
+        saveAndRender();
       });
-
-      let dragId = null;
-      el.querySelectorAll('.workspace-block').forEach(blockEl => {
-        blockEl.addEventListener('dragstart', () => {
-          dragId = blockEl.dataset.blockId;
-          blockEl.classList.add('opacity-60');
-        });
-        blockEl.addEventListener('dragend', () => {
-          dragId = null;
-          blockEl.classList.remove('opacity-60');
-        });
-        blockEl.addEventListener('dragover', (evt) => evt.preventDefault());
-        blockEl.addEventListener('drop', () => {
-          const targetId = blockEl.dataset.blockId;
-          if (!dragId || dragId === targetId) return;
-          const fromIndex = activePage.blocks.findIndex(b => b.id === dragId);
-          const toIndex = activePage.blocks.findIndex(b => b.id === targetId);
-          if (fromIndex < 0 || toIndex < 0) return;
-          const [moved] = activePage.blocks.splice(fromIndex, 1);
-          activePage.blocks.splice(toIndex, 0, moved);
-          updatePageUpdatedAt(activePage);
-          saveState();
-        });
+      el.querySelectorAll('[data-pin-note]').forEach(btn => btn.onclick = () => { const note = notes.find(item => item.id === btn.dataset.pinNote); if (note) note.pinned = !note.pinned; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-action]').forEach(btn => btn.onclick = () => {
+        const action = btn.dataset.workspaceAction;
+        const now = new Date().toISOString();
+        if (action === 'new-project' || action === 'ai-project') {
+          ws.pages.unshift({ id: crypto.randomUUID(), title: action === 'ai-project' ? `AI Growth Sprint for ${businessName}` : 'New Project', objectType: 'Project', updatedAt: now, meta: { status: 'Planning', progress: 12, dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0,10), owner: founderName, priority: 'High', linkedTasks: 3, linkedFiles: 1 }, relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, []])), blocks: [{ id: crypto.randomUUID(), type: 'heading', level: 1, text: 'Project Brief' }, { id: crypto.randomUUID(), type: 'text', text: `AI-generated from ${mainGoal}.` }] });
+          ws.ui.tab = 'projects';
+        } else if (action === 'new-doc' || action === 'ai-doc') {
+          ws.documents.unshift({ id: crypto.randomUUID(), title: action === 'ai-doc' ? `${businessName} Strategy Template` : 'Untitled Document', category: action === 'ai-doc' ? 'Strategy Docs' : 'Meeting Notes', lastEdited: now, summary: 'AI summary will update as you write.', folder: 'Workspace' });
+          ws.ui.tab = 'documents';
+        } else if (action === 'new-note' || action === 'ai-note') {
+          ws.notes.unshift({ id: crypto.randomUUID(), title: action === 'ai-note' ? 'AI Summary: Founder Priorities' : 'Untitled Note', preview: action === 'ai-note' ? weeklyPriorities.join(' · ') : 'Start typing your thought, decision, or experiment.', timestamp: now, tags: ['Founder'], pinned: action === 'ai-note' });
+          ws.ui.tab = 'notes';
+        } else if (action === 'upload-file' || action === 'import-file' || action === 'ai-file') {
+          ws.files.unshift({ id: crypto.randomUUID(), name: action === 'ai-file' ? 'AI File Analysis.md' : 'Imported Workspace File.pdf', size: '240 KB', uploadDate: now, category: action === 'ai-file' ? 'Docs' : 'PDFs', section: 'Recent Files', summary: 'AI summary created from workspace context.' });
+          ws.ui.tab = 'files';
+        } else if (action === 'folder') {
+          ws.files.unshift({ id: crypto.randomUUID(), name: 'New Workspace Folder', size: '—', uploadDate: now, category: 'Folder', section: 'Recent Files', summary: 'Folder ready for launch, finance, research, or investor material.' });
+          ws.ui.tab = 'files';
+        } else if (action === 'ai-data') {
+          ws.dataMetrics.weeklyGrowth = Number(ws.dataMetrics.weeklyGrowth || 0) + 1.5;
+          ws.ui.tab = 'data';
+        } else if (action === 'ai-priority') {
+          ws.notes.unshift({ id: crypto.randomUUID(), title: 'AI Recommended Priorities', preview: weeklyPriorities.join(' · '), timestamp: now, tags: ['AI', 'Priorities'], pinned: true });
+          ws.ui.tab = 'notes';
+        }
+        saveAndRender();
       });
-
-      el.querySelectorAll('[data-delete-block]').forEach(btn => btn.onclick = () => {
-        activePage.blocks = activePage.blocks.filter(b => b.id !== btn.dataset.deleteBlock);
-        updatePageUpdatedAt(activePage);
-        saveState();
-      });
-
-      bindWorkspaceBlockEvents(el, activePage);
-
-      document.getElementById('workspaceExport').onclick = () => downloadJSON('workspace-data.json', state.workspace);
-      document.getElementById('workspaceImport').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
-        state.workspace = deepMerge(structuredClone(defaultState.workspace), data || {});
-        ensureWorkspaceState();
-        saveState();
-      });
-      document.getElementById('workspaceClear').onclick = () => {
-        if (!confirm('Clear all workspace objects?')) return;
-        state.workspace = structuredClone(defaultState.workspace);
-        state.workspace.pages = [];
-        state.workspace.activePageId = null;
-        saveState();
-      };
-
-      if (workspacePendingAnimation.pageId || workspacePendingAnimation.blockId) {
-        setTimeout(() => {
-          workspacePendingAnimation = { pageId: null, blockId: null };
-        }, 320);
-      }
     }
 
     function renderWorkspaceBlockBody(block, idx, currentPageId, filteredMenu, cmdOpenClass) {
