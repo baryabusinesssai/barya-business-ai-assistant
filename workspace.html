@@ -5184,6 +5184,7 @@
       if (typeof state.ai.composer.text !== 'string') state.ai.composer.text = '';
       if (!state.ai.composer.attachment || typeof state.ai.composer.attachment !== 'object') state.ai.composer.attachment = null;
       if (typeof state.ai.composer.deepThinking !== 'boolean') state.ai.composer.deepThinking = false;
+      if (typeof state.ai.composer.memoryEnabled !== 'boolean') state.ai.composer.memoryEnabled = true;
     }
 
     function getAIPersonalizationContext() {
@@ -5376,254 +5377,252 @@
       updateRecommendations();
       const el = document.getElementById('section-ai');
       const personalization = getAIPersonalizationContext();
-      const financialHealth = computeFinancialHealth();
       const metrics = state.dashboard?.metrics || {};
       const business = state.settings?.business || {};
+      const founder = state.settings?.founder || {};
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
       const team = state.settings?.team || {};
       const teamSize = Array.isArray(team.members) ? team.members.length : 0;
       const monthlyBurn = Number(metrics.expenses || 0);
       const monthlyRevenue = Number(metrics.income || 0);
       const runway = Number(metrics.runway || 0);
-      const potentialRevenue = Math.max(monthlyRevenue, Math.round(monthlyRevenue * 1.35 + Math.max(0, Number(metrics.netSavings || 0)) * 0.25));
-      const topOpportunity = runway < 6 ? 'Extend runway with cash-focused offers' : (monthlyRevenue > monthlyBurn ? 'Scale the best acquisition channel' : 'Improve margin before scaling');
-      const lastAssistant = [...state.ai.history].reverse().find(msg => msg.role === 'assistant');
-      const actionSteps = (lastAssistant?.structured?.steps?.length ? lastAssistant.structured.steps : [
-        'Clarify the highest-value business outcome for the next 14 days.',
-        'Choose one measurable growth, revenue, or runway lever and define the owner.',
-        'Run a focused execution sprint, review evidence, then update the plan locally.'
-      ]).slice(0, 5);
+      const taskItems = Array.isArray(state.tasks?.items) ? state.tasks.items : [];
+      const activeTasks = taskItems.filter(task => task.status !== 'Done' && !task.archived);
+      const topProject = activeTasks[0]?.project || business.name || profile.businessName || state.title || 'Founder OS';
+      const founderName = String(founder.name || profile.founderName || 'Founder').trim();
+      const displayName = founderName.split(' ')[0] || 'Founder';
+      const currentHour = new Date().getHours();
+      const greeting = currentHour < 12 ? 'Good morning' : (currentHour < 18 ? 'Good afternoon' : 'Good evening');
+      const currentGoal = business.mainGoal || profile.mainGoal || personalization.goal || 'Build a calmer, sharper company operating rhythm';
+      const activePriority = runway && runway < 6 ? 'Protect runway and convert revenue signal' : (monthlyRevenue > monthlyBurn ? 'Scale the strongest growth loop' : 'Find one repeatable revenue motion');
+      const currentSprint = profile.stage || business.stage || personalization.stage || 'Founder focus sprint';
+      const placeholderOptions = [
+        'Create a launch strategy',
+        'Review my business plan',
+        'What should I prioritize this week?',
+        'Help me improve onboarding',
+        'Analyze my growth opportunities'
+      ];
+      const placeholder = placeholderOptions[Math.floor(Date.now() / 5000) % placeholderOptions.length];
+      const memoryEntries = typeof getMemoryEntries === 'function' ? getMemoryEntries().slice(0, 4) : [];
+      const memoryOn = state.ai.composer.memoryEnabled !== false;
       const quickActions = [
-        { label: 'Analyze Financials', prompt: 'Analyze my current financials, explain business health, runway, monthly burn, risks, and the next best financial move.' },
-        { label: 'Review Growth Strategy', prompt: 'Review my growth strategy and recommend the highest-leverage acquisition, activation, and retention moves.' },
-        { label: 'Identify Risks', prompt: 'Identify the biggest business risks right now and create mitigation steps ranked by urgency and impact.' },
-        { label: 'Create Action Plan', prompt: 'Create a step-by-step action plan for the next 30 days with priorities, owners, metrics, and weekly checkpoints.' },
-        { label: 'Market Research', prompt: 'Run market research for my business context and summarize target customers, demand signals, trends, and positioning opportunities.' },
-        { label: 'Business Planning', prompt: 'Help me build a stronger business plan with model, customers, positioning, financial logic, and milestones.' },
-        { label: 'Competitor Analysis', prompt: 'Create a competitor analysis with positioning gaps, threats, differentiators, and winning moves.' }
+        { label: 'Business Plan', prompt: 'Create a focused business plan with positioning, ICP, revenue logic, risks, and a 30-day execution path.' },
+        { label: 'Growth Strategy', prompt: 'Design a calm but aggressive growth strategy for my current stage with channels, experiments, and decision signals.' },
+        { label: 'MVP Review', prompt: 'Review my MVP like a strategic product co-founder. Tell me what to simplify, ship, and measure next.' },
+        { label: 'Financial Planning', prompt: 'Help me plan runway, burn, revenue scenarios, and the next financial decision I should make.' },
+        { label: 'Pitch Deck', prompt: 'Create a premium pitch deck narrative with slide structure, proof points, and investor-level positioning.' },
+        { label: 'Marketing Ideas', prompt: 'Generate founder-led marketing ideas that feel premium, specific, and realistic for my current business.' },
+        { label: 'Product Feedback', prompt: 'Give me product feedback from the perspective of a sharp AI co-founder focused on retention and clarity.' },
+        { label: 'Weekly Priorities', prompt: 'Turn my current business context into the three priorities I should execute this week.' }
       ];
-      const createActions = [
-        { label: 'Business Plan', prompt: 'Create a complete business plan for my company using my current local workspace context.' },
-        { label: 'Financial Model', prompt: 'Create a practical financial model with revenue assumptions, expenses, runway, scenarios, and action recommendations.' },
-        { label: 'Marketing Strategy', prompt: 'Create a marketing strategy with ICP, channels, messaging, budget, experiments, and KPIs.' },
-        { label: 'Pitch Deck', prompt: 'Create a pitch deck outline with slide-by-slide content, investor narrative, metrics, and proof points.' },
-        { label: 'Competitor Analysis', prompt: 'Create a detailed competitor analysis and strategic response plan.' },
-        { label: 'SWOT Analysis', prompt: 'Create a SWOT analysis with strategic implications and next actions.' }
+      const navSections = [
+        { title: 'Recent Chats', items: ['Launch focus', 'Pricing decision', 'Customer onboarding'] },
+        { title: 'Saved Strategies', items: ['Positioning memo', 'Revenue sprint'] },
+        { title: 'Business Plans', items: ['Lean plan', 'Investor narrative'] },
+        { title: 'AI Insights', items: ['Founder pattern', 'Retention signal'] },
+        { title: 'Favorites', items: ['Weekly priorities'] },
+        { title: 'Pinned Conversations', items: ['Q2 operating plan'] }
       ];
-      const insightCards = [
-        { title: 'Business Health Score', value: `${financialHealth.healthScore}/100`, note: financialHealth.healthScore >= 70 ? 'Strong signal' : 'Needs focus', accent: 'from-emerald-300 to-teal-300' },
-        { title: 'Runway', value: `${runway.toFixed(1)} mo`, note: runway >= 6 ? 'Breathing room' : 'Protect cash now', accent: 'from-cyan-300 to-sky-300' },
-        { title: 'Monthly Burn', value: `${money(monthlyBurn)}`, note: 'Current expense base', accent: 'from-violet-300 to-fuchsia-300' },
-        { title: 'Potential Revenue', value: `${money(potentialRevenue)}`, note: 'AI opportunity estimate', accent: 'from-amber-200 to-orange-300' },
-        { title: 'Top Opportunity', value: topOpportunity, note: 'Highest leverage focus', accent: 'from-teal-200 to-violet-300' }
-      ];
+      const recentChats = state.ai.history
+        .filter(item => item.role === 'user')
+        .slice(-5)
+        .reverse()
+        .map(item => String(item.message || 'Founder conversation').slice(0, 42));
+      if (recentChats.length) navSections[0].items = recentChats;
       const recommendations = (state.dashboard.recommendations?.length ? state.dashboard.recommendations : [
-        'Focus the next sprint on the single metric that improves revenue quality or runway the fastest.',
-        'Convert the clearest customer pain into one premium offer and test willingness to pay.',
-        'Protect founder focus by cutting one low-signal activity this week.'
-      ]).slice(0, 3);
-      const priorityLabels = ['High Impact', 'Medium Impact', 'Low Impact'];
-      const activityItems = state.ai.history.slice(-5).reverse().map(item => ({
-        type: item.role === 'assistant' ? 'AI Insight' : (item.attachment ? 'Context Added' : 'Founder Prompt'),
-        text: item.role === 'assistant' ? 'Barya generated strategic guidance' : (item.attachment ? `Analyzed ${item.attachment.kind}` : 'Founder asked Barya'),
-        time: item.ts ? new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'
-      }));
-      const memorySnapshot = [
-        { label: 'Stage', value: business.stage || personalization.stage || 'Not set' },
-        { label: 'Goal', value: topOpportunity },
-        { label: 'Team Size', value: `${teamSize || 1} people` },
-        { label: 'Target Market', value: business.targetAudience || 'Not set' },
-        { label: 'Business Model', value: business.industry ? `${business.industry} model` : 'Not set' }
+        'Create onboarding roadmap',
+        'Improve pricing strategy',
+        'Build founder dashboard',
+        'Analyze retention'
+      ]).slice(0, 4);
+      const workspaceSignals = [
+        { label: 'Runway', value: runway ? `${runway.toFixed(1)} mo` : 'Not set' },
+        { label: 'Active tasks', value: String(activeTasks.length) },
+        { label: 'Top project', value: topProject },
+        { label: 'Weekly focus', value: activePriority }
       ];
+      const historyHasUserMessages = state.ai.history.some(item => item.role === 'user');
+
       el.innerHTML = `
         <style>
-          #section-ai .barya-ai-premium, body.light-theme #section-ai .barya-ai-premium { background: #050816 !important; color: #e2e8f0 !important; }
-          #section-ai .barya-ai-premium :is(h1,h2,h3,h4,strong,.font-black,.font-bold,.font-semibold,.text-white) { color: #ffffff !important; }
-          #section-ai .barya-ai-premium :is(p,span,label,button,div,li,time,textarea) { color: inherit; }
-          body.light-theme #section-ai .barya-ai-premium :is(article,main,aside) { background: rgba(15, 23, 42, 0.72) !important; border-color: rgba(255,255,255,0.10) !important; }
-          #section-ai .barya-ai-premium :is(.text-slate-100,.text-slate-200,.text-slate-300) { color: #cbd5e1 !important; }
-          #section-ai .barya-ai-premium :is(.text-slate-400,.text-slate-500) { color: #94a3b8 !important; }
-          #section-ai .barya-ai-premium [class*="text-teal"] { color: #99f6e4 !important; }
-          #section-ai .barya-ai-premium [class*="text-violet"] { color: #ddd6fe !important; }
-          #section-ai .barya-ai-premium [class*="text-emerald"] { color: #bbf7d0 !important; }
-          #section-ai .barya-ai-premium [class*="bg-slate-950"] { background-color: rgba(2, 6, 23, 0.72) !important; }
-          #section-ai .barya-ai-premium [class*="bg-white"] { background-color: rgba(255,255,255,0.07) !important; }
-          #section-ai .barya-ai-premium [class*="border-white"] { border-color: rgba(255,255,255,0.10) !important; }
-          #section-ai .barya-ai-premium textarea::placeholder { color: #64748b !important; opacity: 1; }
+          #section-ai .barya-founder-os,
+          body.light-theme #section-ai .barya-founder-os {
+            background: #03040b !important;
+            color: #e5e7eb !important;
+          }
+          #section-ai .barya-founder-os * { box-sizing: border-box; }
+          #section-ai .barya-founder-os :is(h1,h2,h3,h4,strong,.font-black,.font-bold,.font-semibold,.text-white) { color: #fff !important; }
+          #section-ai .barya-founder-os :is(.text-slate-300,.text-slate-400,.text-slate-500) { color: inherit; }
+          #section-ai .barya-founder-os textarea::placeholder { color: rgba(148, 163, 184, .72) !important; opacity: 1; }
+          #section-ai .barya-founder-grid { grid-template-columns: minmax(210px,.72fr) minmax(0,1.9fr) minmax(230px,.82fr); }
+          #section-ai .barya-orb { animation: baryaFloat 9s ease-in-out infinite alternate; }
+          #section-ai .barya-input-shell { animation: baryaBreathe 4.8s ease-in-out infinite; }
+          #section-ai .barya-fade { animation: baryaFadeUp .55s ease both; }
+          @keyframes baryaFloat { from { transform: translate3d(0,0,0) scale(1); opacity: .64; } to { transform: translate3d(24px,-18px,0) scale(1.08); opacity: .92; } }
+          @keyframes baryaBreathe { 0%,100% { box-shadow: 0 0 0 1px rgba(168,85,247,.26), 0 28px 90px rgba(76,29,149,.30); } 50% { box-shadow: 0 0 0 1px rgba(45,212,191,.38), 0 34px 110px rgba(124,58,237,.42); } }
+          @keyframes baryaFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+          @media (max-width: 1180px) { #section-ai .barya-founder-grid { grid-template-columns: minmax(190px,.65fr) minmax(0,1.6fr); } #section-ai .barya-right-context { display: none; } }
+          @media (max-width: 900px) { #section-ai .barya-founder-grid { grid-template-columns: 1fr; } #section-ai .barya-left-rail { display: none; } #section-ai .barya-mobile-drawers { display: grid !important; } }
         </style>
-        <div class="barya-ai-premium relative overflow-visible rounded-[2rem] border border-violet-400/20 bg-[#050816] p-4 text-slate-100 shadow-[0_34px_110px_rgba(2,6,23,0.55)] sm:p-6 lg:p-8">
-          <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(168,85,247,0.26),transparent_30%),radial-gradient(circle_at_82%_5%,rgba(20,184,166,0.24),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.82),rgba(7,10,25,0.94))]"></div>
-          <div class="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-teal-400/10 blur-3xl"></div>
-          <div class="pointer-events-none absolute -left-28 bottom-20 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl"></div>
+        <div class="barya-founder-os relative min-h-[calc(100vh-7rem)] overflow-hidden rounded-[2rem] border border-white/10 p-3 shadow-[0_40px_140px_rgba(0,0,0,.58)] sm:p-4 lg:p-5">
+          <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(124,58,237,.32),transparent_32%),radial-gradient(circle_at_74%_0%,rgba(20,184,166,.18),transparent_28%),linear-gradient(135deg,#03040b_0%,#060716_42%,#0f0a22_100%)]"></div>
+          <div class="barya-orb pointer-events-none absolute -left-32 top-24 h-96 w-96 rounded-full bg-violet-500/15 blur-3xl"></div>
+          <div class="barya-orb pointer-events-none absolute -right-28 bottom-20 h-80 w-80 rounded-full bg-cyan-300/10 blur-3xl [animation-delay:900ms]"></div>
+          <div class="pointer-events-none absolute inset-0 opacity-[.08] [background-image:linear-gradient(rgba(255,255,255,.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.5)_1px,transparent_1px)] [background-size:72px_72px]"></div>
 
-          <div class="relative space-y-6">
-            <header class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-              <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 rounded-full border border-teal-300/25 bg-teal-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-teal-100 shadow-[0_0_30px_rgba(20,184,166,0.16)]">
-                  <span class="h-2 w-2 rounded-full bg-teal-300 shadow-[0_0_16px_rgba(45,212,191,0.9)]"></span>
-                  100% Private Local AI Workspace
+          <div class="relative flex min-h-[calc(100vh-9rem)] flex-col gap-4">
+            <header class="flex flex-col gap-4 rounded-[1.6rem] border border-white/10 bg-white/[.045] px-4 py-4 backdrop-blur-2xl sm:flex-row sm:items-center sm:justify-between lg:px-5">
+              <div class="flex items-center gap-3">
+                <span class="relative grid h-11 w-11 place-items-center rounded-2xl border border-violet-300/20 bg-violet-400/10 shadow-[0_0_38px_rgba(168,85,247,.20)]">
+                  <span class="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,.95)]"></span>
+                  <span class="text-lg">✦</span>
+                </span>
+                <div>
+                  <div class="flex items-center gap-2"><h2 class="text-xl font-semibold tracking-tight text-white sm:text-2xl">Barya AI</h2><span class="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.18em] text-emerald-100">Live</span></div>
+                  <p class="mt-1 text-sm text-slate-400">Your private AI co-founder.</p>
                 </div>
-                <h2 class="mt-4 text-3xl font-black tracking-tight text-white sm:text-5xl">Barya AI</h2>
-                <p class="mt-3 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">Your Private AI Co-Founder. Smarter insights. Better decisions. Bigger growth.</p>
-                <p class="mt-3 inline-flex rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs text-slate-300">${escapeHTML(personalization.profileLine)} · ${escapeHTML(personalization.styleLabel)}</p>
               </div>
-              <div class="flex flex-col gap-2 sm:flex-row xl:flex-col xl:items-end">
-                <div class="rounded-2xl border border-emerald-300/25 bg-emerald-300/10 px-4 py-3 text-sm font-bold text-emerald-100 shadow-[0_0_34px_rgba(16,185,129,0.12)]">
-                  Private Mode • 100% Local-First • Your data never leaves your device
-                </div>
-                <button id="aiShowRelated" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-teal-300/50 hover:bg-teal-300/10">Show Related Context</button>
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="clearChat" type="button" class="rounded-2xl border border-white/10 bg-white/[.055] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-violet-300/40 hover:bg-violet-400/10">New Chat</button>
+                <button id="deepThinkingToggle" type="button" class="rounded-2xl border px-4 py-2 text-sm font-semibold transition ${memoryOn ? 'border-violet-300/40 bg-violet-400/15 text-violet-100 shadow-[0_0_24px_rgba(168,85,247,.16)]' : 'border-white/10 bg-white/[.055] text-slate-400'}">Memory ${memoryOn ? 'On' : 'Off'}</button>
+                <button id="aiShowRelated" type="button" class="rounded-2xl border border-white/10 bg-white/[.055] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-300/10">${escapeHTML(profile.workspaceName || business.name || state.title || 'Workspace')}</button>
+                <span class="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/60 to-cyan-400/50 text-sm font-black text-white">${escapeHTML(displayName.charAt(0).toUpperCase() || 'F')}</span>
               </div>
             </header>
 
-            <form id="chatForm" class="space-y-3">
-              <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} rounded-2xl border border-teal-300/25 bg-teal-300/10 p-3"></div>
-              <div class="rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-3 shadow-[0_22px_70px_rgba(0,0,0,0.32)] backdrop-blur-xl transition focus-within:border-teal-300/60 focus-within:shadow-[0_0_0_4px_rgba(20,184,166,0.12),0_28px_80px_rgba(0,0,0,0.38)]">
-                <textarea id="chatInput" rows="3" placeholder="Ask Barya anything about your business…" class="min-h-[112px] w-full resize-y rounded-2xl border-0 bg-transparent px-3 py-3 text-base leading-7 text-white outline-none placeholder:text-slate-500 focus:ring-0" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
-                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-1 pt-3">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <label class="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-teal-300/50 hover:text-teal-100">
-                      <span>📎</span><span>Attach file</span>
-                      <input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx,.png,.jpg,.jpeg,.webp" class="hidden">
-                    </label>
-                    <button id="attachLinkBtn" type="button" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-violet-300/50 hover:text-violet-100">🔗 Add link</button>
-                    <button id="deepThinkingToggle" type="button" class="rounded-2xl border px-4 py-2 text-sm font-semibold transition ${state.ai.composer.deepThinking ? 'border-teal-300/60 bg-teal-300/15 text-teal-100 shadow-[0_0_0_3px_rgba(20,184,166,0.12)]' : 'border-white/10 bg-white/[0.06] text-slate-300 hover:border-teal-300/50'}">Deep Reasoning ${state.ai.composer.deepThinking ? 'On' : 'Off'}</button>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <button class="rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-teal-400 px-5 py-2.5 text-sm font-black text-white shadow-[0_14px_34px_rgba(168,85,247,0.35)] transition hover:scale-[1.02]">Ask Barya</button>
-                    <button id="clearChat" type="button" class="rounded-2xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-sm text-red-100 hover:bg-red-400/15">Clear</button>
-                    <button id="exportChat" type="button" class="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-slate-300">Export</button>
-                    <label class="cursor-pointer rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-slate-300">Import<input id="importChat" type="file" accept="application/json" class="hidden"></label>
-                  </div>
-                </div>
-              </div>
-            </form>
+            <div class="barya-mobile-drawers hidden gap-3">
+              <details class="rounded-2xl border border-white/10 bg-white/[.045] p-3"><summary class="cursor-pointer text-sm font-semibold text-slate-200">Conversation library</summary><div class="mt-3 space-y-3">${renderMobileNav(navSections)}</div></details>
+              <details class="rounded-2xl border border-white/10 bg-white/[.045] p-3"><summary class="cursor-pointer text-sm font-semibold text-slate-200">Founder context</summary><div class="mt-3">${renderContextPanel()}</div></details>
+            </div>
 
-            <section class="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-              <article class="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-violet-500/14 via-slate-950/70 to-teal-400/12 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-6">
-                <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
-                  <div class="relative grid h-28 w-28 shrink-0 place-items-center rounded-[2rem] border border-teal-300/30 bg-slate-950/80 shadow-[0_0_50px_rgba(20,184,166,0.20)]">
-                    <div class="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-teal-300 shadow-[0_0_22px_rgba(45,212,191,0.85)]"></div>
-                    <div class="rounded-3xl border border-violet-300/25 bg-gradient-to-b from-slate-800 to-slate-950 px-4 py-3 text-center">
-                      <div class="mb-2 flex justify-center gap-2"><span class="h-3 w-3 rounded-full bg-teal-300 shadow-[0_0_12px_rgba(45,212,191,0.9)]"></span><span class="h-3 w-3 rounded-full bg-violet-300 shadow-[0_0_12px_rgba(196,181,253,0.9)]"></span></div>
-                      <div class="text-3xl">🤖</div>
+            <div class="barya-founder-grid grid min-h-0 flex-1 gap-4">
+              <aside class="barya-left-rail flex min-h-0 flex-col rounded-[1.6rem] border border-white/10 bg-black/25 p-3 backdrop-blur-2xl">
+                <div class="space-y-4 overflow-y-auto pr-1">
+                  ${navSections.map(section => `
+                    <section class="border-b border-white/10 pb-3 last:border-b-0">
+                      <p class="px-2 text-[11px] font-bold uppercase tracking-[.18em] text-slate-500">${escapeHTML(section.title)}</p>
+                      <div class="mt-2 space-y-1">
+                        ${section.items.map((item, index) => `<button data-quick="${escapeAttr(`Continue the ${item} conversation and recommend the next strategic move.`)}" class="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-sm text-slate-300 transition hover:bg-white/[.065] hover:text-white"><span class="truncate">${escapeHTML(item)}</span>${index === 0 ? '<span class="ml-2 h-1.5 w-1.5 rounded-full bg-violet-300 opacity-70"></span>' : ''}</button>`).join('')}
+                      </div>
+                    </section>
+                  `).join('')}
+                </div>
+                <button data-quick="Start a new strategic conversation with me. Ask the most important clarifying question first." class="mt-4 rounded-2xl border border-violet-300/30 bg-violet-400/10 px-4 py-3 text-sm font-semibold text-violet-100 transition hover:bg-violet-400/20">＋ New Conversation</button>
+              </aside>
+
+              <main class="flex min-h-0 flex-col rounded-[1.9rem] border border-white/10 bg-white/[.035] p-4 backdrop-blur-2xl sm:p-6">
+                <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col">
+                  <section class="barya-fade py-6 text-center sm:py-10 ${historyHasUserMessages ? 'sm:py-7' : 'sm:py-14'}">
+                    <div class="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-[1.4rem] border border-violet-300/25 bg-violet-400/10 shadow-[0_0_55px_rgba(168,85,247,.24)]"><span class="text-2xl">✺</span></div>
+                    <h1 class="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">${escapeHTML(greeting)}, ${escapeHTML(displayName)} 👋</h1>
+                    <p class="mt-3 text-base text-slate-400 sm:text-lg">What should we work on today?</p>
+                  </section>
+
+                  <form id="chatForm" class="barya-input-shell rounded-[1.7rem] border border-white/10 bg-black/35 p-3 backdrop-blur-2xl transition focus-within:border-cyan-300/45">
+                    <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} mb-3 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3"></div>
+                    <textarea id="chatInput" rows="4" placeholder="${escapeAttr(placeholder)}" class="min-h-[132px] w-full resize-none rounded-[1.25rem] border-0 bg-transparent px-4 py-4 text-base leading-7 text-white outline-none placeholder:text-slate-500 focus:ring-0" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-2 pt-3">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <label class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[.055] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-100"><span>⌁</span><span>Attach</span><input id="chatAttach" type="file" accept=".pdf,.txt,.csv,.docx,.png,.jpg,.jpeg,.webp" class="hidden"></label>
+                        <button id="attachLinkBtn" type="button" class="rounded-xl border border-white/10 bg-white/[.055] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-violet-300/40 hover:text-violet-100">Link</button>
+                        <button id="exportChat" type="button" class="rounded-xl border border-white/10 bg-white/[.055] px-3 py-2 text-xs font-semibold text-slate-400 transition hover:text-slate-100">Export</button>
+                        <label class="rounded-xl border border-white/10 bg-white/[.055] px-3 py-2 text-xs font-semibold text-slate-400 transition hover:text-slate-100">Import<input id="importChat" type="file" accept="application/json" class="hidden"></label>
+                      </div>
+                      <button type="submit" class="rounded-2xl bg-gradient-to-r from-violet-500 to-cyan-400 px-5 py-2.5 text-sm font-black text-white shadow-[0_18px_50px_rgba(124,58,237,.32)] transition hover:-translate-y-0.5">Think with me →</button>
                     </div>
+                  </form>
+
+                  <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    ${quickActions.map(action => `<button data-quick="${escapeAttr(action.prompt)}" class="rounded-full border border-white/10 bg-white/[.045] px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:-translate-y-0.5 hover:border-violet-300/40 hover:bg-violet-400/10 hover:text-white">${escapeHTML(action.label)}</button>`).join('')}
                   </div>
-                  <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-teal-200">AI Co-Founder Online</p>
-                    <h3 class="mt-2 text-3xl font-black text-white">Hello Founder 👋</h3>
-                    <p class="mt-2 max-w-2xl text-slate-300">How can I help you grow your business today?</p>
-                    <p class="mt-3 text-sm leading-6 text-slate-400">Barya works from your local workspace memory, chat history, uploaded file names, and business metrics. No cloud sync. No server handoff. Your strategy stays on your device.</p>
-                  </div>
+
+                  <section id="chatBox" class="mt-6 min-h-[260px] flex-1 space-y-6 overflow-y-auto pr-1"></section>
                 </div>
-              </article>
-
-              <article class="rounded-[1.75rem] border border-emerald-300/20 bg-emerald-300/[0.07] p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-200">Private Mode Badge</p>
-                <h3 class="mt-3 text-xl font-black text-white">Local-first intelligence, built for founder confidentiality.</h3>
-                <p class="mt-2 text-sm leading-6 text-emerald-50/80">Everything you type, import, and save remains inside browser localStorage on this device. Barya is designed to help you make premium strategic decisions without sending your workspace data to any server.</p>
-              </article>
-            </section>
-
-            <section class="space-y-3">
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="text-lg font-black text-white">Quick AI Actions</h3>
-                <span class="text-xs text-slate-500">Tap once to launch a context-aware founder workflow</span>
-              </div>
-              <div class="flex flex-wrap gap-2">
-                ${quickActions.map(q => `<button data-quick="${escapeAttr(q.prompt)}" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:-translate-y-0.5 hover:border-teal-300/50 hover:bg-teal-300/10 hover:text-white">${escapeHTML(q.label)}</button>`).join('')}
-              </div>
-            </section>
-
-            <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              ${insightCards.map(card => `<article class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"><div class="mb-4 h-1.5 rounded-full bg-gradient-to-r ${card.accent}"></div><p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">${escapeHTML(card.title)}</p><p class="mt-2 min-h-[2.5rem] text-2xl font-black leading-tight text-white">${escapeHTML(card.value)}</p><p class="mt-2 text-xs text-slate-500">${escapeHTML(card.note)}</p></article>`).join('')}
-            </section>
-
-            <section class="grid gap-5 xl:grid-cols-[1fr_360px]">
-              <main class="rounded-[1.75rem] border border-white/10 bg-slate-950/72 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:p-5">
-                <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 class="text-xl font-black text-white">Main Barya AI Chat Panel</h3>
-                    <p class="mt-1 text-sm text-slate-400">Clean, spacious, detailed, and context-aware founder conversations.</p>
-                  </div>
-                  <span class="rounded-full border border-teal-300/25 bg-teal-300/10 px-3 py-1 text-xs font-semibold text-teal-100">Smart long-form mode</span>
-                </div>
-                <div id="chatBox" class="min-h-[360px] max-h-[62vh] space-y-5 overflow-auto pr-1 scrollbar-thin"></div>
               </main>
 
-              <aside class="space-y-5">
-                <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-5">
-                  <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Prompt Suggestions</p>
-                  <div class="mt-3 space-y-2">
-                    ${state.ai.promptSuggestions.map((s, i) => `<button data-suggestion="${i}" class="w-full rounded-2xl border border-white/10 bg-slate-950/55 p-3 text-left text-sm leading-5 text-slate-300 transition hover:border-teal-300/50 hover:bg-teal-300/10 hover:text-white">${escapeHTML(s)}</button>`).join('')}
-                  </div>
-                </section>
-
-                <section class="rounded-[1.75rem] border border-violet-300/20 bg-violet-400/[0.08] p-5">
-                  <p class="text-xs font-bold uppercase tracking-[0.2em] text-violet-200">AI Recommendations</p>
-                  <div class="mt-3 space-y-3">
-                    ${recommendations.map((rec, i) => `<div class="rounded-2xl border border-white/10 bg-slate-950/50 p-3"><span class="rounded-full border ${i === 0 ? 'border-red-300/30 bg-red-300/10 text-red-100' : i === 1 ? 'border-amber-300/30 bg-amber-300/10 text-amber-100' : 'border-teal-300/30 bg-teal-300/10 text-teal-100'} px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide">${priorityLabels[i]}</span><p class="mt-2 text-sm leading-6 text-slate-300">${escapeHTML(rec)}</p></div>`).join('')}
-                  </div>
-                </section>
+              <aside class="barya-right-context min-h-0 overflow-y-auto rounded-[1.6rem] border border-white/10 bg-black/25 p-4 backdrop-blur-2xl">
+                ${renderContextPanel()}
               </aside>
-            </section>
-
-            <section class="grid gap-5 xl:grid-cols-2">
-              <article class="rounded-[1.75rem] border border-teal-300/20 bg-teal-300/[0.07] p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-teal-200">AI Generated Action Plan</p>
-                <ol class="mt-4 space-y-3">
-                  ${actionSteps.map((step, i) => `<li class="flex gap-3 rounded-2xl border border-white/10 bg-slate-950/45 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-teal-300 to-violet-400 text-sm font-black text-slate-950">${i + 1}</span><span class="text-sm leading-6 text-slate-300">${escapeHTML(step)}</span></li>`).join('')}
-                </ol>
-              </article>
-
-              <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Ask Barya to Create</p>
-                <div class="mt-4 grid gap-2 sm:grid-cols-2">
-                  ${createActions.map(action => `<button data-quick="${escapeAttr(action.prompt)}" class="rounded-2xl border border-white/10 bg-slate-950/50 px-4 py-3 text-left text-sm font-bold text-slate-200 transition hover:border-violet-300/50 hover:bg-violet-400/10 hover:text-white">✨ ${escapeHTML(action.label)}</button>`).join('')}
-                </div>
-              </article>
-            </section>
-
-            <section class="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-              <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">AI Activity Feed</p>
-                <div class="mt-4 space-y-3">
-                  ${(activityItems.length ? activityItems : [{ type: 'AI Ready', text: 'Barya is waiting for your next founder decision.', time: 'Now' }]).map(item => `<div class="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-950/45 p-3"><span class="mt-1 h-2.5 w-2.5 rounded-full bg-teal-300 shadow-[0_0_14px_rgba(45,212,191,0.8)]"></span><div class="min-w-0 flex-1"><p class="text-sm font-bold text-white">${escapeHTML(item.type)}</p><p class="text-xs leading-5 text-slate-400">${escapeHTML(item.text)}</p></div><time class="text-xs text-slate-500">${escapeHTML(item.time)}</time></div>`).join('')}
-                </div>
-              </article>
-
-              <article class="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-300/[0.07] p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">Memory Snapshot Section</p>
-                <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                  ${memorySnapshot.map(item => `<div class="rounded-2xl border border-white/10 bg-slate-950/45 p-3"><p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">${escapeHTML(item.label)}</p><p class="mt-1 text-sm font-semibold leading-5 text-slate-200">${escapeHTML(item.value)}</p></div>`).join('')}
-                </div>
-              </article>
-            </section>
+            </div>
           </div>
         </div>
       `;
 
+      function renderMobileNav(sections) {
+        return sections.map(section => `<div><p class="text-[11px] font-bold uppercase tracking-[.16em] text-slate-500">${escapeHTML(section.title)}</p><div class="mt-2 flex flex-wrap gap-2">${section.items.slice(0, 3).map(item => `<button data-quick="${escapeAttr(`Continue the ${item} conversation.`)}" class="rounded-full border border-white/10 px-3 py-1.5 text-xs text-slate-300">${escapeHTML(item)}</button>`).join('')}</div></div>`).join('');
+      }
+
+      function renderContextPanel() {
+        const memoryRows = memoryEntries.length ? memoryEntries.map(item => ({ label: item.type || 'Memory', value: item.title || item.description || 'Saved founder context' })) : [
+          { label: 'Founder goals', value: currentGoal },
+          { label: 'Challenges', value: activePriority },
+          { label: 'Preferences', value: personalization.styleLabel || 'Strategic, clear, calm' },
+          { label: 'Recent decisions', value: 'Keep execution focused and evidence-led' }
+        ];
+        return `
+          <div class="space-y-4">
+            <section class="rounded-2xl border border-white/10 bg-white/[.045] p-4">
+              <p class="text-[11px] font-bold uppercase tracking-[.18em] text-violet-200">Current Focus</p>
+              <div class="mt-3 space-y-3 text-sm">
+                <div><p class="text-slate-500">Goal</p><p class="mt-1 font-semibold leading-5 text-slate-100">${escapeHTML(currentGoal)}</p></div>
+                <div><p class="text-slate-500">Active priority</p><p class="mt-1 font-semibold leading-5 text-slate-100">${escapeHTML(activePriority)}</p></div>
+                <div><p class="text-slate-500">Current sprint</p><p class="mt-1 font-semibold leading-5 text-slate-100">${escapeHTML(currentSprint)}</p></div>
+              </div>
+            </section>
+            <section class="rounded-2xl border border-white/10 bg-white/[.045] p-4">
+              <p class="text-[11px] font-bold uppercase tracking-[.18em] text-cyan-200">AI Memory Context</p>
+              <div class="mt-3 space-y-2">${memoryRows.slice(0, 4).map(item => `<div class="rounded-xl border border-white/10 bg-black/25 p-3"><p class="text-[11px] font-bold uppercase tracking-[.14em] text-slate-500">${escapeHTML(item.label)}</p><p class="mt-1 text-sm leading-5 text-slate-300">${escapeHTML(item.value)}</p></div>`).join('')}</div>
+            </section>
+            <section class="rounded-2xl border border-white/10 bg-white/[.045] p-4">
+              <p class="text-[11px] font-bold uppercase tracking-[.18em] text-violet-200">Suggested Next Steps</p>
+              <div class="mt-3 space-y-2">${recommendations.map(item => `<button data-quick="${escapeAttr(item)}" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-left text-sm text-slate-300 transition hover:border-violet-300/40 hover:text-white">${escapeHTML(item)}</button>`).join('')}</div>
+            </section>
+            <section class="rounded-2xl border border-white/10 bg-white/[.045] p-4">
+              <p class="text-[11px] font-bold uppercase tracking-[.18em] text-cyan-200">Workspace Signals</p>
+              <div class="mt-3 grid gap-2">${workspaceSignals.map(item => `<div class="flex items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2 text-sm"><span class="text-slate-500">${escapeHTML(item.label)}</span><strong class="max-w-[58%] truncate text-right text-slate-100">${escapeHTML(item.value)}</strong></div>`).join('')}</div>
+            </section>
+          </div>
+        `;
+      }
+
       function appendMessage(item) {
         const box = document.getElementById('chatBox');
         const wrap = document.createElement('div');
+        wrap.className = 'barya-fade';
         if (item.role === 'user') {
           wrap.innerHTML = `
-            <div class="ml-auto max-w-3xl rounded-[1.5rem] border border-teal-300/25 bg-gradient-to-r from-teal-500/80 to-violet-500/80 px-5 py-4 text-white shadow-[0_16px_36px_rgba(20,184,166,0.18)]">
-              <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white/75">You</p>
-              <p class="whitespace-pre-wrap leading-7">${escapeHTML(item.message || '')}</p>
-              ${item.attachment ? `<p class="mt-3 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs text-white/85">Attachment: ${escapeHTML(item.attachment.name || item.attachment.value || '')}</p>` : ''}
+            <div class="ml-auto max-w-2xl rounded-[1.35rem] border border-violet-300/25 bg-gradient-to-br from-slate-900/95 to-violet-950/70 px-5 py-4 text-white shadow-[0_18px_48px_rgba(15,23,42,.35)]">
+              <p class="mb-2 text-[11px] font-bold uppercase tracking-[.18em] text-violet-200">You</p>
+              <p class="whitespace-pre-wrap text-sm leading-7 text-slate-100">${escapeHTML(item.message || '')}</p>
+              ${item.attachment ? `<p class="mt-3 rounded-xl border border-white/10 bg-white/[.06] px-3 py-2 text-xs text-slate-300">Attachment: ${escapeHTML(item.attachment.name || item.attachment.value || '')}</p>` : ''}
             </div>
           `;
         } else {
           const structured = item.structured || aiStructuredResponse(item.message || '');
+          const answerParts = String(structured.answer || item.message || '').split(/(?<=\.)\s+/).filter(Boolean).slice(0, 3);
           wrap.innerHTML = `
-            <div class="max-w-5xl rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.20)]">
-              <div class="mb-4 flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-2xl bg-teal-300/15 text-lg">🤖</span><div><p class="text-sm font-black text-white">Barya AI Co-Founder</p><p class="text-xs text-slate-500">Premium founder response</p></div></div>
-              <div class="space-y-4 text-sm leading-7 text-slate-300">
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Direct Answer</p><p class="mt-1">${escapeHTML(structured.answer)}</p></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Why This Matters</p><p class="mt-1">${escapeHTML(structured.why)}</p></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Recommended Next Move</p><ol class="mt-2 list-decimal space-y-1 pl-5">${(structured.steps || []).slice(0, 2).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol><p class="mt-2">${escapeHTML(structured.next)}</p></section>
-                ${(structured.steps || []).length > 2 || structured.tip ? `<section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Optional Deep Dive</p><ul class="mt-2 list-disc space-y-1 pl-5">${(structured.steps || []).slice(2).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul>${structured.tip ? `<p class="mt-2">${escapeHTML(structured.tip)}</p>` : ''}</section>` : ''}
-                ${item.note ? `<p class="rounded-2xl border border-teal-300/25 bg-teal-300/10 px-3 py-2 text-xs text-teal-100">${escapeHTML(item.note)}</p>` : ''}
-                <button type="button" data-save-ai-memory="${escapeAttr(item.ts || '')}" class="rounded-2xl border border-violet-300/30 bg-violet-400/10 px-3 py-2 text-xs font-bold text-violet-100 hover:bg-violet-400/20">Save this output to Memory</button>
+            <div class="max-w-3xl">
+              <div class="flex items-start gap-3">
+                <span class="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-lg shadow-[0_0_28px_rgba(34,211,238,.12)]">✦</span>
+                <div class="min-w-0 flex-1 rounded-[1.35rem] border border-white/10 bg-white/[.055] p-5 shadow-[0_18px_52px_rgba(0,0,0,.24)]">
+                  <div class="mb-4"><p class="text-sm font-semibold text-white">Barya AI Co-Founder</p><p class="text-xs text-slate-500">Calm strategic response</p></div>
+                  <div class="space-y-5 text-sm leading-7 text-slate-300">
+                    <section class="space-y-2">${answerParts.map(part => `<p>${escapeHTML(part)}</p>`).join('')}</section>
+                    ${structured.why ? `<section><p class="text-[11px] font-bold uppercase tracking-[.18em] text-violet-200">Why this matters</p><p class="mt-1">${escapeHTML(structured.why)}</p></section>` : ''}
+                    ${(structured.steps || []).length ? `<section><p class="text-[11px] font-bold uppercase tracking-[.18em] text-cyan-200">Next moves</p><ul class="mt-2 space-y-2">${(structured.steps || []).slice(0, 4).map(step => `<li class="flex gap-2"><span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300"></span><span>${escapeHTML(step)}</span></li>`).join('')}</ul></section>` : ''}
+                    ${structured.next ? `<section class="rounded-2xl border border-violet-300/15 bg-violet-400/10 px-4 py-3"><p class="text-[11px] font-bold uppercase tracking-[.18em] text-violet-200">Suggested prompt</p><p class="mt-1">${escapeHTML(structured.next)}</p></section>` : ''}
+                    ${item.note ? `<p class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs text-cyan-100">${escapeHTML(item.note)}</p>` : ''}
+                  </div>
+                  <div class="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4">
+                    <button type="button" data-save-ai-memory="${escapeAttr(item.ts || '')}" title="Save to Memory" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-violet-300/40 hover:text-white">♡ Memory</button>
+                    <button type="button" data-tool-prompt="Add this recommendation to my workspace as a concise operating note." title="Add to Workspace" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-white">⌘ Workspace</button>
+                    <button type="button" data-tool-prompt="Create tasks from this recommendation with owners, priority, and due dates." title="Create Task" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-white">✓ Task</button>
+                    <button type="button" data-tool-prompt="Generate a concrete plan from this answer with milestones and checkpoints." title="Generate Plan" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-violet-300/40 hover:text-white">↗ Plan</button>
+                    <button type="button" data-tool-prompt="Summarize this answer into an export-ready founder memo." title="Export" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-white/30 hover:text-white">⇩ Export</button>
+                    <button type="button" data-tool-prompt="Continue thinking. Go one level deeper and identify the highest-risk assumption." title="Continue Thinking" class="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition hover:border-violet-300/40 hover:text-white">… Think</button>
+                  </div>
+                </div>
               </div>
             </div>
           `;
@@ -5648,6 +5647,7 @@
           });
         };
       });
+
       const attachmentPreview = document.getElementById('attachmentPreview');
       const renderAttachmentPreview = () => {
         const current = state.ai.composer.attachment;
@@ -5659,8 +5659,8 @@
         attachmentPreview.classList.remove('hidden');
         attachmentPreview.innerHTML = `
           <div class="flex items-center justify-between gap-3">
-            <p class="text-sm text-teal-100"><strong>${current.kind === 'link' ? 'Link' : 'File'}:</strong> ${escapeHTML(current.name || current.value || '')}</p>
-            <button id="removeAttachment" type="button" class="rounded-xl border border-teal-300/30 bg-teal-300/10 px-3 py-1.5 text-xs font-semibold text-teal-100 hover:bg-teal-300/15">Remove</button>
+            <p class="truncate text-sm text-cyan-100"><strong>${current.kind === 'link' ? 'Link' : 'File'}:</strong> ${escapeHTML(current.name || current.value || '')}</p>
+            <button id="removeAttachment" type="button" class="rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-300/15">Remove</button>
           </div>
         `;
         document.getElementById('removeAttachment').onclick = () => {
@@ -5671,7 +5671,7 @@
       renderAttachmentPreview();
 
       function sendQuestion(question) {
-        const q = question.trim();
+        const q = String(question || '').trim();
         const attachment = state.ai.composer.attachment ? { ...state.ai.composer.attachment } : null;
         if (!q && !attachment) return;
         const nowISO = new Date().toISOString();
@@ -5680,11 +5680,12 @@
         const chatBox = document.getElementById('chatBox');
         appendMessage(userMsg);
         const typing = document.createElement('div');
-        typing.innerHTML = `<div class="max-w-fit rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-slate-300 shadow-sm"><span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 animate-pulse rounded-full bg-teal-300"></span><span class="h-2 w-2 animate-pulse rounded-full bg-violet-300 [animation-delay:120ms]"></span><span class="h-2 w-2 animate-pulse rounded-full bg-cyan-300 [animation-delay:220ms]"></span></span><span class="ml-2">Barya AI is thinking${state.ai.composer.deepThinking ? ' step-by-step' : ''} in private local mode...</span></div>`;
+        typing.className = 'barya-fade';
+        typing.innerHTML = `<div class="max-w-fit rounded-2xl border border-white/10 bg-white/[.055] px-4 py-3 text-sm text-slate-300 shadow-sm"><span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 animate-pulse rounded-full bg-cyan-300"></span><span class="h-2 w-2 animate-pulse rounded-full bg-violet-300 [animation-delay:120ms]"></span><span class="h-2 w-2 animate-pulse rounded-full bg-emerald-300 [animation-delay:220ms]"></span></span><span class="ml-2">Barya is thinking quietly with your founder context...</span></div>`;
         chatBox.appendChild(typing);
         chatBox.scrollTop = chatBox.scrollHeight;
         const structured = attachment ? aiAttachmentStructuredResponse(q, attachment) : aiStructuredResponse(q);
-        const note = attachment ? 'Analyzing uploaded document locally...' : '';
+        const note = attachment ? 'Analyzing uploaded context locally.' : '';
         const aiMsg = { role: 'assistant', message: structured.answer, structured, note, ts: nowISO };
         registerMentionsFromText(`${structured.answer} ${(structured.steps || []).join(' ')}`, 'ai-assistant');
         setTimeout(() => {
@@ -5724,7 +5725,8 @@
         renderAttachmentPreview();
       };
       document.getElementById('deepThinkingToggle').onclick = () => {
-        state.ai.composer.deepThinking = !state.ai.composer.deepThinking;
+        state.ai.composer.memoryEnabled = state.ai.composer.memoryEnabled === false;
+        state.ai.composer.deepThinking = state.ai.composer.memoryEnabled !== false;
         saveStateRaw();
         renderAI();
       };
@@ -5735,16 +5737,17 @@
         if (ref) showRelated(ref);
       };
       document.getElementById('clearChat').onclick = () => {
-        if (!confirm('Clear entire Barya AI chat history? This action cannot be undone.')) return;
+        if (!confirm('Start a new Barya AI conversation? Your saved memory stays in the workspace.')) return;
         state.ai.history = [];
-        state.ai.composer = { text: '', attachment: null };
+        state.ai.composer = { text: '', attachment: null, memoryEnabled: true };
         ensureAIState();
         saveStateRaw();
         renderAI();
       };
       el.querySelectorAll('[data-quick]').forEach(btn => btn.onclick = () => sendQuestion(btn.dataset.quick));
       el.querySelectorAll('[data-suggestion]').forEach(btn => btn.onclick = () => sendQuestion(state.ai.promptSuggestions[Number(btn.dataset.suggestion)] || ''));
-      document.getElementById('exportChat').onclick = () => downloadJSON('chat-history.json', state.ai.history);
+      el.querySelectorAll('[data-tool-prompt]').forEach(btn => btn.onclick = () => sendQuestion(btn.dataset.toolPrompt || 'Continue thinking.'));
+      document.getElementById('exportChat').onclick = () => downloadJSON('barya-ai-founder-conversation.json', state.ai.history);
       document.getElementById('importChat').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
         if (!Array.isArray(data)) return;
         state.ai.history = data
