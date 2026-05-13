@@ -1405,6 +1405,7 @@
       flex-direction: column;
     }
 
+    #section-ai > .barya-founder-os,
     #section-ai > .barya-ai-premium,
     #section-memory > section,
     #section-planning > section,
@@ -1520,7 +1521,7 @@
         <section id="section-workspace" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-tasks" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-resources" class="section-panel flex-1 min-h-0 w-full"></section>
-        <section id="section-ai" class="section-panel flex-1 min-h-0 w-full"></section>
+        <section id="section-ai" class="section-panel flex-1 min-h-0 w-full overflow-y-auto"></section>
         <section id="section-memory" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-planning" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-settings" class="section-panel flex-1 min-h-0 w-full"></section>
@@ -5465,7 +5466,7 @@
           @media (max-width: 1180px) { #section-ai .barya-founder-grid { grid-template-columns: minmax(190px,.65fr) minmax(0,1.6fr); } #section-ai .barya-right-context { display: none; } }
           @media (max-width: 900px) { #section-ai .barya-founder-grid { grid-template-columns: 1fr; } #section-ai .barya-left-rail { display: none; } #section-ai .barya-mobile-drawers { display: grid !important; } }
         </style>
-        <div class="barya-founder-os relative min-h-[calc(100vh-7rem)] overflow-hidden rounded-[2rem] border border-white/10 p-3 shadow-[0_40px_140px_rgba(0,0,0,.58)] sm:p-4 lg:p-5">
+        <div class="barya-founder-os relative min-h-screen overflow-x-hidden overflow-y-auto rounded-[2rem] border border-white/10 p-3 shadow-[0_40px_140px_rgba(0,0,0,.58)] sm:p-4 lg:p-5">
           <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(124,58,237,.32),transparent_32%),radial-gradient(circle_at_74%_0%,rgba(20,184,166,.18),transparent_28%),linear-gradient(135deg,#03040b_0%,#060716_42%,#0f0a22_100%)]"></div>
           <div class="barya-orb pointer-events-none absolute -left-32 top-24 h-96 w-96 rounded-full bg-violet-500/15 blur-3xl"></div>
           <div class="barya-orb pointer-events-none absolute -right-28 bottom-20 h-80 w-80 rounded-full bg-cyan-300/10 blur-3xl [animation-delay:900ms]"></div>
@@ -5497,8 +5498,8 @@
             </div>
 
             <div class="barya-founder-grid grid min-h-0 flex-1 gap-4">
-              <aside class="barya-left-rail flex min-h-0 flex-col rounded-[1.6rem] border border-white/10 bg-black/25 p-3 backdrop-blur-2xl">
-                <div class="space-y-4 overflow-y-auto pr-1">
+              <aside class="barya-left-rail flex h-screen min-h-0 flex-col overflow-y-auto rounded-[1.6rem] border border-white/10 bg-black/25 p-3 backdrop-blur-2xl">
+                <div class="space-y-4 pr-1">
                   ${navSections.map(section => `
                     <section class="border-b border-white/10 pb-3 last:border-b-0">
                       <p class="px-2 text-[11px] font-bold uppercase tracking-[.18em] text-slate-500">${escapeHTML(section.title)}</p>
@@ -5511,15 +5512,21 @@
                 <button data-quick="Start a new strategic conversation with me. Ask the most important clarifying question first." class="mt-4 rounded-2xl border border-violet-300/30 bg-violet-400/10 px-4 py-3 text-sm font-semibold text-violet-100 transition hover:bg-violet-400/20">＋ New Conversation</button>
               </aside>
 
-              <main class="flex min-h-0 flex-col rounded-[1.9rem] border border-white/10 bg-white/[.035] p-4 backdrop-blur-2xl sm:p-6">
-                <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col">
+              <main class="flex min-h-0 flex-col overflow-y-auto rounded-[1.9rem] border border-white/10 bg-white/[.035] p-4 backdrop-blur-2xl sm:p-6">
+                <div class="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
                   <section class="barya-fade py-6 text-center sm:py-10 ${historyHasUserMessages ? 'sm:py-7' : 'sm:py-14'}">
                     <div class="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-[1.4rem] border border-violet-300/25 bg-violet-400/10 shadow-[0_0_55px_rgba(168,85,247,.24)]"><span class="text-2xl">✺</span></div>
                     <h1 class="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">${escapeHTML(greeting)}, ${escapeHTML(displayName)} 👋</h1>
                     <p class="mt-3 text-base text-slate-400 sm:text-lg">What should we work on today?</p>
                   </section>
 
-                  <form id="chatForm" class="barya-input-shell rounded-[1.7rem] border border-white/10 bg-black/35 p-3 backdrop-blur-2xl transition focus-within:border-cyan-300/45">
+                  <section id="chatBox" class="mt-6 min-h-[260px] flex-1 space-y-6 overflow-y-auto scroll-smooth pb-32 pr-1"></section>
+
+                  <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    ${quickActions.map(action => `<button data-quick="${escapeAttr(action.prompt)}" class="rounded-full border border-white/10 bg-white/[.045] px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:-translate-y-0.5 hover:border-violet-300/40 hover:bg-violet-400/10 hover:text-white">${escapeHTML(action.label)}</button>`).join('')}
+                  </div>
+
+                  <form id="chatForm" class="barya-input-shell sticky bottom-0 z-20 mt-4 rounded-[1.7rem] border border-white/10 bg-black/35 p-3 backdrop-blur-2xl transition focus-within:border-cyan-300/45">
                     <div id="attachmentPreview" class="${state.ai.composer.attachment ? '' : 'hidden'} mb-3 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3"></div>
                     <textarea id="chatInput" rows="4" placeholder="${escapeAttr(placeholder)}" class="min-h-[132px] w-full resize-none rounded-[1.25rem] border-0 bg-transparent px-4 py-4 text-base leading-7 text-white outline-none placeholder:text-slate-500 focus:ring-0" spellcheck="false">${escapeHTML(state.ai.composer.text || '')}</textarea>
                     <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-2 pt-3">
@@ -5532,16 +5539,10 @@
                       <button type="submit" class="rounded-2xl bg-gradient-to-r from-violet-500 to-cyan-400 px-5 py-2.5 text-sm font-black text-white shadow-[0_18px_50px_rgba(124,58,237,.32)] transition hover:-translate-y-0.5">Think with me →</button>
                     </div>
                   </form>
-
-                  <div class="mt-4 flex flex-wrap justify-center gap-2">
-                    ${quickActions.map(action => `<button data-quick="${escapeAttr(action.prompt)}" class="rounded-full border border-white/10 bg-white/[.045] px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:-translate-y-0.5 hover:border-violet-300/40 hover:bg-violet-400/10 hover:text-white">${escapeHTML(action.label)}</button>`).join('')}
-                  </div>
-
-                  <section id="chatBox" class="mt-6 min-h-[260px] flex-1 space-y-6 overflow-y-auto pr-1"></section>
                 </div>
               </main>
 
-              <aside class="barya-right-context min-h-0 overflow-y-auto rounded-[1.6rem] border border-white/10 bg-black/25 p-4 backdrop-blur-2xl">
+              <aside class="barya-right-context h-screen min-h-0 overflow-y-auto rounded-[1.6rem] border border-white/10 bg-black/25 p-4 backdrop-blur-2xl">
                 ${renderContextPanel()}
               </aside>
             </div>
