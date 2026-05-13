@@ -2817,7 +2817,7 @@
     function focusSectionSearch() {
       const searchBySection = {
         dashboard: ['txCategory'],
-        workspace: ['workspacePageTitle'],
+        workspace: ['workspaceOsSearch'],
         tasks: ['taskSearch'],
         resources: ['resourcesSearch'],
         ai: ['chatInput'],
@@ -4375,6 +4375,64 @@
       if (!state.workspace.activePageId && state.workspace.pages[0]) state.workspace.activePageId = state.workspace.pages[0].id;
       if (!Array.isArray(state.workspace.databases)) state.workspace.databases = [];
       if (!state.workspace.activeDatabaseId && state.workspace.databases[0]) state.workspace.activeDatabaseId = state.workspace.databases[0].id;
+
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || state.settings?.business || {};
+      const now = new Date().toISOString();
+      const businessName = profile.businessName || profile.name || state.settings?.business?.name || state.title || 'your company';
+      const businessTypeText = `${profile.businessType || ''} ${profile.industry || ''} ${businessName}`.toLowerCase();
+      const isSaas = businessTypeText.includes('saas') || businessTypeText.includes('software') || businessTypeText.includes('app');
+      const projectBlueprints = isSaas
+        ? ['MVP Launch', 'Onboarding Flow', 'Pricing Strategy', 'User Research']
+        : [`${businessName} Launch Plan`, 'Customer Discovery', 'Revenue System', 'Brand & Growth Sprint'];
+      if (!state.workspace.workspaceOsSeeded) {
+        const existingTitles = new Set(state.workspace.pages.map(page => page.title.toLowerCase()));
+        projectBlueprints.forEach((title, index) => {
+          if (existingTitles.has(title.toLowerCase())) return;
+          state.workspace.pages.push({
+            id: crypto.randomUUID(),
+            title,
+            objectType: 'Project',
+            updatedAt: now,
+            meta: {
+              status: ['Planning', 'Active', 'Review', 'Active'][index] || 'Planning',
+              progress: [18, 46, 62, 30][index] || 15,
+              dueDate: new Date(Date.now() + (index + 2) * 7 * 86400000).toISOString().slice(0, 10),
+              owner: profile.founderName || state.settings?.founder?.name || 'Founder',
+              priority: ['High', 'High', 'Medium', 'Medium'][index] || 'Medium',
+              linkedTasks: Math.max(2, index + 2),
+              linkedFiles: index + 1
+            },
+            relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, []])),
+            blocks: [
+              { id: crypto.randomUUID(), type: 'heading', level: 1, text: title },
+              { id: crypto.randomUUID(), type: 'text', text: `Execution workspace for ${businessName}: ${profile.mainGoal || 'turn strategy into traction'}.` },
+              { id: crypto.randomUUID(), type: 'todo', text: 'Define success metric and first owner', checked: false }
+            ]
+          });
+        });
+        state.workspace.documents = state.workspace.documents || [
+          { id: crypto.randomUUID(), title: `${businessName} Business Plan`, category: 'Business Plans', lastEdited: now, summary: `AI summary of positioning, model, customer, and current goal: ${profile.mainGoal || 'growth'}.`, folder: 'Strategy' },
+          { id: crypto.randomUUID(), title: 'Product Strategy Memo', category: 'Strategy Docs', lastEdited: now, summary: 'Clarifies roadmap bets, target customer, and weekly decision rules.', folder: 'Product' },
+          { id: crypto.randomUUID(), title: 'Investor Update Draft', category: 'Investor Notes', lastEdited: now, summary: 'Monthly narrative with wins, metrics, asks, and risks.', folder: 'Fundraising' }
+        ];
+        state.workspace.notes = state.workspace.notes || [
+          { id: crypto.randomUUID(), title: 'Business Ideas', preview: `Potential moves for ${businessName}, prioritized by speed to evidence.`, timestamp: now, tags: ['Ideas', 'Founder'], pinned: true },
+          { id: crypto.randomUUID(), title: 'Roadmap Thoughts', preview: 'What must ship next, what can wait, and what needs customer proof.', timestamp: now, tags: ['Roadmap', 'Product'], pinned: true },
+          { id: crypto.randomUUID(), title: 'Growth Experiments', preview: 'Low-cost experiments to test messaging, channels, and conversion.', timestamp: now, tags: ['Growth', 'Experiments'], pinned: false }
+        ];
+        state.workspace.files = state.workspace.files || [
+          { id: crypto.randomUUID(), name: 'Founder Operating Plan.pdf', size: '1.8 MB', uploadDate: now, category: 'PDFs', section: 'Recent Files', summary: 'AI-ready execution plan and weekly operating cadence.' },
+          { id: crypto.randomUUID(), name: 'KPI Forecast.csv', size: '420 KB', uploadDate: now, category: 'CSVs', section: 'AI Generated Files', summary: 'Starter revenue, user, conversion, burn, and runway forecast.' },
+          { id: crypto.randomUUID(), name: 'Pitch Narrative.docx', size: '760 KB', uploadDate: now, category: 'Docs', section: 'Shared Files', summary: 'Draft story for customer, investor, and team communication.' }
+        ];
+        state.workspace.dataMetrics = state.workspace.dataMetrics || { revenue: 12500, activeUsers: 840, weeklyGrowth: 12.4, conversionRate: 6.8, monthlyBurn: 7200, runway: 8.5 };
+        state.workspace.workspaceOsSeeded = true;
+      }
+      if (!Array.isArray(state.workspace.documents)) state.workspace.documents = [];
+      if (!Array.isArray(state.workspace.notes)) state.workspace.notes = [];
+      if (!Array.isArray(state.workspace.files)) state.workspace.files = [];
+      if (!state.workspace.dataMetrics || typeof state.workspace.dataMetrics !== 'object') state.workspace.dataMetrics = { revenue: 0, activeUsers: 0, weeklyGrowth: 0, conversionRate: 0, monthlyBurn: 0, runway: 0 };
+      if (!state.workspace.ui || typeof state.workspace.ui !== 'object') state.workspace.ui = { tab: 'overview', search: '', projectView: 'cards', notesView: 'grid', noteTag: 'All' };
     }
 
     function getActiveWorkspacePage() {
@@ -4469,250 +4527,120 @@
     function renderWorkspace() {
       ensureWorkspaceState();
       const el = document.getElementById('section-workspace');
-      const activePage = getActiveWorkspacePage();
-      const connections = computeWorkspaceConnections();
-      const pageMap = workspacePageMap();
-      const backlinks = activePage ? (connections.backlinks.get(activePage.id) || []) : [];
-      const relatedObjects = activePage ? (connections.related.get(activePage.id) || []) : [];
-
-      const workspacePages = state.workspace.pages || [];
-      const taskItems = state.tasks?.items || [];
-      const activeProjectsCount = Math.max(1, workspacePages.filter(page => page.objectType === 'Project').length || Math.ceil(workspacePages.length / 3));
-      const inProgressTasksCount = taskItems.filter(task => task.status === 'In Progress').length;
-      const completedTasksCount = taskItems.filter(task => task.status === 'Done').length;
-      const documentsCount = Math.max(1, workspacePages.filter(page => ['Document', 'Page', 'Note'].includes(page.objectType)).length);
-      const membersCount = Math.max(3, Math.min(12, activeProjectsCount + 3));
-      const totalTasksCount = Math.max(1, taskItems.length);
-      const openTasksCount = taskItems.filter(task => task.status !== 'Done').length;
-      const projectsForTable = (workspacePages.filter(page => page.objectType === 'Project').length ? workspacePages.filter(page => page.objectType === 'Project') : workspacePages.slice(0, 4)).slice(0, 5);
-      const fallbackProjects = projectsForTable.length ? projectsForTable : [
-        { id: 'demo-launch', title: 'Founder Launch System', objectType: 'Project', updatedAt: new Date().toISOString() },
-        { id: 'demo-data', title: 'Customer Data Room', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 7).toISOString() },
-        { id: 'demo-growth', title: 'Growth Experiments', objectType: 'Project', updatedAt: new Date(Date.now() + 86400000 * 14).toISOString() }
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || state.settings?.business || {};
+      const founderName = profile.founderName || state.settings?.founder?.name || 'Founder';
+      const businessName = profile.businessName || state.settings?.business?.name || state.title || 'your company';
+      const mainGoal = profile.mainGoal || state.settings?.business?.mainGoal || 'build a focused, revenue-ready business';
+      const stage = profile.businessStage || state.settings?.business?.stage || 'Founder OS';
+      const ws = state.workspace;
+      const ui = ws.ui || (ws.ui = { tab: 'overview', search: '', projectView: 'cards', notesView: 'grid', noteTag: 'All' });
+      const q = String(ui.search || '').trim().toLowerCase();
+      const projectPages = (ws.pages || []).filter(page => page.objectType === 'Project');
+      const documents = ws.documents || [];
+      const notes = ws.notes || [];
+      const files = ws.files || [];
+      const metrics = ws.dataMetrics || {};
+      const tasks = state.tasks?.items || [];
+      const allSearchItems = [
+        ...projectPages.map(item => ({ type: 'Project', title: item.title, body: `${item.meta?.status || ''} ${item.meta?.priority || ''}`, id: item.id })),
+        ...documents.map(item => ({ type: 'Document', title: item.title, body: `${item.category} ${item.summary}`, id: item.id })),
+        ...notes.map(item => ({ type: 'Note', title: item.title, body: `${item.preview} ${(item.tags || []).join(' ')}`, id: item.id })),
+        ...files.map(item => ({ type: 'File', title: item.name, body: `${item.category} ${item.summary}`, id: item.id })),
+        ...Object.entries(metrics).map(([key, value]) => ({ type: 'Data', title: key.replace(/([A-Z])/g, ' $1'), body: String(value), id: key }))
       ];
-      const statCards = [
-        ['Active Projects', activeProjectsCount, '+12%', 'from last month', 'from-violet-500 to-fuchsia-500'],
-        ['Tasks In Progress', inProgressTasksCount || Math.ceil(totalTasksCount * 0.42), '+8%', 'moving this week', 'from-cyan-400 to-teal-400'],
-        ['Completed Tasks', completedTasksCount, '+24%', 'execution velocity', 'from-emerald-400 to-cyan-400'],
-        ['Documents', documentsCount, '+5', 'knowledge assets', 'from-blue-400 to-violet-500'],
-        ['Workspace Members', membersCount, '+2', 'active collaborators', 'from-pink-400 to-orange-400']
+      const matches = (items, fields) => !q ? items : items.filter(item => fields.some(field => String(item[field] || '').toLowerCase().includes(q)));
+      const filteredProjects = matches(projectPages, ['title', 'objectType']);
+      const filteredDocs = matches(documents, ['title', 'category', 'summary']);
+      const filteredNotes = matches(notes, ['title', 'preview']);
+      const filteredFiles = matches(files, ['name', 'category', 'summary']);
+      const instantResults = q ? allSearchItems.filter(item => `${item.type} ${item.title} ${item.body}`.toLowerCase().includes(q)).slice(0, 6) : [];
+      const activeTab = ['overview','projects','documents','data','notes','files'].includes(ui.tab) ? ui.tab : 'overview';
+      ui.tab = activeTab;
+      const moneyValue = (value) => `${state.settings?.preferences?.currency || 'USD'} ${Number(value || 0).toLocaleString()}`;
+      const pct = (value) => `${Number(value || 0).toFixed(Number(value || 0) % 1 ? 1 : 0)}%`;
+      const panel = 'rounded-[1.6rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-xl';
+      const chip = 'rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-bold text-slate-200';
+      const empty = (icon, title, text, action) => `<div class="${panel} border-dashed text-center"><div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-500/15 text-2xl">${icon}</div><h3 class="mt-4 text-lg font-black text-white">${escapeHTML(title)}</h3><p class="mx-auto mt-2 max-w-md text-sm text-slate-400">${escapeHTML(text)}</p><button data-workspace-action="${action}" class="mt-4 rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2.5 text-sm font-black text-white">Start here</button></div>`;
+      const statusClass = (status) => ({ Planning: 'border-sky-300/30 bg-sky-400/10 text-sky-100', Active: 'border-teal-300/30 bg-teal-400/10 text-teal-100', Review: 'border-amber-300/30 bg-amber-400/10 text-amber-100', Completed: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100' })[status] || 'border-white/10 bg-white/[0.06] text-slate-200';
+      const projectCard = (project) => {
+        const meta = project.meta || {};
+        const progress = Number(meta.progress || 0);
+        return `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4 transition hover:-translate-y-0.5 hover:border-violet-300/40 hover:shadow-[0_0_34px_rgba(139,92,246,.16)]">
+          <div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[.18em] text-slate-500">${escapeHTML(meta.priority || 'Medium')} priority</p><h3 class="mt-1 text-lg font-black text-white">${escapeHTML(project.title)}</h3></div><span class="rounded-full border px-3 py-1 text-xs font-bold ${statusClass(meta.status)}">${escapeHTML(meta.status || 'Planning')}</span></div>
+          <div class="mt-4"><div class="flex justify-between text-xs text-slate-400"><span>Progress</span><span>${progress}%</span></div><div class="mt-2 h-2 rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-teal-300" style="width:${Math.min(100, progress)}%"></div></div></div>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm"><div class="rounded-2xl bg-white/[0.04] p-3"><p class="text-xs text-slate-500">Owner</p><p class="font-bold text-slate-100">${escapeHTML(meta.owner || founderName)}</p></div><div class="rounded-2xl bg-white/[0.04] p-3"><p class="text-xs text-slate-500">Due</p><p class="font-bold text-slate-100">${escapeHTML(meta.dueDate || 'This month')}</p></div></div>
+          <div class="mt-4 flex flex-wrap gap-2"><span class="${chip}">${Number(meta.linkedTasks || 0)} tasks</span><span class="${chip}">${Number(meta.linkedFiles || 0)} files</span><button data-open-project="${project.id}" class="ml-auto text-xs font-bold text-teal-200">Open →</button></div>
+        </article>`;
+      };
+      const docCard = (doc) => `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[.18em] text-violet-200">${escapeHTML(doc.category || 'Document')}</p><h3 class="mt-1 text-lg font-black text-white">${escapeHTML(doc.title)}</h3></div><button class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200">Edit</button></div><p class="mt-3 text-sm leading-6 text-slate-400">${escapeHTML(doc.summary || 'AI summary will appear here.')}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>${escapeHTML(doc.folder || 'Workspace')}</span><span>Edited ${new Date(doc.lastEdited || Date.now()).toLocaleDateString()}</span></div></article>`;
+      const noteCard = (note) => `<article class="rounded-[1.4rem] border ${note.pinned ? 'border-violet-300/35 bg-violet-500/10' : 'border-white/10 bg-slate-950/45'} p-4"><div class="flex items-center justify-between"><h3 class="font-black text-white">${note.pinned ? '📌 ' : ''}${escapeHTML(note.title)}</h3><button data-pin-note="${note.id}" class="text-xs text-teal-200">${note.pinned ? 'Unpin' : 'Pin'}</button></div><p class="mt-3 text-sm leading-6 text-slate-400">${escapeHTML(note.preview)}</p><div class="mt-4 flex flex-wrap gap-2">${(note.tags || []).map(tag => `<span class="${chip}">#${escapeHTML(tag)}</span>`).join('')}<span class="ml-auto text-xs text-slate-500">${new Date(note.timestamp || Date.now()).toLocaleString()}</span></div></article>`;
+      const fileCard = (file) => `<article class="rounded-[1.4rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex items-start gap-3"><div class="grid h-11 w-11 place-items-center rounded-2xl bg-teal-400/10 text-xl">${file.category === 'Images' ? '🖼️' : file.category === 'CSVs' ? '📊' : file.category === 'Slides' ? '🪄' : '📄'}</div><div class="min-w-0 flex-1"><h3 class="truncate font-black text-white">${escapeHTML(file.name)}</h3><p class="mt-1 text-xs text-slate-500">${escapeHTML(file.size)} · ${escapeHTML(file.category)} · ${new Date(file.uploadDate || Date.now()).toLocaleDateString()}</p></div><button class="rounded-xl border border-white/10 px-3 py-2 text-slate-300">⋯</button></div><p class="mt-3 text-sm text-slate-400">${escapeHTML(file.summary || 'AI summary pending.')}</p></article>`;
+      const kpiCards = [
+        ['Revenue', moneyValue(metrics.revenue), '+18%', 'MRR and closed revenue signal'],
+        ['Active Users', Number(metrics.activeUsers || 0).toLocaleString(), '+9%', 'Engaged users or qualified accounts'],
+        ['Weekly Growth', pct(metrics.weeklyGrowth), '+3.1%', 'Week-over-week momentum'],
+        ['Conversion Rate', pct(metrics.conversionRate), '+1.4%', 'Visitor or lead conversion'],
+        ['Monthly Burn', moneyValue(metrics.monthlyBurn), '-4%', 'Operating spend control'],
+        ['Runway', `${Number(metrics.runway || 0).toFixed(1)} mo`, '+0.6', 'Estimated cash runway']
       ];
-      const activityItems = [
-        ['📄', 'Strategy brief updated', activePage?.title || 'Workspace OS', 'Amina', '3m ago'],
-        ['✅', 'Task moved to Done', taskItems.find(task => task.status === 'Done')?.title || 'Validate pricing page', 'Sam', '18m ago'],
-        ['🔗', 'Backlink created', backlinks[0] ? (pageMap.get(backlinks[0].fromId)?.title || 'Linked page') : 'Investor notes → Launch plan', 'Barya', '42m ago'],
-        ['📊', 'Data room reviewed', 'Monthly metrics snapshot', 'Noor', '1h ago']
-      ];
-      const kanbanTasks = (taskItems.length ? taskItems : [
-        { id: 'demo-task-1', title: 'Map onboarding flow', status: 'To Do', priority: 'High', tags: ['UX', 'Launch'] },
-        { id: 'demo-task-2', title: 'Draft customer interview script', status: 'To Do', priority: 'Medium', tags: ['Research'] },
-        { id: 'demo-task-3', title: 'Build pricing experiment', status: 'In Progress', priority: 'High', tags: ['Growth', 'Data'] },
-        { id: 'demo-task-4', title: 'Publish roadmap memo', status: 'Done', priority: 'Low', tags: ['Docs'] }
-      ]).slice(0, 9);
-      const ownerAvatars = ['A', 'S', 'N', 'B'];
-      const workspaceTopTabClass = 'rounded-full px-4 py-2 text-sm font-semibold transition border';
-      const workspacePanelClass = 'glass-card rounded-[1.4rem] border border-white/10 bg-slate-950/60 shadow-2xl shadow-black/25';
+      const tabs = [['overview','Overview'],['projects','Projects'],['documents','Documents'],['data','Data'],['notes','Notes'],['files','Files']];
+      const currentSprint = `Sprint ${Math.max(1, new Date().getUTCMonth() + 1)} · ${stage}`;
+      const weeklyPriorities = [`Ship the highest-impact milestone for ${businessName}`, `Talk to 5 target customers about ${mainGoal}`, 'Update metrics, notes, and decisions before Friday'];
+      const suggestions = ['Generate a customer research project from your main challenge', 'Summarize pinned notes into a founder memo', 'Organize stale files into Launch, Finance, and Research folders'];
+      const content = {
+        overview: `<div class="grid gap-5 xl:grid-cols-[1.35fr_.9fr]"><div class="space-y-5"><section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[.22em] text-teal-200">Current sprint</p><h3 class="mt-1 text-2xl font-black text-white">${escapeHTML(currentSprint)}</h3><p class="mt-2 text-sm text-slate-400">Business goal: ${escapeHTML(mainGoal)}</p></div><button data-workspace-tab-jump="projects" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-3 text-sm font-black text-white">Continue Working</button></div><div class="mt-5 grid gap-3 md:grid-cols-3">${projectPages.slice(0,3).map(project => `<button data-open-project="${project.id}" class="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left"><p class="font-bold text-white">${escapeHTML(project.title)}</p><p class="mt-2 text-xs text-slate-400">${project.meta?.progress || 0}% complete · ${escapeHTML(project.meta?.status || 'Planning')}</p></button>`).join('')}</div></section><section class="grid gap-5 lg:grid-cols-2"><div class="${panel}"><h3 class="text-lg font-black text-white">Active Projects</h3><div class="mt-4 space-y-3">${projectPages.slice(0,4).map(project => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div class="flex justify-between gap-3"><span class="font-bold text-white">${escapeHTML(project.title)}</span><span class="text-xs text-teal-200">${project.meta?.progress || 0}%</span></div></div>`).join('') || empty('🧭','No projects yet.','Start building your workspace.','ai-project')}</div></div><div class="${panel}"><h3 class="text-lg font-black text-white">Recent Documents</h3><div class="mt-4 space-y-3">${documents.slice(0,4).map(doc => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><p class="font-bold text-white">${escapeHTML(doc.title)}</p><p class="mt-1 text-xs text-slate-400">${escapeHTML(doc.category)} · ${escapeHTML(doc.summary).slice(0,80)}</p></div>`).join('') || empty('📄','Your workspace documents will appear here.','Create or generate your first founder document.','new-doc')}</div></div></section></div><aside class="space-y-5"><section class="${panel}"><h3 class="text-lg font-black text-white">AI Suggestions</h3><div class="mt-4 space-y-3">${suggestions.map(item => `<button class="w-full rounded-2xl border border-violet-300/20 bg-violet-500/10 p-3 text-left text-sm text-violet-50">✦ ${escapeHTML(item)}</button>`).join('')}</div></section><section class="${panel}"><h3 class="text-lg font-black text-white">Weekly Priorities</h3><ol class="mt-4 space-y-3">${weeklyPriorities.map((item, i) => `<li class="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-200"><span class="font-black text-teal-200">${i+1}</span>${escapeHTML(item)}</li>`).join('')}</ol></section><section class="${panel}"><h3 class="text-lg font-black text-white">Workspace Health</h3><div class="mt-4 h-3 rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-teal-300" style="width:${Math.min(94, 42 + projectPages.length * 8)}%"></div></div><p class="mt-3 text-sm text-slate-400">${projectPages.length} workstreams, ${documents.length} docs, ${notes.length} notes, ${files.length} files. Your OS is organized and execution-ready.</p></section><section class="${panel}"><h3 class="text-lg font-black text-white">Recent Activity</h3><div class="mt-4 space-y-3">${['AI generated starter projects','Updated weekly priorities','Created KPI forecast','Pinned growth experiments'].map(item => `<p class="rounded-2xl bg-white/[0.04] p-3 text-sm text-slate-300">${escapeHTML(item)}</p>`).join('')}</div></section><section class="${panel}"><h3 class="text-lg font-black text-white">Upcoming Tasks</h3><div class="mt-4 space-y-2">${(tasks.length ? tasks : weeklyPriorities.map((title, i) => ({ title, priority: i ? 'Medium' : 'High' }))).slice(0,4).map(task => `<div class="flex justify-between rounded-2xl bg-white/[0.04] p-3 text-sm"><span class="text-slate-200">${escapeHTML(task.title)}</span><span class="text-xs text-violet-200">${escapeHTML(task.priority || 'Medium')}</span></div>`).join('')}</div></section></aside></div>`,
+        projects: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Project Management</h3><p class="mt-1 text-sm text-slate-400">Kanban, table, and cards for founder execution.</p></div><div class="flex flex-wrap gap-2"><button data-project-view="cards" class="${chip}">Cards</button><button data-project-view="kanban" class="${chip}">Kanban</button><button data-project-view="table" class="${chip}">Table</button><button data-workspace-action="new-project" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Project</button><button data-workspace-action="ai-project" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Generate Project</button><button data-workspace-action="import-project" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Import Project</button></div></div>${!filteredProjects.length ? empty('🧭','No projects yet.','Start building your workspace with an AI-generated project plan.','ai-project') : ui.projectView === 'table' ? `<div class="mt-5 overflow-x-auto"><table class="w-full min-w-[760px] text-left text-sm"><thead class="text-xs uppercase tracking-[.18em] text-slate-500"><tr><th class="p-3">Project</th><th>Status</th><th>Progress</th><th>Due</th><th>Owner</th><th>Priority</th><th>Links</th></tr></thead><tbody>${filteredProjects.map(p => `<tr class="border-t border-white/10"><td class="p-3 font-bold text-white">${escapeHTML(p.title)}</td><td>${escapeHTML(p.meta?.status || 'Planning')}</td><td>${p.meta?.progress || 0}%</td><td>${escapeHTML(p.meta?.dueDate || '')}</td><td>${escapeHTML(p.meta?.owner || founderName)}</td><td>${escapeHTML(p.meta?.priority || 'Medium')}</td><td>${p.meta?.linkedTasks || 0} tasks · ${p.meta?.linkedFiles || 0} files</td></tr>`).join('')}</tbody></table></div>` : ui.projectView === 'kanban' ? `<div class="mt-5 grid gap-4 lg:grid-cols-4">${['Planning','Active','Review','Completed'].map(status => `<div class="rounded-[1.2rem] border border-white/10 bg-black/20 p-3"><h4 class="font-black text-white">${status}</h4><div class="mt-3 space-y-3">${filteredProjects.filter(p => (p.meta?.status || 'Planning') === status).map(projectCard).join('') || `<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">No ${status.toLowerCase()} projects.</p>`}</div></div>`).join('')}</div>` : `<div class="mt-5 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">${filteredProjects.map(projectCard).join('')}</div>`}</section>`,
+        documents: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Founder Knowledge System</h3><p class="mt-1 text-sm text-slate-400">Business plans, strategy docs, meeting notes, specs, investor notes, and research.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="new-doc" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Document</button><button data-workspace-action="ai-doc" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Generate Doc</button><button data-workspace-action="import-file" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Import File</button></div></div><div class="mt-5 flex flex-wrap gap-2">${['Business Plans','Strategy Docs','Meeting Notes','Product Specs','Investor Notes','Research Docs'].map(folder => `<span class="${chip}">📁 ${folder}</span>`).join('')}</div>${filteredDocs.length ? `<div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">${filteredDocs.map(docCard).join('')}</div><div class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4"><p class="text-xs uppercase tracking-[.18em] text-slate-500">Markdown editor</p><textarea class="mt-3 min-h-[150px] w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100" placeholder="# Draft your next strategic doc...\n\nUse markdown, tasks, and AI summaries."></textarea></div>` : empty('📄','Your workspace documents will appear here.','Create documents, generate templates, or import files into your founder knowledge base.','new-doc')}</section>`,
+        data: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Business Intelligence Hub</h3><p class="mt-1 text-sm text-slate-400">Clean startup KPIs for revenue, growth, burn, runway, and conversion.</p></div><button data-workspace-action="ai-data" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Analyze Metrics</button></div><div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">${kpiCards.map(([label,value,trend,desc]) => `<article class="rounded-[1.3rem] border border-white/10 bg-slate-950/45 p-4"><div class="flex justify-between"><p class="text-sm text-slate-400">${label}</p><span class="text-xs font-bold text-teal-200">${trend}</span></div><p class="mt-2 text-3xl font-black text-white">${value}</p><div class="mt-4 flex h-16 items-end gap-1">${[35,55,42,68,60,78,72].map(h => `<span class="flex-1 rounded-t bg-gradient-to-t from-violet-600 to-teal-300" style="height:${h}%"></span>`).join('')}</div><p class="mt-3 text-xs text-slate-500">${desc}</p></article>`).join('')}</div><div class="mt-5 rounded-[1.3rem] border border-violet-300/20 bg-violet-500/10 p-5"><h4 class="font-black text-white">AI analysis summary</h4><p class="mt-2 text-sm leading-6 text-violet-50">Revenue momentum is healthy for ${escapeHTML(businessName)}. Keep burn below ${moneyValue(metrics.monthlyBurn)} while pushing conversion above ${pct(Number(metrics.conversionRate || 0) + 1.2)}. Next best move: connect one project milestone to each metric owner.</p></div></section>`,
+        notes: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Founder Thinking Space</h3><p class="mt-1 text-sm text-slate-400">Fast notes, pinned ideas, smart tags, markdown, and AI summaries.</p></div><div class="flex flex-wrap gap-2"><button data-notes-view="grid" class="${chip}">Grid</button><button data-notes-view="list" class="${chip}">List</button><button data-workspace-action="new-note" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">New Note</button><button data-workspace-action="ai-note" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">AI Summarize</button></div></div><div class="mt-5 flex flex-wrap gap-2">${['All', ...new Set(notes.flatMap(note => note.tags || []))].map(tag => `<button data-note-tag="${escapeAttr(tag)}" class="${chip} ${ui.noteTag === tag ? 'border-teal-300/40 bg-teal-400/10 text-teal-100' : ''}">#${escapeHTML(tag)}</button>`).join('')}</div>${filteredNotes.length ? `<div class="mt-5 grid gap-4 ${ui.notesView === 'list' ? 'grid-cols-1' : 'md:grid-cols-2 xl:grid-cols-3'}">${filteredNotes.filter(note => !ui.noteTag || ui.noteTag === 'All' || (note.tags || []).includes(ui.noteTag)).map(noteCard).join('')}</div>` : empty('📝','No notes yet.','Capture business ideas, roadmap thoughts, and growth experiments.','new-note')}</section>`,
+        files: `<section class="${panel}"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-black text-white">Files & Uploads</h3><p class="mt-1 text-sm text-slate-400">PDFs, images, docs, CSVs, and slides with AI summaries.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="upload-file" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-2 text-sm font-black text-white">Upload File</button><button data-workspace-action="folder" class="rounded-2xl border border-white/10 px-4 py-2 text-sm font-bold text-white">Create Folder</button><button data-workspace-action="ai-file" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">AI Analyze File</button></div></div><div class="mt-5 rounded-[1.3rem] border border-dashed border-teal-300/30 bg-teal-400/10 p-6 text-center"><div class="text-3xl">☁️</div><p class="mt-2 font-black text-white">Drag and drop files here</p><p class="mt-1 text-sm text-slate-400">Supported: PDFs, Images, Docs, CSVs, Slides</p></div><div class="mt-5 grid gap-5 xl:grid-cols-[220px_1fr]"><aside class="space-y-2">${['Recent Files','Shared Files','AI Generated Files','Archived'].map(section => `<button class="w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left text-sm font-bold text-slate-200">${section}</button>`).join('')}</aside><div>${filteredFiles.length ? `<div class="grid gap-4 md:grid-cols-2">${filteredFiles.map(fileCard).join('')}</div>` : empty('📁','Upload files to organize your business.','Add source material and Barya will summarize, tag, and organize it.','upload-file')}</div></div></section>`
+      }[activeTab];
 
-      el.innerHTML = `
-        <div class="workspace-premium-shell min-h-full w-full overflow-auto rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_12%_2%,rgba(139,92,246,0.22),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(20,184,166,0.18),transparent_26%),linear-gradient(135deg,rgba(8,8,12,0.96),rgba(10,14,28,0.94))] p-4 sm:p-5 lg:p-6 text-slate-100 space-y-5 scrollbar-thin">
-          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 via-indigo-500 to-teal-400 text-xl font-black shadow-[0_0_34px_rgba(139,92,246,0.45)]">W</div>
-              <div class="min-w-0">
-                <h2 class="text-3xl font-black tracking-tight text-white">Workspace</h2>
-                <p class="text-sm text-slate-400">All your work, organized. Plan, execute and grow.</p>
-              </div>
-            </div>
-            <label class="flex min-h-[48px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 shadow-inner shadow-black/20 xl:max-w-2xl" aria-label="Search anything in your workspace">
-              <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-400"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <input readonly placeholder="Search anything in your workspace..." class="flex-1 cursor-pointer border-0 bg-transparent text-sm outline-none placeholder:text-slate-500" />
-              <span class="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[11px] font-bold text-slate-300">⌘/Ctrl+K</span>
-            </label>
-            <div class="flex items-center gap-2">
-              <button id="workspaceNewPage" class="rounded-2xl border border-violet-300/30 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_28px_rgba(124,58,237,0.3)]">+ New ▾</button>
-              <button class="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.06]" aria-label="Notifications">🔔</button>
-              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 font-black text-white premium-avatar">${escapeHTML((state.founderProfile?.name || 'Barya').slice(0,1).toUpperCase())}</div>
-            </div>
-          </div>
+      el.innerHTML = `<div class="min-h-full overflow-auto rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(139,92,246,.28),transparent_30%),radial-gradient(circle_at_92%_8%,rgba(20,184,166,.18),transparent_28%),linear-gradient(135deg,#05050b,#0b1020)] p-4 sm:p-6 text-slate-100 scrollbar-thin"><header class="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between"><div><p class="text-xs uppercase tracking-[.28em] text-violet-200">AI-powered founder operating system</p><h2 class="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-white">${escapeHTML(businessName)} Workspace</h2><p class="mt-3 max-w-3xl text-sm sm:text-base text-slate-300">Calm command center for ${escapeHTML(founderName)} — organized around ${escapeHTML(mainGoal)}.</p></div><div class="flex flex-wrap gap-2"><span class="${chip}">${escapeHTML(stage)}</span><span class="${chip}">${projectPages.length} projects</span><span class="${chip}">${documents.length + notes.length + files.length} knowledge assets</span></div></header><div class="relative mb-5"><label class="flex items-center gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.07] px-4 py-3 shadow-[0_0_30px_rgba(139,92,246,.12)]"><span>⌘</span><input id="workspaceOsSearch" value="${escapeAttr(ui.search || '')}" placeholder="Search anything in your workspace…" class="flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-slate-500" /><button data-workspace-action="ai-priority" class="rounded-xl bg-violet-500/20 px-3 py-2 text-xs font-black text-violet-100">AI Prioritize</button></label>${instantResults.length ? `<div id="workspaceInstantResults" class="absolute left-0 right-0 top-[calc(100%+.5rem)] z-20 rounded-[1.4rem] border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl">${instantResults.map(result => `<button data-search-open="${result.id}" data-search-type="${escapeAttr(result.type)}" class="w-full rounded-2xl px-3 py-2 text-left hover:bg-white/[0.06]"><p class="text-[11px] uppercase tracking-[.18em] text-teal-200">${escapeHTML(result.type)}</p><p class="font-bold text-white">${escapeHTML(result.title)}</p></button>`).join('')}</div>` : ''}</div><nav class="mb-5 flex gap-2 overflow-x-auto pb-1">${tabs.map(([id,label]) => `<button data-workspace-tab="${id}" class="shrink-0 rounded-2xl border px-4 py-2.5 text-sm font-black transition ${activeTab === id ? 'border-violet-300/50 bg-violet-500/20 text-white shadow-[0_0_24px_rgba(139,92,246,.18)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${label}</button>`).join('')}</nav>${content}<aside class="mt-5 rounded-[1.6rem] border border-teal-300/20 bg-teal-400/10 p-5"><div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h3 class="font-black text-white">Workspace AI</h3><p class="mt-1 text-sm text-teal-50/80">Suggest projects, summarize notes, organize files, analyze documents, generate templates, and recommend priorities.</p></div><div class="flex flex-wrap gap-2"><button data-workspace-action="ai-project" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Suggest Project</button><button data-workspace-action="ai-doc" class="rounded-2xl border border-teal-300/30 px-4 py-2 text-sm font-bold text-teal-100">Generate Template</button></div></div></aside></div>`;
 
-          <nav class="flex gap-2 overflow-x-auto rounded-[1.3rem] border border-white/10 bg-black/20 p-2">
-            ${['Overview','Projects','Documents','Data','Notes','Files'].map((tab, index) => `<button class="${workspaceTopTabClass} ${index === 0 ? 'border-violet-300/40 bg-violet-500/20 text-violet-100 shadow-[0_0_22px_rgba(139,92,246,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${tab}</button>`).join('')}
-          </nav>
-
-          <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            ${statCards.map(([label, value, growth, note, gradient]) => `<article class="${workspacePanelClass} premium-hover p-4"><div class="flex items-start justify-between"><p class="text-xs uppercase tracking-[0.18em] text-slate-500">${label}</p><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r ${gradient} shadow-[0_0_16px_currentColor]"></span></div><div class="mt-4 flex items-end justify-between gap-3"><p class="text-3xl font-black text-white">${value}</p><div class="text-right"><p class="text-sm font-bold text-teal-300">${growth}</p><p class="text-[11px] text-slate-500">${note}</p></div></div></article>`).join('')}
-          </section>
-
-          <div class="grid gap-5 2xl:grid-cols-[1fr_360px]">
-            <main class="space-y-5 min-w-0">
-              <section class="${workspacePanelClass} p-5">
-                <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">Project progress</p><h3 class="mt-1 text-xl font-bold text-white">Execution velocity</h3></div><div class="flex rounded-full border border-white/10 bg-black/25 p-1"><button class="rounded-full bg-violet-500 px-4 py-1.5 text-xs font-bold text-white">Weekly</button><button class="rounded-full px-4 py-1.5 text-xs font-bold text-slate-400">Monthly</button></div></div>
-                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.75),rgba(2,6,23,0.65))] p-4">
-                  <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_44px]"></div>
-                  <svg viewBox="0 0 760 260" class="relative h-[260px] w-full drop-shadow-[0_0_18px_rgba(45,212,191,0.35)]" role="img" aria-label="Multi-colored weekly project progress line chart">
-                    <defs><linearGradient id="lineA" x1="0" x2="1"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><linearGradient id="lineB" x1="0" x2="1"><stop stop-color="#14b8a6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
-                    <path d="M40 210 C120 150 145 175 210 122 S330 70 405 116 520 176 600 82 690 70 730 44" fill="none" stroke="url(#lineA)" stroke-width="5" stroke-linecap="round"/>
-                    <path d="M40 185 C105 192 150 105 225 136 S345 204 430 142 520 92 610 126 685 98 730 78" fill="none" stroke="url(#lineB)" stroke-width="4" stroke-linecap="round" opacity="0.92"/>
-                    ${[40,155,270,385,500,615,730].map((x,i)=>`<g><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="5" fill="#fff"/><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="12" fill="#8b5cf6" opacity="0.16"/></g>`).join('')}
-                  </svg>
-                </div>
-              </section>
-
-              <section class="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
-                <article class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Recent Activity</h3><span class="text-xs text-slate-500">Live local feed</span></div><div class="space-y-3">${activityItems.map(([icon,title,detail,user,time]) => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3"><span class="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/15 text-lg">${icon}</span><div class="min-w-0 flex-1"><p class="font-semibold text-white">${escapeHTML(title)}</p><p class="truncate text-xs text-slate-400">${escapeHTML(detail)}</p></div><div class="text-right"><span class="inline-grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-teal-400 to-violet-500 text-xs font-black text-white">${escapeHTML(user.slice(0,1))}</span><p class="mt-1 text-[11px] text-slate-500">${time}</p></div></div>`).join('')}</div></article>
-                <article class="${workspacePanelClass} overflow-hidden p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Your Projects</h3><button id="workspaceShowRelated" class="text-xs font-bold text-violet-300">Open graph →</button></div><div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="text-xs uppercase tracking-[0.14em] text-slate-500"><tr><th class="py-3 pr-4">Project Name</th><th class="py-3 pr-4">Progress</th><th class="py-3 pr-4">Owner</th><th class="py-3 pr-4">Due Date</th><th class="py-3">Status</th></tr></thead><tbody>${fallbackProjects.map((project, idx) => { const pct = Math.min(95, 42 + idx * 17 + completedTasksCount * 3); return `<tr class="border-t border-white/10"><td class="py-3 pr-4 font-semibold text-white">${escapeHTML(project.title || 'Untitled Project')}</td><td class="py-3 pr-4"><div class="h-2 w-28 rounded-full bg-slate-800"><div class="h-2 rounded-full bg-gradient-to-r from-violet-500 to-teal-400" style="width:${pct}%"></div></div><span class="text-[11px] text-slate-500">${pct}%</span></td><td class="py-3 pr-4"><div class="flex -space-x-2">${ownerAvatars.slice(0,2 + (idx % 2)).map(a=>`<span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">${a}</span>`).join('')}</div></td><td class="py-3 pr-4 text-slate-400">${new Date(Date.now()+86400000*(idx+5)*3).toISOString().slice(0,10)}</td><td class="py-3"><span class="rounded-full border border-teal-300/30 bg-teal-400/10 px-2 py-1 text-xs font-bold text-teal-200">${idx === 0 ? 'On Track' : idx === 1 ? 'Review' : 'Active'}</span></td></tr>`; }).join('')}</tbody></table></div></article>
-              </section>
-
-              <section class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><div><h3 class="text-lg font-bold text-white">Task Board</h3><p class="text-xs text-slate-500">Drag cards between To Do, In Progress and Done.</p></div><button data-section-go="tasks" class="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-bold text-slate-200">Full Tasks</button></div><div class="grid gap-3 lg:grid-cols-3">${['To Do','In Progress','Done'].map(status => `<div data-ws-drop-status="${status}" class="min-h-[270px] rounded-2xl border border-white/10 bg-black/20 p-3"><div class="mb-3 flex items-center justify-between"><h4 class="font-bold text-white">${status}</h4><span class="text-xs text-slate-500">${kanbanTasks.filter(task => task.status === status).length}</span></div><div class="space-y-3">${kanbanTasks.filter(task => task.status === status).map(task => `<article draggable="true" data-ws-task-id="${escapeAttr(task.id)}" class="cursor-grab rounded-2xl border border-white/10 bg-white/[0.055] p-3 shadow-lg shadow-black/20"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-white">${escapeHTML(task.title)}</p><span class="rounded-full px-2 py-1 text-[10px] font-bold ${task.priority === 'High' ? 'bg-rose-500/15 text-rose-200' : task.priority === 'Medium' ? 'bg-amber-500/15 text-amber-200' : 'bg-teal-500/15 text-teal-200'}">${escapeHTML(task.priority || 'Medium')}</span></div><div class="mt-3 flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-[11px] text-violet-100">${escapeHTML(tag)}</span>`).join('')}</div><div class="mt-3 flex -space-x-2"><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-gradient-to-br from-teal-400 to-violet-500 text-[11px] font-black text-white">A</span><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">B</span></div></article>`).join('') || '<p class="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-slate-500">No tasks</p>'}</div></div>`).join('')}</div></section>
-
-              <section class="${workspacePanelClass} p-5 space-y-4">
-                <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-teal-300">Block editor · relations · backlinks</p><h3 class="mt-1 text-xl font-bold text-white">Workspace Pages</h3><p class="text-sm text-slate-400">Keep notes, plans, databases and linked objects connected.</p></div><button id="workspaceHowBtn" class="rounded-xl border border-violet-300/25 bg-violet-500/10 px-3 py-2 text-sm font-bold text-violet-100">How it works?</button></div>
-                <div id="workspaceHowPanel" class="hidden rounded-2xl border border-violet-300/20 bg-violet-500/10 p-4 text-sm text-slate-300 space-y-1"><p class="font-semibold text-violet-100">Start in 3 easy steps:</p><p>1) Select a page, or create a new one.</p><p>2) Write in the center editor. Type <span class="font-semibold text-violet-200">/</span> to add blocks.</p><p>3) Use Connections to link pages and see Linked From.</p></div>
-                <div class="grid gap-4 xl:grid-cols-[280px_1fr_300px]">
-                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2"><h4 class="px-1 text-sm font-bold text-slate-200">My Pages</h4>${workspacePages.map(page => `<button data-open-page="${page.id}" class="w-full rounded-xl border px-3 py-3 text-left transition ${page.id===state.workspace.activePageId ? 'border-violet-300/50 bg-violet-500/15' : 'border-white/10 bg-white/[0.04] hover:border-violet-300/30'} ${workspacePendingAnimation.pageId === page.id ? 'workspace-fade-in' : ''}"><div class="flex items-center justify-between gap-2"><p class="truncate font-semibold text-white">${escapeHTML(page.title || 'Untitled')}</p><span class="rounded-full border border-teal-300/25 bg-teal-400/10 px-2 py-0.5 text-[10px] text-teal-100">${escapeHTML(page.objectType || 'Page')}</span></div><p class="mt-1 truncate text-xs text-slate-500">${escapeHTML(pagePreview(page))}</p></button>`).join('') || emptyStateMarkup('🗂️', 'No pages yet.', 'Create your first page to start organizing ideas.', '', 'Start Here', 'section:workspace')}</aside>
-                  <section class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4 min-h-[70vh]">${activePage ? `<div class="flex flex-wrap gap-2 items-center"><input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xl font-bold text-white outline-none" placeholder="Untitled page" /><select id="workspaceObjectType" class="rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm">${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}</select><button id="workspaceDeletePage" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Delete</button></div><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3 space-y-3"><div class="flex items-center justify-between"><h4 class="font-bold text-white">Editor</h4><p class="text-xs text-slate-500">Type / to add heading, list, checkbox etc.</p></div><div id="workspaceBlocks" class="space-y-2">${(activePage.blocks || []).map((block, idx) => { const cmdOpen = block.commandOpen ? '' : 'hidden'; const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase())); return `<article class="workspace-block group rounded-xl border border-white/10 bg-slate-950/45 p-2 transition hover:border-violet-300/40 ${workspacePendingAnimation.blockId === block.id ? 'workspace-fade-in' : ''}" draggable="true" data-block-id="${block.id}"><div class="mb-2 flex items-center gap-2"><button class="cursor-grab text-slate-500 hover:text-violet-200" data-drag-handle="${block.id}">⋮⋮</button><span class="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-slate-300">${blockTypeLabel(block.type)}</span><button data-delete-block="${block.id}" class="ml-auto text-xs text-rose-300">Remove</button></div>${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}</article>`; }).join('') || `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-6 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the 'Add Block' button below to get started.</p></div>`}</div><button id="workspaceAddBlock" class="rounded-xl border border-violet-300/30 bg-violet-500/15 px-3 py-2 font-bold text-violet-100">+ Add Block</button></div><section class="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h4 class="mb-3 font-bold text-white">Safety & Backup</h4><div class="flex flex-wrap gap-2"><button id="workspaceExport" class="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Export All Workspace</button><label class="cursor-pointer rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label><button id="workspaceClear" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Clear Workspace</button></div></section>` : `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-8 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the '+ New' button above to get started.</p></div>`}</section>
-                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4"><h4 class="text-sm font-bold text-slate-200">Connections</h4><div class="rounded-xl border border-teal-300/20 bg-teal-400/10 p-3 text-sm text-slate-300 whitespace-pre-line">How to add links:\n- Type [[ and then the page name\n- Or use Add Link below to connect pages</div>${activePage ? `<div class="space-y-2"><p class="text-xs uppercase text-slate-500">Connected Pages</p><div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-xs text-violet-100">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🔗', 'No connections yet.', 'Link this page to another one to build your graph.', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2"><p class="text-xs uppercase text-slate-500">Linked From</p><div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full rounded-xl border border-white/10 bg-white/[0.04] px-2 py-2 text-left text-sm">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🧭', 'No pages link here yet.', 'Mention this page in another page using [[Page Name]].', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2 border-t border-white/10 pt-3"><p class="text-xs uppercase text-slate-500">Add Link</p><select id="workspaceQuickLinkSelect" class="w-full rounded-xl border border-white/10 bg-slate-950/70 px-2 py-2 text-sm"><option value="">Select page...</option>${workspacePages.filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)}</option>`).join('')}</select><button id="workspaceQuickLinkBtn" class="w-full rounded-xl border border-teal-300/25 bg-teal-400/10 px-3 py-2 font-bold text-teal-100">Add Link</button></div>` : emptyStateMarkup('📄', 'No page selected yet.', 'Open a page and connections will show here.', '', 'Start Here', 'section:workspace')}</aside>
-                </div>
-              </section>
-            </main>
-
-            <aside class="${workspacePanelClass} h-fit p-5 2xl:sticky 2xl:top-4">
-              <div class="mb-4 flex items-center gap-3"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-teal-400 text-xl">✦</div><div><h3 class="text-lg font-bold text-white">Barya AI</h3><p class="text-xs text-slate-500">Private workspace copilot</p></div></div>
-              <div class="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-3"><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">I found ${openTasksCount} open execution items. Want a focused sprint plan?</div><div class="ml-auto max-w-[86%] rounded-2xl rounded-tr-sm bg-teal-400/15 p-3 text-sm text-teal-50">Yes — prioritize by revenue impact.</div><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">Recommendation: ship the highest-signal customer task, then update your related notes.</div></div>
-              <label class="mt-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] p-2"><input placeholder="Ask Barya anything..." class="flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none" /><button class="rounded-xl bg-gradient-to-r from-violet-600 to-teal-500 px-3 py-2 text-sm font-bold text-white">Ask</button></label>
-              <div class="mt-5 space-y-2"><p class="text-xs uppercase tracking-[0.16em] text-slate-500">Smart recommendations</p>${['Turn this page into a launch checklist','Connect tasks to investor update notes','Review stale documents before Friday'].map(item => `<button class="w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left text-sm text-slate-200 hover:border-teal-300/30">${item}</button>`).join('')}</div>
-            </aside>
-          </div>
-        </div>
-      `;
-
-      document.getElementById('workspaceHowBtn').onclick = () => document.getElementById('workspaceHowPanel').classList.toggle('hidden');
-      document.getElementById('workspaceNewPage').onclick = () => createWorkspacePage();
-
-      el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
-        state.workspace.activePageId = btn.dataset.openPage;
-        saveState();
+      const saveAndRender = () => { saveState(); };
+      document.getElementById('workspaceOsSearch')?.addEventListener('input', (e) => { ws.ui.search = e.target.value; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-tab]').forEach(btn => btn.onclick = () => { ws.ui.tab = btn.dataset.workspaceTab; ws.ui.search = ''; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-tab-jump]').forEach(btn => btn.onclick = () => { ws.ui.tab = btn.dataset.workspaceTabJump; saveAndRender(); });
+      el.querySelectorAll('[data-project-view]').forEach(btn => btn.onclick = () => { ws.ui.projectView = btn.dataset.projectView; saveAndRender(); });
+      el.querySelectorAll('[data-notes-view]').forEach(btn => btn.onclick = () => { ws.ui.notesView = btn.dataset.notesView; saveAndRender(); });
+      el.querySelectorAll('[data-note-tag]').forEach(btn => btn.onclick = () => { ws.ui.noteTag = btn.dataset.noteTag; saveAndRender(); });
+      el.querySelectorAll('[data-open-project]').forEach(btn => btn.onclick = () => { ws.activePageId = btn.dataset.openProject; ws.ui.tab = 'projects'; saveAndRender(); });
+      el.querySelectorAll('[data-search-open]').forEach(btn => btn.onclick = () => {
+        const tabByType = { Project: 'projects', Document: 'documents', Note: 'notes', File: 'files', Data: 'data' };
+        ws.ui.tab = tabByType[btn.dataset.searchType] || 'overview';
+        ws.ui.search = '';
+        if (btn.dataset.searchType === 'Project') ws.activePageId = btn.dataset.searchOpen;
+        saveAndRender();
       });
-
-      let workspaceTaskDragId = null;
-      el.querySelectorAll('[data-ws-task-id]').forEach(card => {
-        card.addEventListener('dragstart', () => {
-          workspaceTaskDragId = card.dataset.wsTaskId;
-          card.classList.add('opacity-60');
-        });
-        card.addEventListener('dragend', () => {
-          workspaceTaskDragId = null;
-          card.classList.remove('opacity-60');
-        });
+      el.querySelectorAll('[data-pin-note]').forEach(btn => btn.onclick = () => { const note = notes.find(item => item.id === btn.dataset.pinNote); if (note) note.pinned = !note.pinned; saveAndRender(); });
+      el.querySelectorAll('[data-workspace-action]').forEach(btn => btn.onclick = () => {
+        const action = btn.dataset.workspaceAction;
+        const now = new Date().toISOString();
+        if (action === 'new-project' || action === 'ai-project') {
+          ws.pages.unshift({ id: crypto.randomUUID(), title: action === 'ai-project' ? `AI Growth Sprint for ${businessName}` : 'New Project', objectType: 'Project', updatedAt: now, meta: { status: 'Planning', progress: 12, dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0,10), owner: founderName, priority: 'High', linkedTasks: 3, linkedFiles: 1 }, relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, []])), blocks: [{ id: crypto.randomUUID(), type: 'heading', level: 1, text: 'Project Brief' }, { id: crypto.randomUUID(), type: 'text', text: `AI-generated from ${mainGoal}.` }] });
+          ws.ui.tab = 'projects';
+        } else if (action === 'new-doc' || action === 'ai-doc') {
+          ws.documents.unshift({ id: crypto.randomUUID(), title: action === 'ai-doc' ? `${businessName} Strategy Template` : 'Untitled Document', category: action === 'ai-doc' ? 'Strategy Docs' : 'Meeting Notes', lastEdited: now, summary: 'AI summary will update as you write.', folder: 'Workspace' });
+          ws.ui.tab = 'documents';
+        } else if (action === 'new-note' || action === 'ai-note') {
+          ws.notes.unshift({ id: crypto.randomUUID(), title: action === 'ai-note' ? 'AI Summary: Founder Priorities' : 'Untitled Note', preview: action === 'ai-note' ? weeklyPriorities.join(' · ') : 'Start typing your thought, decision, or experiment.', timestamp: now, tags: ['Founder'], pinned: action === 'ai-note' });
+          ws.ui.tab = 'notes';
+        } else if (action === 'upload-file' || action === 'import-file' || action === 'ai-file') {
+          ws.files.unshift({ id: crypto.randomUUID(), name: action === 'ai-file' ? 'AI File Analysis.md' : 'Imported Workspace File.pdf', size: '240 KB', uploadDate: now, category: action === 'ai-file' ? 'Docs' : 'PDFs', section: 'Recent Files', summary: 'AI summary created from workspace context.' });
+          ws.ui.tab = 'files';
+        } else if (action === 'folder') {
+          ws.files.unshift({ id: crypto.randomUUID(), name: 'New Workspace Folder', size: '—', uploadDate: now, category: 'Folder', section: 'Recent Files', summary: 'Folder ready for launch, finance, research, or investor material.' });
+          ws.ui.tab = 'files';
+        } else if (action === 'ai-data') {
+          ws.dataMetrics.weeklyGrowth = Number(ws.dataMetrics.weeklyGrowth || 0) + 1.5;
+          ws.ui.tab = 'data';
+        } else if (action === 'ai-priority') {
+          ws.notes.unshift({ id: crypto.randomUUID(), title: 'AI Recommended Priorities', preview: weeklyPriorities.join(' · '), timestamp: now, tags: ['AI', 'Priorities'], pinned: true });
+          ws.ui.tab = 'notes';
+        }
+        saveAndRender();
       });
-      el.querySelectorAll('[data-ws-drop-status]').forEach(column => {
-        column.addEventListener('dragover', (evt) => evt.preventDefault());
-        column.addEventListener('drop', () => {
-          if (!workspaceTaskDragId || !state.tasks?.items) return;
-          const task = state.tasks.items.find(item => item.id === workspaceTaskDragId);
-          if (!task) return;
-          task.status = column.dataset.wsDropStatus;
-          saveState();
-        });
-      });
-
-      if (!activePage) return;
-
-      document.getElementById('workspacePageTitle').oninput = (e) => {
-        activePage.title = e.target.value;
-        updatePageUpdatedAt(activePage);
-        saveStateRaw();
-      };
-      document.getElementById('workspaceObjectType').onchange = (e) => {
-        activePage.objectType = e.target.value;
-        updatePageUpdatedAt(activePage);
-        saveState();
-      };
-      document.getElementById('workspaceShowRelated').onclick = () => showRelated(`page:${activePage.id}`);
-      document.getElementById('workspaceDeletePage').onclick = () => {
-        if (!confirm('Delete this object?')) return;
-        state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
-        state.workspace.activePageId = state.workspace.pages[0]?.id || null;
-        saveState();
-      };
-
-      el.querySelectorAll('[data-relation-add]').forEach(btn => btn.onclick = () => {
-        const key = btn.dataset.relationAdd;
-        const select = el.querySelector(`[data-relation-select="${CSS.escape(key)}"]`);
-        const id = select?.value;
-        if (!id) return;
-        if (!activePage.relations[key].includes(id)) activePage.relations[key].push(id);
-        updatePageUpdatedAt(activePage);
-        saveState();
-      });
-
-      document.getElementById('workspaceAddBlock').onclick = () => {
-        const createdBlock = createWorkspaceBlock('text');
-        activePage.blocks.push(createdBlock);
-        workspacePendingAnimation.blockId = createdBlock.id;
-        updatePageUpdatedAt(activePage);
-        saveState();
-      };
-
-      document.getElementById('workspaceQuickLinkBtn')?.addEventListener('click', () => {
-        const id = document.getElementById('workspaceQuickLinkSelect')?.value;
-        if (!id) return;
-        if (!activePage.relations['Linked Notes'].includes(id)) activePage.relations['Linked Notes'].push(id);
-        updatePageUpdatedAt(activePage);
-        saveState();
-      });
-
-      let dragId = null;
-      el.querySelectorAll('.workspace-block').forEach(blockEl => {
-        blockEl.addEventListener('dragstart', () => {
-          dragId = blockEl.dataset.blockId;
-          blockEl.classList.add('opacity-60');
-        });
-        blockEl.addEventListener('dragend', () => {
-          dragId = null;
-          blockEl.classList.remove('opacity-60');
-        });
-        blockEl.addEventListener('dragover', (evt) => evt.preventDefault());
-        blockEl.addEventListener('drop', () => {
-          const targetId = blockEl.dataset.blockId;
-          if (!dragId || dragId === targetId) return;
-          const fromIndex = activePage.blocks.findIndex(b => b.id === dragId);
-          const toIndex = activePage.blocks.findIndex(b => b.id === targetId);
-          if (fromIndex < 0 || toIndex < 0) return;
-          const [moved] = activePage.blocks.splice(fromIndex, 1);
-          activePage.blocks.splice(toIndex, 0, moved);
-          updatePageUpdatedAt(activePage);
-          saveState();
-        });
-      });
-
-      el.querySelectorAll('[data-delete-block]').forEach(btn => btn.onclick = () => {
-        activePage.blocks = activePage.blocks.filter(b => b.id !== btn.dataset.deleteBlock);
-        updatePageUpdatedAt(activePage);
-        saveState();
-      });
-
-      bindWorkspaceBlockEvents(el, activePage);
-
-      document.getElementById('workspaceExport').onclick = () => downloadJSON('workspace-data.json', state.workspace);
-      document.getElementById('workspaceImport').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
-        state.workspace = deepMerge(structuredClone(defaultState.workspace), data || {});
-        ensureWorkspaceState();
-        saveState();
-      });
-      document.getElementById('workspaceClear').onclick = () => {
-        if (!confirm('Clear all workspace objects?')) return;
-        state.workspace = structuredClone(defaultState.workspace);
-        state.workspace.pages = [];
-        state.workspace.activePageId = null;
-        saveState();
-      };
-
-      if (workspacePendingAnimation.pageId || workspacePendingAnimation.blockId) {
-        setTimeout(() => {
-          workspacePendingAnimation = { pageId: null, blockId: null };
-        }, 320);
-      }
     }
 
     function renderWorkspaceBlockBody(block, idx, currentPageId, filteredMenu, cmdOpenClass) {
