@@ -1862,16 +1862,35 @@
       ];
     }
 
-    function generateStarterMemories(profile) {
+    function generateStarterMemoriesFromOnboarding(userProfile = {}) {
       const now = new Date().toISOString();
-      const note = (title, content, tags) => ({ id: crypto.randomUUID(), title, content, tags, tag: tags.join(', '), ts: now });
+      const clean = (value, fallback = 'Not set yet') => String(value || '').trim() || fallback;
+      const createMemory = (type, title, description, tags = []) => ({
+        id: crypto.randomUUID(),
+        type,
+        title,
+        description,
+        source: 'onboarding',
+        createdAt: now,
+        updatedAt: now,
+        tags: ['Onboarding', ...tags].filter(Boolean),
+        importance: type === 'Goal' || type === 'Founder' ? 'high' : 'medium'
+      });
+      const challenges = Array.isArray(userProfile.challenges) && userProfile.challenges.length
+        ? userProfile.challenges.join(', ')
+        : clean(userProfile.mainChallenge || userProfile.challenge, 'Not set yet');
       return [
-        note('Who You Are', `${profile.founderName || 'Founder'} is a ${profile.role || 'founder'} building a ${profile.businessType || 'business'} in ${profile.industry || 'an industry to be clarified'}.`, ['Onboarding', 'Founder']),
-        note('Your Goals', `Main goal: ${profile.mainGoal || 'Not set yet'}. Long-term goal: ${profile.longTermGoal || 'Not set yet'}.`, ['Onboarding', 'Goals']),
-        note('Your Strengths', 'Not enough data yet. Barya will learn your strengths as you use the app.', ['Learning', 'Strengths']),
-        note('Your Challenges', (profile.challenges || []).length ? profile.challenges.join(', ') : 'No challenges selected yet.', ['Onboarding', 'Challenges']),
-        note('Recent Memories', [`Workspace created: ${profile.workspaceName}`, `Business goal saved: ${profile.mainGoal || 'Not set'}`, `Business stage saved: ${profile.businessStage || 'Not set'}`, `Challenges saved: ${(profile.challenges || []).join(', ') || 'None selected'}`, `AI style preference saved: ${profile.aiStyle || 'Not set'}`].join('\n'), ['Onboarding', 'Recent'])
+        createMemory('Founder', 'Founder identity memory', `${clean(userProfile.founderName || userProfile.name, 'Founder')} is ${clean(userProfile.role, 'a founder')} building ${clean(userProfile.businessName || userProfile.workspaceName, 'a business')}.`, ['Founder', 'Identity']),
+        createMemory('Goal', 'Business goal memory', `Main goal: ${clean(userProfile.mainGoal)}. Long-term goal: ${clean(userProfile.longTermGoal)}`, ['Goals']),
+        createMemory('Business', 'Business type memory', `Business type: ${clean(userProfile.businessType)}. Industry: ${clean(userProfile.industry)}. Stage: ${clean(userProfile.businessStage)}`, ['Business Context']),
+        createMemory('Challenge', 'Main challenge memory', `Current main challenge: ${challenges}`, ['Challenges']),
+        createMemory('Preference', 'AI style preference memory', `Preferred Barya AI style: ${clean(userProfile.aiStyle, 'Not set yet')}`, ['Preferences', 'AI Style']),
+        createMemory('Audience', 'Target audience memory', `Target audience: ${clean(userProfile.targetAudience || userProfile.audience, 'Not set yet')}`, ['Audience'])
       ];
+    }
+
+    function generateStarterMemories(profile) {
+      return generateStarterMemoriesFromOnboarding(profile);
     }
 
     function generateKnowledgeGraphNodes(profile) {
@@ -1952,7 +1971,7 @@
         healthScore: 5
       },
       ai: { history: [] },
-      memory: { insights: [], actions: [], search: '' },
+      memory: { insights: [], actions: [], search: '', activeType: 'All Memories', assistantQuestion: '', assistantAnswer: '' },
       workspace: {
         pages: [],
         activePageId: null,
@@ -5209,6 +5228,12 @@
       const base = templates.find(template => template.match.test(lower)) || templates.at(-1);
       const context = latestFounderContext();
       const personalization = getAIPersonalizationContext();
+      const memoryMatches = typeof searchMemories === 'function'
+        ? searchMemories(q).slice(0, 4)
+        : [];
+      const memoryContextLine = memoryMatches.length
+        ? ` Saved memory context I am using: ${memoryMatches.map(memory => `${memory.type}: ${memory.title} — ${memory.description}`).join(' | ')}.`
+        : '';
       const multiParts = parseMultiPartQuestion(q);
       const isDeepThinking = state.ai.composer.deepThinking === true;
 
@@ -5223,7 +5248,7 @@
         ? `You asked ${multiParts.length} connected questions, so I’ll give one integrated answer that sequences decisions in the right order. `
         : '';
       const personalizationLead = `${personalization.profileLine}, here is a tailored recommendation with ${personalization.styleLabel}.`;
-      const answer = `${personalizationLead} ${multipartLead}${base.opening}${recentReference}${keywordReference}`.trim();
+      const answer = `${personalizationLead} ${multipartLead}${base.opening}${recentReference}${keywordReference}${memoryContextLine}`.trim();
 
       const why = `${base.why} From a founder lens, this matters because execution capacity is always limited: when priorities are explicit, your team can align faster, stakeholders trust your decision logic, and you avoid burning cycles on low-leverage work.`;
 
@@ -5585,6 +5610,7 @@
                 <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Key Insights & Trade-offs</p><p class="mt-1">${escapeHTML(structured.tip)}</p></section>
                 <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Next Best Step</p><p class="mt-1">${escapeHTML(structured.next)}</p></section>
                 ${item.note ? `<p class="rounded-2xl border border-teal-300/25 bg-teal-300/10 px-3 py-2 text-xs text-teal-100">${escapeHTML(item.note)}</p>` : ''}
+                <button type="button" data-save-ai-memory="${escapeAttr(item.ts || '')}" class="rounded-2xl border border-violet-300/30 bg-violet-400/10 px-3 py-2 text-xs font-bold text-violet-100 hover:bg-violet-400/20">Save this output to Memory</button>
               </div>
             </div>
           `;
@@ -5594,6 +5620,21 @@
       }
 
       state.ai.history.forEach(appendMessage);
+      document.querySelectorAll('[data-save-ai-memory]').forEach(btn => {
+        btn.onclick = () => {
+          const message = state.ai.history.find(item => item.role === 'assistant' && String(item.ts || '') === String(btn.dataset.saveAiMemory || '')) || [...state.ai.history].reverse().find(item => item.role === 'assistant');
+          if (!message) return;
+          const structured = message.structured || aiStructuredResponse(message.message || '');
+          addMemory({
+            type: 'Insight',
+            title: `Barya AI Insight: ${new Date(message.ts || Date.now()).toLocaleString()}`,
+            description: [structured.answer, structured.tip, structured.next].filter(Boolean).join('\n\n'),
+            source: 'barya-ai',
+            tags: ['Barya AI', 'Insight'],
+            importance: 'high'
+          });
+        };
+      });
       const attachmentPreview = document.getElementById('attachmentPreview');
       const renderAttachmentPreview = () => {
         const current = state.ai.composer.attachment;
@@ -5707,523 +5748,275 @@
       });
     }
 
+    function getMemoryEntries() {
+      if (!state.memory || typeof state.memory !== 'object') state.memory = structuredClone(defaultState.memory);
+      if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
+      if (!state.memory.insights.length) {
+        try {
+          const mirrored = JSON.parse(localStorage.getItem('barya_ai_memory_entries') || '[]');
+          if (Array.isArray(mirrored) && mirrored.length) state.memory.insights = mirrored;
+        } catch {}
+      }
+      const now = new Date().toISOString();
+      state.memory.insights = state.memory.insights.map((item) => {
+        const tags = Array.isArray(item.tags)
+          ? item.tags
+          : String(item.tag || item.type || 'General').split(',').map(tag => tag.trim()).filter(Boolean);
+        const description = typeof item.description === 'string' ? item.description : String(item.content || item.note || '');
+        const type = item.type || (tags.includes('Goals') ? 'Goal' : tags.includes('Preferences') ? 'Preference' : tags.includes('Decision') ? 'Decision' : tags.includes('Learning') ? 'Learning' : tags.includes('Conversation') ? 'Conversation' : tags.includes('File') ? 'File' : tags.includes('Event') ? 'Event' : 'Insight');
+        const createdAt = item.createdAt || item.ts || now;
+        return {
+          id: item.id || crypto.randomUUID(),
+          type,
+          title: item.title || `${type} Memory`,
+          description,
+          source: item.source || (item.isDaily ? 'daily-note' : 'manual'),
+          createdAt,
+          updatedAt: item.updatedAt || item.ts || createdAt,
+          tags: tags.length ? tags : [type],
+          importance: item.importance || 'medium'
+        };
+      });
+      if (typeof state.memory.search !== 'string') state.memory.search = '';
+      if (!state.memory.activeType) state.memory.activeType = 'All Memories';
+      if (typeof state.memory.assistantQuestion !== 'string') state.memory.assistantQuestion = '';
+      if (typeof state.memory.assistantAnswer !== 'string') state.memory.assistantAnswer = '';
+      return state.memory.insights;
+    }
+
+    function persistMemoryLocal() {
+      localStorage.setItem('barya_ai_memory_entries', JSON.stringify(getMemoryEntries()));
+    }
+
+    function addMemory(memory = {}) {
+      const now = new Date().toISOString();
+      const entry = {
+        id: memory.id || crypto.randomUUID(),
+        type: memory.type || 'Insight',
+        title: String(memory.title || `${memory.type || 'Insight'} Memory`).trim(),
+        description: String(memory.description || memory.content || '').trim(),
+        source: memory.source || 'manual',
+        createdAt: memory.createdAt || now,
+        updatedAt: memory.updatedAt || now,
+        tags: Array.isArray(memory.tags) ? memory.tags : String(memory.tags || memory.type || 'Insight').split(',').map(tag => tag.trim()).filter(Boolean),
+        importance: memory.importance || 'medium'
+      };
+      getMemoryEntries().unshift(entry);
+      state.memory.activeType = 'All Memories';
+      state.memory.activeMemoryId = entry.id;
+      persistMemoryLocal();
+      saveState();
+      return entry;
+    }
+
+    function updateMemory(id, data = {}) {
+      const entries = getMemoryEntries();
+      const index = entries.findIndex(memory => memory.id === id);
+      if (index === -1) return null;
+      entries[index] = { ...entries[index], ...data, updatedAt: new Date().toISOString() };
+      persistMemoryLocal();
+      saveState();
+      return entries[index];
+    }
+
+    function deleteMemory(id) {
+      const before = getMemoryEntries().length;
+      state.memory.insights = state.memory.insights.filter(memory => memory.id !== id);
+      if (state.memory.activeMemoryId === id) state.memory.activeMemoryId = '';
+      persistMemoryLocal();
+      saveState();
+      return state.memory.insights.length < before;
+    }
+
+    function searchMemories(query) {
+      const q = String(query || '').toLowerCase().trim();
+      return getMemoryEntries().filter(memory => !q || `${memory.title} ${memory.type} ${memory.description} ${(memory.tags || []).join(' ')}`.toLowerCase().includes(q));
+    }
+
+    function filterMemories(type) {
+      const normalized = String(type || 'All Memories');
+      if (normalized === 'All Memories') return searchMemories(state.memory?.search || '');
+      const singular = normalized.replace(/s$/, '');
+      return searchMemories(state.memory?.search || '').filter(memory => String(memory.type || '').toLowerCase() === singular.toLowerCase());
+    }
+
+    function getMemoryStats() {
+      const entries = getMemoryEntries();
+      const now = new Date();
+      const thisMonth = entries.filter(memory => {
+        const date = new Date(memory.createdAt || memory.updatedAt || Date.now());
+        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+      }).length;
+      const byType = entries.reduce((acc, memory) => {
+        const key = memory.type || 'Insight';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        total: entries.length,
+        thisMonth,
+        keyInsights: byType.Insight || 0,
+        preferences: byType.Preference || 0,
+        byType
+      };
+    }
+
+    function answerMemoryQuestion(question) {
+      const q = String(question || '').toLowerCase();
+      const entries = getMemoryEntries();
+      const pick = (types, fallback) => {
+        const matched = entries.filter(memory => types.includes(String(memory.type || '').toLowerCase()));
+        return matched.length ? matched.slice(0, 4).map(memory => `• ${memory.title}: ${memory.description}`).join('\n') : fallback;
+      };
+      if (/goal/.test(q)) return pick(['goal'], 'I do not have saved goals yet. Add a goal memory or complete onboarding.');
+      if (/pricing|price/.test(q)) return pick(['decision'], 'I do not see a saved pricing decision yet. Save pricing decisions so Barya can recall them later.');
+      if (/challenge|blocker|problem/.test(q)) return pick(['challenge'], 'I do not have a saved challenge yet. Add your main challenge to Memory.');
+      if (/learning|learn/.test(q)) return pick(['learning'], 'No saved learnings yet. Save lessons from experiments and conversations.');
+      if (/focus|business/.test(q)) return pick(['business', 'audience', 'goal'], 'Business focus is not clear yet. Add your business type, audience, and main goal.');
+      const recent = entries.slice(0, 5);
+      return recent.length ? `Recent memory context:\n${recent.map(memory => `• ${memory.title}: ${memory.description}`).join('\n')}` : 'No memories saved yet. Add a starter memory to begin.';
+    }
+
     function renderMemory() {
       const el = document.getElementById('section-memory');
-      const memory = state.memory || (state.memory = {});
-      if (!Array.isArray(memory.insights)) memory.insights = [];
-      if (!Array.isArray(memory.actions)) memory.actions = [];
-      if (typeof memory.search !== 'string') memory.search = '';
-      if (!memory.viewMode) memory.viewMode = 'list';
-      if (!memory.leftTab) memory.leftTab = 'all';
-      if (!memory.activeNoteId && memory.insights[0]) memory.activeNoteId = memory.insights[0].id;
-
-      const normalizeTags = (input) => String(input || '')
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(Boolean)
-        .filter((tag, idx, arr) => arr.findIndex(t => t.toLowerCase() === tag.toLowerCase()) === idx);
-      memory.insights.forEach(note => {
-        if (!note.id) note.id = crypto.randomUUID();
-        if (!note.title) note.title = 'Untitled Note';
-        if (typeof note.content !== 'string') note.content = String(note.content || '');
-        if (!note.ts) note.ts = new Date().toISOString();
-        if (!Array.isArray(note.tags)) note.tags = normalizeTags(note.tag || 'General');
-        if (!note.tags.length) note.tags = ['General'];
-        note.tag = note.tags.join(', ');
-        if (typeof note.isDaily !== 'boolean') note.isDaily = /^\d{4}-\d{2}-\d{2}/.test(note.title);
-      });
-
-      const noteByTitle = new Map(memory.insights.map(note => [note.title.toLowerCase(), note]));
-      const extractLinks = (content) => {
-        const links = [];
-        const regex = /\[\[([^\]]+)\]\]/g;
-        let match;
-        while ((match = regex.exec(content || '')) !== null) {
-          const title = match[1].trim();
-          if (title) links.push(title);
-        }
-        return [...new Set(links)];
-      };
-
-      memory.insights.forEach(note => {
-        note.links = extractLinks(note.content)
-          .map(title => noteByTitle.get(title.toLowerCase()))
-          .filter(Boolean)
-          .map(n => n.id);
-      });
-
-      const backlinksMap = {};
-      memory.insights.forEach(note => {
-        note.links.forEach(targetId => {
-          if (!backlinksMap[targetId]) backlinksMap[targetId] = [];
-          backlinksMap[targetId].push(note.id);
-        });
-      });
-
-      let activeNote = memory.insights.find(n => n.id === memory.activeNoteId) || null;
-      if (!activeNote && memory.insights.length) {
-        activeNote = memory.insights[0];
-        memory.activeNoteId = activeNote.id;
+      const memory = state.memory || (state.memory = structuredClone(defaultState.memory));
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
+      const entries = getMemoryEntries();
+      if (!entries.length && profile?.onboardingCompleted) {
+        state.memory.insights = generateStarterMemoriesFromOnboarding(profile);
+        persistMemoryLocal();
       }
-
-      const q = memory.search.toLowerCase();
-      const filteredNotes = memory.insights.filter(note => {
-        const tags = (note.tags || []).join(' ');
-        return `${note.title} ${note.content} ${tags}`.toLowerCase().includes(q);
-      });
-      const dailyNotes = filteredNotes.filter(note => note.isDaily);
-      const allNotes = filteredNotes;
-      const visibleNotes = memory.leftTab === 'daily' ? dailyNotes : allNotes;
-
-      const dailyISO = new Date().toISOString().slice(0, 10);
-      const graphNodes = filteredNotes.map((note, idx, arr) => {
-        const cx = 300 + 220 * Math.cos((Math.PI * 2 * idx) / Math.max(1, arr.length));
-        const cy = 210 + 160 * Math.sin((Math.PI * 2 * idx) / Math.max(1, arr.length));
-        return { id: note.id, title: note.title, x: cx, y: cy, r: note.id === memory.activeNoteId ? 16 : 11 };
-      });
-      const nodeMap = new Map(graphNodes.map(n => [n.id, n]));
+      const stats = getMemoryStats();
+      const activeType = memory.activeType || 'All Memories';
+      const visible = filterMemories(activeType);
+      const categories = ['Goals', 'Preferences', 'Decisions', 'Insights', 'Learnings', 'Conversations', 'Files', 'Events'];
+      const tabs = ['All Memories', 'Insights', 'Preferences', 'Decisions', 'Learnings', 'Conversations', 'Files', 'Events'];
+      const typeLabels = ['Insight', 'Goal', 'Decision', 'Preference', 'Learning', 'Conversation', 'File', 'Event'];
+      const findType = (type) => entries.find(memory => String(memory.type).toLowerCase() === type.toLowerCase());
+      const challenges = entries.filter(memory => String(memory.type).toLowerCase() === 'challenge').map(memory => memory.description).join(' · ');
+      const glanceCards = [
+        { title: 'Who You Are', value: `${profile.founderName || state.settings?.founder?.name || 'Founder'}${profile.businessType || state.settings?.business?.businessType ? ` · ${profile.businessType || state.settings?.business?.businessType}` : ''}`, note: findType('Business')?.description || state.settings?.business?.industry || 'Business context will improve as you add memories.' },
+        { title: 'Your Goals', value: findType('Goal')?.description || profile.mainGoal || state.settings?.business?.mainGoal || 'No goal saved yet', note: 'Barya uses this to prioritize advice.' },
+        { title: 'Your Strengths', value: findType('Strength')?.description || 'Not enough data yet', note: 'Add strengths so Barya can tailor strategy to your advantages.' },
+        { title: 'Your Challenges', value: challenges || profile.challenges?.join(', ') || 'No challenge saved yet', note: 'Barya uses challenges to reduce generic guidance.' }
+      ];
+      const storagePct = Math.min(100, Math.round((entries.length / 200) * 100));
+      const assistantPrompts = ['What are my main goals?', 'What did I decide about pricing?', 'What are my biggest challenges?', 'Show my recent learnings.', 'What is my business focus?'];
 
       el.innerHTML = `
-        <section class="bg-white border border-orange-100 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
-          <div class="grid xl:grid-cols-[260px_1fr] min-h-[72vh]">
-            <aside class="border-r border-orange-100 bg-[#fffaf5] p-4 space-y-4">
+        <section class="relative overflow-hidden rounded-[2rem] border border-violet-300/20 bg-slate-950 p-4 text-slate-100 shadow-[0_24px_80px_rgba(20,10,60,0.45)] sm:p-6">
+          <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(168,85,247,0.28),transparent_32%),radial-gradient(circle_at_85%_20%,rgba(45,212,191,0.14),transparent_28%)]"></div>
+          <div class="relative space-y-6">
+            <header class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>
-                <h2 class="text-2xl font-semibold text-barya-accent">Memory Vault</h2>
-                <p class="text-sm text-zinc-600 mt-1">Your private second brain. Save ideas, decisions, and insights locally.</p>
-                <p class="text-xs text-zinc-500 mt-2">Notes are saved automatically.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.26em] text-violet-200">Long-term intelligence</p>
+                <h2 class="mt-2 text-4xl font-black text-white">Memory</h2>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Barya remembers your business, preferences and everything that matters.</p>
               </div>
-
-              <div class="space-y-2">
-                <button data-memory-tab="daily" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'daily' && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">Daily Notes</button>
-                <button data-memory-tab="all" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.leftTab === 'all' && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">All Notes</button>
-                <button data-memory-tab="graph" class="w-full text-left px-3 py-2 rounded-lg border transition ${memory.viewMode === 'graph' ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white hover:border-orange-300'}">Graph View</button>
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <input id="memorySearch" placeholder="Search in memory…" value="${escapeAttr(memory.search)}" class="min-w-[260px] rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-300/70" />
+                <select id="memoryQuickType" class="rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none">
+                  ${typeLabels.map(type => `<option value="${type}">${type === 'Insight' ? 'Save Insight' : type === 'Goal' ? 'Add Goal' : type === 'Decision' ? 'Save Decision' : type === 'Preference' ? 'Add Preference' : type === 'Learning' ? 'Save Learning' : type === 'Conversation' ? 'Save Conversation' : type === 'File' ? 'Upload File' : 'Add Event'}</option>`).join('')}
+                </select>
+                <button id="addMemoryBtn" class="rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-teal-400 px-5 py-3 text-sm font-black text-white shadow-[0_0_28px_rgba(168,85,247,0.35)]">Add Memory</button>
               </div>
+            </header>
 
-              <div class="space-y-2">
-                <button id="newMemoryNote" class="w-full px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 transition">New Note</button>
-                <button id="newDailyNote" class="w-full px-4 py-3 rounded-xl border border-orange-300 bg-orange-50 text-orange-700 font-semibold hover:bg-orange-100 transition">New Daily Note</button>
-              </div>
+            <section class="grid gap-3 md:grid-cols-4">
+              ${[
+                ['Total Memories', stats.total, 'Real saved items'],
+                ['This Month', stats.thisMonth, 'Created this month'],
+                ['Key Insights', stats.keyInsights, 'Saved insights'],
+                ['Preferences', stats.preferences, 'Style and workflow']
+              ].map(card => `<article class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4 backdrop-blur"><p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">${card[0]}</p><p class="mt-2 text-3xl font-black text-white">${card[1]}</p><p class="mt-1 text-xs text-slate-500">${card[2]}</p></article>`).join('')}
+            </section>
 
-              <div class="pt-2 border-t border-orange-100 space-y-2">
-                <button id="exportMemory" class="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-300 text-sm">Export Memory (JSON)</button>
-                <label class="block w-full px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-300 text-sm text-center cursor-pointer">Import Memory<input id="importMemory" type="file" accept="application/json" class="hidden"></label>
-                <button id="clearMemory" class="w-full px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 text-sm">Clear Memory Vault</button>
-              </div>
-            </aside>
+            <nav class="flex gap-2 overflow-x-auto pb-1">
+              ${tabs.map(tab => `<button data-memory-filter="${tab}" class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${activeType === tab ? 'border-violet-300 bg-violet-400/20 text-violet-100 shadow-[0_0_20px_rgba(168,85,247,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:border-violet-300/50 hover:text-white'}">${tab}</button>`).join('')}
+            </nav>
 
-            <div class="p-4 sm:p-5 space-y-4 bg-[#fffdf9]">
-              <div class="flex flex-wrap items-center gap-2 justify-between">
-                <input id="memorySearch" placeholder="Search notes by title, text, or tags..." value="${escapeAttr(memory.search)}" class="w-[min(420px,78vw)] bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-orange-400 outline-none" />
-                <p class="text-xs text-zinc-500">${visibleNotes.length} visible · ${memory.insights.length} total notes</p>
-              </div>
-
-              <div class="grid xl:grid-cols-[310px_1fr] gap-4">
-                <section class="bg-white border border-orange-100 rounded-xl p-3 max-h-[62vh] overflow-auto scrollbar-thin">
-                  <p class="text-xs uppercase tracking-wide text-zinc-500 mb-2">${memory.leftTab === 'daily' ? 'Daily Notes' : 'All Notes'}</p>
-                  <div class="space-y-2">
-                    ${visibleNotes.map(note => `
-                      <button data-open-note="${note.id}" class="w-full text-left rounded-lg border p-2.5 transition ${note.id === memory.activeNoteId && memory.viewMode !== 'graph' ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}">
-                        <div class="flex items-center justify-between gap-2">
-                          <p class="font-medium truncate">${escapeHTML(note.title)}</p>
-                          ${note.isDaily ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Daily</span>' : ''}
-                        </div>
-                        <p class="text-xs text-zinc-500 truncate mt-1">${escapeHTML((note.tags || []).join(', ') || 'General')}</p>
-                      </button>
-                    `).join('') || `
-                      <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-5 text-center space-y-3">
-                        <p class="text-sm text-zinc-700">This is your private memory vault.<br/>Start by creating your first note or daily entry.</p>
-                        <div class="grid gap-2 sm:grid-cols-2">
-                          <button id="emptyNewNote" class="px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600">New Note</button>
-                          <button id="emptyNewDailyNote" class="px-4 py-3 rounded-xl border border-orange-300 bg-white text-orange-700 font-semibold hover:bg-orange-50">New Daily Note</button>
-                        </div>
-                      </div>
-                    `}
+            <div class="grid gap-5 xl:grid-cols-[1fr_360px]">
+              <main class="space-y-5">
+                <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur">
+                  <h3 class="text-xl font-black text-white">Your Memory at a Glance</h3>
+                  <div class="mt-4 grid gap-3 md:grid-cols-2">
+                    ${glanceCards.map(card => `<article class="rounded-3xl border border-white/10 bg-slate-950/60 p-4"><p class="text-xs font-bold uppercase tracking-[0.18em] text-violet-200">${escapeHTML(card.title)}</p><p class="mt-2 text-lg font-black leading-7 text-white">${escapeHTML(card.value)}</p><p class="mt-2 text-xs leading-5 text-slate-400">${escapeHTML(card.note)}</p></article>`).join('')}
                   </div>
                 </section>
 
-                <section class="bg-white border border-orange-100 rounded-xl p-4">
-                  ${memory.viewMode === 'graph' ? `
-                    <div class="space-y-3">
-                      <h3 class="text-lg font-semibold text-zinc-900">Graph View</h3>
-                      <p class="text-xs text-zinc-500">See how your notes connect. Create more notes to see connections.</p>
-                      ${graphNodes.length ? `<canvas id="memoryGraphCanvas" width="620" height="420" class="w-full bg-[#fff7ed] border border-orange-100 rounded-lg"></canvas>` : `
-                        <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-6 text-center text-sm text-zinc-600">
-                          Create more notes to see connections.
-                        </div>
-                      `}
-                    </div>
-                  ` : activeNote ? `
-                    <div class="space-y-3">
-                      <div class="grid sm:grid-cols-2 gap-2">
-                        <input id="noteTitle" value="${escapeAttr(activeNote.title)}" class="bg-white border border-gray-300 rounded-lg px-3 py-2 font-semibold" />
-                        <input id="noteTags" value="${escapeAttr((activeNote.tags || []).join(', '))}" placeholder="Tags: strategy, growth" class="bg-white border border-gray-300 rounded-lg px-3 py-2" />
-                      </div>
-                      <div class="flex flex-wrap items-center gap-2">
-                        <select id="memoryLinkPageSelect" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                          <option value="">Choose a page to mention...</option>
-                          ${(state.workspace?.pages || []).slice(0, 30).map(page => `<option value="${page.id}">${escapeHTML(page.title)}</option>`).join('')}
-                        </select>
-                        <button id="memoryLinkToPage" class="px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold hover:bg-orange-600">Link to Page</button>
-                        <button id="memoryShowRelated" class="px-3 py-2 rounded-lg bg-orange-50 border border-orange-300 text-orange-700 text-sm">Show Related</button>
-                      </div>
-                      <textarea id="noteContent" rows="18" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 text-sm leading-6 focus:border-orange-400 outline-none" placeholder="Write your note here. Tip: type [[Note Title]] to connect notes.">${escapeHTML(activeNote.content)}</textarea>
-                      <div class="flex flex-wrap items-center gap-2 justify-between">
-                        <p class="text-xs text-zinc-500">Notes are saved automatically · Updated ${new Date(activeNote.ts).toLocaleString()}</p>
-                        <button id="deleteActiveNote" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200">Delete Note</button>
-                      </div>
-
-                      <div class="grid md:grid-cols-2 gap-3 pt-2 border-t border-orange-100">
-                        <div class="rounded-lg border border-gray-200 p-3">
-                          <p class="text-sm font-semibold text-zinc-800">Outgoing Links</p>
-                          <p class="text-xs text-zinc-500 mb-2">Notes this note points to.</p>
-                          <div class="space-y-1 max-h-36 overflow-auto scrollbar-thin pr-1">
-                            ${(activeNote.links || []).map(linkedId => {
-                              const linked = memory.insights.find(n => n.id === linkedId);
-                              return linked ? `<button data-open-note="${linked.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">→ ${escapeHTML(linked.title)}</button>` : '';
-                            }).join('') || emptyStateMarkup('↗️', 'No outgoing links yet.', 'Link this note to another note for context.', '', 'Start Here', 'section:memory')}
-                          </div>
-                        </div>
-                        <div class="rounded-lg border border-gray-200 p-3">
-                          <p class="text-sm font-semibold text-zinc-800">Backlinks</p>
-                          <p class="text-xs text-zinc-500 mb-2">Notes that mention this note.</p>
-                          <div class="space-y-1 max-h-36 overflow-auto scrollbar-thin pr-1">
-                            ${(backlinksMap[activeNote.id] || []).map(backId => {
-                              const back = memory.insights.find(n => n.id === backId);
-                              return back ? `<button data-open-note="${back.id}" class="block text-left text-sm text-orange-700 hover:text-orange-800">← ${escapeHTML(back.title)}</button>` : '';
-                            }).join('') || emptyStateMarkup('↩️', 'No backlinks yet.', 'Create more connected notes and backlinks will appear.', '', 'Start Here', 'section:memory')}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ` : `
-                    <div class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-6 text-center space-y-3">
-                      <p class="text-sm text-zinc-700">This is your private memory vault.<br/>Start by creating your first note or daily entry.</p>
-                      <div class="flex flex-wrap items-center justify-center gap-2">
-                        <button id="emptyEditorNewNote" class="px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600">New Note</button>
-                        <button id="emptyEditorNewDailyNote" class="px-4 py-3 rounded-xl border border-orange-300 bg-white text-orange-700 font-semibold hover:bg-orange-50">New Daily Note</button>
-                      </div>
-                    </div>
-                  `}
+                <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur">
+                  <div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-xl font-black text-white">Recent Memories</h3><p class="mt-1 text-sm text-slate-400">Real saved memories from onboarding, Barya AI, files, events, and manual entries.</p></div><button id="exportMemory" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/10">Export JSON</button></div>
+                  <div class="mt-4 space-y-3">
+                    ${visible.length ? visible.map(item => `<article data-memory-id="${escapeAttr(item.id)}" class="group rounded-3xl border border-white/10 bg-slate-950/60 p-4 transition hover:border-violet-300/40 hover:bg-slate-900/90"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h4 class="font-black text-white">${escapeHTML(item.title)}</h4><span class="rounded-full border border-teal-300/25 bg-teal-300/10 px-2 py-0.5 text-[11px] font-bold text-teal-100">${escapeHTML(item.type)}</span></div><p class="mt-2 text-sm leading-6 text-slate-300">${escapeHTML(item.description || 'No description yet.')}</p><p class="mt-2 text-xs text-slate-500">${new Date(item.createdAt).toLocaleString()} · ${escapeHTML(item.source || 'manual')}</p></div><div class="flex gap-2"><button data-open-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Open</button><button data-edit-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Edit</button><button data-delete-memory="${escapeAttr(item.id)}" class="rounded-lg border border-red-300/20 px-2 py-1 text-xs text-red-200">Delete</button></div></div></article>`).join('') : `<div class="rounded-3xl border border-dashed border-violet-300/25 bg-violet-400/10 p-8 text-center"><p class="text-lg font-bold text-white">No memories yet.</p><p class="mt-2 text-sm text-slate-400">Complete onboarding or add your first insight, goal, decision, preference, learning, conversation, file, or event.</p></div>`}
+                  </div>
                 </section>
-              </div>
+              </main>
 
-              <section class="bg-white border border-orange-100 rounded-xl p-4">
-                <h3 class="font-semibold mb-1 text-zinc-900">Recent Actions</h3>
-                <p class="text-xs text-zinc-500 mb-3">Capture what happened and connect it to a note or page for future context.</p>
-                <form id="actionForm" class="grid md:grid-cols-[1fr_140px_190px_auto] gap-2 mb-3">
-                  <input id="actionText" placeholder="Example: Follow up with investor" class="bg-white border border-gray-300 rounded px-3 py-2" />
-                  <select id="actionCategory" class="bg-white border border-gray-300 rounded px-3 py-2">
-                    <option>Product</option><option>Customer</option><option>Finance</option><option>Ops</option>
-                  </select>
-                  <select id="actionLink" class="bg-white border border-gray-300 rounded px-3 py-2">
-                    <option value="">Optional: link to note or page</option>
-                    ${memory.insights.slice(0, 30).map(note => `<option value="note:${note.id}">🧠 ${escapeHTML(note.title)}</option>`).join('')}
-                    ${(state.workspace?.pages || []).slice(0, 20).map(page => `<option value="page:${page.id}">📄 ${escapeHTML(page.title)}</option>`).join('')}
-                  </select>
-                  <button class="px-3 py-2 rounded bg-orange-500 text-white font-semibold hover:bg-orange-600">Add Action</button>
-                </form>
-                <ul class="space-y-2 max-h-[28vh] overflow-auto scrollbar-thin pr-1">
-                  ${memory.actions.map(action => {
-                    const linked = (action.linkRef || '').split(':');
-                    const kind = linked[0];
-                    const id = linked[1];
-                    const linkedLabel = kind === 'note'
-                      ? (memory.insights.find(n => n.id === id)?.title || 'Missing note')
-                      : kind === 'page'
-                        ? ((state.workspace?.pages || []).find(p => p.id === id)?.title || 'Missing page')
-                        : '';
-                    return `
-                      <li class="bg-[#fffaf5] border border-orange-100 rounded-lg p-3 text-sm flex justify-between gap-3">
-                        <div>
-                          <p class="text-zinc-800">${escapeHTML(action.text)} <span class="text-zinc-500">· ${escapeHTML(action.category)}</span></p>
-                          <p class="text-xs text-zinc-500 mt-1">${new Date(action.ts || Date.now()).toLocaleString()}</p>
-                          ${linkedLabel ? `<button data-jump="${escapeAttr(action.linkRef)}" class="text-xs text-orange-700 hover:text-orange-800 mt-1">Linked to: ${escapeHTML(linkedLabel)}</button>` : '<p class="text-xs text-zinc-500 mt-1">No link added</p>'}
-                        </div>
-                        <button data-del-action="${action.id}" class="text-red-500 text-xs">Delete</button>
-                      </li>
-                    `;
-                  }).join('') || `
-                    <li class="rounded-xl border border-dashed border-orange-200 bg-orange-50/70 p-4 text-center text-sm text-zinc-600">
-                      No actions yet. Add your first action to keep momentum.
-                    </li>
-                  `}
-                </ul>
-              </section>
+              <aside class="space-y-5">
+                <section class="rounded-[1.75rem] border border-violet-300/20 bg-violet-400/[0.08] p-5 backdrop-blur">
+                  <h3 class="text-lg font-black text-white">Memory Assistant</h3>
+                  <p class="mt-1 text-xs leading-5 text-slate-400">Ask Barya to recall goals, decisions, challenges, learnings, or business focus from saved memories.</p>
+                  <div class="mt-3 space-y-2">${assistantPrompts.map(prompt => `<button data-memory-question="${escapeAttr(prompt)}" class="w-full rounded-2xl border border-white/10 bg-slate-950/60 p-3 text-left text-sm text-slate-300 hover:border-violet-300/50 hover:text-white">${escapeHTML(prompt)}</button>`).join('')}</div>
+                  <textarea id="memoryAssistantQuestion" rows="3" placeholder="Ask Memory Assistant…" class="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/60 p-3 text-sm text-white outline-none placeholder:text-slate-500">${escapeHTML(memory.assistantQuestion || '')}</textarea>
+                  <button id="askMemoryAssistant" class="mt-2 w-full rounded-2xl bg-violet-500 px-4 py-2.5 text-sm font-bold text-white">Ask Memory</button>
+                  <pre class="mt-3 whitespace-pre-wrap rounded-2xl border border-white/10 bg-slate-950/70 p-3 text-xs leading-5 text-slate-300">${escapeHTML(memory.assistantAnswer || 'Ask a question to recall saved context.')}</pre>
+                </section>
+
+                <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur">
+                  <h3 class="text-lg font-black text-white">Memory Categories</h3>
+                  <div class="mt-3 space-y-2">${categories.map(cat => { const singular = cat.replace(/s$/, ''); const count = stats.byType[singular] || 0; return `<div class="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2 text-sm"><span class="text-slate-300">${cat}</span><span class="font-black text-white">${count}</span></div>`; }).join('')}</div>
+                </section>
+
+                <section class="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-300/[0.07] p-5 backdrop-blur">
+                  <h3 class="text-lg font-black text-white">Memory Storage</h3>
+                  <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-900"><div class="h-full rounded-full bg-gradient-to-r from-violet-400 to-teal-300" style="width:${storagePct}%"></div></div>
+                  <p class="mt-2 text-xs text-slate-400">${entries.length} saved memories · ${storagePct}% of the local starter capacity used.</p>
+                  <p class="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-sm leading-6 text-emerald-50">Your memory is private and fully under your control.</p>
+                  <button id="clearMemory" class="mt-3 w-full rounded-2xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-sm text-red-100">Clear Memory</button>
+                </section>
+              </aside>
             </div>
           </div>
         </section>
       `;
 
-      const openNote = (noteId) => {
-        memory.activeNoteId = noteId;
-        memory.viewMode = 'list';
-        saveState();
+      document.getElementById('memorySearch').oninput = (e) => { memory.search = e.target.value; saveState(); };
+      document.getElementById('addMemoryBtn').onclick = () => {
+        const type = document.getElementById('memoryQuickType').value || 'Insight';
+        const title = prompt(`${type} title:`);
+        if (!title) return;
+        const description = prompt(`${type} description:`) || '';
+        addMemory({ type, title, description, source: 'manual', tags: [type], importance: type === 'Goal' || type === 'Decision' ? 'high' : 'medium' });
       };
-
-      el.querySelectorAll('[data-memory-tab]').forEach(btn => {
-        btn.onclick = () => {
-          if (btn.dataset.memoryTab === 'graph') {
-            memory.viewMode = 'graph';
-          } else {
-            memory.leftTab = btn.dataset.memoryTab;
-            memory.viewMode = 'list';
-          }
-          saveState();
-        };
+      el.querySelectorAll('[data-memory-filter]').forEach(btn => btn.onclick = () => { memory.activeType = btn.dataset.memoryFilter; saveState(); });
+      el.querySelectorAll('[data-open-memory]').forEach(btn => btn.onclick = () => {
+        const item = getMemoryEntries().find(memory => memory.id === btn.dataset.openMemory);
+        if (item) alert(`${item.title}\n\nType: ${item.type}\nCreated: ${new Date(item.createdAt).toLocaleString()}\n\n${item.description}`);
       });
-
-      document.getElementById('memorySearch').oninput = (e) => {
-        memory.search = e.target.value;
-        saveState();
-      };
-
-      document.getElementById('newMemoryNote').onclick = () => {
-        const note = {
-          id: crypto.randomUUID(),
-          title: `Note ${memory.insights.length + 1}`,
-          content: '',
-          tags: ['General'],
-          tag: 'General',
-          ts: new Date().toISOString(),
-          isDaily: false,
-          links: []
-        };
-        memory.insights.unshift(note);
-        memory.activeNoteId = note.id;
-        memory.leftTab = 'all';
-        memory.viewMode = 'list';
-        saveState();
-      };
-      document.getElementById('emptyNewNote')?.addEventListener('click', () => document.getElementById('newMemoryNote').click());
-      document.getElementById('emptyEditorNewNote')?.addEventListener('click', () => document.getElementById('newMemoryNote').click());
-
-      document.getElementById('newDailyNote').onclick = () => {
-        const existing = memory.insights.find(n => n.isDaily && n.title === dailyISO);
-        if (existing) {
-          memory.activeNoteId = existing.id;
-          memory.leftTab = 'daily';
-          memory.viewMode = 'list';
-          saveState();
-          return;
-        }
-        const note = {
-          id: crypto.randomUUID(),
-          title: dailyISO,
-          content: `# Daily Note ${dailyISO}\n\n## Priorities\n- \n\n## Wins\n- `,
-          tags: ['Daily', 'Journal'],
-          tag: 'Daily, Journal',
-          ts: new Date().toISOString(),
-          isDaily: true,
-          links: []
-        };
-        memory.insights.unshift(note);
-        memory.activeNoteId = note.id;
-        memory.leftTab = 'daily';
-        memory.viewMode = 'list';
-        saveState();
-      };
-      document.getElementById('emptyNewDailyNote')?.addEventListener('click', () => document.getElementById('newDailyNote').click());
-      document.getElementById('emptyEditorNewDailyNote')?.addEventListener('click', () => document.getElementById('newDailyNote').click());
-
-      el.querySelectorAll('[data-open-note]').forEach(btn => {
-        btn.onclick = () => openNote(btn.dataset.openNote);
+      el.querySelectorAll('[data-edit-memory]').forEach(btn => btn.onclick = () => {
+        const item = getMemoryEntries().find(memory => memory.id === btn.dataset.editMemory);
+        if (!item) return;
+        const title = prompt('Edit title:', item.title);
+        if (title === null) return;
+        const description = prompt('Edit description:', item.description);
+        if (description === null) return;
+        updateMemory(item.id, { title, description });
       });
-
-      if (activeNote && memory.viewMode !== 'graph') {
-        const showRelatedBtn = document.getElementById('memoryShowRelated');
-        if (showRelatedBtn) showRelatedBtn.onclick = () => showRelated(`note:${activeNote.id}`);
-        const linkToPageBtn = document.getElementById('memoryLinkToPage');
-        if (linkToPageBtn) {
-          linkToPageBtn.onclick = () => {
-            const select = document.getElementById('memoryLinkPageSelect');
-            const pageId = select?.value;
-            if (!pageId) return;
-            const page = (state.workspace?.pages || []).find(p => p.id === pageId);
-            if (!page) return;
-            const line = `\n\nRelated page: ${page.title}`;
-            if (!activeNote.content.includes(line.trim())) activeNote.content += line;
-            activeNote.ts = new Date().toISOString();
-            saveState();
-          };
-        }
-        document.getElementById('noteTitle').oninput = (e) => {
-          activeNote.title = e.target.value;
-          activeNote.isDaily = /^\d{4}-\d{2}-\d{2}/.test(activeNote.title);
-          activeNote.ts = new Date().toISOString();
-          saveStateWithoutRender();
-        };
-        document.getElementById('noteTags').oninput = (e) => {
-          activeNote.tags = normalizeTags(e.target.value);
-          if (!activeNote.tags.length) activeNote.tags = ['General'];
-          activeNote.tag = activeNote.tags.join(', ');
-          activeNote.ts = new Date().toISOString();
-          saveStateWithoutRender();
-        };
-        document.getElementById('noteContent').oninput = (e) => {
-          activeNote.content = e.target.value;
-          activeNote.ts = new Date().toISOString();
-          saveStateWithoutRender();
-        };
-        document.getElementById('deleteActiveNote').onclick = () => {
-          memory.insights = memory.insights.filter(note => note.id !== activeNote.id);
-          if (memory.activeNoteId === activeNote.id) memory.activeNoteId = memory.insights[0]?.id || null;
-          memory.actions = memory.actions.filter(action => action.linkRef !== `note:${activeNote.id}`);
-          saveState();
-        };
-      }
-
-      if (memory.viewMode === 'graph') {
-        const canvas = document.getElementById('memoryGraphCanvas');
-        const ctx = canvas?.getContext('2d');
-        if (ctx) {
-          const animatedNodes = graphNodes.map(node => ({ ...node, sx: node.x, sy: node.y + 14, alpha: 0 }));
-          const animatedNodeMap = new Map(animatedNodes.map(node => [node.id, node]));
-          const springEase = (t) => {
-            const clamped = Math.max(0, Math.min(1, t));
-            return 1 - Math.exp(-5 * clamped) * Math.cos(5 * clamped);
-          };
-          const draw = (hoverId = null, nodeAlpha = 1) => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0b111a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.lineWidth = 1.3;
-            filteredNotes.forEach(note => {
-              const from = animatedNodeMap.get(note.id) || nodeMap.get(note.id);
-              (note.links || []).forEach(targetId => {
-                const to = animatedNodeMap.get(targetId) || nodeMap.get(targetId);
-                if (!from || !to) return;
-                ctx.strokeStyle = `rgba(20, 184, 166, ${0.35 * nodeAlpha})`;
-                ctx.beginPath();
-                ctx.moveTo(from.sx || from.x, from.sy || from.y);
-                ctx.lineTo(to.sx || to.x, to.sy || to.y);
-                ctx.stroke();
-              });
-            });
-
-            animatedNodes.forEach(node => {
-              const isActive = node.id === memory.activeNoteId;
-              const isHover = node.id === hoverId;
-              const x = node.sx || node.x;
-              const y = node.sy || node.y;
-              const alpha = (node.alpha ?? 1) * nodeAlpha;
-              ctx.beginPath();
-              ctx.arc(x, y, isHover ? node.r + 3 : node.r, 0, Math.PI * 2);
-              ctx.fillStyle = isActive ? `rgba(20, 184, 166, ${alpha})` : `rgba(30, 41, 59, ${alpha})`;
-              ctx.fill();
-              ctx.lineWidth = isActive ? 2 : 1;
-              ctx.strokeStyle = isActive ? `rgba(20, 184, 166, ${0.8 * alpha})` : `rgba(148, 163, 184, ${0.35 * alpha})`;
-              ctx.stroke();
-
-              ctx.fillStyle = isActive ? `rgba(0, 16, 24, ${alpha})` : `rgba(219, 234, 254, ${alpha})`;
-              ctx.font = '12px sans-serif';
-              ctx.fillText(node.title.slice(0, 18), x + 14, y + 4);
-            });
-          };
-
-          const getNodeAt = (evt) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = (evt.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (evt.clientY - rect.top) * (canvas.height / rect.height);
-            return graphNodes.find(node => Math.hypot(node.x - x, node.y - y) <= node.r + 4) || null;
-          };
-
-          if (prefersReducedMotion()) {
-            animatedNodes.forEach(node => {
-              node.sx = node.x;
-              node.sy = node.y;
-              node.alpha = 1;
-            });
-            draw();
-          } else {
-            const startedAt = performance.now();
-            const duration = 420;
-            const animateGraphIn = (now) => {
-              const t = Math.min(1, (now - startedAt) / duration);
-              const eased = springEase(t);
-              animatedNodes.forEach((node, idx) => {
-                const stagger = Math.min(1, Math.max(0, (t * 1.08) - idx * 0.025));
-                const local = springEase(stagger);
-                node.sx = node.x;
-                node.sy = node.y + (1 - local) * 14;
-                node.alpha = local;
-              });
-              draw(null, eased);
-              if (t < 1) requestAnimationFrame(animateGraphIn);
-            };
-            requestAnimationFrame(animateGraphIn);
-          }
-          canvas.onmousemove = (evt) => {
-            const hit = getNodeAt(evt);
-            canvas.style.cursor = hit ? 'pointer' : 'default';
-            draw(hit?.id || null);
-          };
-          canvas.onclick = (evt) => {
-            const hit = getNodeAt(evt);
-            if (!hit) return;
-            memory.activeNoteId = hit.id;
-            memory.viewMode = 'list';
-            saveState();
-          };
-        }
-      }
-
-      document.getElementById('actionForm').onsubmit = (e) => {
-        e.preventDefault();
-        const text = document.getElementById('actionText').value.trim();
-        if (!text) return;
-        const category = document.getElementById('actionCategory').value;
-        const linkRef = document.getElementById('actionLink').value;
-        memory.actions.unshift({
-          id: crypto.randomUUID(),
-          text,
-          category,
-          linkRef,
-          ts: new Date().toISOString()
-        });
-        saveState();
-      };
-
-      el.querySelectorAll('[data-jump]').forEach(btn => {
-        btn.onclick = () => {
-          const [kind, id] = (btn.dataset.jump || '').split(':');
-          if (kind === 'note' && id) {
-            openNote(id);
-          } else if (kind === 'page' && id) {
-            state.activeSection = 'workspace';
-            if (state.workspace) state.workspace.activePageId = id;
-            renderNav();
-            saveState();
-          }
-        };
+      el.querySelectorAll('[data-delete-memory]').forEach(btn => btn.onclick = () => {
+        if (confirm('Delete this memory?')) deleteMemory(btn.dataset.deleteMemory);
       });
-
-      el.querySelectorAll('[data-del-action]').forEach(btn => {
-        btn.onclick = () => {
-          memory.actions = memory.actions.filter(action => action.id !== btn.dataset.delAction);
-          saveState();
-        };
-      });
-
-      document.getElementById('exportMemory').onclick = () => {
-        downloadJSON('memory-full-export.json', memory);
-      };
-      document.getElementById('importMemory').onchange = (e) => {
-        importJSONFile(e.target.files[0], (data) => {
-          if (!data || typeof data !== 'object') return;
-          state.memory = deepMerge(structuredClone(defaultState.memory), data);
-          if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
-          if (!Array.isArray(state.memory.actions)) state.memory.actions = [];
-          saveState();
-        });
-      };
+      const ask = (question) => { memory.assistantQuestion = question; memory.assistantAnswer = answerMemoryQuestion(question); saveState(); };
+      el.querySelectorAll('[data-memory-question]').forEach(btn => btn.onclick = () => ask(btn.dataset.memoryQuestion));
+      document.getElementById('askMemoryAssistant').onclick = () => ask(document.getElementById('memoryAssistantQuestion').value);
+      document.getElementById('memoryAssistantQuestion').oninput = (e) => { memory.assistantQuestion = e.target.value; saveStateWithoutRender(); };
+      document.getElementById('exportMemory').onclick = () => downloadJSON('barya-memory-export.json', getMemoryEntries());
       document.getElementById('clearMemory').onclick = () => {
-        if (!confirm('Clear all memory notes, links, and actions? This cannot be undone.')) return;
+        if (!confirm('Clear all saved memories? This cannot be undone.')) return;
         state.memory = structuredClone(defaultState.memory);
+        persistMemoryLocal();
         saveState();
       };
     }
-
 
     function renderPlanning() {
       if (!state.planning || typeof state.planning !== 'object') state.planning = structuredClone(defaultState.planning);
@@ -6604,10 +6397,14 @@
       document.getElementById('saveToMemoryBtn').onclick = () => {
         const session = getSession();
         if (!session) return alert('Run strategy or research first.');
-        if (!state.memory || typeof state.memory !== 'object') state.memory = structuredClone(defaultState.memory);
-        if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
-        state.memory.insights.unshift({ id: crypto.randomUUID(), title: `Research Insight: ${session.query.slice(0, 42)}`, content: `${session.deep.summary}\n\nLinked Research: [[Research: ${session.query.slice(0, 42)}]]\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`, tags: ['Research', 'Strategy'], tag: 'Research, Strategy', ts: new Date().toISOString() });
-        saveState();
+        addMemory({
+          type: 'Insight',
+          title: `Research Insight: ${session.query.slice(0, 42)}`,
+          description: `${session.deep.summary}\n\nLinked Research: Research: ${session.query.slice(0, 42)}\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`,
+          source: 'barya-ai-research',
+          tags: ['Research', 'Strategy'],
+          importance: 'high'
+        });
       };
       document.getElementById('exportResearchJson').onclick = () => { const session = getSession(); if (!session) return alert('No research session to export.'); downloadJSON(`research-report-${new Date().toISOString().slice(0,10)}.json`, session); };
       document.getElementById('exportResearchText').onclick = () => {
