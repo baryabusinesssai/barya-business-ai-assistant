@@ -1387,6 +1387,32 @@
     body.premium-dark button:hover { filter: brightness(1.08); }
 
 
+    /* Scroll fix for long-form sections: keep the app shell/sidebar fixed while these panels own vertical scrolling. */
+    #mainTaskSection > :is(#section-ai, #section-planning, #section-settings) {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #mainTaskSection > :is(#section-ai, #section-planning, #section-settings).active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #section-ai > .barya-ai-premium,
+    #section-planning > section,
+    #section-settings > section {
+      flex: 0 0 auto;
+      width: 100%;
+      min-height: 100%;
+      height: auto;
+    }
+
+
   </style>
 </head>
 <body class="premium-dark dark-mode-enabled text-slate-100 antialiased overflow-hidden">
@@ -5124,7 +5150,7 @@
           #section-ai .barya-ai-premium [class*="border-white"] { border-color: rgba(255,255,255,0.10) !important; }
           #section-ai .barya-ai-premium textarea::placeholder { color: #64748b !important; opacity: 1; }
         </style>
-        <div class="barya-ai-premium relative overflow-hidden rounded-[2rem] border border-violet-400/20 bg-[#050816] p-4 text-slate-100 shadow-[0_34px_110px_rgba(2,6,23,0.55)] sm:p-6 lg:p-8">
+        <div class="barya-ai-premium relative overflow-visible rounded-[2rem] border border-violet-400/20 bg-[#050816] p-4 text-slate-100 shadow-[0_34px_110px_rgba(2,6,23,0.55)] sm:p-6 lg:p-8">
           <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(168,85,247,0.26),transparent_30%),radial-gradient(circle_at_82%_5%,rgba(20,184,166,0.24),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.82),rgba(7,10,25,0.94))]"></div>
           <div class="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-teal-400/10 blur-3xl"></div>
           <div class="pointer-events-none absolute -left-28 bottom-20 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl"></div>
@@ -6026,7 +6052,7 @@
       ];
 
       el.innerHTML = `
-        <section class="min-h-full rounded-[2rem] border border-violet-400/20 bg-[#080914] text-slate-100 shadow-2xl shadow-violet-950/40 overflow-hidden">
+        <section class="min-h-full rounded-[2rem] border border-violet-400/20 bg-[#080914] text-slate-100 shadow-2xl shadow-violet-950/40 overflow-visible">
           <div class="relative p-4 sm:p-6 lg:p-8 space-y-6">
             <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.25),transparent_32%),radial-gradient(circle_at_85%_15%,rgba(20,184,166,0.18),transparent_30%)]"></div>
             <div class="relative flex flex-wrap items-start justify-between gap-4">
@@ -6582,7 +6608,7 @@
 
       const el = document.getElementById('section-settings');
       el.innerHTML = `
-        <section class="relative min-h-full overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.28),transparent_34%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.22),transparent_30%),linear-gradient(135deg,#050816_0%,#0f172a_48%,#111827_100%)] p-4 text-slate-100 sm:p-6">
+        <section class="relative min-h-full overflow-visible rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.28),transparent_34%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.22),transparent_30%),linear-gradient(135deg,#050816_0%,#0f172a_48%,#111827_100%)] p-4 text-slate-100 sm:p-6">
           <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] opacity-30"></div>
           <div class="relative z-10 space-y-6">
             <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
