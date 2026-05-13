@@ -4524,6 +4524,142 @@
       page.updatedAt = new Date().toISOString();
     }
 
+
+
+    const WORKSPACE_AI_PROMPTS = [
+      'Summarize my workspace',
+      'Suggest next priority',
+      'Create project plan',
+      'Organize my tasks',
+      'Review documents',
+      'Find missing resources'
+    ];
+    let workspaceAiOpen = false;
+    let workspaceAiMessages = [];
+
+    function getWorkspaceAiContext() {
+      ensureWorkspaceState();
+      ensureTasksState();
+      const pages = state.workspace?.pages || [];
+      const projects = pages.filter(page => page.objectType === 'Project');
+      const documents = pages.filter(page => ['Document', 'Page'].includes(page.objectType));
+      const notes = pages.filter(page => page.objectType === 'Note');
+      const tasks = state.tasks?.items || [];
+      const resources = state.resources || {};
+      const files = [
+        ...(Array.isArray(resources.library) ? resources.library : []),
+        ...(Array.isArray(resources.customResources) ? resources.customResources : []),
+        ...(Array.isArray(resources.bookmarks) ? resources.bookmarks : [])
+      ];
+      const business = state.settings?.business || {};
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
+      const pageText = pages.flatMap(page => (page.blocks || [])
+        .map(block => [block.text, block.content, ...(block.rows || []).flat()].filter(Boolean).join(' '))
+        .filter(Boolean)
+        .map(text => `${page.title}: ${text.slice(0, 140)}`)
+      );
+      const hasBusinessProfile = Boolean(
+        business.name || business.industry || business.description || business.mainGoal ||
+        profile.businessName || profile.industry || profile.businessDescription || profile.mainGoal
+      );
+      return {
+        pages,
+        projects,
+        documents,
+        notes,
+        tasks,
+        files,
+        business,
+        profile,
+        pageText,
+        hasData: pages.length > 0 || tasks.length > 0 || files.length > 0 || hasBusinessProfile,
+        openTasks: tasks.filter(task => task.status !== 'Done'),
+        doneTasks: tasks.filter(task => task.status === 'Done')
+      };
+    }
+
+    function shortList(items, mapper, empty = 'none yet') {
+      const values = (items || []).slice(0, 4).map(mapper).filter(Boolean);
+      return values.length ? values.join('; ') : empty;
+    }
+
+    function generateWorkspaceAiResponse(prompt) {
+      const ctx = getWorkspaceAiContext();
+      if (!ctx.hasData) {
+        return 'Your workspace is still new. Add projects, tasks, notes, or documents and I’ll help organize them.';
+      }
+      const ask = String(prompt || '').toLowerCase();
+      const businessName = ctx.business.name || ctx.profile.businessName || 'your business';
+      const businessLine = `${businessName}${ctx.business.industry || ctx.profile.industry ? ` in ${ctx.business.industry || ctx.profile.industry}` : ''}${ctx.business.mainGoal || ctx.profile.mainGoal ? `, goal: ${ctx.business.mainGoal || ctx.profile.mainGoal}` : ''}`;
+      const projectLine = shortList(ctx.projects, project => `${project.title} (${pagePreview(project)})`);
+      const taskLine = shortList(ctx.openTasks, task => `${task.title} — ${task.status || 'To Do'} / ${task.priority || 'Medium'}`);
+      const documentLine = shortList([...ctx.documents, ...ctx.notes], page => `${page.title} (${page.objectType})`);
+      const fileLine = shortList(ctx.files, file => file.title || file.name || file.label || file.url || 'Resource');
+      const recentContext = shortList(ctx.pageText, text => text, 'no written notes captured yet');
+
+      if (ask.includes('summarize')) {
+        return `Workspace summary for ${businessLine}: you have ${ctx.projects.length} project(s), ${ctx.tasks.length} task(s), ${ctx.documents.length} document/page item(s), ${ctx.notes.length} note(s), and ${ctx.files.length} saved file/resource item(s). Current projects: ${projectLine}. Open work: ${taskLine}. Recent workspace context: ${recentContext}.`;
+      }
+      if (ask.includes('priority')) {
+        const highPriority = ctx.openTasks.find(task => task.priority === 'High') || ctx.openTasks[0];
+        return highPriority
+          ? `Next priority: move “${highPriority.title}” forward first because it is ${highPriority.priority || 'Medium'} priority and currently ${highPriority.status || 'To Do'}. Use the next 30 minutes to define the outcome, attach any related document, and decide the single next action. Supporting documents/notes: ${documentLine}.`
+          : `Next priority: create one concrete task for the most important project. I see projects/documents (${projectLine}), but no open execution task tied to them.`;
+      }
+      if (ask.includes('project plan')) {
+        return `Project plan draft for ${businessName}: 1) clarify the target outcome from your business profile, 2) convert the top project (${ctx.projects[0]?.title || ctx.pages[0]?.title || 'New Project'}) into 3 milestones, 3) assign open tasks by priority (${taskLine}), 4) attach useful documents (${documentLine}), and 5) review missing resources (${fileLine}) before execution.`;
+      }
+      if (ask.includes('organize') || ask.includes('tasks')) {
+        return `Task organization: group open tasks into To Do, In Progress, Review, and Done. Start with these open items: ${taskLine}. Anything without a project should be linked to your active workspace page, and completed work (${ctx.doneTasks.length} done) should become notes or evidence in documents.`;
+      }
+      if (ask.includes('documents') || ask.includes('review')) {
+        return `Document review: I found ${ctx.documents.length + ctx.notes.length} document/note item(s): ${documentLine}. Prioritize documents that mention goals, customers, pricing, operations, or launch decisions. Add a short “decision / owner / next step” block to each important page.`;
+      }
+      if (ask.includes('missing') || ask.includes('resources') || ask.includes('files')) {
+        return `Missing resources check: saved resources/files: ${fileLine}. For ${businessName}, add any missing customer research, pricing assumptions, launch assets, supplier/vendor links, competitor notes, and financial assumptions. Connect each resource to a project or task so it is not just stored—it is actionable.`;
+      }
+      return `Based on your workspace for ${businessLine}, I’d focus on connecting strategy to execution: projects (${projectLine}), open tasks (${taskLine}), documents/notes (${documentLine}), and resources/files (${fileLine}). A useful next step is to pick one open task, attach the most relevant note/document, and define a measurable finish line.`;
+    }
+
+    function sendWorkspaceAiMessage(message) {
+      const text = String(message || '').trim();
+      if (!text) return;
+      workspaceAiMessages.push({ id: crypto.randomUUID(), role: 'user', text, ts: new Date().toISOString() });
+      workspaceAiMessages.push({ id: crypto.randomUUID(), role: 'assistant', text: generateWorkspaceAiResponse(text), ts: new Date().toISOString() });
+      renderWorkspace();
+    }
+
+    function handleWorkspaceAiAction(action, messageId) {
+      const message = workspaceAiMessages.find(item => item.id === messageId && item.role === 'assistant');
+      if (!message) return;
+      const now = new Date().toISOString();
+      if (action === 'memory') {
+        addMemory({ type: 'Insight', title: 'Workspace AI Insight', description: message.text, source: 'workspace-copilot', tags: ['Workspace', 'Barya AI'] });
+        return;
+      }
+      if (action === 'task') {
+        ensureTasksState();
+        state.tasks.items.unshift({ id: crypto.randomUUID(), title: 'Follow up on Workspace AI recommendation', description: message.text, dueDate: '', priority: 'Medium', status: 'To Do', tags: ['Workspace AI'], sprintId: '', linkRef: '', createdAt: now, updatedAt: now });
+        state.tasks.selectedTaskId = state.tasks.items[0].id;
+        saveState();
+        return;
+      }
+      if (action === 'project' || action === 'document') {
+        ensureWorkspaceState();
+        const page = {
+          id: crypto.randomUUID(),
+          title: action === 'project' ? 'Workspace AI Project' : 'Workspace AI Document',
+          objectType: action === 'project' ? 'Project' : 'Document',
+          updatedAt: now,
+          relations: Object.fromEntries(WORKSPACE_RELATION_KEYS.map(key => [key, []])),
+          blocks: [normalizeWorkspaceBlock({ type: 'heading', level: 1, text: action === 'project' ? 'Workspace AI Project' : 'Workspace AI Document' }), normalizeWorkspaceBlock({ type: 'text', text: message.text })]
+        };
+        state.workspace.pages.unshift(page);
+        state.workspace.activePageId = page.id;
+        saveState();
+      }
+    }
+
     function renderWorkspace() {
       ensureWorkspaceState();
       const el = document.getElementById('section-workspace');
@@ -4548,6 +4684,209 @@
         ...files.map(item => ({ type: 'File', title: item.name, body: `${item.category} ${item.summary}`, id: item.id })),
         ...Object.entries(metrics).map(([key, value]) => ({ type: 'Data', title: key.replace(/([A-Z])/g, ' $1'), body: String(value), id: key }))
       ];
+      const statCards = [
+        ['Active Projects', activeProjectsCount, '+12%', 'from last month', 'from-violet-500 to-fuchsia-500'],
+        ['Tasks In Progress', inProgressTasksCount || Math.ceil(totalTasksCount * 0.42), '+8%', 'moving this week', 'from-cyan-400 to-teal-400'],
+        ['Completed Tasks', completedTasksCount, '+24%', 'execution velocity', 'from-emerald-400 to-cyan-400'],
+        ['Documents', documentsCount, '+5', 'knowledge assets', 'from-blue-400 to-violet-500'],
+        ['Workspace Members', membersCount, '+2', 'active collaborators', 'from-pink-400 to-orange-400']
+      ];
+      const activityItems = [
+        ['📄', 'Strategy brief updated', activePage?.title || 'Workspace OS', 'Amina', '3m ago'],
+        ['✅', 'Task moved to Done', taskItems.find(task => task.status === 'Done')?.title || 'Validate pricing page', 'Sam', '18m ago'],
+        ['🔗', 'Backlink created', backlinks[0] ? (pageMap.get(backlinks[0].fromId)?.title || 'Linked page') : 'Investor notes → Launch plan', 'Barya', '42m ago'],
+        ['📊', 'Data room reviewed', 'Monthly metrics snapshot', 'Noor', '1h ago']
+      ];
+      const kanbanTasks = (taskItems.length ? taskItems : [
+        { id: 'demo-task-1', title: 'Map onboarding flow', status: 'To Do', priority: 'High', tags: ['UX', 'Launch'] },
+        { id: 'demo-task-2', title: 'Draft customer interview script', status: 'To Do', priority: 'Medium', tags: ['Research'] },
+        { id: 'demo-task-3', title: 'Build pricing experiment', status: 'In Progress', priority: 'High', tags: ['Growth', 'Data'] },
+        { id: 'demo-task-4', title: 'Publish roadmap memo', status: 'Done', priority: 'Low', tags: ['Docs'] }
+      ]).slice(0, 9);
+      const ownerAvatars = ['A', 'S', 'N', 'B'];
+      const workspaceTopTabClass = 'rounded-full px-4 py-2 text-sm font-semibold transition border';
+      const workspacePanelClass = 'glass-card rounded-[1.4rem] border border-white/10 bg-slate-950/60 shadow-2xl shadow-black/25';
+
+      el.innerHTML = `
+        <div class="workspace-premium-shell min-h-full w-full overflow-auto rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_12%_2%,rgba(139,92,246,0.22),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(20,184,166,0.18),transparent_26%),linear-gradient(135deg,rgba(8,8,12,0.96),rgba(10,14,28,0.94))] p-4 sm:p-5 lg:p-6 text-slate-100 space-y-5 scrollbar-thin">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 via-indigo-500 to-teal-400 text-xl font-black shadow-[0_0_34px_rgba(139,92,246,0.45)]">W</div>
+              <div class="min-w-0">
+                <h2 class="text-3xl font-black tracking-tight text-white">Workspace</h2>
+                <p class="text-sm text-slate-400">All your work, organized. Plan, execute and grow.</p>
+              </div>
+            </div>
+            <label class="flex min-h-[48px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 shadow-inner shadow-black/20 xl:max-w-2xl" aria-label="Search anything in your workspace">
+              <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-400"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input readonly placeholder="Search anything in your workspace..." class="flex-1 cursor-pointer border-0 bg-transparent text-sm outline-none placeholder:text-slate-500" />
+              <span class="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[11px] font-bold text-slate-300">⌘/Ctrl+K</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <button id="workspaceNewPage" class="rounded-2xl border border-violet-300/30 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_28px_rgba(124,58,237,0.3)]">+ New ▾</button>
+              <button class="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.06]" aria-label="Notifications">🔔</button>
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 font-black text-white premium-avatar">${escapeHTML((state.founderProfile?.name || 'Barya').slice(0,1).toUpperCase())}</div>
+            </div>
+          </div>
+
+          <nav class="flex gap-2 overflow-x-auto rounded-[1.3rem] border border-white/10 bg-black/20 p-2">
+            ${['Overview','Projects','Documents','Data','Notes','Files'].map((tab, index) => `<button class="${workspaceTopTabClass} ${index === 0 ? 'border-violet-300/40 bg-violet-500/20 text-violet-100 shadow-[0_0_22px_rgba(139,92,246,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${tab}</button>`).join('')}
+          </nav>
+
+          <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            ${statCards.map(([label, value, growth, note, gradient]) => `<article class="${workspacePanelClass} premium-hover p-4"><div class="flex items-start justify-between"><p class="text-xs uppercase tracking-[0.18em] text-slate-500">${label}</p><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r ${gradient} shadow-[0_0_16px_currentColor]"></span></div><div class="mt-4 flex items-end justify-between gap-3"><p class="text-3xl font-black text-white">${value}</p><div class="text-right"><p class="text-sm font-bold text-teal-300">${growth}</p><p class="text-[11px] text-slate-500">${note}</p></div></div></article>`).join('')}
+          </section>
+
+          <div class="grid gap-5 2xl:grid-cols-[1fr_360px]">
+            <main class="space-y-5 min-w-0">
+              <section class="${workspacePanelClass} p-5">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">Project progress</p><h3 class="mt-1 text-xl font-bold text-white">Execution velocity</h3></div><div class="flex rounded-full border border-white/10 bg-black/25 p-1"><button class="rounded-full bg-violet-500 px-4 py-1.5 text-xs font-bold text-white">Weekly</button><button class="rounded-full px-4 py-1.5 text-xs font-bold text-slate-400">Monthly</button></div></div>
+                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.75),rgba(2,6,23,0.65))] p-4">
+                  <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_44px]"></div>
+                  <svg viewBox="0 0 760 260" class="relative h-[260px] w-full drop-shadow-[0_0_18px_rgba(45,212,191,0.35)]" role="img" aria-label="Multi-colored weekly project progress line chart">
+                    <defs><linearGradient id="lineA" x1="0" x2="1"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><linearGradient id="lineB" x1="0" x2="1"><stop stop-color="#14b8a6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+                    <path d="M40 210 C120 150 145 175 210 122 S330 70 405 116 520 176 600 82 690 70 730 44" fill="none" stroke="url(#lineA)" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M40 185 C105 192 150 105 225 136 S345 204 430 142 520 92 610 126 685 98 730 78" fill="none" stroke="url(#lineB)" stroke-width="4" stroke-linecap="round" opacity="0.92"/>
+                    ${[40,155,270,385,500,615,730].map((x,i)=>`<g><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="5" fill="#fff"/><circle cx="${x}" cy="${[210,152,104,116,152,82,44][i]}" r="12" fill="#8b5cf6" opacity="0.16"/></g>`).join('')}
+                  </svg>
+                </div>
+              </section>
+
+              <section class="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
+                <article class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Recent Activity</h3><span class="text-xs text-slate-500">Live local feed</span></div><div class="space-y-3">${activityItems.map(([icon,title,detail,user,time]) => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3"><span class="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/15 text-lg">${icon}</span><div class="min-w-0 flex-1"><p class="font-semibold text-white">${escapeHTML(title)}</p><p class="truncate text-xs text-slate-400">${escapeHTML(detail)}</p></div><div class="text-right"><span class="inline-grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-teal-400 to-violet-500 text-xs font-black text-white">${escapeHTML(user.slice(0,1))}</span><p class="mt-1 text-[11px] text-slate-500">${time}</p></div></div>`).join('')}</div></article>
+                <article class="${workspacePanelClass} overflow-hidden p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-lg font-bold text-white">Your Projects</h3><button id="workspaceShowRelated" class="text-xs font-bold text-violet-300">Open graph →</button></div><div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="text-xs uppercase tracking-[0.14em] text-slate-500"><tr><th class="py-3 pr-4">Project Name</th><th class="py-3 pr-4">Progress</th><th class="py-3 pr-4">Owner</th><th class="py-3 pr-4">Due Date</th><th class="py-3">Status</th></tr></thead><tbody>${fallbackProjects.map((project, idx) => { const pct = Math.min(95, 42 + idx * 17 + completedTasksCount * 3); return `<tr class="border-t border-white/10"><td class="py-3 pr-4 font-semibold text-white">${escapeHTML(project.title || 'Untitled Project')}</td><td class="py-3 pr-4"><div class="h-2 w-28 rounded-full bg-slate-800"><div class="h-2 rounded-full bg-gradient-to-r from-violet-500 to-teal-400" style="width:${pct}%"></div></div><span class="text-[11px] text-slate-500">${pct}%</span></td><td class="py-3 pr-4"><div class="flex -space-x-2">${ownerAvatars.slice(0,2 + (idx % 2)).map(a=>`<span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">${a}</span>`).join('')}</div></td><td class="py-3 pr-4 text-slate-400">${new Date(Date.now()+86400000*(idx+5)*3).toISOString().slice(0,10)}</td><td class="py-3"><span class="rounded-full border border-teal-300/30 bg-teal-400/10 px-2 py-1 text-xs font-bold text-teal-200">${idx === 0 ? 'On Track' : idx === 1 ? 'Review' : 'Active'}</span></td></tr>`; }).join('')}</tbody></table></div></article>
+              </section>
+
+              <section class="${workspacePanelClass} p-5"><div class="mb-4 flex items-center justify-between"><div><h3 class="text-lg font-bold text-white">Task Board</h3><p class="text-xs text-slate-500">Drag cards between To Do, In Progress and Done.</p></div><button data-section-go="tasks" class="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-bold text-slate-200">Full Tasks</button></div><div class="grid gap-3 lg:grid-cols-3">${['To Do','In Progress','Done'].map(status => `<div data-ws-drop-status="${status}" class="min-h-[270px] rounded-2xl border border-white/10 bg-black/20 p-3"><div class="mb-3 flex items-center justify-between"><h4 class="font-bold text-white">${status}</h4><span class="text-xs text-slate-500">${kanbanTasks.filter(task => task.status === status).length}</span></div><div class="space-y-3">${kanbanTasks.filter(task => task.status === status).map(task => `<article draggable="true" data-ws-task-id="${escapeAttr(task.id)}" class="cursor-grab rounded-2xl border border-white/10 bg-white/[0.055] p-3 shadow-lg shadow-black/20"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-white">${escapeHTML(task.title)}</p><span class="rounded-full px-2 py-1 text-[10px] font-bold ${task.priority === 'High' ? 'bg-rose-500/15 text-rose-200' : task.priority === 'Medium' ? 'bg-amber-500/15 text-amber-200' : 'bg-teal-500/15 text-teal-200'}">${escapeHTML(task.priority || 'Medium')}</span></div><div class="mt-3 flex flex-wrap gap-1.5">${(task.tags || []).map(tag => `<span class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-[11px] text-violet-100">${escapeHTML(tag)}</span>`).join('')}</div><div class="mt-3 flex -space-x-2"><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-gradient-to-br from-teal-400 to-violet-500 text-[11px] font-black text-white">A</span><span class="grid h-7 w-7 place-items-center rounded-full border border-slate-950 bg-slate-800 text-[11px] font-bold">B</span></div></article>`).join('') || '<p class="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-slate-500">No tasks</p>'}</div></div>`).join('')}</div></section>
+
+              <section class="${workspacePanelClass} p-5 space-y-4">
+                <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-teal-300">Block editor · relations · backlinks</p><h3 class="mt-1 text-xl font-bold text-white">Workspace Pages</h3><p class="text-sm text-slate-400">Keep notes, plans, databases and linked objects connected.</p></div><button id="workspaceHowBtn" class="rounded-xl border border-violet-300/25 bg-violet-500/10 px-3 py-2 text-sm font-bold text-violet-100">How it works?</button></div>
+                <div id="workspaceHowPanel" class="hidden rounded-2xl border border-violet-300/20 bg-violet-500/10 p-4 text-sm text-slate-300 space-y-1"><p class="font-semibold text-violet-100">Start in 3 easy steps:</p><p>1) Select a page, or create a new one.</p><p>2) Write in the center editor. Type <span class="font-semibold text-violet-200">/</span> to add blocks.</p><p>3) Use Connections to link pages and see Linked From.</p></div>
+                <div class="grid gap-4 xl:grid-cols-[280px_1fr_300px]">
+                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-3 max-h-[78vh] overflow-auto scrollbar-thin space-y-2"><h4 class="px-1 text-sm font-bold text-slate-200">My Pages</h4>${workspacePages.map(page => `<button data-open-page="${page.id}" class="w-full rounded-xl border px-3 py-3 text-left transition ${page.id===state.workspace.activePageId ? 'border-violet-300/50 bg-violet-500/15' : 'border-white/10 bg-white/[0.04] hover:border-violet-300/30'} ${workspacePendingAnimation.pageId === page.id ? 'workspace-fade-in' : ''}"><div class="flex items-center justify-between gap-2"><p class="truncate font-semibold text-white">${escapeHTML(page.title || 'Untitled')}</p><span class="rounded-full border border-teal-300/25 bg-teal-400/10 px-2 py-0.5 text-[10px] text-teal-100">${escapeHTML(page.objectType || 'Page')}</span></div><p class="mt-1 truncate text-xs text-slate-500">${escapeHTML(pagePreview(page))}</p></button>`).join('') || emptyStateMarkup('🗂️', 'No pages yet.', 'Create your first page to start organizing ideas.', '', 'Start Here', 'section:workspace')}</aside>
+                  <section class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4 min-h-[70vh]">${activePage ? `<div class="flex flex-wrap gap-2 items-center"><input id="workspacePageTitle" value="${escapeAttr(activePage.title)}" class="flex-1 min-w-[230px] rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xl font-bold text-white outline-none" placeholder="Untitled page" /><select id="workspaceObjectType" class="rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm">${WORKSPACE_OBJECT_TYPES.map(type => `<option value="${type}" ${activePage.objectType===type?'selected':''}>${type}</option>`).join('')}</select><button id="workspaceDeletePage" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Delete</button></div><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3 space-y-3"><div class="flex items-center justify-between"><h4 class="font-bold text-white">Editor</h4><p class="text-xs text-slate-500">Type / to add heading, list, checkbox etc.</p></div><div id="workspaceBlocks" class="space-y-2">${(activePage.blocks || []).map((block, idx) => { const cmdOpen = block.commandOpen ? '' : 'hidden'; const filteredMenu = workspaceBlockMenu.filter(item => !block.commandQuery || item.label.toLowerCase().includes(block.commandQuery.toLowerCase()) || item.type.includes(block.commandQuery.toLowerCase())); return `<article class="workspace-block group rounded-xl border border-white/10 bg-slate-950/45 p-2 transition hover:border-violet-300/40 ${workspacePendingAnimation.blockId === block.id ? 'workspace-fade-in' : ''}" draggable="true" data-block-id="${block.id}"><div class="mb-2 flex items-center gap-2"><button class="cursor-grab text-slate-500 hover:text-violet-200" data-drag-handle="${block.id}">⋮⋮</button><span class="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-slate-300">${blockTypeLabel(block.type)}</span><button data-delete-block="${block.id}" class="ml-auto text-xs text-rose-300">Remove</button></div>${renderWorkspaceBlockBody(block, idx, activePage.id, filteredMenu, cmdOpen)}</article>`; }).join('') || `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-6 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the 'Add Block' button below to get started.</p></div>`}</div><button id="workspaceAddBlock" class="rounded-xl border border-violet-300/30 bg-violet-500/15 px-3 py-2 font-bold text-violet-100">+ Add Block</button></div><section class="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h4 class="mb-3 font-bold text-white">Safety & Backup</h4><div class="flex flex-wrap gap-2"><button id="workspaceExport" class="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Export All Workspace</button><label class="cursor-pointer rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2">Import Workspace<input id="workspaceImport" type="file" accept="application/json" class="hidden"></label><button id="workspaceClear" class="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-rose-200">Clear Workspace</button></div></section>` : `<div class="rounded-xl border border-dashed border-violet-300/30 bg-violet-500/10 p-8 text-center text-slate-300"><p class="mb-2 text-2xl">✨</p><p class="whitespace-pre-line font-medium">This is your personal workspace ✨\nWrite your idea, build plans, and connect everything.\nUse the '+ New' button above to get started.</p></div>`}</section>
+                  <aside class="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-4"><h4 class="text-sm font-bold text-slate-200">Connections</h4><div class="rounded-xl border border-teal-300/20 bg-teal-400/10 p-3 text-sm text-slate-300 whitespace-pre-line">How to add links:\n- Type [[ and then the page name\n- Or use Add Link below to connect pages</div>${activePage ? `<div class="space-y-2"><p class="text-xs uppercase text-slate-500">Connected Pages</p><div class="flex flex-wrap gap-1">${relatedObjects.map(id => `<button data-open-page="${id}" class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-xs text-violet-100">${escapeHTML(pageMap.get(id)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🔗', 'No connections yet.', 'Link this page to another one to build your graph.', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2"><p class="text-xs uppercase text-slate-500">Linked From</p><div class="space-y-1">${backlinks.map(link => `<button data-open-page="${link.fromId}" class="w-full rounded-xl border border-white/10 bg-white/[0.04] px-2 py-2 text-left text-sm">← ${escapeHTML(pageMap.get(link.fromId)?.title || 'Unknown')}</button>`).join('') || emptyStateMarkup('🧭', 'No pages link here yet.', 'Mention this page in another page using [[Page Name]].', '', 'Start Here', 'section:workspace')}</div></div><div class="space-y-2 border-t border-white/10 pt-3"><p class="text-xs uppercase text-slate-500">Add Link</p><select id="workspaceQuickLinkSelect" class="w-full rounded-xl border border-white/10 bg-slate-950/70 px-2 py-2 text-sm"><option value="">Select page...</option>${workspacePages.filter(p => p.id !== activePage.id).map(p => `<option value="${p.id}">${escapeHTML(p.title)}</option>`).join('')}</select><button id="workspaceQuickLinkBtn" class="w-full rounded-xl border border-teal-300/25 bg-teal-400/10 px-3 py-2 font-bold text-teal-100">Add Link</button></div>` : emptyStateMarkup('📄', 'No page selected yet.', 'Open a page and connections will show here.', '', 'Start Here', 'section:workspace')}</aside>
+                </div>
+              </section>
+            </main>
+
+            <aside class="${workspacePanelClass} h-fit p-5 2xl:sticky 2xl:top-4">
+              <button id="workspaceAiOpenCard" type="button" class="group w-full rounded-3xl border border-violet-300/20 bg-gradient-to-br from-violet-500/15 via-slate-950/70 to-teal-400/10 p-4 text-left shadow-[0_0_34px_rgba(168,85,247,0.18)] transition hover:-translate-y-0.5 hover:border-violet-200/50 hover:shadow-[0_0_46px_rgba(168,85,247,0.32)] focus:outline-none focus:ring-2 focus:ring-violet-300/60">
+                <div class="mb-4 flex items-center gap-3"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-teal-400 text-xl shadow-[0_0_24px_rgba(168,85,247,0.35)]">✦</div><div><h3 class="text-lg font-bold text-white">Barya AI</h3><p class="text-xs text-slate-400">Private workspace copilot</p></div><span class="ml-auto rounded-full border border-violet-300/25 bg-violet-500/10 px-2 py-1 text-[11px] font-bold text-violet-100">Open</span></div>
+                <div class="space-y-3 rounded-2xl border border-white/10 bg-black/25 p-3 backdrop-blur-xl"><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">I found ${openTasksCount} open execution items. Want a focused sprint plan?</div><div class="ml-auto max-w-[86%] rounded-2xl rounded-tr-sm bg-teal-400/15 p-3 text-sm text-teal-50">Yes — prioritize by revenue impact.</div><div class="max-w-[86%] rounded-2xl rounded-tl-sm bg-violet-500/15 p-3 text-sm text-violet-50">Recommendation: ship the highest-signal customer task, then update your related notes.</div></div>
+                <div class="mt-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-sm text-slate-300"><span>Ask Barya about your workspace...</span><span class="rounded-xl bg-gradient-to-r from-violet-600 to-teal-500 px-3 py-2 text-xs font-bold text-white">Ask</span></div>
+              </button>
+            </aside>
+
+            ${workspaceAiOpen ? `<div id="workspaceAiBackdrop" class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm">
+              <section role="dialog" aria-modal="true" aria-labelledby="workspaceAiTitle" class="fixed inset-0 flex h-[100dvh] flex-col overflow-hidden border-white/10 bg-slate-950 text-slate-100 shadow-[0_0_80px_rgba(168,85,247,0.35)] sm:inset-y-4 sm:left-auto sm:right-4 sm:h-[calc(100dvh-2rem)] sm:w-[min(92vw,460px)] sm:rounded-[2rem] sm:border sm:bg-slate-950/92 sm:backdrop-blur-2xl">
+                <div class="relative border-b border-white/10 bg-gradient-to-br from-violet-500/18 via-white/[0.04] to-teal-400/10 p-5">
+                  <div class="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-violet-500/30 blur-3xl"></div>
+                  <div class="relative flex items-start gap-3"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-teal-400 text-xl shadow-[0_0_28px_rgba(168,85,247,0.45)]">✦</div><div><h2 id="workspaceAiTitle" class="text-xl font-black text-white">Barya AI</h2><p class="text-sm text-slate-300">Private workspace copilot</p></div><button id="workspaceAiClose" type="button" class="ml-auto rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-bold text-slate-200 hover:border-violet-300/40">Close</button></div>
+                </div>
+                <div id="workspaceAiMessages" class="flex-1 space-y-4 overflow-y-auto p-5 scrollbar-thin">
+                  ${!getWorkspaceAiContext().hasData ? `<div class="rounded-3xl border border-dashed border-violet-300/35 bg-violet-500/10 p-5 text-sm leading-6 text-violet-50">Your workspace is still new. Add projects, tasks, notes, or documents and I’ll help organize them.</div>` : ''}
+                  ${(workspaceAiMessages.length ? workspaceAiMessages : [{ id: 'welcome', role: 'assistant', text: `I’m ready to help with this workspace. Ask for a summary, priorities, project plans, task organization, document review, or missing resources.`, ts: new Date().toISOString() }]).map(message => `<div class="${message.role === 'user' ? 'ml-auto bg-teal-400/15 text-teal-50 rounded-tr-sm' : 'mr-auto bg-violet-500/15 text-violet-50 rounded-tl-sm'} max-w-[92%] rounded-3xl border border-white/10 p-4 text-sm leading-6 shadow-[0_0_24px_rgba(15,23,42,0.22)]"><p class="mb-1 text-[11px] uppercase tracking-[0.16em] ${message.role === 'user' ? 'text-teal-200' : 'text-violet-200'}">${message.role === 'user' ? 'You' : 'Barya AI'}</p><p class="whitespace-pre-line">${escapeHTML(message.text)}</p>${message.role === 'assistant' && message.id !== 'welcome' ? `<div class="mt-3 flex flex-wrap gap-2 border-t border-white/10 pt-3">${[['memory','Save to Memory'],['task','Create Task'],['project','Add to Project'],['document','Create Document']].map(([action,label]) => `<button type="button" data-workspace-ai-action="${action}" data-message-id="${message.id}" class="rounded-full border border-violet-300/20 bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-slate-200 hover:border-violet-200/60 hover:bg-violet-500/15">${label}</button>`).join('')}</div>` : ''}</div>`).join('')}
+                </div>
+                <div class="border-t border-white/10 bg-black/20 p-5">
+                  <div class="mb-4 flex flex-wrap gap-2">${WORKSPACE_AI_PROMPTS.map(prompt => `<button type="button" data-workspace-ai-prompt="${escapeAttr(prompt)}" class="rounded-full border border-violet-300/20 bg-violet-500/10 px-3 py-2 text-xs font-bold text-violet-50 hover:border-violet-200/60 hover:bg-violet-500/20">${escapeHTML(prompt)}</button>`).join('')}</div>
+                  <form id="workspaceAiForm" class="flex items-center gap-2 rounded-2xl border border-violet-300/20 bg-white/[0.06] p-2 shadow-[0_0_28px_rgba(168,85,247,0.12)]"><input id="workspaceAiInput" placeholder="Ask Barya about your workspace..." class="min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-500" /><button class="rounded-xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-3 text-sm font-black text-white shadow-[0_0_22px_rgba(168,85,247,0.32)]">Ask</button></form>
+                </div>
+              </section>
+            </div>` : ''}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('workspaceHowBtn').onclick = () => document.getElementById('workspaceHowPanel').classList.toggle('hidden');
+      document.getElementById('workspaceNewPage').onclick = () => createWorkspacePage();
+
+      document.getElementById('workspaceAiOpenCard')?.addEventListener('click', () => {
+        workspaceAiOpen = true;
+        renderWorkspace();
+        requestAnimationFrame(() => document.getElementById('workspaceAiInput')?.focus());
+      });
+      document.getElementById('workspaceAiClose')?.addEventListener('click', () => {
+        workspaceAiOpen = false;
+        renderWorkspace();
+      });
+      document.getElementById('workspaceAiBackdrop')?.addEventListener('click', (event) => {
+        if (event.target?.id === 'workspaceAiBackdrop') {
+          workspaceAiOpen = false;
+          renderWorkspace();
+        }
+      });
+      document.getElementById('workspaceAiForm')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const input = document.getElementById('workspaceAiInput');
+        sendWorkspaceAiMessage(input?.value || '');
+      });
+      el.querySelectorAll('[data-workspace-ai-prompt]').forEach(btn => btn.onclick = () => sendWorkspaceAiMessage(btn.dataset.workspaceAiPrompt));
+      el.querySelectorAll('[data-workspace-ai-action]').forEach(btn => btn.onclick = () => handleWorkspaceAiAction(btn.dataset.workspaceAiAction, btn.dataset.messageId));
+
+      el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
+        state.workspace.activePageId = btn.dataset.openPage;
+        saveState();
+      });
+
+      let workspaceTaskDragId = null;
+      el.querySelectorAll('[data-ws-task-id]').forEach(card => {
+        card.addEventListener('dragstart', () => {
+          workspaceTaskDragId = card.dataset.wsTaskId;
+          card.classList.add('opacity-60');
+        });
+        card.addEventListener('dragend', () => {
+          workspaceTaskDragId = null;
+          card.classList.remove('opacity-60');
+        });
+      });
+      el.querySelectorAll('[data-ws-drop-status]').forEach(column => {
+        column.addEventListener('dragover', (evt) => evt.preventDefault());
+        column.addEventListener('drop', () => {
+          if (!workspaceTaskDragId || !state.tasks?.items) return;
+          const task = state.tasks.items.find(item => item.id === workspaceTaskDragId);
+          if (!task) return;
+          task.status = column.dataset.wsDropStatus;
+          saveState();
+        });
+      });
+
+      if (!activePage) return;
+
+      document.getElementById('workspacePageTitle').oninput = (e) => {
+        activePage.title = e.target.value;
+        updatePageUpdatedAt(activePage);
+        saveStateRaw();
+      };
+      document.getElementById('workspaceObjectType').onchange = (e) => {
+        activePage.objectType = e.target.value;
+        updatePageUpdatedAt(activePage);
+        saveState();
+      };
+      document.getElementById('workspaceShowRelated').onclick = () => showRelated(`page:${activePage.id}`);
+      document.getElementById('workspaceDeletePage').onclick = () => {
+        if (!confirm('Delete this object?')) return;
+        state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
+        state.workspace.activePageId = state.workspace.pages[0]?.id || null;
+        saveState();
+      };
+
+      el.querySelectorAll('[data-relation-add]').forEach(btn => btn.onclick = () => {
+        const key = btn.dataset.relationAdd;
+        const select = el.querySelector(`[data-relation-select="${CSS.escape(key)}"]`);
+        const id = select?.value;
+        if (!id) return;
+        if (!activePage.relations[key].includes(id)) activePage.relations[key].push(id);
+        updatePageUpdatedAt(activePage);
+        saveState();
+      });
+
+      document.getElementById('workspaceAddBlock').onclick = () => {
+        const createdBlock = createWorkspaceBlock('text');
+        activePage.blocks.push(createdBlock);
+        workspacePendingAnimation.blockId = createdBlock.id;
+        updatePageUpdatedAt(activePage);
+        saveState();
       const matches = (items, fields) => !q ? items : items.filter(item => fields.some(field => String(item[field] || '').toLowerCase().includes(q)));
       const filteredProjects = matches(projectPages, ['title', 'objectType']);
       const filteredDocs = matches(documents, ['title', 'category', 'summary']);
