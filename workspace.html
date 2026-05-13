@@ -2500,7 +2500,7 @@
         resources: ['resourcesSearch'],
         ai: ['chatInput'],
         memory: ['memorySearch'],
-        planning: ['strategyIdeaInput', 'researchFollowInput'],
+        planning: ['planningSearch', 'strategyIdeaInput', 'researchFollowInput'],
         settings: ['workspaceTitle'],
         'knowledge-graph': ['kgSearch']
       };
@@ -5939,9 +5939,12 @@
 
 
     function renderPlanning() {
-      if (!state.planning.strategy || typeof state.planning.strategy !== 'object') {
-        state.planning.strategy = structuredClone(defaultState.planning.strategy);
-      }
+      if (!state.planning || typeof state.planning !== 'object') state.planning = structuredClone(defaultState.planning);
+      if (!Array.isArray(state.planning.guides)) state.planning.guides = structuredClone(defaultState.planning.guides);
+      if (!state.planning.templates || typeof state.planning.templates !== 'object') state.planning.templates = structuredClone(defaultState.planning.templates);
+      if (!state.planning.strategy || typeof state.planning.strategy !== 'object') state.planning.strategy = structuredClone(defaultState.planning.strategy);
+      if (!state.planning.ui || typeof state.planning.ui !== 'object') state.planning.ui = {};
+      if (!Array.isArray(state.planning.plans)) state.planning.plans = [];
       const strategy = state.planning.strategy;
       if (!Array.isArray(strategy.sessions)) strategy.sessions = [];
       if (!strategy.mode) strategy.mode = 'deep';
@@ -5951,12 +5954,59 @@
       if (!strategy.financialInputs || typeof strategy.financialInputs !== 'object') {
         strategy.financialInputs = { monthlyRevenue: 15000, monthlyExpenses: 22000, cashReserve: 120000 };
       }
+      const ui = state.planning.ui;
+      if (typeof ui.search !== 'string') ui.search = '';
+      if (!ui.activeTab) ui.activeTab = 'Overview';
+      if (!ui.chartRange) ui.chartRange = 'Monthly';
+      if (typeof ui.assistantInput !== 'string') ui.assistantInput = '';
       const el = document.getElementById('section-planning');
+      const planTypes = ['Business Plan', 'Financial Plan', 'Marketing Strategy', 'Product Roadmap', 'Go-To-Market Plan', 'Forecast Report'];
+      const tabs = ['Overview', 'Business Plan', 'Financial Plan', 'Market Research', 'Strategy', 'Roadmap', 'Forecasts', 'Reports'];
       const guideProgress = state.planning.guides.map(g => {
-        const done = g.done.filter(Boolean).length;
-        return Math.round((done / g.done.length) * 100);
+        const done = (g.done || []).filter(Boolean).length;
+        return Math.round((done / Math.max(1, (g.tasks || []).length)) * 100);
       });
+      const overallProgress = Math.round(guideProgress.reduce((a, b) => a + b, 0) / Math.max(1, guideProgress.length));
+      const completedTasks = state.planning.guides.reduce((sum, g) => sum + (g.done || []).filter(Boolean).length, 0);
+      const totalTasks = state.planning.guides.reduce((sum, g) => sum + (g.tasks || []).length, 0);
       const activeSession = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0] || null;
+      const generatedPlans = strategy.sessions.map((session, idx) => ({
+        id: `session:${session.id}`,
+        name: `Research: ${session.query || 'Strategy Session'}`,
+        type: session.followUp ? 'Forecast Report' : 'Business Plan',
+        progress: Math.min(100, 64 + (idx === 0 ? 18 : 0)),
+        updatedAt: session.ts,
+        status: idx === 0 ? 'Active' : 'Review',
+        sessionId: session.id
+      }));
+      const manualPlans = state.planning.plans.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        progress: Number(p.progress) || 0,
+        updatedAt: p.updatedAt,
+        status: p.status || 'Draft',
+        manual: true
+      }));
+      const plans = [...manualPlans, ...generatedPlans];
+      const q = ui.search.toLowerCase().trim();
+      const filteredPlans = plans.filter(plan => !q || `${plan.name} ${plan.type} ${plan.status}`.toLowerCase().includes(q));
+      const monthlyProjection = buildFinancialProjection(strategy.financialInputs, ui.chartRange === 'Weekly' ? 8 : 6, ui.chartRange === 'Weekly' ? 0.018 : 0.06);
+      const maxProjection = Math.max(1, ...monthlyProjection.flatMap(row => [row.revenue, row.expenses]));
+      const chartPoints = monthlyProjection.map((row, idx) => {
+        const x = 8 + (idx * (84 / Math.max(1, monthlyProjection.length - 1)));
+        const yRevenue = 88 - (row.revenue / maxProjection) * 70;
+        const yExpenses = 88 - (row.expenses / maxProjection) * 70;
+        const ai = Math.round(row.revenue * 1.16);
+        const yAi = 88 - (ai / (maxProjection * 1.18)) * 70;
+        return { ...row, label: ui.chartRange === 'Weekly' ? `W${idx + 1}` : row.month, x, yRevenue, yExpenses, yAi, ai };
+      });
+      const linePath = (key) => chartPoints.map((p, i) => `${i ? 'L' : 'M'} ${p.x.toFixed(1)} ${p[key].toFixed(1)}`).join(' ');
+      const runwayBurn = Math.max(0, Number(strategy.financialInputs.monthlyExpenses || 0) - Number(strategy.financialInputs.monthlyRevenue || 0));
+      const runwayMonths = runwayBurn ? Math.max(0, Number(strategy.financialInputs.cashReserve || 0) / runwayBurn) : 24;
+      const healthScore = Math.max(38, Math.min(97, Math.round((overallProgress * 0.42) + (Math.min(100, plans.length * 14) * 0.22) + (Math.min(100, runwayMonths * 6) * 0.22) + (strategy.sessions.length ? 14 : 6))));
+      const nextMilestone = state.planning.guides.flatMap((g, gi) => (g.tasks || []).map((task, ti) => ({ task, title: g.title, done: Boolean(g.done?.[ti]), gi, ti }))).find(item => !item.done);
+      const targetAchievement = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
       const smartSuggestions = [
         `Build a pricing strategy for ${strategy.idea || 'this startup'} with starter/pro/enterprise tiers and upsell triggers.`,
         `Design a 30-day validation experiment roadmap for ${strategy.idea || 'my idea'} with weekly KPIs.`,
@@ -5967,224 +6017,221 @@
         'Draft an investor-ready monthly update with traction, risks, asks, and next milestones.',
         'Map ideal customer profile segments and prioritize by urgency and willingness to pay.'
       ];
+      const statCards = [
+        ['Active Plans', String(plans.length), `${strategy.sessions.length} AI research session${strategy.sessions.length === 1 ? '' : 's'}`],
+        ['Plan Progress', `${overallProgress}%`, `${completedTasks}/${totalTasks} checklist items complete`],
+        ['Financial Projection', money(monthlyProjection.at(-1)?.revenue || 0), `${ui.chartRange.toLowerCase()} AI forecast`],
+        ['Target Achievement', `${targetAchievement}%`, 'Based on saved planning checklist'],
+        ['Next Milestone', nextMilestone ? nextMilestone.task : 'All milestones complete', nextMilestone ? nextMilestone.title : 'Planning system healthy']
+      ];
+
       el.innerHTML = `
-        <section class="bg-gradient-to-br from-orange-50 via-white to-orange-100/70 border border-orange-200 rounded-2xl p-4 sm:p-5 space-y-4 text-zinc-800">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 class="text-xl sm:text-2xl font-semibold text-orange-600">Strategy Generator + Research Mode</h2>
-              <p class="text-xs sm:text-sm text-zinc-600 mt-1">Deep strategies, smart research, and executable plans for founders</p>
+        <section class="min-h-full rounded-[2rem] border border-violet-400/20 bg-[#080914] text-slate-100 shadow-2xl shadow-violet-950/40 overflow-hidden">
+          <div class="relative p-4 sm:p-6 lg:p-8 space-y-6">
+            <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.25),transparent_32%),radial-gradient(circle_at_85%_15%,rgba(20,184,166,0.18),transparent_30%)]"></div>
+            <div class="relative flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.34em] text-teal-200/80">AI-native workspace</p>
+                <h2 class="mt-2 text-3xl sm:text-4xl font-semibold text-white">Business Planning</h2>
+                <p class="mt-2 text-sm sm:text-base text-slate-300">Plan your business. Build strategy. Achieve growth.</p>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-300 bg-white/5 border border-white/10 rounded-2xl px-3 py-2">
+                <span class="h-2 w-2 rounded-full bg-teal-300 animate-pulse"></span>
+                Saved locally · ${plans.length} plans
+              </div>
             </div>
-            <div class="text-xs text-zinc-600 flex items-center gap-2">
-              Sessions: <span class="text-orange-600 font-semibold">${strategy.sessions.length}</span>
-              <button id="planningShowRelated" class="px-2 py-1 rounded bg-white border border-orange-300 text-orange-600 hover:bg-orange-50">Show Related</button>
+
+            <div class="relative flex flex-col xl:flex-row gap-3">
+              <label class="flex-1 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 focus-within:border-teal-300/60 focus-within:bg-white/[0.09]">
+                <span class="text-slate-400">⌕</span>
+                <input id="planningSearch" value="${escapeAttr(ui.search)}" placeholder="Search in business planning…" class="min-w-0 flex-1 bg-transparent outline-none text-sm text-white placeholder:text-slate-500" />
+                <kbd class="hidden sm:inline-flex rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[11px] text-slate-400">⌘ K</kbd>
+              </label>
+              <div class="relative">
+                <button id="newPlanToggle" class="w-full xl:w-auto rounded-2xl bg-gradient-to-r from-violet-500 to-teal-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 hover:brightness-110">+ New Plan</button>
+                <div id="newPlanMenu" class="hidden absolute right-0 z-30 mt-2 w-64 rounded-2xl border border-white/10 bg-[#111427] p-2 shadow-2xl shadow-black/40">
+                  ${planTypes.map(type => `<button data-new-plan="${escapeAttr(type)}" class="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/10">${type}</button>`).join('')}
+                </div>
+              </div>
             </div>
-          </div>
 
-          <textarea id="strategyIdeaInput" rows="5" placeholder="Describe your startup idea or ask anything..." class="w-full bg-white border border-orange-200 rounded-xl p-3 outline-none focus:border-orange-400 resize-y">${escapeHTML(strategy.idea)}</textarea>
-
-          <div class="grid sm:grid-cols-2 gap-2">
-            <button data-strategy-mode="deep" class="px-4 py-3 rounded-xl border font-semibold transition ${strategy.mode === 'deep' ? 'bg-orange-500 border-orange-500 text-white shadow-md' : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'}">Deep Analysis (AI)</button>
-            <button data-strategy-mode="research" class="px-4 py-3 rounded-xl border font-semibold transition ${strategy.mode === 'research' ? 'bg-orange-200 border-orange-400 text-orange-800 shadow-md' : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'}">Research Mode</button>
-          </div>
-
-          <div class="grid md:grid-cols-3 gap-2">
-            <label class="text-xs">Monthly Revenue
-              <input id="strategyMonthlyRevenue" type="number" min="0" value="${Number(strategy.financialInputs.monthlyRevenue) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
-            </label>
-            <label class="text-xs">Monthly Expenses
-              <input id="strategyMonthlyExpenses" type="number" min="0" value="${Number(strategy.financialInputs.monthlyExpenses) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
-            </label>
-            <label class="text-xs">Cash Reserve
-              <input id="strategyCashReserve" type="number" min="0" value="${Number(strategy.financialInputs.cashReserve) || 0}" class="mt-1 w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm">
-            </label>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            <button id="generateStrategyBtn" class="px-4 py-2 rounded-lg bg-orange-500 border border-orange-500 text-white hover:bg-orange-600">Generate Strategy Report</button>
-            <button id="saveToWorkspaceBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Save to Workspace Page</button>
-            <button id="saveToMemoryBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Save to Memory</button>
-            <button id="createTasksFromStrategyBtn" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Create Tasks from This</button>
-            <button id="exportResearchJson" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Export Report (JSON)</button>
-            <button id="exportResearchText" class="px-3 py-2 rounded-lg bg-white border border-orange-300 text-orange-700 hover:bg-orange-50">Export Report (Text)</button>
-          </div>
-
-          <div class="bg-white border border-orange-200 rounded-xl p-3">
-            <p class="text-xs uppercase tracking-wide text-orange-600 mb-2">One-Click Templates</p>
-            <div class="flex flex-wrap gap-2">
-              ${['30-Day Execution Sprint', 'Full Business Strategy Brief', 'Cash Preservation Plan', 'GTM Strategy', 'Investor Update Draft'].map((template, idx) => `<button data-oneclick-template="${idx}" class="text-xs px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100">${template}</button>`).join('')}
+            <div class="relative flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+              ${tabs.map(tab => `<button data-planning-tab="${escapeAttr(tab)}" class="shrink-0 rounded-full border px-4 py-2 text-sm transition ${ui.activeTab === tab ? 'border-teal-300/70 bg-teal-300/15 text-teal-100' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'}">${tab}</button>`).join('')}
             </div>
-          </div>
 
-          <div id="strategyLoading" class="${strategy.loading ? '' : 'hidden'}">
-            <div class="h-1.5 rounded-full bg-orange-100 overflow-hidden">
-              <div class="h-full bg-orange-500 animate-pulse" style="width: 68%"></div>
+            <div class="relative grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
+              ${statCards.map(([label, value, sub]) => `
+                <article class="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-xl shadow-black/10">
+                  <p class="text-xs uppercase tracking-wide text-slate-400">${escapeHTML(label)}</p>
+                  <h3 class="mt-2 text-2xl font-semibold text-white truncate">${escapeHTML(value)}</h3>
+                  <p class="mt-1 text-xs text-slate-400 line-clamp-2">${escapeHTML(sub)}</p>
+                </article>
+              `).join('')}
             </div>
-            <p class="text-xs text-orange-700 mt-2 animate-pulse">Running deep local research simulation...</p>
-          </div>
 
-          <div id="deepAnalysisBox" class="${strategy.mode === 'deep' ? '' : 'hidden'} bg-white border border-orange-200 rounded-xl p-4 space-y-3">
-            <h3 class="text-sm uppercase tracking-wide text-orange-600">Deep Analysis (AI)</h3>
-            <p class="text-sm text-zinc-700">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate to get an execution-focused strategy brief with SWOT, competitor deep dive, financial projection, risks, and immediate moves.'}</p>
-            <div class="grid md:grid-cols-3 gap-2 text-sm">
-              ${(activeSession?.deep?.priorities || ['Priorities will appear after analysis.']).map(item => `<div class="bg-orange-50 border border-orange-200 rounded-lg p-3">${escapeHTML(item)}</div>`).join('')}
-            </div>
-            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
-              <h4 class="text-sm font-semibold text-orange-700">SWOT Analysis</h4>
-              <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-2 text-xs">
-                ${[['Strengths', activeSession?.deep?.swot?.strengths], ['Weaknesses', activeSession?.deep?.swot?.weaknesses], ['Opportunities', activeSession?.deep?.swot?.opportunities], ['Threats', activeSession?.deep?.swot?.threats]].map(([title, rows]) => `
-                  <div class="bg-white border border-orange-200 rounded-lg p-2">
-                    <p class="font-semibold text-orange-700 mb-1">${escapeHTML(title)}</p>
-                    <ul class="list-disc pl-4 space-y-1">${(rows || ['Generate to populate this quadrant.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+            <div class="relative grid 2xl:grid-cols-[minmax(0,1fr)_380px] gap-5">
+              <div class="space-y-5 min-w-0">
+                <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4 sm:p-5 shadow-2xl shadow-black/20">
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                      <h3 class="text-lg font-semibold text-white">Business Growth Projection</h3>
+                      <p class="text-xs text-slate-400">Smooth multi-signal line chart with local AI forecasting.</p>
+                    </div>
+                    <div class="rounded-full border border-white/10 bg-black/20 p-1 flex gap-1">
+                      ${['Weekly', 'Monthly'].map(range => `<button data-chart-range="${range}" class="rounded-full px-3 py-1.5 text-xs ${ui.chartRange === range ? 'bg-teal-300 text-slate-950 font-semibold' : 'text-slate-300 hover:bg-white/10'}">${range}</button>`).join('')}
+                    </div>
                   </div>
-                `).join('')}
-              </div>
-            </article>
-            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
-              <h4 class="text-sm font-semibold text-orange-700">Competitor Deep Dive</h4>
-              <div class="space-y-2 text-xs">
-                ${(activeSession?.competitorDeepDive || []).map(row => `<div class="bg-white border border-orange-200 rounded-lg p-2"><p class="font-semibold">${escapeHTML(row.name)}</p><p><span class="font-medium">Strengths:</span> ${escapeHTML(row.strengths)}</p><p><span class="font-medium">Weaknesses:</span> ${escapeHTML(row.weaknesses)}</p><p><span class="font-medium">Differentiation:</span> ${escapeHTML(row.differentiation)}</p></div>`).join('') || '<p class="text-zinc-600">Run analysis to generate competitor deep dive.</p>'}
-              </div>
-            </article>
-            <article class="bg-orange-50 border border-orange-200 rounded-xl p-3 space-y-2">
-              <h4 class="text-sm font-semibold text-orange-700">6-Month Financial Projection</h4>
-              <div class="overflow-auto">
-                <table class="w-full text-xs border-collapse">
-                  <thead><tr class="bg-white"><th class="border border-orange-200 px-2 py-1 text-left">Month</th><th class="border border-orange-200 px-2 py-1 text-left">Revenue</th><th class="border border-orange-200 px-2 py-1 text-left">Expenses</th><th class="border border-orange-200 px-2 py-1 text-left">Runway</th></tr></thead>
-                  <tbody>
-                    ${(activeSession?.financialProjection || []).map((row) => `<tr><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.month)}</td><td class="border border-orange-200 px-2 py-1">${money(row.revenue)}</td><td class="border border-orange-200 px-2 py-1">${money(row.expenses)}</td><td class="border border-orange-200 px-2 py-1">${escapeHTML(row.runway)}</td></tr>`).join('') || '<tr><td colspan="4" class="border border-orange-200 px-2 py-2 text-zinc-600">Generate to see projection.</td></tr>'}
-                  </tbody>
-                </table>
-              </div>
-            </article>
-            <div class="grid md:grid-cols-2 gap-2 text-xs">
-              <article class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <h4 class="font-semibold text-orange-700 mb-1">Key Risks & Mitigations</h4>
-                <ul class="list-disc pl-4 space-y-1">${(activeSession?.deep?.risks || ['No risk model yet.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
-              </article>
-              <article class="bg-orange-100 border border-orange-300 rounded-lg p-3">
-                <h4 class="font-semibold text-orange-700 mb-1">Immediate Next 7 Days</h4>
-                <ul class="list-disc pl-4 space-y-1">${(activeSession?.deep?.next7Days || ['Generate for 7-day execution plan.']).map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
-              </article>
-            </div>
-          </div>
-
-          <div id="researchModeBox" class="${strategy.mode === 'research' ? '' : 'hidden'} space-y-3">
-            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
-              ${activeSession ? [
-                ['Market Size & Trends', activeSession.cards.market],
-                ['Competitor Analysis', activeSession.cards.competitors],
-                ['Customer Pain Points', activeSession.cards.painPoints],
-                ['Opportunity Gaps', activeSession.cards.opportunities],
-                ['Sources / References', activeSession.cards.sources]
-              ].map(([title, content]) => `
-                <article class="bg-white border border-orange-200 rounded-xl p-4 hover:border-orange-300 transition-all duration-300">
-                  <h4 class="text-sm font-semibold text-orange-700 mb-2">${escapeHTML(title)}</h4>
-                  <div class="text-sm text-zinc-700 space-y-2">${Array.isArray(content) ? `<ul class="list-disc pl-5 space-y-1">${content.map(line => `<li>${escapeHTML(line)}</li>`).join('')}</ul>` : `<p>${escapeHTML(content || 'No data yet')}</p>`}</div>
+                  <div class="rounded-3xl border border-white/10 bg-[#0b1022] p-3 sm:p-4 overflow-hidden">
+                    <svg viewBox="0 0 100 100" class="h-72 w-full" preserveAspectRatio="none" role="img" aria-label="Business growth projection chart">
+                      <defs>
+                        <linearGradient id="planningRevenueGradient" x1="0" x2="1"><stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+                        <linearGradient id="planningAiGradient" x1="0" x2="1"><stop offset="0%" stop-color="#f0abfc"/><stop offset="100%" stop-color="#22d3ee"/></linearGradient>
+                      </defs>
+                      ${[20, 40, 60, 80].map(y => `<line x1="4" x2="96" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width=".45"/>`).join('')}
+                      <path d="${linePath('yExpenses')}" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+                      <path d="${linePath('yRevenue')}" fill="none" stroke="url(#planningRevenueGradient)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="${linePath('yAi')}" fill="none" stroke="url(#planningAiGradient)" stroke-width="1.7" stroke-dasharray="2 2" stroke-linecap="round" stroke-linejoin="round"/>
+                      ${chartPoints.map(p => `<circle cx="${p.x}" cy="${p.yRevenue}" r="1.3" fill="#2dd4bf"/><text x="${p.x}" y="96" text-anchor="middle" fill="rgba(226,232,240,.62)" font-size="3">${p.label}</text>`).join('')}
+                    </svg>
+                    <div class="mt-3 flex flex-wrap gap-3 text-xs text-slate-300">
+                      <span class="inline-flex items-center gap-2"><i class="h-2 w-2 rounded-full bg-teal-300"></i> Revenue</span>
+                      <span class="inline-flex items-center gap-2"><i class="h-2 w-2 rounded-full bg-orange-400"></i> Expenses</span>
+                      <span class="inline-flex items-center gap-2"><i class="h-2 w-2 rounded-full bg-fuchsia-300"></i> AI upside forecast</span>
+                    </div>
+                  </div>
                 </article>
-              `).join('') : `
-                <article class="md:col-span-2 xl:col-span-3 bg-white border border-dashed border-orange-300 rounded-xl p-5 text-sm text-zinc-500">
-                  Run Research Mode to generate market, competitor, pain-point, opportunity, and source cards.
+
+                <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4 sm:p-5">
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                      <h3 class="text-lg font-semibold text-white">Your Business Plans</h3>
+                      <p class="text-xs text-slate-400">Plans, generated reports, saved templates, and research stay synced to localStorage.</p>
+                    </div>
+                    <button id="planningShowRelated" class="rounded-xl border border-violet-300/30 bg-violet-300/10 px-3 py-2 text-xs text-violet-100 hover:bg-violet-300/20">Show Related</button>
+                  </div>
+                  <div class="overflow-x-auto rounded-2xl border border-white/10">
+                    <table class="min-w-full text-sm">
+                      <thead class="bg-white/[0.06] text-left text-xs uppercase tracking-wide text-slate-400"><tr><th class="px-4 py-3">Plan Name</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Progress</th><th class="px-4 py-3">Last Updated</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Actions</th></tr></thead>
+                      <tbody class="divide-y divide-white/10">
+                        ${filteredPlans.length ? filteredPlans.map(plan => `
+                          <tr class="hover:bg-white/[0.04]">
+                            <td class="px-4 py-3 font-medium text-white max-w-[260px] truncate">${escapeHTML(plan.name)}</td>
+                            <td class="px-4 py-3 text-slate-300">${escapeHTML(plan.type)}</td>
+                            <td class="px-4 py-3 min-w-[150px]"><div class="h-2 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-teal-300 to-violet-400" style="width:${Math.max(0, Math.min(100, plan.progress))}%"></div></div><p class="mt-1 text-[11px] text-slate-400">${Math.round(plan.progress)}%</p></td>
+                            <td class="px-4 py-3 text-slate-400">${plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString() : 'Today'}</td>
+                            <td class="px-4 py-3"><span class="rounded-full border border-teal-300/20 bg-teal-300/10 px-2 py-1 text-xs text-teal-100">${escapeHTML(plan.status)}</span></td>
+                            <td class="px-4 py-3"><div class="flex gap-2"><button data-plan-open="${escapeAttr(plan.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-200 hover:bg-white/10">Open</button><button data-plan-advance="${escapeAttr(plan.id)}" class="rounded-lg border border-teal-300/30 px-2 py-1 text-xs text-teal-100 hover:bg-teal-300/10">+10%</button>${plan.manual ? `<button data-plan-delete="${escapeAttr(plan.id)}" class="rounded-lg border border-red-300/30 px-2 py-1 text-xs text-red-200 hover:bg-red-400/10">Delete</button>` : ''}</div></td>
+                          </tr>
+                        `).join('') : `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">No plans match your search. Create a new plan or run the AI strategy generator.</td></tr>`}
+                      </tbody>
+                    </table>
+                  </div>
                 </article>
-              `}
-            </div>
-            <div class="bg-white border border-orange-200 rounded-xl p-3">
-              <label class="text-xs uppercase tracking-wide text-orange-600">Ask follow-up research question</label>
-              <div class="mt-2 flex flex-col sm:flex-row gap-2">
-                <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="e.g., Which segment has the highest willingness to pay?" class="flex-1 bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm" />
-                <button id="runFollowUpResearch" class="px-4 py-2 rounded-lg bg-orange-500 border border-orange-500 text-white">Run Follow-up</button>
+
+                <div class="grid xl:grid-cols-3 gap-5">
+                  <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4">
+                    <h3 class="font-semibold text-white">Upcoming Milestones</h3>
+                    <div class="mt-4 space-y-3">
+                      ${state.planning.guides.slice(0, 4).map((g, gi) => `<div class="relative pl-5"><span class="absolute left-0 top-1.5 h-3 w-3 rounded-full ${guideProgress[gi] === 100 ? 'bg-teal-300' : 'bg-violet-400'}"></span><p class="text-sm text-white">${escapeHTML(g.title)}</p><p class="text-xs text-slate-400">${guideProgress[gi]}% complete · ${(g.tasks || []).find((_, ti) => !g.done?.[ti]) || 'Ready for review'}</p></div>`).join('')}
+                    </div>
+                  </article>
+                  <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4">
+                    <h3 class="font-semibold text-white">Recent Activity in Planning</h3>
+                    <div class="mt-4 space-y-3 text-sm">
+                      ${(strategy.sessions.slice(0, 4).map(s => [`Generated AI research`, s.query, s.ts])).concat(state.planning.plans.slice(0, 2).map(p => [`Updated plan`, p.name, p.updatedAt])).slice(0, 4).map(([title, desc, ts]) => `<div class="rounded-2xl border border-white/10 bg-black/15 p-3"><p class="text-white">${escapeHTML(title)}</p><p class="text-xs text-slate-400 truncate">${escapeHTML(desc || '')}</p><p class="text-[11px] text-slate-500">${ts ? new Date(ts).toLocaleString() : 'Just now'}</p></div>`).join('') || '<p class="text-sm text-slate-400">No activity yet. Generate a strategy report to start your planning history.</p>'}
+                    </div>
+                  </article>
+                  <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4">
+                    <h3 class="font-semibold text-white">Planning Health Score</h3>
+                    <div class="mt-4 flex items-center gap-4">
+                      <div class="grid h-28 w-28 place-items-center rounded-full" style="background: conic-gradient(#2dd4bf ${healthScore * 3.6}deg, rgba(255,255,255,.1) 0deg);"><div class="grid h-20 w-20 place-items-center rounded-full bg-[#101426]"><span class="text-2xl font-semibold text-white">${healthScore}</span></div></div>
+                      <p class="text-sm text-slate-300">AI recommendation: ${healthScore > 78 ? 'keep momentum by converting research into owner-based weekly execution tasks.' : 'improve health by completing checklist items and generating a focused GTM plan.'}</p>
+                    </div>
+                  </article>
+                </div>
+
+                <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4 sm:p-5 space-y-4">
+                  <h3 class="text-lg font-semibold text-white">Planning Checklist</h3>
+                  <div class="grid lg:grid-cols-2 gap-4">
+                    ${state.planning.guides.map((g, gi) => `
+                      <div class="rounded-2xl border border-white/10 bg-black/15 p-4">
+                        <div class="mb-3 flex items-center justify-between gap-2"><h4 class="font-semibold text-white">${escapeHTML(g.title)}</h4><span class="text-xs text-teal-200">${guideProgress[gi]}%</span></div>
+                        <div class="space-y-2">
+                          ${(g.tasks || []).map((t, ti) => `<label class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2 text-sm text-slate-200"><input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done?.[ti] ? 'checked' : ''} class="accent-teal-300" /><span>${escapeHTML(t)}</span><button type="button" data-plan-task="${gi}:${ti}" class="ml-auto rounded-lg border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[11px] text-violet-100">Add to Task Manager</button></label>`).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </article>
+
+                <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4 sm:p-5 space-y-4">
+                  <h3 class="text-lg font-semibold text-white">Business Plan Templates</h3>
+                  ${Object.entries(state.planning.templates).map(([k,v]) => `<label class="block"><p class="mb-1 text-xs uppercase tracking-wide text-slate-400">${k.replace(/([A-Z])/g, ' $1')}</p><textarea data-template="${k}" class="h-24 w-full rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-slate-100 outline-none focus:border-teal-300/60">${escapeHTML(v)}</textarea></label>`).join('')}
+                </article>
               </div>
-            </div>
-          </div>
 
-          <div class="bg-white border border-orange-200 rounded-xl p-3">
-            <p class="text-xs uppercase tracking-wide text-orange-600 mb-2">Smart Contextual Suggestions</p>
-            <div class="flex flex-wrap gap-2">
-              ${smartSuggestions.map((s, i) => `<button data-smart-suggestion="${i}" class="text-xs px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100">${escapeHTML(s)}</button>`).join('')}
-            </div>
-          </div>
+              <aside class="space-y-5">
+                <article class="rounded-[1.75rem] border border-teal-300/20 bg-teal-300/[0.06] p-4 sm:p-5 sticky top-4">
+                  <h3 class="text-lg font-semibold text-white">Barya AI Planning Assistant</h3>
+                  <p class="mt-1 text-xs text-slate-400">Ask Barya anything, generate research, or use smart planning guidance.</p>
+                  <textarea id="strategyIdeaInput" rows="5" placeholder="Ask Barya anything…" class="mt-4 w-full resize-y rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-teal-300/70">${escapeHTML(strategy.idea)}</textarea>
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button data-strategy-mode="deep" class="rounded-xl border px-3 py-2 text-xs font-semibold ${strategy.mode === 'deep' ? 'border-teal-300 bg-teal-300/15 text-teal-100' : 'border-white/10 text-slate-300 hover:bg-white/10'}">Deep Analysis</button>
+                    <button data-strategy-mode="research" class="rounded-xl border px-3 py-2 text-xs font-semibold ${strategy.mode === 'research' ? 'border-violet-300 bg-violet-300/15 text-violet-100' : 'border-white/10 text-slate-300 hover:bg-white/10'}">Research Mode</button>
+                  </div>
+                  <div class="mt-3 grid grid-cols-3 gap-2">
+                    <input id="strategyMonthlyRevenue" type="number" min="0" value="${Number(strategy.financialInputs.monthlyRevenue) || 0}" title="Monthly Revenue" class="rounded-xl border border-white/10 bg-black/25 px-2 py-2 text-xs text-white outline-none" />
+                    <input id="strategyMonthlyExpenses" type="number" min="0" value="${Number(strategy.financialInputs.monthlyExpenses) || 0}" title="Monthly Expenses" class="rounded-xl border border-white/10 bg-black/25 px-2 py-2 text-xs text-white outline-none" />
+                    <input id="strategyCashReserve" type="number" min="0" value="${Number(strategy.financialInputs.cashReserve) || 0}" title="Cash Reserve" class="rounded-xl border border-white/10 bg-black/25 px-2 py-2 text-xs text-white outline-none" />
+                  </div>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <button id="generateStrategyBtn" class="rounded-xl bg-gradient-to-r from-teal-400 to-violet-500 px-3 py-2 text-xs font-semibold text-white">Generate Strategy Report</button>
+                    <button id="saveToWorkspaceBtn" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200 hover:bg-white/10">Save to Workspace</button>
+                    <button id="saveToMemoryBtn" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200 hover:bg-white/10">Save to Memory</button>
+                    <button id="createTasksFromStrategyBtn" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200 hover:bg-white/10">Create Tasks</button>
+                    <button id="exportResearchJson" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200 hover:bg-white/10">Export JSON</button>
+                    <button id="exportResearchText" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-200 hover:bg-white/10">Export Text</button>
+                  </div>
+                  <div id="strategyLoading" class="${strategy.loading ? '' : 'hidden'} mt-4"><div class="h-1.5 overflow-hidden rounded-full bg-white/10"><div class="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-teal-300 to-violet-400"></div></div><p class="mt-2 text-xs text-teal-100 animate-pulse">Barya is building your local strategy report...</p></div>
+                  <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-400">Smart suggestions</p>
+                    <div class="mt-2 flex flex-col gap-2">${smartSuggestions.slice(0, 5).map((s, idx) => `<button data-smart-suggestion="${idx}" class="rounded-xl bg-white/[0.05] px-3 py-2 text-left text-xs text-slate-200 hover:bg-white/[0.09]">${escapeHTML(s)}</button>`).join('')}</div>
+                  </div>
+                  <div class="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-400">One-click templates</p>
+                    <div class="mt-2 flex flex-wrap gap-2">${['30-Day Execution Sprint', 'Full Business Strategy Brief', 'Cash Preservation Plan', 'GTM Strategy', 'Investor Update Draft'].map((template, idx) => `<button data-oneclick-template="${idx}" class="rounded-full border border-violet-300/30 bg-violet-300/10 px-3 py-1.5 text-[11px] text-violet-100 hover:bg-violet-300/20">${template}</button>`).join('')}</div>
+                  </div>
+                  <input id="researchFollowInput" value="${escapeAttr(strategy.followUp)}" placeholder="Follow-up lens or refinement..." class="mt-3 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-500" />
+                  <button id="runFollowUpResearch" class="mt-2 w-full rounded-xl border border-teal-300/30 bg-teal-300/10 px-3 py-2 text-xs font-semibold text-teal-100">Run Follow-up Research</button>
+                  <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3"><p class="text-sm font-semibold text-white">Latest AI Guidance</p><p class="mt-2 text-sm text-slate-300">${activeSession?.deep?.summary ? escapeHTML(activeSession.deep.summary) : 'Generate a strategy report to see SWOT, competitor insights, financial projections, and next moves.'}</p></div>
+                </article>
 
-          <div class="bg-white border border-orange-200 rounded-xl p-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs uppercase tracking-wide text-orange-600">Research History</p>
-              <button id="clearResearchHistory" class="text-xs px-2.5 py-1 rounded bg-red-50 border border-red-300 text-red-500">Clear</button>
-            </div>
-            <div class="mt-2 max-h-40 overflow-auto scrollbar-thin space-y-2">
-              ${strategy.sessions.length ? strategy.sessions.slice(0, 12).map((session, idx) => `
-                <button data-session-open="${session.id}" class="w-full text-left bg-orange-50 border ${activeSession?.id === session.id ? 'border-orange-400' : 'border-orange-200'} rounded-lg px-3 py-2 hover:border-orange-400">
-                  <p class="text-sm truncate text-zinc-800">${escapeHTML(session.query)}</p>
-                  <p class="text-[11px] text-zinc-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p>
-                  <p class="text-[11px] text-zinc-600 truncate">${escapeHTML(session.deep?.summary || '')}</p>
-                </button>
-              `).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.', '', 'Start Here', 'section:planning')}
+                <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4">
+                  <div class="flex items-center justify-between gap-2"><h3 class="font-semibold text-white">Research History</h3><button id="clearResearchHistory" class="rounded-lg border border-red-300/30 px-2 py-1 text-xs text-red-200 hover:bg-red-400/10">Clear</button></div>
+                  <div class="mt-3 max-h-72 overflow-auto space-y-2 scrollbar-thin">
+                    ${strategy.sessions.length ? strategy.sessions.slice(0, 12).map((session, idx) => `<button data-session-open="${session.id}" class="w-full rounded-2xl border ${activeSession?.id === session.id ? 'border-teal-300/60 bg-teal-300/10' : 'border-white/10 bg-black/15'} p-3 text-left hover:bg-white/[0.06]"><p class="truncate text-sm text-white">${escapeHTML(session.query)}</p><p class="text-[11px] text-slate-500">${new Date(session.ts).toLocaleString()} • ${idx === 0 ? 'Latest' : `Session ${strategy.sessions.length - idx}`}</p><p class="truncate text-xs text-slate-400">${escapeHTML(session.deep?.summary || '')}</p></button>`).join('') : emptyStateMarkup('🔎', 'No research history yet', 'Run Strategy Generator once and your sessions will appear here.', '', 'Start Here', 'section:planning')}
+                  </div>
+                </article>
+              </aside>
             </div>
           </div>
         </section>
-
-        <div class="grid lg:grid-cols-2 gap-4">
-          ${state.planning.guides.map((g, gi) => `
-            <div class="bg-barya-card border border-zinc-800 rounded-xl p-4">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-semibold">${escapeHTML(g.title)}</h3>
-                <span class="text-xs text-orange-300">${guideProgress[gi]}%</span>
-              </div>
-              <div class="space-y-2">
-                ${g.tasks.map((t, ti) => `
-                  <label class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded p-2 text-sm">
-                    <input type="checkbox" data-guide="${gi}" data-task="${ti}" ${g.done[ti] ? 'checked' : ''} class="accent-orange-400" />
-                    <span>${escapeHTML(t)}</span>
-                    <button type="button" data-plan-task="${gi}:${ti}" class="ml-auto text-[11px] px-2 py-1 rounded bg-orange-500/15 border border-orange-500/30 text-orange-200">Add to Task Manager</button>
-                  </label>
-                `).join('')}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="bg-barya-card border border-zinc-800 rounded-xl p-4 space-y-4">
-          <h3 class="font-semibold">Business Plan Templates</h3>
-          ${Object.entries(state.planning.templates).map(([k,v]) => `
-            <label class="block">
-              <p class="text-xs uppercase text-zinc-400 mb-1">${k.replace(/([A-Z])/g, ' $1')}</p>
-              <textarea data-template="${k}" class="w-full h-24 bg-zinc-900 border border-zinc-700 rounded p-2">${escapeHTML(v)}</textarea>
-            </label>
-          `).join('')}
-        </div>
       `;
 
       function strategyTemplates(query = '') {
-        const q = query.toLowerCase();
-        if (/(saas|b2b|software|platform)/i.test(q)) {
-          return {
-            market: ['B2B SaaS spend continues double-digit growth in automation and vertical tools.', 'Fastest expansion in workflow AI copilots and industry-specific solutions.', 'Enterprise buyers prioritize ROI visibility and compliance readiness.'],
-            competitors: ['Incumbents: broad suites with slower onboarding and high implementation costs.', 'Startups: niche-first products with faster iteration but weaker distribution.', 'Open-source alternatives increase switching pressure for technical buyers.'],
-            painPoints: ['Onboarding complexity delays first value.', 'Tool sprawl increases operational cost and context switching.', 'Founders struggle to prove ROI quickly to finance stakeholders.'],
-            opportunities: ['Ship fast setup + guided activation as a wedge.', 'Bundle insights dashboard that translates product value into dollar impact.', 'Target underserved sub-segments where incumbents are too generic.']
-          };
-        }
-        if (/(ecommerce|d2c|retail|store)/i.test(q)) {
-          return {
-            market: ['D2C growth remains resilient in premium and repeat-purchase categories.', 'Customer acquisition costs are volatile across paid channels.', 'Retail media partnerships are becoming a key growth lever.'],
-            competitors: ['Marketplace-native sellers optimize for price and logistics.', 'Premium brands win on trust, content, and retention programs.', 'Aggregator brands have scale but weaker personalization.'],
-            painPoints: ['High CAC compresses margins.', 'Low repeat purchase due to weak lifecycle journeys.', 'Inventory forecasting errors drive stockouts or excess.'],
-            opportunities: ['Focus on high-LTV cohorts with personalized replenishment flows.', 'Create content-led acquisition loops to reduce dependency on paid ads.', 'Add post-purchase value propositions to increase retention.']
-          };
-        }
-        return {
-          market: ['Growing demand for focused products that remove specific workflow friction.', 'Capital-efficient startups are preferred due to uncertain funding cycles.', 'AI-enhanced offerings are expected even in non-technical categories.'],
-          competitors: ['General tools offer breadth but low specialization.', 'Emerging startups compete on speed and user-centric workflows.', 'Manual alternatives still dominate where software onboarding is painful.'],
-          painPoints: ['Users face fragmented tools and unclear outcomes.', 'Decision-makers need clear ROI before adoption.', 'Existing offerings often require too much setup and training.'],
-          opportunities: ['Own one urgent use case end-to-end before expanding.', 'Design measurable outcomes into onboarding.', 'Use founder-led distribution to validate demand quickly.']
-        };
+        if (/(saas|b2b|software|platform)/i.test(query)) return { market: ['B2B SaaS spend continues double-digit growth in automation and vertical tools.', 'Fastest expansion in workflow AI copilots and industry-specific solutions.', 'Enterprise buyers prioritize ROI visibility and compliance readiness.'], competitors: ['Incumbents: broad suites with slower onboarding and high implementation costs.', 'Startups: niche-first products with faster iteration but weaker distribution.', 'Open-source alternatives increase switching pressure for technical buyers.'], painPoints: ['Onboarding complexity delays first value.', 'Tool sprawl increases operational cost and context switching.', 'Founders struggle to prove ROI quickly to finance stakeholders.'], opportunities: ['Ship fast setup + guided activation as a wedge.', 'Bundle insights dashboard that translates product value into dollar impact.', 'Target underserved sub-segments where incumbents are too generic.'] };
+        if (/(ecommerce|d2c|retail|store)/i.test(query)) return { market: ['D2C growth remains resilient in premium and repeat-purchase categories.', 'Customer acquisition costs are volatile across paid channels.', 'Retail media partnerships are becoming a key growth lever.'], competitors: ['Marketplace-native sellers optimize for price and logistics.', 'Premium brands win on trust, content, and retention programs.', 'Aggregator brands have scale but weaker personalization.'], painPoints: ['High CAC compresses margins.', 'Low repeat purchase due to weak lifecycle journeys.', 'Inventory forecasting errors drive stockouts or excess.'], opportunities: ['Focus on high-LTV cohorts with personalized replenishment flows.', 'Create content-led acquisition loops to reduce dependency on paid ads.', 'Add post-purchase value propositions to increase retention.'] };
+        return { market: ['Growing demand for focused products that remove specific workflow friction.', 'Capital-efficient startups are preferred due to uncertain funding cycles.', 'AI-enhanced offerings are expected even in non-technical categories.'], competitors: ['General tools offer breadth but low specialization.', 'Emerging startups compete on speed and user-centric workflows.', 'Manual alternatives still dominate where software onboarding is painful.'], painPoints: ['Users face fragmented tools and unclear outcomes.', 'Decision-makers need clear ROI before adoption.', 'Existing offerings often require too much setup and training.'], opportunities: ['Own one urgent use case end-to-end before expanding.', 'Design measurable outcomes into onboarding.', 'Use founder-led distribution to validate demand quickly.'] };
       }
 
-      function buildFinancialProjection(financialInputs) {
+      function buildFinancialProjection(financialInputs, count = 6, revenueGrowth = 0.06) {
         const startRevenue = Math.max(0, Number(financialInputs.monthlyRevenue) || 0);
         const startExpenses = Math.max(0, Number(financialInputs.monthlyExpenses) || 0);
         let cash = Math.max(0, Number(financialInputs.cashReserve) || 0);
         const rows = [];
-        for (let i = 1; i <= 6; i += 1) {
-          const revenue = Math.round(startRevenue * (1 + (i - 1) * 0.06));
-          const expenses = Math.round(startExpenses * (1 + (i - 1) * 0.03));
+        for (let i = 1; i <= count; i += 1) {
+          const revenue = Math.round(startRevenue * (1 + (i - 1) * revenueGrowth));
+          const expenses = Math.round(startExpenses * (1 + (i - 1) * (revenueGrowth / 2)));
           cash += (revenue - expenses);
           const runway = expenses > 0 ? `${Math.max(0, cash / expenses).toFixed(1)} months` : 'N/A';
           rows.push({ month: `M${i}`, revenue, expenses, runway });
@@ -6196,125 +6243,49 @@
         const template = strategyTemplates(query);
         const insight = followUpText ? `Follow-up lens: ${followUpText}.` : 'Initial research pass.';
         const financialProjection = buildFinancialProjection(financialInputs);
-        const competitorDeepDive = (template.competitors || []).map((line, idx) => ({
-          name: `Competitor ${idx + 1}`,
-          strengths: line,
-          weaknesses: idx === 0 ? 'Slow onboarding and longer implementation cycles.' : idx === 1 ? 'Narrow distribution and lower trust from enterprise buyers.' : 'Price pressure and weaker customer success depth.',
-          differentiation: idx === 0 ? 'Win with beginner-friendly setup and transparent ROI dashboard.' : idx === 1 ? 'Build stronger ecosystem partnerships and credibility assets.' : 'Own premium service quality with fast support and implementation.'
-        }));
-        return {
-          id: crypto.randomUUID(),
-          ts: new Date().toISOString(),
-          query,
-          followUp: followUpText,
-          deep: {
-            summary: `${insight} Recommended founder move: prioritize one monetizable wedge, validate with interviews, and launch a 14-day test cycle.`,
-            priorities: [
-              'Validate willingness-to-pay with 5 targeted discovery calls.',
-              'Ship one measurable value moment inside onboarding this week.',
-              'Define a channel cadence with weekly conversion review.'
-            ],
-            swot: {
-              strengths: ['Founder velocity and decision speed.', 'Focused wedge improves product clarity.'],
-              weaknesses: ['Limited team bandwidth and distribution reach.', 'Early process and analytics maturity gaps.'],
-              opportunities: template.opportunities.slice(0, 2),
-              threats: ['Well-funded competitors can copy core features.', 'CAC volatility can reduce growth efficiency.']
-            },
-            risks: [
-              'Risk: Slow activation in first week. Mitigation: guided onboarding checklist + live office hours.',
-              'Risk: Cash burn outpaces growth. Mitigation: weekly burn review and discretionary spend freeze triggers.',
-              'Risk: Weak differentiation message. Mitigation: sharpen positioning around one high-urgency outcome.'
-            ],
-            next7Days: [
-              'Day 1-2: Conduct 5 founder-led customer interviews with pricing probes.',
-              'Day 3-4: Ship onboarding improvement and measure activation lift.',
-              'Day 5-7: Launch one GTM experiment and review conversion metrics.'
-            ]
-          },
-          competitorDeepDive,
-          financialProjection,
-          cards: {
-            market: template.market,
-            competitors: template.competitors,
-            painPoints: template.painPoints,
-            opportunities: template.opportunities,
-            sources: [
-              'PitchBook 2026 Sector Brief (simulated local summary)',
-              'CB Insights Market Map Q1 2026 (simulated local summary)',
-              'G2 Category Reviews trendline (simulated local summary)',
-              'Founder interview synthesis from session memory (simulated)'
-            ]
-          }
-        };
+        const competitorDeepDive = (template.competitors || []).map((line, idx) => ({ name: `Competitor ${idx + 1}`, strengths: line, weaknesses: idx === 0 ? 'Slow onboarding and longer implementation cycles.' : idx === 1 ? 'Narrow distribution and lower trust from enterprise buyers.' : 'Price pressure and weaker customer success depth.', differentiation: idx === 0 ? 'Win with beginner-friendly setup and transparent ROI dashboard.' : idx === 1 ? 'Build stronger ecosystem partnerships and credibility assets.' : 'Own premium service quality with fast support and implementation.' }));
+        return { id: crypto.randomUUID(), ts: new Date().toISOString(), query, followUp: followUpText, deep: { summary: `${insight} Recommended founder move: prioritize one monetizable wedge, validate with interviews, and launch a 14-day test cycle.`, priorities: ['Validate willingness-to-pay with 5 targeted discovery calls.', 'Ship one measurable value moment inside onboarding this week.', 'Define a channel cadence with weekly conversion review.'], swot: { strengths: ['Founder velocity and decision speed.', 'Focused wedge improves product clarity.'], weaknesses: ['Limited team bandwidth and distribution reach.', 'Early process and analytics maturity gaps.'], opportunities: template.opportunities.slice(0, 2), threats: ['Well-funded competitors can copy core features.', 'CAC volatility can reduce growth efficiency.'] }, risks: ['Risk: Slow activation in first week. Mitigation: guided onboarding checklist + live office hours.', 'Risk: Cash burn outpaces growth. Mitigation: weekly burn review and discretionary spend freeze triggers.', 'Risk: Weak differentiation message. Mitigation: sharpen positioning around one high-urgency outcome.'], next7Days: ['Day 1-2: Conduct 5 founder-led customer interviews with pricing probes.', 'Day 3-4: Ship onboarding improvement and measure activation lift.', 'Day 5-7: Launch one GTM experiment and review conversion metrics.'] }, competitorDeepDive, financialProjection, cards: { market: template.market, competitors: template.competitors, painPoints: template.painPoints, opportunities: template.opportunities, sources: ['PitchBook 2026 Sector Brief (simulated local summary)', 'CB Insights Market Map Q1 2026 (simulated local summary)', 'G2 Category Reviews trendline (simulated local summary)', 'Founder interview synthesis from session memory (simulated)'] } };
       }
 
-      function saveStrategyState() {
-        saveStateRaw();
-        renderPlanning();
+      function saveStrategyState() { saveStateRaw(); renderPlanning(); }
+      function getSession() { return strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0]; }
+      function createPlan(type) {
+        const now = new Date().toISOString();
+        state.planning.plans.unshift({ id: crypto.randomUUID(), name: `${type} · ${new Date().toLocaleDateString()}`, type, progress: 5, updatedAt: now, status: 'Draft' });
+        ui.activeTab = type.includes('Financial') ? 'Financial Plan' : type.includes('Forecast') ? 'Forecasts' : type.includes('Roadmap') ? 'Roadmap' : type.includes('Marketing') || type.includes('Go-To-Market') ? 'Strategy' : 'Business Plan';
+        saveStrategyState();
       }
 
-      el.querySelectorAll('[data-guide]').forEach(cb => cb.onchange = () => {
-        const gi = Number(cb.dataset.guide);
-        const ti = Number(cb.dataset.task);
-        state.planning.guides[gi].done[ti] = cb.checked;
-        saveState();
-      });
-      el.querySelectorAll('[data-template]').forEach(t => t.oninput = () => {
-        state.planning.templates[t.dataset.template] = t.value;
-        saveStateRaw();
-      });
+      document.getElementById('planningSearch').oninput = (e) => { ui.search = e.target.value; saveStateRaw(); renderPlanning(); };
+      document.getElementById('planningSearch').onkeydown = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') e.preventDefault(); };
+      document.getElementById('newPlanToggle').onclick = () => document.getElementById('newPlanMenu')?.classList.toggle('hidden');
+      el.querySelectorAll('[data-new-plan]').forEach(btn => btn.onclick = () => createPlan(btn.dataset.newPlan));
+      el.querySelectorAll('[data-planning-tab]').forEach(btn => btn.onclick = () => { ui.activeTab = btn.dataset.planningTab; saveStrategyState(); });
+      el.querySelectorAll('[data-chart-range]').forEach(btn => btn.onclick = () => { ui.chartRange = btn.dataset.chartRange; saveStrategyState(); });
+      el.querySelectorAll('[data-guide]').forEach(cb => cb.onchange = () => { const gi = Number(cb.dataset.guide); const ti = Number(cb.dataset.task); state.planning.guides[gi].done[ti] = cb.checked; saveState(); });
+      el.querySelectorAll('[data-template]').forEach(t => t.oninput = () => { state.planning.templates[t.dataset.template] = t.value; saveStateRaw(); });
       el.querySelectorAll('[data-plan-task]').forEach(btn => btn.onclick = () => {
         ensureTasksState();
         const [gi, ti] = btn.dataset.planTask.split(':').map(Number);
         const guide = state.planning.guides[gi];
         const taskText = guide?.tasks?.[ti];
         if (!taskText) return;
-        state.tasks.items.unshift({
-          id: crypto.randomUUID(),
-          title: taskText,
-          description: `From Business Planning → ${guide.title}`,
-          dueDate: '',
-          priority: 'Medium',
-          status: 'To Do',
-          tags: ['Planning', guide.title],
-          sprintId: '',
-          linkRef: '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+        state.tasks.items.unshift({ id: crypto.randomUUID(), title: taskText, description: `From Business Planning → ${guide.title}`, dueDate: '', priority: 'Medium', status: 'To Do', tags: ['Planning', guide.title], sprintId: '', linkRef: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
         state.tasks.selectedTaskId = state.tasks.items[0].id;
         state.activeSection = 'tasks';
         renderNav();
         saveState();
       });
-
-      document.getElementById('strategyIdeaInput').oninput = (e) => {
-        strategy.idea = e.target.value;
-        saveStateRaw();
-      };
+      document.getElementById('strategyIdeaInput').oninput = (e) => { strategy.idea = e.target.value; ui.assistantInput = e.target.value; saveStateRaw(); };
       ['strategyMonthlyRevenue', 'strategyMonthlyExpenses', 'strategyCashReserve'].forEach(id => {
         const input = document.getElementById(id);
         if (!input) return;
-        input.oninput = () => {
-          strategy.financialInputs.monthlyRevenue = Number(document.getElementById('strategyMonthlyRevenue')?.value || 0);
-          strategy.financialInputs.monthlyExpenses = Number(document.getElementById('strategyMonthlyExpenses')?.value || 0);
-          strategy.financialInputs.cashReserve = Number(document.getElementById('strategyCashReserve')?.value || 0);
-          saveStateRaw();
-        };
+        input.oninput = () => { strategy.financialInputs.monthlyRevenue = Number(document.getElementById('strategyMonthlyRevenue')?.value || 0); strategy.financialInputs.monthlyExpenses = Number(document.getElementById('strategyMonthlyExpenses')?.value || 0); strategy.financialInputs.cashReserve = Number(document.getElementById('strategyCashReserve')?.value || 0); saveStateRaw(); };
       });
       const planningShowRelated = document.getElementById('planningShowRelated');
-      if (planningShowRelated) planningShowRelated.onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
-        if (session) showRelated(`research:${session.id}`);
-      };
-      el.querySelectorAll('[data-strategy-mode]').forEach(btn => btn.onclick = () => {
-        strategy.mode = btn.dataset.strategyMode;
-        saveStrategyState();
-      });
-      el.querySelectorAll('[data-smart-suggestion]').forEach(btn => btn.onclick = () => {
-        strategy.idea = smartSuggestions[Number(btn.dataset.smartSuggestion)] || strategy.idea;
-        saveStrategyState();
-      });
+      if (planningShowRelated) planningShowRelated.onclick = () => { const session = getSession(); if (session) showRelated(`research:${session.id}`); };
+      el.querySelectorAll('[data-strategy-mode]').forEach(btn => btn.onclick = () => { strategy.mode = btn.dataset.strategyMode; saveStrategyState(); });
+      el.querySelectorAll('[data-smart-suggestion]').forEach(btn => btn.onclick = () => { strategy.idea = smartSuggestions[Number(btn.dataset.smartSuggestion)] || strategy.idea; saveStrategyState(); });
       const templatePrompts = [
         'Create a 30-Day Execution Sprint with weekly goals, owners, and measurable outputs.',
         'Generate a Full Business Strategy Brief with market, positioning, GTM, operations, and finance.',
@@ -6322,143 +6293,40 @@
         'Draft a complete GTM Strategy including ICP, channels, messaging, funnel, and KPIs.',
         'Write an Investor Update Draft with wins, metrics, risks, asks, and upcoming milestones.'
       ];
-      el.querySelectorAll('[data-oneclick-template]').forEach(btn => btn.onclick = () => {
-        strategy.idea = templatePrompts[Number(btn.dataset.oneclickTemplate)] || strategy.idea;
-        saveStrategyState();
-      });
-
+      el.querySelectorAll('[data-oneclick-template]').forEach(btn => btn.onclick = () => { strategy.idea = templatePrompts[Number(btn.dataset.oneclickTemplate)] || strategy.idea; saveStrategyState(); });
       const runResearch = (baseQuery, follow = '') => {
         const query = String(baseQuery || '').trim();
         if (!query) return;
         strategy.loading = true;
         saveStateRaw();
         renderPlanning();
-        setTimeout(() => {
-          const session = buildResearchSession(query, follow, strategy.financialInputs);
-          registerMentionsFromText(`${session.query} ${session.deep.summary} ${(session.cards.opportunities || []).join(' ')}`, 'research');
-          strategy.sessions.unshift(session);
-          strategy.activeSessionId = session.id;
-          strategy.loading = false;
-          strategy.mode = strategy.mode || 'research';
-          saveStrategyState();
-        }, 850);
+        setTimeout(() => { const session = buildResearchSession(query, follow, strategy.financialInputs); registerMentionsFromText(`${session.query} ${session.deep.summary} ${(session.cards.opportunities || []).join(' ')}`, 'research'); strategy.sessions.unshift(session); strategy.activeSessionId = session.id; strategy.loading = false; strategy.mode = strategy.mode || 'research'; saveStrategyState(); }, 850);
       };
-
-      const generateBtn = document.getElementById('generateStrategyBtn');
-      if (generateBtn) {
-        generateBtn.onclick = () => runResearch(strategy.idea);
-      }
-
+      document.getElementById('generateStrategyBtn').onclick = () => runResearch(strategy.idea);
       const followInput = document.getElementById('researchFollowInput');
-      if (followInput) {
-        followInput.oninput = (e) => {
-          strategy.followUp = e.target.value;
-          saveStateRaw();
-        };
-      }
-      const followBtn = document.getElementById('runFollowUpResearch');
-      if (followBtn) {
-        followBtn.onclick = () => runResearch(`${strategy.idea} ${strategy.followUp}`.trim(), strategy.followUp);
-      }
-
+      if (followInput) followInput.oninput = (e) => { strategy.followUp = e.target.value; saveStateRaw(); };
+      document.getElementById('runFollowUpResearch').onclick = () => runResearch(`${strategy.idea} ${strategy.followUp}`.trim(), strategy.followUp);
       document.getElementById('saveToWorkspaceBtn').onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        const session = getSession();
         if (!session) return alert('Run strategy or research first.');
         ensureWorkspaceState();
-        state.workspace.pages.unshift({
-          id: crypto.randomUUID(),
-          title: `Research: ${session.query.slice(0, 42)}`,
-          updatedAt: new Date().toISOString(),
-          blocks: [
-            { id: crypto.randomUUID(), type: 'h1', text: 'Research Report' },
-            { id: crypto.randomUUID(), type: 'paragraph', text: `Linked Research Node: [[Research: ${session.query.slice(0, 42)}]]` },
-            { id: crypto.randomUUID(), type: 'paragraph', text: session.deep.summary },
-            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Strengths: ${(session.deep.swot?.strengths || []).join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Weaknesses: ${(session.deep.swot?.weaknesses || []).join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Opportunities: ${(session.deep.swot?.opportunities || []).join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Threats: ${(session.deep.swot?.threats || []).join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `Market: ${session.cards.market.join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `Competitors: ${session.cards.competitors.join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `Pain Points: ${session.cards.painPoints.join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `Opportunities: ${session.cards.opportunities.join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'bullet', text: `Key Risks: ${(session.deep.risks || []).join(' | ')}` },
-            { id: crypto.randomUUID(), type: 'paragraph', text: `Sources: ${session.cards.sources.join('; ')}` }
-          ]
-        });
+        state.workspace.pages.unshift({ id: crypto.randomUUID(), title: `Research: ${session.query.slice(0, 42)}`, updatedAt: new Date().toISOString(), blocks: [{ id: crypto.randomUUID(), type: 'h1', text: 'Research Report' }, { id: crypto.randomUUID(), type: 'paragraph', text: `Linked Research Node: [[Research: ${session.query.slice(0, 42)}]]` }, { id: crypto.randomUUID(), type: 'paragraph', text: session.deep.summary }, { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Strengths: ${(session.deep.swot?.strengths || []).join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Weaknesses: ${(session.deep.swot?.weaknesses || []).join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Opportunities: ${(session.deep.swot?.opportunities || []).join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `SWOT Threats: ${(session.deep.swot?.threats || []).join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `Market: ${session.cards.market.join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `Competitors: ${session.cards.competitors.join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `Pain Points: ${session.cards.painPoints.join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `Opportunities: ${session.cards.opportunities.join(' | ')}` }, { id: crypto.randomUUID(), type: 'bullet', text: `Key Risks: ${(session.deep.risks || []).join(' | ')}` }, { id: crypto.randomUUID(), type: 'paragraph', text: `Sources: ${session.cards.sources.join('; ')}` }] });
         state.workspace.activePageId = state.workspace.pages[0].id;
         saveState();
       };
-
       document.getElementById('saveToMemoryBtn').onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        const session = getSession();
         if (!session) return alert('Run strategy or research first.');
         if (!state.memory || typeof state.memory !== 'object') state.memory = structuredClone(defaultState.memory);
         if (!Array.isArray(state.memory.insights)) state.memory.insights = [];
-        state.memory.insights.unshift({
-          id: crypto.randomUUID(),
-          title: `Research Insight: ${session.query.slice(0, 42)}`,
-          content: `${session.deep.summary}\n\nLinked Research: [[Research: ${session.query.slice(0, 42)}]]\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`,
-          tags: ['Research', 'Strategy'],
-          tag: 'Research, Strategy',
-          ts: new Date().toISOString()
-        });
+        state.memory.insights.unshift({ id: crypto.randomUUID(), title: `Research Insight: ${session.query.slice(0, 42)}`, content: `${session.deep.summary}\n\nLinked Research: [[Research: ${session.query.slice(0, 42)}]]\n\nOpportunity Gaps:\n- ${session.cards.opportunities.join('\n- ')}`, tags: ['Research', 'Strategy'], tag: 'Research, Strategy', ts: new Date().toISOString() });
         saveState();
       };
-
-      document.getElementById('exportResearchJson').onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
-        if (!session) return alert('No research session to export.');
-        downloadJSON(`research-report-${new Date().toISOString().slice(0,10)}.json`, session);
-      };
-
+      document.getElementById('exportResearchJson').onclick = () => { const session = getSession(); if (!session) return alert('No research session to export.'); downloadJSON(`research-report-${new Date().toISOString().slice(0,10)}.json`, session); };
       document.getElementById('exportResearchText').onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+        const session = getSession();
         if (!session) return alert('No research session to export.');
-        const txt = [
-          `Research Report`,
-          `Date: ${new Date(session.ts).toLocaleString()}`,
-          `Query: ${session.query}`,
-          ``,
-          `Deep Summary`,
-          session.deep.summary,
-          ``,
-          `SWOT Analysis`,
-          `Strengths`,
-          ...(session.deep.swot?.strengths || []).map(x => `- ${x}`),
-          `Weaknesses`,
-          ...(session.deep.swot?.weaknesses || []).map(x => `- ${x}`),
-          `Opportunities`,
-          ...(session.deep.swot?.opportunities || []).map(x => `- ${x}`),
-          `Threats`,
-          ...(session.deep.swot?.threats || []).map(x => `- ${x}`),
-          ``,
-          `Competitor Deep Dive`,
-          ...(session.competitorDeepDive || []).map(x => `- ${x.name}: strengths=${x.strengths}; weaknesses=${x.weaknesses}; differentiation=${x.differentiation}`),
-          ``,
-          `6-Month Financial Projection`,
-          ...(session.financialProjection || []).map(x => `- ${x.month}: Revenue ${money(x.revenue)}, Expenses ${money(x.expenses)}, Runway ${x.runway}`),
-          ``,
-          `Market Size & Trends`,
-          ...session.cards.market.map(x => `- ${x}`),
-          ``,
-          `Competitor Analysis`,
-          ...session.cards.competitors.map(x => `- ${x}`),
-          ``,
-          `Customer Pain Points`,
-          ...session.cards.painPoints.map(x => `- ${x}`),
-          ``,
-          `Opportunity Gaps`,
-          ...session.cards.opportunities.map(x => `- ${x}`),
-          ``,
-          `Key Risks & Mitigations`,
-          ...(session.deep.risks || []).map(x => `- ${x}`),
-          ``,
-          `Immediate Next 7 Days`,
-          ...(session.deep.next7Days || []).map(x => `- ${x}`),
-          ``,
-          `Sources`,
-          ...session.cards.sources.map(x => `- ${x}`)
-        ].join('\n');
+        const txt = [`Research Report`, `Date: ${new Date(session.ts).toLocaleString()}`, `Query: ${session.query}`, ``, `Deep Summary`, session.deep.summary, ``, `SWOT Analysis`, `Strengths`, ...(session.deep.swot?.strengths || []).map(x => `- ${x}`), `Weaknesses`, ...(session.deep.swot?.weaknesses || []).map(x => `- ${x}`), `Opportunities`, ...(session.deep.swot?.opportunities || []).map(x => `- ${x}`), `Threats`, ...(session.deep.swot?.threats || []).map(x => `- ${x}`), ``, `Competitor Deep Dive`, ...(session.competitorDeepDive || []).map(x => `- ${x.name}: strengths=${x.strengths}; weaknesses=${x.weaknesses}; differentiation=${x.differentiation}`), ``, `6-Month Financial Projection`, ...(session.financialProjection || []).map(x => `- ${x.month}: Revenue ${money(x.revenue)}, Expenses ${money(x.expenses)}, Runway ${x.runway}`), ``, `Market Size & Trends`, ...session.cards.market.map(x => `- ${x}`), ``, `Competitor Analysis`, ...session.cards.competitors.map(x => `- ${x}`), ``, `Customer Pain Points`, ...session.cards.painPoints.map(x => `- ${x}`), ``, `Opportunity Gaps`, ...session.cards.opportunities.map(x => `- ${x}`), ``, `Key Risks & Mitigations`, ...(session.deep.risks || []).map(x => `- ${x}`), ``, `Immediate Next 7 Days`, ...(session.deep.next7Days || []).map(x => `- ${x}`), ``, `Sources`, ...session.cards.sources.map(x => `- ${x}`)].join('\n');
         const blob = new Blob([txt], { type: 'text/plain' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -6466,47 +6334,23 @@
         link.click();
         URL.revokeObjectURL(link.href);
       };
-
-      const createTasksBtn = document.getElementById('createTasksFromStrategyBtn');
-      if (createTasksBtn) createTasksBtn.onclick = () => {
-        const session = strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0];
+      document.getElementById('createTasksFromStrategyBtn').onclick = () => {
+        const session = getSession();
         if (!session) return alert('Run strategy first.');
         ensureTasksState();
-        const taskLines = [...(session.deep.next7Days || []), ...(session.deep.priorities || [])].slice(0, 6);
-        taskLines.forEach(line => {
-          state.tasks.items.unshift({
-            id: crypto.randomUUID(),
-            title: line.replace(/^Day \d+-?\d*:\s*/i, ''),
-            description: `Generated from Strategy Report: ${session.query}`,
-            dueDate: '',
-            priority: 'High',
-            status: 'To Do',
-            tags: ['Strategy', 'Auto-Generated'],
-            sprintId: '',
-            linkRef: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          });
-        });
+        [...(session.deep.next7Days || []), ...(session.deep.priorities || [])].slice(0, 6).forEach(line => state.tasks.items.unshift({ id: crypto.randomUUID(), title: line.replace(/^Day \d+-?\d*:\s*/i, ''), description: `Generated from Strategy Report: ${session.query}`, dueDate: '', priority: 'High', status: 'To Do', tags: ['Strategy', 'Auto-Generated'], sprintId: '', linkRef: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
         state.tasks.selectedTaskId = state.tasks.items[0]?.id || null;
         state.activeSection = 'tasks';
         renderNav();
         saveState();
       };
-
-      el.querySelectorAll('[data-session-open]').forEach(btn => btn.onclick = () => {
-        strategy.activeSessionId = btn.dataset.sessionOpen;
-        saveStrategyState();
-      });
-
-      document.getElementById('clearResearchHistory').onclick = () => {
-        if (!confirm('Clear all research history?')) return;
-        strategy.sessions = [];
-        strategy.activeSessionId = null;
-        strategy.followUp = '';
-        saveStrategyState();
-      };
+      el.querySelectorAll('[data-session-open]').forEach(btn => btn.onclick = () => { strategy.activeSessionId = btn.dataset.sessionOpen; saveStrategyState(); });
+      el.querySelectorAll('[data-plan-open]').forEach(btn => btn.onclick = () => { const [kind, id] = btn.dataset.planOpen.split(':'); if (kind === 'session') strategy.activeSessionId = id; saveStrategyState(); });
+      el.querySelectorAll('[data-plan-advance]').forEach(btn => btn.onclick = () => { const plan = state.planning.plans.find(p => p.id === btn.dataset.planAdvance); if (plan) { plan.progress = Math.min(100, (Number(plan.progress) || 0) + 10); plan.status = plan.progress >= 100 ? 'Complete' : 'Active'; plan.updatedAt = new Date().toISOString(); saveStrategyState(); } });
+      el.querySelectorAll('[data-plan-delete]').forEach(btn => btn.onclick = () => { state.planning.plans = state.planning.plans.filter(p => p.id !== btn.dataset.planDelete); saveStrategyState(); });
+      document.getElementById('clearResearchHistory').onclick = () => { if (!confirm('Clear all research history?')) return; strategy.sessions = []; strategy.activeSessionId = null; strategy.followUp = ''; saveStrategyState(); };
     }
+
 
     function renderKnowledgeGraph() {
       ensureKnowledgeGraphState();
