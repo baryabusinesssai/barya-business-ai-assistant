@@ -2592,7 +2592,7 @@
       if (!state.knowledgeGraph || typeof state.knowledgeGraph !== 'object') state.knowledgeGraph = {};
       if (typeof state.knowledgeGraph.search !== 'string') state.knowledgeGraph.search = '';
       if (!state.knowledgeGraph.filter) state.knowledgeGraph.filter = 'all';
-      if (!['graph', 'mind'].includes(state.knowledgeGraph.viewMode)) state.knowledgeGraph.viewMode = 'graph';
+      if (!['graph', 'mind', 'cluster', 'timeline', 'table'].includes(state.knowledgeGraph.viewMode)) state.knowledgeGraph.viewMode = 'graph';
       if (typeof state.knowledgeGraph.focusRef !== 'string') state.knowledgeGraph.focusRef = '';
       if (!Array.isArray(state.knowledgeGraph.mentions)) state.knowledgeGraph.mentions = [];
     }
@@ -6384,100 +6384,289 @@
       const kg = state.knowledgeGraph;
       const graph = buildKnowledgeGraph();
       const filters = ['all', 'Page', 'Note', 'Daily Note', 'Task', 'Research', 'Mention'];
-      const iconByType = { Page: '📄', Note: '📝', 'Daily Note': '📅', Task: '✅', Research: '🔬', Mention: '💬' };
-      const colorByType = { Page: '#0ea5a4', Note: '#14b8a6', 'Daily Note': '#22c55e', Task: '#f59e0b', Research: '#8b5cf6', Mention: '#64748b' };
+      const iconByType = { Core: '◉', Cluster: '✦', Page: '📄', Note: '📝', 'Daily Note': '📅', Task: '✅', Research: '🔬', Mention: '💬' };
+      const colorByType = { Core: '#22d3ee', Cluster: '#a855f7', Page: '#2dd4bf', Note: '#14b8a6', 'Daily Note': '#22c55e', Task: '#f59e0b', Research: '#8b5cf6', Mention: '#94a3b8' };
+      const clusterPalette = ['#a855f7', '#22d3ee', '#2dd4bf', '#38bdf8', '#f59e0b', '#fb7185', '#34d399', '#c084fc'];
+      const businessClusters = ['Business Goals', 'Products', 'Marketing', 'Revenue', 'Team', 'Operations', 'Customers', 'Resources'];
       const q = String(kg.search || '').toLowerCase().trim();
-      const visibleNodes = graph.nodes.filter((node) => {
-        const byQuery = !q || `${node.label} ${node.type}`.toLowerCase().includes(q);
+      const activeMode = ['graph', 'cluster', 'timeline', 'table', 'mind'].includes(kg.viewMode) ? kg.viewMode : 'graph';
+      if (kg.viewMode !== activeMode) kg.viewMode = activeMode;
+      const clusterForNode = (node) => {
+        const haystack = `${node.label || ''} ${node.type || ''}`.toLowerCase();
+        if (/goal|vision|strategy|plan|okr|milestone|roadmap/.test(haystack)) return 'Business Goals';
+        if (/product|feature|mvp|app|platform|page|workspace/.test(haystack)) return 'Products';
+        if (/market|brand|content|campaign|social|seo|growth/.test(haystack)) return 'Marketing';
+        if (/revenue|sales|pricing|cash|finance|invoice|deal|income/.test(haystack)) return 'Revenue';
+        if (/team|hire|member|people|founder|role|task/.test(haystack)) return 'Team';
+        if (/operation|process|workflow|support|legal|admin/.test(haystack)) return 'Operations';
+        if (/customer|client|user|audience|persona|feedback/.test(haystack)) return 'Customers';
+        if (/resource|research|document|note|asset|library/.test(haystack)) return 'Resources';
+        const index = Math.abs(String(node.ref || node.label || '').split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0)) % businessClusters.length;
+        return businessClusters[index];
+      };
+      const actualVisibleNodes = graph.nodes.filter((node) => {
+        const byQuery = !q || `${node.label} ${node.type} ${clusterForNode(node)}`.toLowerCase().includes(q);
         const byFilter = kg.filter === 'all' || node.type === kg.filter;
         return byQuery && byFilter;
       });
-      const visibleRefs = new Set(visibleNodes.map((node) => node.ref));
-      const visibleEdges = graph.edges.filter((edge) => visibleRefs.has(edge.from) && visibleRefs.has(edge.to));
-      const emptyGraph = !visibleNodes.length || !visibleEdges.length;
-      const title = 'Knowledge Graph & Mind Map';
+      const visibleRefs = new Set(actualVisibleNodes.map((node) => node.ref));
+      const actualVisibleEdges = graph.edges.filter((edge) => visibleRefs.has(edge.from) && visibleRefs.has(edge.to));
+      const clusterCounts = businessClusters.map((cluster) => ({ cluster, count: actualVisibleNodes.filter((node) => clusterForNode(node) === cluster).length }));
+      const connectedRefs = new Set(actualVisibleEdges.flatMap((edge) => [edge.from, edge.to]));
+      const orphanCount = actualVisibleNodes.filter((node) => !connectedRefs.has(node.ref)).length;
+      const highImpactNodes = [...actualVisibleNodes].sort((a, b) => b.connected - a.connected).slice(0, 5);
+      const totalConnections = graph.edges.length;
+      const strongestCluster = [...clusterCounts].sort((a, b) => b.count - a.count)[0] || { cluster: 'Business Goals', count: 0 };
+      const lastUpdated = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const emptyGraph = !graph.nodes.length;
+      const nodeTypes = filters.slice(1).map((type) => ({ type, count: graph.nodes.filter((node) => node.type === type).length, color: colorByType[type] || '#22d3ee' })).filter((item) => item.count > 0);
+      const totalTypeCount = Math.max(1, nodeTypes.reduce((sum, item) => sum + item.count, 0));
+      let pieOffset = 0;
+      const pieGradient = nodeTypes.length ? nodeTypes.map((item) => {
+        const start = pieOffset;
+        pieOffset += (item.count / totalTypeCount) * 100;
+        return `${item.color} ${start.toFixed(1)}% ${pieOffset.toFixed(1)}%`;
+      }).join(', ') : '#334155 0% 100%';
+      const topConnections = highImpactNodes.length ? highImpactNodes.map((node) => `
+        <button data-kg-open-ref="${escapeAttr(node.ref)}" class="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-cyan-300/50 hover:bg-cyan-300/10">
+          <span class="flex items-center justify-between gap-3"><span class="font-semibold text-slate-100">${escapeHTML(node.label)}</span><span class="text-xs text-cyan-200">${node.connected} links</span></span>
+          <span class="mt-1 block text-xs text-slate-400">${escapeHTML(node.type)} · ${escapeHTML(clusterForNode(node))}</span>
+        </button>`).join('') : `<div class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-400">No connected nodes yet. Add pages, notes, tasks, or [[links]] to activate the graph.</div>`;
+      const recentActivity = [...graph.nodes].slice(-5).reverse().map((node) => `
+        <div class="flex items-center gap-3 rounded-xl bg-white/[0.035] px-3 py-2">
+          <span class="grid h-8 w-8 place-items-center rounded-full bg-cyan-300/10 text-sm">${iconByType[node.type] || '•'}</span>
+          <div class="min-w-0"><p class="truncate text-sm font-medium text-slate-100">${escapeHTML(node.label)}</p><p class="text-xs text-slate-500">Indexed as ${escapeHTML(node.type)}</p></div>
+        </div>`).join('') || `<p class="text-sm text-slate-400">No recent graph activity yet.</p>`;
+      const tableRows = actualVisibleNodes.map((node) => `<tr class="border-t border-white/10 text-slate-300"><td class="p-3 font-medium text-white">${escapeHTML(node.label)}</td><td class="p-3">${escapeHTML(node.type)}</td><td class="p-3">${escapeHTML(clusterForNode(node))}</td><td class="p-3">${node.connected}</td><td class="p-3"><button data-kg-open-ref="${escapeAttr(node.ref)}" class="rounded-lg border border-cyan-300/30 px-3 py-1 text-xs text-cyan-100 hover:bg-cyan-300/10">Open</button></td></tr>`).join('') || `<tr><td colspan="5" class="p-6 text-center text-slate-400">No nodes match your current filters.</td></tr>`;
+      const timelineRows = actualVisibleNodes.slice(0, 7).map((node, index) => `<div class="relative pl-7"><span class="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,.9)]"></span><p class="text-sm font-semibold text-white">${escapeHTML(node.label)}</p><p class="text-xs text-slate-400">Signal ${String(index + 1).padStart(2, '0')} · ${escapeHTML(node.type)} · ${escapeHTML(clusterForNode(node))}</p></div>`).join('') || `<p class="text-sm text-slate-400">Timeline will populate as your business brain grows.</p>`;
+      const statCards = [
+        ['Total Nodes', graph.nodes.length, '+ live index', 'from-cyan-300/20 to-blue-500/10'],
+        ['Connections', totalConnections, `${actualVisibleEdges.length} visible`, 'from-teal-300/20 to-emerald-500/10'],
+        ['Clusters', businessClusters.length, `${strongestCluster.cluster} leads`, 'from-purple-300/20 to-fuchsia-500/10'],
+        ['Insights', Math.max(1, highImpactNodes.length + (orphanCount ? 1 : 0)), orphanCount ? `${orphanCount} gaps found` : 'healthy mesh', 'from-amber-300/20 to-orange-500/10'],
+        ['Last Updated', lastUpdated, 'local workspace', 'from-slate-300/20 to-cyan-500/10']
+      ];
 
       el.innerHTML = `
-        <section class="rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50 via-cyan-50 to-white p-4 sm:p-6 shadow-lg shadow-teal-100/50 space-y-4">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 class="text-2xl font-semibold text-teal-700">${title}</h2>
-              <p class="text-sm text-zinc-600 mt-1">Switch between relationship graph and hierarchical mind mapping.</p>
+        <section id="kgBrainShell" class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#020617] p-4 text-slate-100 shadow-2xl shadow-purple-950/30 sm:p-6">
+          <div class="pointer-events-none absolute inset-0 opacity-80 [background:radial-gradient(circle_at_15%_10%,rgba(168,85,247,.28),transparent_32%),radial-gradient(circle_at_80%_0%,rgba(34,211,238,.20),transparent_28%),linear-gradient(135deg,rgba(15,23,42,.88),rgba(2,6,23,.96))]"></div>
+          <div class="pointer-events-none absolute -right-24 top-24 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl"></div>
+          <div class="pointer-events-none absolute -left-24 bottom-10 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl"></div>
+          <div class="relative z-10 space-y-5">
+            <header class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p class="mb-2 inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200">AI Business Brain Map</p>
+                <h2 class="text-3xl font-semibold tracking-tight text-white">Knowledge Graph</h2>
+                <p class="mt-2 max-w-2xl text-sm text-slate-300">Visualize and explore how everything in your business is connected.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="kgExportImg" class="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-semibold text-cyan-100 shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-300/20">Export Image</button>
+                <button id="kgExportJson" class="rounded-2xl border border-purple-300/30 bg-purple-300/10 px-4 py-2 text-sm font-semibold text-purple-100 transition hover:bg-purple-300/20">Export JSON</button>
+              </div>
+            </header>
+
+            <div class="flex flex-wrap items-center gap-3 rounded-3xl border border-white/10 bg-white/[0.045] p-3 backdrop-blur-xl">
+              <div class="relative min-w-[240px] flex-1">
+                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-cyan-200">⌕</span>
+                <input id="kgSearch" value="${escapeAttr(kg.search || '')}" placeholder="Search in knowledge graph…" class="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-10 pr-16 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/20" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400">⌘ K</span>
+              </div>
+              <select id="kgFilter" class="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-slate-100 outline-none focus:border-cyan-300/60">${filters.map((f) => `<option value="${f}" ${kg.filter===f?'selected':''}>${f === 'all' ? 'All types' : f}</option>`).join('')}</select>
+              <button id="kgAddNode" class="rounded-2xl bg-gradient-to-r from-purple-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-950/30 transition hover:scale-[1.02]">Add Node</button>
+              <button id="kgExpandView" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10">Expand View</button>
             </div>
+
+            <div class="grid gap-3 md:grid-cols-5">
+              ${statCards.map(([label, value, meta, gradient]) => `<div class="rounded-3xl border border-white/10 bg-gradient-to-br ${gradient} p-4 shadow-lg shadow-black/20"><p class="text-xs uppercase tracking-[0.22em] text-slate-400">${label}</p><p class="mt-2 text-2xl font-semibold text-white">${value}</p><p class="mt-1 text-xs text-cyan-100/70">${escapeHTML(meta)}</p></div>`).join('')}
+            </div>
+
             <div class="flex flex-wrap gap-2">
-              <button id="kgExportImg" class="px-3 py-2 rounded-lg bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 text-sm">Export Image</button>
-              <button id="kgExportJson" class="px-3 py-2 rounded-lg bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 text-sm">Export JSON</button>
+              ${[
+                ['graph', 'Graph View'],
+                ['cluster', 'Cluster View'],
+                ['timeline', 'Timeline View'],
+                ['table', 'Table View']
+              ].map(([mode, label]) => `<button data-kg-mode="${mode}" class="rounded-2xl border px-4 py-2 text-sm font-semibold transition ${activeMode === mode || (mode === 'graph' && activeMode === 'mind') ? 'border-cyan-300/60 bg-cyan-300/15 text-cyan-100 shadow-lg shadow-cyan-950/30' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:border-purple-300/40 hover:text-white'}">${label}</button>`).join('')}
             </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button data-kg-mode="graph" class="px-3 py-2 rounded-lg border text-sm ${kg.viewMode === 'mind' ? 'border-teal-200 bg-white' : 'border-teal-400 bg-teal-100 text-teal-800'}">Graph View</button>
-            <button data-kg-mode="mind" class="px-3 py-2 rounded-lg border text-sm ${kg.viewMode === 'mind' ? 'border-teal-400 bg-teal-100 text-teal-800' : 'border-teal-200 bg-white'}">Mind Map View</button>
-            <input id="kgSearch" value="${escapeAttr(kg.search || '')}" placeholder="Search nodes..." class="flex-1 min-w-[180px] bg-white border border-teal-200 rounded-lg px-3 py-2 text-sm" />
-            <select id="kgFilter" class="bg-white border border-teal-200 rounded-lg px-3 py-2 text-sm">${filters.map((f) => `<option value="${f}" ${kg.filter===f?'selected':''}>${f === 'all' ? 'All types' : f}</option>`).join('')}</select>
-            <button id="kgAutoSuggest" class="px-3 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 text-sm">Auto Suggest Connections</button>
-            <button id="kgAutoLayout" class="px-3 py-2 rounded-lg bg-white border border-teal-200 hover:bg-teal-50 text-sm">Auto-layout</button>
-            <button id="kgZoomIn" class="px-3 py-2 rounded-lg bg-white border border-teal-200 hover:bg-teal-50 text-sm">Zoom +</button>
-            <button id="kgZoomOut" class="px-3 py-2 rounded-lg bg-white border border-teal-200 hover:bg-teal-50 text-sm">Zoom −</button>
-            <button id="kgResetView" class="px-3 py-2 rounded-lg bg-white border border-teal-200 hover:bg-teal-50 text-sm">Reset</button>
-          </div>
-          <div class="relative rounded-xl border border-teal-200 bg-white p-2">
-            <canvas id="kgCanvas" width="1080" height="620" class="w-full h-[58vh] max-h-[720px] rounded-lg bg-[#f4fffd]"></canvas>
-            <div id="kgTooltip" class="hidden absolute pointer-events-none z-20 max-w-[280px] rounded-lg border border-teal-200 bg-white/95 px-3 py-2 text-xs shadow-lg"></div>
-            <input id="kgEditInput" class="hidden absolute z-30 rounded border border-teal-400 bg-white px-2 py-1 text-xs" />
-            ${emptyGraph ? `<div class="absolute inset-0 m-2 flex items-center justify-center rounded-lg bg-white/85 border border-dashed border-teal-200"><p class="max-w-lg text-center text-sm text-zinc-600 px-4">Your ideas are not connected yet. Start creating pages and notes and link them using [[Page Name]] to build your mind map.</p></div>` : ''}
+
+            <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <div class="relative min-h-[620px] overflow-hidden rounded-[1.75rem] border border-cyan-300/15 bg-slate-950/70 p-3 shadow-2xl shadow-cyan-950/20">
+                <div class="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(34,211,238,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(168,85,247,.08)_1px,transparent_1px)];[background-size:36px_36px]"></div>
+                <canvas id="kgCanvas" width="1200" height="720" class="relative z-10 h-[58vh] max-h-[760px] min-h-[560px] w-full rounded-[1.35rem] bg-transparent"></canvas>
+                <div class="absolute left-6 top-6 z-20 flex flex-wrap gap-2">
+                  <button id="kgAutoSuggest" class="rounded-xl border border-purple-300/30 bg-purple-300/10 px-3 py-2 text-xs font-semibold text-purple-100 backdrop-blur hover:bg-purple-300/20">AI Suggest</button>
+                  <button id="kgAutoLayout" class="rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-semibold text-cyan-100 backdrop-blur hover:bg-cyan-300/20">Auto-layout</button>
+                  <button id="kgFocusCore" class="rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-semibold text-slate-100 backdrop-blur hover:bg-white/[0.13]">Focus Barya</button>
+                </div>
+                <div class="absolute bottom-6 right-6 z-20 flex overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80 shadow-xl backdrop-blur">
+                  <button id="kgZoomOut" class="px-4 py-3 text-sm font-bold text-slate-200 hover:bg-white/10">−</button>
+                  <button id="kgResetView" class="border-x border-white/10 px-4 py-3 text-xs font-semibold text-slate-300 hover:bg-white/10">Reset</button>
+                  <button id="kgZoomIn" class="px-4 py-3 text-sm font-bold text-slate-200 hover:bg-white/10">+</button>
+                </div>
+                <div id="kgTooltip" class="hidden absolute pointer-events-none z-30 max-w-[300px] rounded-2xl border border-cyan-300/25 bg-slate-950/95 px-4 py-3 text-xs text-slate-200 shadow-2xl shadow-cyan-950/40 backdrop-blur"></div>
+                <input id="kgEditInput" class="hidden absolute z-40 rounded-xl border border-cyan-300/50 bg-slate-950 px-3 py-2 text-xs text-white shadow-xl outline-none" />
+                ${emptyGraph ? `<div class="absolute inset-3 z-20 flex items-center justify-center rounded-[1.35rem] border border-dashed border-cyan-300/20 bg-slate-950/80"><p class="max-w-lg px-4 text-center text-sm text-slate-300">Your business brain is ready. Create pages, notes, tasks, research, and [[Page Name]] links to grow the map.</p></div>` : ''}
+              </div>
+
+              <aside class="space-y-4 rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-5 backdrop-blur-xl">
+                <div><p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-200">AI Insights</p><h3 class="mt-2 text-xl font-semibold text-white">Business Intelligence</h3></div>
+                <div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4"><p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100">High Impact</p><p class="mt-2 text-sm text-slate-200">${orphanCount ? `${orphanCount} nodes need stronger relationships. Connect them to ${escapeHTML(strongestCluster.cluster)} to improve recall.` : `Your strongest signal is ${escapeHTML(strongestCluster.cluster)} with ${strongestCluster.count} mapped nodes.`}</p></div>
+                <div class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4"><p class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Relationship Insight</p><p class="mt-2 text-sm text-slate-200">${actualVisibleEdges.length ? `${actualVisibleEdges.length} visible relationships are active in this view. Use focus mode to inspect the business core.` : 'Add [[links]] between notes, pages, and tasks to reveal hidden relationships.'}</p></div>
+                <div class="rounded-2xl border border-purple-300/20 bg-purple-300/10 p-4"><p class="text-xs font-semibold uppercase tracking-[0.2em] text-purple-100">Suggested Next Move</p><p class="mt-2 text-sm text-slate-200">Create a connection between revenue, customers, and product roadmap assets to make strategic dependencies visible.</p></div>
+              </aside>
+            </div>
+
+            <div class="grid gap-4 xl:grid-cols-3">
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Top Connections</h3><div class="space-y-2">${topConnections}</div></section>
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Node Types</h3><div class="flex items-center gap-5"><div class="h-32 w-32 shrink-0 rounded-full border border-white/10 shadow-[0_0_35px_rgba(34,211,238,.16)]" style="background: conic-gradient(${pieGradient});"></div><div class="space-y-2 text-sm">${nodeTypes.map((item) => `<div class="flex items-center gap-2 text-slate-300"><span class="h-2.5 w-2.5 rounded-full" style="background:${item.color}"></span><span>${escapeHTML(item.type)}</span><span class="text-slate-500">${item.count}</span></div>`).join('') || '<p class="text-slate-400">No typed nodes yet.</p>'}</div></div></section>
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Quick Actions</h3><div class="grid grid-cols-2 gap-2"><button id="kgQuickAddNode" class="rounded-2xl bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/20">Add Node</button><button id="kgAddConnection" class="rounded-2xl bg-purple-300/10 px-4 py-3 text-sm font-semibold text-purple-100 hover:bg-purple-300/20">Add Connection</button><button id="kgImport" class="rounded-2xl bg-white/[0.06] px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/[0.1]">Import</button><button id="kgExportJsonBottom" class="rounded-2xl bg-white/[0.06] px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/[0.1]">Export</button><input id="kgImportFile" type="file" accept="application/json" class="hidden" /></div></section>
+            </div>
+
+            <div class="grid gap-4 xl:grid-cols-3">
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Recent Activity in Graph</h3><div class="space-y-2">${recentActivity}</div></section>
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Cluster Summary</h3><div class="space-y-3">${clusterCounts.map((item, index) => `<button data-kg-cluster="${escapeAttr(item.cluster)}" class="w-full rounded-xl bg-white/[0.035] px-3 py-2 text-left hover:bg-white/[0.08]"><span class="flex items-center justify-between text-sm"><span class="text-slate-200"><span class="mr-2 inline-block h-2.5 w-2.5 rounded-full" style="background:${clusterPalette[index]}"></span>${escapeHTML(item.cluster)}</span><span class="text-slate-400">${item.count}</span></span><span class="mt-2 block h-1.5 overflow-hidden rounded-full bg-slate-800"><span class="block h-full rounded-full" style="width:${Math.min(100, item.count / Math.max(1, actualVisibleNodes.length) * 100)}%;background:${clusterPalette[index]}"></span></span></button>`).join('')}</div></section>
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">${activeMode === 'table' ? 'Table View' : activeMode === 'timeline' ? 'Timeline View' : 'Graph Intelligence'}</h3>${activeMode === 'table' ? `<div class="max-h-80 overflow-auto rounded-2xl border border-white/10"><table class="w-full min-w-[560px] text-sm"><thead class="bg-white/[0.05] text-slate-400"><tr><th class="p-3 text-left">Node</th><th class="p-3 text-left">Type</th><th class="p-3 text-left">Cluster</th><th class="p-3 text-left">Links</th><th class="p-3 text-left">Action</th></tr></thead><tbody>${tableRows}</tbody></table></div>` : activeMode === 'timeline' ? `<div class="space-y-4 border-l border-cyan-300/20 pl-4">${timelineRows}</div>` : `<p class="text-sm text-slate-300">Use the graph canvas to drag nodes, click to open source items, scroll to zoom, drag empty space to pan, and double-click labels for temporary renaming.</p>`}</section>
+            </div>
           </div>
         </section>`;
 
       const canvas = document.getElementById('kgCanvas');
       const tooltip = document.getElementById('kgTooltip');
       const editInput = document.getElementById('kgEditInput');
+      const exportGraph = () => downloadJSON('knowledge-graph.json', { exportedAt: new Date().toISOString(), mode: kg.viewMode, nodes: graph.nodes, edges: graph.edges, clusters: businessClusters });
+      const addNodePrompt = () => {
+        const title = prompt('Add a knowledge graph node');
+        if (!title || !title.trim()) return;
+        addGraphMention(title.trim(), 'manual');
+        saveState();
+        renderKnowledgeGraph();
+      };
       document.getElementById('kgSearch').oninput = (e) => { kg.search = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
       document.getElementById('kgFilter').onchange = (e) => { kg.filter = e.target.value; saveStateRaw(); renderKnowledgeGraph(); };
       el.querySelectorAll('[data-kg-mode]').forEach((btn) => btn.onclick = () => { kg.viewMode = btn.dataset.kgMode; saveStateRaw(); renderKnowledgeGraph(); });
-      document.getElementById('kgExportJson').onclick = () => downloadJSON('knowledge-graph.json', { exportedAt: new Date().toISOString(), mode: kg.viewMode, nodes: graph.nodes, edges: graph.edges });
+      document.getElementById('kgExportJson').onclick = exportGraph;
+      document.getElementById('kgExportJsonBottom').onclick = exportGraph;
       document.getElementById('kgExportImg').onclick = () => { const link = document.createElement('a'); link.download = `knowledge-map-${Date.now()}.png`; link.href = canvas.toDataURL('image/png'); link.click(); };
-      document.getElementById('kgAutoSuggest').onclick = () => alert('Suggestions: connect nodes with similar titles, matching mentions, or repeated keywords.');
+      document.getElementById('kgAutoSuggest').onclick = () => alert('AI suggestions: connect high-impact nodes to weak clusters, add [[links]] inside notes/pages, and bridge Revenue ↔ Customers ↔ Products.');
+      document.getElementById('kgAddNode').onclick = addNodePrompt;
+      document.getElementById('kgQuickAddNode').onclick = addNodePrompt;
+      document.getElementById('kgAddConnection').onclick = () => alert('Add a connection by writing [[Exact Node Name]] inside a page, note, task, or research summary. Existing relationship targets remain fully supported.');
+      document.getElementById('kgExpandView').onclick = () => document.getElementById('kgBrainShell').classList.toggle('min-h-screen');
+      document.getElementById('kgImport').onclick = () => document.getElementById('kgImportFile').click();
+      document.getElementById('kgImportFile').onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const imported = JSON.parse(String(reader.result || '{}'));
+            (imported.nodes || []).slice(0, 50).forEach((node) => addGraphMention(node.label || node.title || node.ref, 'import'));
+            saveState();
+            renderKnowledgeGraph();
+          } catch (_) {
+            alert('Could not import this JSON file.');
+          }
+        };
+        reader.readAsText(file);
+      };
+      el.querySelectorAll('[data-kg-open-ref]').forEach((btn) => btn.onclick = () => openReference(btn.dataset.kgOpenRef));
+      el.querySelectorAll('[data-kg-cluster]').forEach((btn) => btn.onclick = () => { kg.search = btn.dataset.kgCluster; saveStateRaw(); renderKnowledgeGraph(); });
 
-      if (!canvas || !visibleNodes.length) return;
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
       canvas.width = Math.floor(width * dpr); canvas.height = Math.floor(height * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
       const center = { x: width / 2, y: height / 2 };
-      const layout = visibleNodes.map((n, i) => ({ ...n, x: center.x + Math.cos(i) * 120, y: center.y + Math.sin(i) * 120, r: 14 + Math.min(10, n.connected), vx: 0, vy: 0 }));
-      if (kg.viewMode === 'mind') {
-        layout.sort((a, b) => b.connected - a.connected);
-        const root = layout[0]; root.x = center.x; root.y = center.y;
-        layout.slice(1).forEach((n, i) => { const side = i % 2 === 0 ? 1 : -1; const lane = Math.floor(i / 2); n.x = center.x + side * (190 + lane * 32); n.y = 80 + (lane * 70) % (height - 120); });
+      const syntheticNodes = [{ ref: 'core:barya', label: 'Barya', type: 'Core', cluster: 'Core', connected: businessClusters.length, synthetic: true }].concat(businessClusters.map((cluster, index) => ({ ref: `cluster:${cluster}`, label: cluster, type: 'Cluster', cluster, connected: clusterCounts[index]?.count || 0, synthetic: true, clusterIndex: index })));
+      const canvasNodes = syntheticNodes.concat(actualVisibleNodes.map((node) => ({ ...node, cluster: clusterForNode(node), synthetic: false })));
+      const layout = canvasNodes.map((node, index) => ({ ...node, x: center.x, y: center.y, r: node.type === 'Core' ? 34 : node.type === 'Cluster' ? 22 : 12 + Math.min(10, node.connected), vx: 0, vy: 0 }));
+      const layoutByRef = new Map(layout.map((node) => [node.ref, node]));
+      const radius = Math.min(width, height) * (activeMode === 'cluster' ? 0.34 : 0.31);
+      businessClusters.forEach((cluster, index) => {
+        const node = layoutByRef.get(`cluster:${cluster}`);
+        if (!node) return;
+        const angle = (index / businessClusters.length) * Math.PI * 2 - Math.PI / 2;
+        node.x = center.x + Math.cos(angle) * radius;
+        node.y = center.y + Math.sin(angle) * radius * 0.82;
+      });
+      const coreNode = layoutByRef.get('core:barya');
+      if (coreNode) { coreNode.x = center.x; coreNode.y = center.y; }
+      actualVisibleNodes.forEach((node, index) => {
+        const ln = layoutByRef.get(node.ref);
+        const cn = layoutByRef.get(`cluster:${clusterForNode(node)}`);
+        if (!ln || !cn) return;
+        const siblings = actualVisibleNodes.filter((candidate) => clusterForNode(candidate) === clusterForNode(node));
+        const siblingIndex = Math.max(0, siblings.findIndex((candidate) => candidate.ref === node.ref));
+        const angle = (siblingIndex / Math.max(1, siblings.length)) * Math.PI * 2 + index * 0.17;
+        const spread = activeMode === 'cluster' ? 92 : 70;
+        ln.x = cn.x + Math.cos(angle) * spread;
+        ln.y = cn.y + Math.sin(angle) * spread * 0.72;
+      });
+      if (activeMode === 'mind') {
+        layout.filter((node) => !node.synthetic).sort((a, b) => b.connected - a.connected).forEach((node, index) => {
+          const side = index % 2 === 0 ? 1 : -1;
+          const lane = Math.floor(index / 2);
+          node.x = center.x + side * (230 + (lane % 3) * 72);
+          node.y = 90 + (lane * 74) % Math.max(140, height - 180);
+        });
       }
-      const nodeMap = new Map(layout.map((n) => [n.ref, n]));
-      const edges = visibleEdges.map((e) => ({ ...e, a: nodeMap.get(e.from), b: nodeMap.get(e.to) })).filter((e) => e.a && e.b);
-      const autoLayout = () => { layout.forEach((n, i) => { const a = i / Math.max(1, layout.length) * Math.PI * 2; n.x = center.x + Math.cos(a) * Math.min(width, height) * 0.28; n.y = center.y + Math.sin(a) * Math.min(width, height) * 0.28; }); draw(); };
+      const canvasEdges = [];
+      businessClusters.forEach((cluster, index) => canvasEdges.push({ from: 'core:barya', to: `cluster:${cluster}`, relation: 'business-core', color: clusterPalette[index] }));
+      actualVisibleNodes.forEach((node) => canvasEdges.push({ from: `cluster:${clusterForNode(node)}`, to: node.ref, relation: 'cluster', color: clusterPalette[businessClusters.indexOf(clusterForNode(node))] || '#22d3ee' }));
+      actualVisibleEdges.forEach((edge) => canvasEdges.push({ ...edge, color: '#22d3ee' }));
+      const resolvedEdges = canvasEdges.map((edge) => ({ ...edge, a: layoutByRef.get(edge.from), b: layoutByRef.get(edge.to) })).filter((edge) => edge.a && edge.b);
+      const autoLayout = () => { businessClusters.forEach((cluster, index) => { const node = layoutByRef.get(`cluster:${cluster}`); if (!node) return; const angle = (index / businessClusters.length) * Math.PI * 2 - Math.PI / 2; node.x = center.x + Math.cos(angle) * radius; node.y = center.y + Math.sin(angle) * radius * 0.82; }); draw(); };
       document.getElementById('kgAutoLayout').onclick = autoLayout;
 
-      let scale = 1, ox = 0, oy = 0, drag = null, hover = null, pan = false, moved = false, last = {x:0,y:0};
+      let scale = 1, ox = 0, oy = 0, drag = null, hover = null, pan = false, moved = false, last = {x:0,y:0}, pulse = 0;
+      const clamp = () => { scale = Math.max(0.45, Math.min(3, scale)); };
       const toGraph = (cx, cy) => { const r = canvas.getBoundingClientRect(); return { x: (cx-r.left-ox)/scale, y: (cy-r.top-oy)/scale }; };
-      const hitNode = (cx, cy) => { const p = toGraph(cx, cy); return [...layout].reverse().find((n) => Math.hypot(n.x-p.x,n.y-p.y) <= n.r+4) || null; };
-
+      const hitNode = (cx, cy) => { const p = toGraph(cx, cy); return [...layout].reverse().find((n) => Math.hypot(n.x-p.x,n.y-p.y) <= n.r+8) || null; };
       function draw() {
-        ctx.clearRect(0,0,width,height); ctx.save(); ctx.translate(ox,oy); ctx.scale(scale,scale);
-        edges.forEach((e) => { ctx.strokeStyle = 'rgba(20,184,166,0.4)'; ctx.lineWidth = 1.6; ctx.beginPath(); if (kg.viewMode === 'mind') { const cpX = (e.a.x + e.b.x)/2; ctx.moveTo(e.a.x, e.a.y); ctx.bezierCurveTo(cpX, e.a.y, cpX, e.b.y, e.b.x, e.b.y); } else { ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); } ctx.stroke(); });
-        layout.forEach((n) => { ctx.fillStyle = colorByType[n.type] || '#0ea5a4'; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle = hover?.ref===n.ref ? '#0f766e' : '#fff'; ctx.lineWidth = hover?.ref===n.ref ? 3 : 1.5; ctx.stroke(); ctx.fillStyle='#0f172a'; ctx.font='600 12px Inter'; ctx.fillText(`${iconByType[n.type] || '•'} ${n.label}`.slice(0,30), n.x+n.r+5,n.y-2); });
+        pulse += 0.016;
+        ctx.clearRect(0,0,width,height);
+        const bg = ctx.createRadialGradient(center.x, center.y, 10, center.x, center.y, Math.max(width, height) * 0.7);
+        bg.addColorStop(0, 'rgba(34,211,238,0.10)'); bg.addColorStop(0.45, 'rgba(88,28,135,0.08)'); bg.addColorStop(1, 'rgba(2,6,23,0)');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,width,height);
+        ctx.save(); ctx.translate(ox,oy); ctx.scale(scale,scale);
+        resolvedEdges.forEach((edge) => {
+          const alpha = edge.relation === 'business-core' ? 0.72 : edge.relation === 'cluster' ? 0.38 : 0.54;
+          ctx.save(); ctx.shadowColor = edge.color || '#22d3ee'; ctx.shadowBlur = edge.relation === 'business-core' ? 16 : 8; ctx.strokeStyle = `${edge.color || '#22d3ee'}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`; ctx.lineWidth = edge.relation === 'business-core' ? 2.4 : edge.relation === 'cluster' ? 1.4 : 1.9; ctx.beginPath();
+          const dx = edge.b.x - edge.a.x, dy = edge.b.y - edge.a.y;
+          const curve = Math.max(1, Math.min(130, Math.hypot(dx, dy) * 0.34));
+          ctx.moveTo(edge.a.x, edge.a.y);
+          ctx.bezierCurveTo(edge.a.x + dx * 0.35 - dy / curve * 12, edge.a.y + dy * 0.18 + dx / curve * 12, edge.a.x + dx * 0.65 + dy / curve * 12, edge.a.y + dy * 0.82 - dx / curve * 12, edge.b.x, edge.b.y);
+          ctx.stroke(); ctx.restore();
+        });
+        layout.forEach((node) => {
+          const color = node.type === 'Cluster' ? (clusterPalette[node.clusterIndex] || '#a855f7') : (colorByType[node.type] || '#22d3ee');
+          const isHover = hover?.ref === node.ref;
+          const glow = node.type === 'Core' ? 32 + Math.sin(pulse * 2) * 8 : node.type === 'Cluster' ? 20 : 12;
+          ctx.save(); ctx.shadowColor = color; ctx.shadowBlur = isHover ? glow * 1.7 : glow; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(node.x,node.y,node.r,0,Math.PI*2); ctx.fill();
+          const inner = ctx.createRadialGradient(node.x - node.r/3, node.y - node.r/3, 2, node.x, node.y, node.r * 1.2);
+          inner.addColorStop(0, 'rgba(255,255,255,.9)'); inner.addColorStop(0.22, color); inner.addColorStop(1, 'rgba(15,23,42,.85)'); ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(node.x,node.y,node.r,0,Math.PI*2); ctx.fill();
+          ctx.strokeStyle = isHover ? '#ffffff' : 'rgba(255,255,255,.68)'; ctx.lineWidth = isHover ? 3 : 1.4; ctx.stroke(); ctx.restore();
+          ctx.fillStyle = node.type === 'Core' ? '#ecfeff' : '#e2e8f0'; ctx.font = node.type === 'Core' ? '800 16px Inter, sans-serif' : '700 12px Inter, sans-serif'; ctx.textAlign = node.type === 'Core' ? 'center' : 'left'; ctx.textBaseline = 'middle';
+          const label = node.type === 'Core' ? node.label : `${iconByType[node.type] || '•'} ${node.label}`.slice(0, node.type === 'Cluster' ? 28 : 34);
+          ctx.fillText(label, node.type === 'Core' ? node.x : node.x + node.r + 8, node.type === 'Core' ? node.y + 54 : node.y);
+        });
         ctx.restore();
       }
       draw();
-
-      const clamp = () => { scale = Math.max(0.45, Math.min(3, scale)); };
+      const animate = () => { if (!document.body.contains(canvas)) return; draw(); requestAnimationFrame(animate); };
+      requestAnimationFrame(animate);
       document.getElementById('kgZoomIn').onclick = () => { scale*=1.2; clamp(); draw(); };
       document.getElementById('kgZoomOut').onclick = () => { scale*=0.84; clamp(); draw(); };
       document.getElementById('kgResetView').onclick = () => { scale=1; ox=0; oy=0; draw(); };
+      document.getElementById('kgFocusCore').onclick = () => { scale=1.18; ox=center.x-(coreNode?.x || center.x)*scale; oy=center.y-(coreNode?.y || center.y)*scale; draw(); };
       canvas.onwheel = (e) => { e.preventDefault(); const prev=scale; scale*=e.deltaY<0?1.1:0.9; clamp(); const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left,my=e.clientY-r.top,k=scale/prev; ox = mx-(mx-ox)*k; oy=my-(my-oy)*k; draw(); };
-      canvas.onmousedown = (e) => { drag = hitNode(e.clientX,e.clientY); pan=!drag; moved=false; last={x:e.clientX,y:e.clientY}; };
-      canvas.onmousemove = (e) => { const dx=e.clientX-last.x, dy=e.clientY-last.y; if (drag||pan) moved = moved || Math.abs(dx)>1 || Math.abs(dy)>1; last={x:e.clientX,y:e.clientY}; if (drag) { drag.x+=dx/scale; drag.y+=dy/scale; draw(); } else if (pan) { ox+=dx; oy+=dy; draw(); } hover = hitNode(e.clientX,e.clientY); if (hover) { const r=canvas.getBoundingClientRect(); tooltip.classList.remove('hidden'); tooltip.style.left=`${e.clientX-r.left+12}px`; tooltip.style.top=`${e.clientY-r.top+12}px`; tooltip.innerHTML=`<p class="font-semibold">${escapeHTML(hover.label)}</p><p class="text-[11px] text-zinc-500">${hover.type} · Connected: ${hover.connected}</p>`; } else tooltip.classList.add('hidden'); if (!drag && !pan) draw(); };
-      canvas.onmouseup = (e) => { const hit=hitNode(e.clientX,e.clientY); drag=null; pan=false; if (hit && !moved) openReference(hit.ref); };
-      canvas.ondblclick = (e) => { const hit=hitNode(e.clientX,e.clientY); if (!hit) return; const rect = canvas.getBoundingClientRect(); editInput.classList.remove('hidden'); editInput.style.left = `${e.clientX-rect.left}px`; editInput.style.top = `${e.clientY-rect.top}px`; editInput.value = hit.label; editInput.focus(); const save = () => { const v = editInput.value.trim(); if (v) hit.label = v; editInput.classList.add('hidden'); draw(); }; editInput.onkeydown = (ke) => { if (ke.key === 'Enter') save(); if (ke.key === 'Escape') editInput.classList.add('hidden'); }; editInput.onblur = save; };
+      canvas.onmousedown = (e) => { drag = hitNode(e.clientX,e.clientY); pan=!drag; moved=false; last={x:e.clientX,y:e.clientY}; canvas.style.cursor = drag ? 'grabbing' : 'move'; };
+      canvas.onmousemove = (e) => { const dx=e.clientX-last.x, dy=e.clientY-last.y; if (drag||pan) moved = moved || Math.abs(dx)>1 || Math.abs(dy)>1; last={x:e.clientX,y:e.clientY}; if (drag) { drag.x+=dx/scale; drag.y+=dy/scale; draw(); } else if (pan) { ox+=dx; oy+=dy; draw(); } hover = hitNode(e.clientX,e.clientY); canvas.style.cursor = hover ? 'pointer' : pan ? 'move' : 'grab'; if (hover) { const r=canvas.getBoundingClientRect(); tooltip.classList.remove('hidden'); tooltip.style.left=`${Math.min(width-320, Math.max(12, e.clientX-r.left+14))}px`; tooltip.style.top=`${Math.min(height-120, Math.max(12, e.clientY-r.top+14))}px`; tooltip.innerHTML=`<p class="font-semibold text-white">${escapeHTML(hover.label)}</p><p class="mt-1 text-[11px] text-slate-400">${escapeHTML(hover.type)} · ${hover.connected || 0} connections${hover.cluster ? ` · ${escapeHTML(hover.cluster)}` : ''}</p><p class="mt-2 text-[11px] text-cyan-200">${hover.synthetic ? 'Click to focus this cluster' : 'Click to open · Drag to reposition'}</p>`; } else tooltip.classList.add('hidden'); };
+      canvas.onmouseup = (e) => { const hit=hitNode(e.clientX,e.clientY); drag=null; pan=false; canvas.style.cursor = 'grab'; if (hit && !moved) { if (hit.type === 'Cluster') { kg.search = hit.cluster; saveStateRaw(); renderKnowledgeGraph(); } else if (!hit.synthetic) openReference(hit.ref); } };
+      canvas.onmouseleave = () => { drag=null; pan=false; tooltip.classList.add('hidden'); canvas.style.cursor = 'grab'; };
+      canvas.ondblclick = (e) => { const hit=hitNode(e.clientX,e.clientY); if (!hit || hit.synthetic) return; const rect = canvas.getBoundingClientRect(); editInput.classList.remove('hidden'); editInput.style.left = `${e.clientX-rect.left}px`; editInput.style.top = `${e.clientY-rect.top}px`; editInput.value = hit.label; editInput.focus(); const save = () => { const v = editInput.value.trim(); if (v) hit.label = v; editInput.classList.add('hidden'); draw(); }; editInput.onkeydown = (ke) => { if (ke.key === 'Enter') save(); if (ke.key === 'Escape') editInput.classList.add('hidden'); }; editInput.onblur = save; };
     }
 
     function renderSettings() {
