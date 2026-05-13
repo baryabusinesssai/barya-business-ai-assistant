@@ -1388,7 +1388,7 @@
 
 
     /* Scroll fix for long-form sections: keep the app shell/sidebar fixed while these panels own vertical scrolling. */
-    #mainTaskSection > :is(#section-ai, #section-planning, #section-settings, #section-knowledge-graph) {
+    #mainTaskSection > :is(#section-ai, #section-memory, #section-planning, #section-settings, #section-knowledge-graph) {
       flex: 1 1 0;
       min-height: 0;
       max-height: 100%;
@@ -1400,12 +1400,13 @@
       scrollbar-gutter: stable;
     }
 
-    #mainTaskSection > :is(#section-ai, #section-planning, #section-settings, #section-knowledge-graph).active {
+    #mainTaskSection > :is(#section-ai, #section-memory, #section-planning, #section-settings, #section-knowledge-graph).active {
       display: flex;
       flex-direction: column;
     }
 
     #section-ai > .barya-ai-premium,
+    #section-memory > section,
     #section-planning > section,
     #section-settings > section,
     #section-knowledge-graph > #kgBrainShell {
