@@ -6456,6 +6456,24 @@
 
     function renderSettings() {
       const s = state.settings;
+      s.founder ||= structuredClone(defaultState.settings.founder);
+      s.business ||= structuredClone(defaultState.settings.business);
+      s.team ||= structuredClone(defaultState.settings.team);
+      s.preferences ||= structuredClone(defaultState.settings.preferences);
+      s.security ||= { twoFactor: false, loginAlerts: true, passwordUpdatedAt: '', activeSessionNote: 'This browser · Local workspace' };
+      s.aiPreferences ||= { responseStyle: 'Balanced', proactiveSuggestions: true, autoSaveOutputs: true, contextMemory: true };
+      s.notifications ||= { product: true, reminders: true, weeklyDigest: false };
+      s.privacy ||= { privateMode: true, localFirst: true };
+      s.appearance ||= { accent: 'Purple + Teal', density: 'Comfortable' };
+      s.integrations ||= { calendar: false, slack: false, notion: false };
+      s.dataStorage ||= { storageLimitMb: 50 };
+      s.preferences.defaultDashboard ||= 'Overview';
+      s.preferences.timeFormat ||= '12-hour';
+      s.preferences.timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      s.preferences.defaultLanguage ||= normalizeLanguageCode(s.preferences.language || 'en');
+      s.preferences.currency ||= '';
+      s.preferences.dateFormat ||= 'MM/DD/YYYY';
+
       const popularCountries = [
         { name: 'India', flag: '🇮🇳' },
         { name: 'United States', flag: '🇺🇸' },
@@ -6470,234 +6488,140 @@
       ];
       const allCountries = [
         { name: 'Afghanistan', flag: '🇦🇫' }, { name: 'Albania', flag: '🇦🇱' }, { name: 'Algeria', flag: '🇩🇿' }, { name: 'Andorra', flag: '🇦🇩' }, { name: 'Angola', flag: '🇦🇴' },
-        { name: 'Argentina', flag: '🇦🇷' }, { name: 'Armenia', flag: '🇦🇲' }, { name: 'Austria', flag: '🇦🇹' }, { name: 'Azerbaijan', flag: '🇦🇿' }, { name: 'Bahrain', flag: '🇧🇭' },
-        { name: 'Barbados', flag: '🇧🇧' }, { name: 'Belarus', flag: '🇧🇾' }, { name: 'Belgium', flag: '🇧🇪' }, { name: 'Belize', flag: '🇧🇿' }, { name: 'Benin', flag: '🇧🇯' },
-        { name: 'Bhutan', flag: '🇧🇹' }, { name: 'Bolivia', flag: '🇧🇴' }, { name: 'Bosnia and Herzegovina', flag: '🇧🇦' }, { name: 'Botswana', flag: '🇧🇼' }, { name: 'Brazil', flag: '🇧🇷' },
-        { name: 'Brunei', flag: '🇧🇳' }, { name: 'Bulgaria', flag: '🇧🇬' }, { name: 'Burkina Faso', flag: '🇧🇫' }, { name: 'Burundi', flag: '🇧🇮' }, { name: 'Cambodia', flag: '🇰🇭' },
-        { name: 'Cameroon', flag: '🇨🇲' }, { name: 'Cape Verde', flag: '🇨🇻' }, { name: 'Central African Republic', flag: '🇨🇫' }, { name: 'Chad', flag: '🇹🇩' }, { name: 'Chile', flag: '🇨🇱' },
-        { name: 'China', flag: '🇨🇳' }, { name: 'Colombia', flag: '🇨🇴' }, { name: 'Comoros', flag: '🇰🇲' }, { name: 'Congo', flag: '🇨🇬' }, { name: 'Costa Rica', flag: '🇨🇷' },
-        { name: 'Croatia', flag: '🇭🇷' }, { name: 'Cuba', flag: '🇨🇺' }, { name: 'Cyprus', flag: '🇨🇾' }, { name: 'Czech Republic', flag: '🇨🇿' }, { name: 'Denmark', flag: '🇩🇰' },
-        { name: 'Djibouti', flag: '🇩🇯' }, { name: 'Dominica', flag: '🇩🇲' }, { name: 'Dominican Republic', flag: '🇩🇴' }, { name: 'Ecuador', flag: '🇪🇨' }, { name: 'Egypt', flag: '🇪🇬' },
-        { name: 'El Salvador', flag: '🇸🇻' }, { name: 'Equatorial Guinea', flag: '🇬🇶' }, { name: 'Eritrea', flag: '🇪🇷' }, { name: 'Estonia', flag: '🇪🇪' }, { name: 'Eswatini', flag: '🇸🇿' },
-        { name: 'Ethiopia', flag: '🇪🇹' }, { name: 'Fiji', flag: '🇫🇯' }, { name: 'Finland', flag: '🇫🇮' }, { name: 'France', flag: '🇫🇷' }, { name: 'Gabon', flag: '🇬🇦' },
-        { name: 'Gambia', flag: '🇬🇲' }, { name: 'Georgia', flag: '🇬🇪' }, { name: 'Germany', flag: '🇩🇪' }, { name: 'Ghana', flag: '🇬🇭' }, { name: 'Greece', flag: '🇬🇷' },
-        { name: 'Grenada', flag: '🇬🇩' }, { name: 'Guatemala', flag: '🇬🇹' }, { name: 'Guinea', flag: '🇬🇳' }, { name: 'Guinea-Bissau', flag: '🇬🇼' }, { name: 'Guyana', flag: '🇬🇾' },
-        { name: 'Haiti', flag: '🇭🇹' }, { name: 'Honduras', flag: '🇭🇳' }, { name: 'Hungary', flag: '🇭🇺' }, { name: 'Iceland', flag: '🇮🇸' }, { name: 'Indonesia', flag: '🇮🇩' },
-        { name: 'Iran', flag: '🇮🇷' }, { name: 'Iraq', flag: '🇮🇶' }, { name: 'Ireland', flag: '🇮🇪' }, { name: 'Israel', flag: '🇮🇱' }, { name: 'Italy', flag: '🇮🇹' },
-        { name: 'Jamaica', flag: '🇯🇲' }, { name: 'Japan', flag: '🇯🇵' }, { name: 'Jordan', flag: '🇯🇴' }, { name: 'Kazakhstan', flag: '🇰🇿' }, { name: 'Kenya', flag: '🇰🇪' },
-        { name: 'Kiribati', flag: '🇰🇮' }, { name: 'Kuwait', flag: '🇰🇼' }, { name: 'Kyrgyzstan', flag: '🇰🇬' }, { name: 'Laos', flag: '🇱🇦' }, { name: 'Latvia', flag: '🇱🇻' },
-        { name: 'Lebanon', flag: '🇱🇧' }, { name: 'Lesotho', flag: '🇱🇸' }, { name: 'Liberia', flag: '🇱🇷' }, { name: 'Libya', flag: '🇱🇾' }, { name: 'Liechtenstein', flag: '🇱🇮' },
-        { name: 'Lithuania', flag: '🇱🇹' }, { name: 'Luxembourg', flag: '🇱🇺' }, { name: 'Madagascar', flag: '🇲🇬' }, { name: 'Malawi', flag: '🇲🇼' }, { name: 'Malaysia', flag: '🇲🇾' },
-        { name: 'Maldives', flag: '🇲🇻' }, { name: 'Mali', flag: '🇲🇱' }, { name: 'Malta', flag: '🇲🇹' }, { name: 'Marshall Islands', flag: '🇲🇭' }, { name: 'Mauritania', flag: '🇲🇷' },
-        { name: 'Mauritius', flag: '🇲🇺' }, { name: 'Mexico', flag: '🇲🇽' }, { name: 'Micronesia', flag: '🇫🇲' }, { name: 'Moldova', flag: '🇲🇩' }, { name: 'Monaco', flag: '🇲🇨' },
-        { name: 'Mongolia', flag: '🇲🇳' }, { name: 'Montenegro', flag: '🇲🇪' }, { name: 'Morocco', flag: '🇲🇦' }, { name: 'Mozambique', flag: '🇲🇿' }, { name: 'Myanmar', flag: '🇲🇲' },
-        { name: 'Namibia', flag: '🇳🇦' }, { name: 'Nauru', flag: '🇳🇷' }, { name: 'Netherlands', flag: '🇳🇱' }, { name: 'New Zealand', flag: '🇳🇿' }, { name: 'Nicaragua', flag: '🇳🇮' },
-        { name: 'Niger', flag: '🇳🇪' }, { name: 'Nigeria', flag: '🇳🇬' }, { name: 'North Korea', flag: '🇰🇵' }, { name: 'North Macedonia', flag: '🇲🇰' }, { name: 'Norway', flag: '🇳🇴' },
-        { name: 'Oman', flag: '🇴🇲' }, { name: 'Palau', flag: '🇵🇼' }, { name: 'Panama', flag: '🇵🇦' }, { name: 'Papua New Guinea', flag: '🇵🇬' }, { name: 'Paraguay', flag: '🇵🇾' },
-        { name: 'Peru', flag: '🇵🇪' }, { name: 'Philippines', flag: '🇵🇭' }, { name: 'Poland', flag: '🇵🇱' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Qatar', flag: '🇶🇦' },
-        { name: 'Romania', flag: '🇷🇴' }, { name: 'Russia', flag: '🇷🇺' }, { name: 'Rwanda', flag: '🇷🇼' }, { name: 'Saint Kitts and Nevis', flag: '🇰🇳' }, { name: 'Saint Lucia', flag: '🇱🇨' },
-        { name: 'Saint Vincent and the Grenadines', flag: '🇻🇨' }, { name: 'Samoa', flag: '🇼🇸' }, { name: 'San Marino', flag: '🇸🇲' }, { name: 'Sao Tome and Principe', flag: '🇸🇹' }, { name: 'Saudi Arabia', flag: '🇸🇦' },
-        { name: 'Senegal', flag: '🇸🇳' }, { name: 'Serbia', flag: '🇷🇸' }, { name: 'Seychelles', flag: '🇸🇨' }, { name: 'Sierra Leone', flag: '🇸🇱' }, { name: 'Slovakia', flag: '🇸🇰' },
-        { name: 'Slovenia', flag: '🇸🇮' }, { name: 'Solomon Islands', flag: '🇸🇧' }, { name: 'Somalia', flag: '🇸🇴' }, { name: 'South Africa', flag: '🇿🇦' }, { name: 'South Korea', flag: '🇰🇷' },
-        { name: 'South Sudan', flag: '🇸🇸' }, { name: 'Spain', flag: '🇪🇸' }, { name: 'Sri Lanka', flag: '🇱🇰' }, { name: 'Sudan', flag: '🇸🇩' }, { name: 'Suriname', flag: '🇸🇷' },
-        { name: 'Sweden', flag: '🇸🇪' }, { name: 'Switzerland', flag: '🇨🇭' }, { name: 'Syria', flag: '🇸🇾' }, { name: 'Taiwan', flag: '🇹🇼' }, { name: 'Tajikistan', flag: '🇹🇯' },
-        { name: 'Tanzania', flag: '🇹🇿' }, { name: 'Thailand', flag: '🇹🇭' }, { name: 'Timor-Leste', flag: '🇹🇱' }, { name: 'Togo', flag: '🇹🇬' }, { name: 'Tonga', flag: '🇹🇴' },
-        { name: 'Trinidad and Tobago', flag: '🇹🇹' }, { name: 'Tunisia', flag: '🇹🇳' }, { name: 'Turkey', flag: '🇹🇷' }, { name: 'Turkmenistan', flag: '🇹🇲' }, { name: 'Tuvalu', flag: '🇹🇻' },
-        { name: 'Uganda', flag: '🇺🇬' }, { name: 'Ukraine', flag: '🇺🇦' }, { name: 'Uruguay', flag: '🇺🇾' }, { name: 'Uzbekistan', flag: '🇺🇿' }, { name: 'Vanuatu', flag: '🇻🇺' },
-        { name: 'Vatican City', flag: '🇻🇦' }, { name: 'Venezuela', flag: '🇻🇪' }, { name: 'Vietnam', flag: '🇻🇳' }, { name: 'Yemen', flag: '🇾🇪' }, { name: 'Zambia', flag: '🇿🇲' },
-        { name: 'Zimbabwe', flag: '🇿🇼' }
+        { name: 'Argentina', flag: '🇦🇷' }, { name: 'Armenia', flag: '🇦🇲' }, { name: 'Australia', flag: '🇦🇺' }, { name: 'Austria', flag: '🇦🇹' }, { name: 'Bangladesh', flag: '🇧🇩' },
+        { name: 'Belgium', flag: '🇧🇪' }, { name: 'Brazil', flag: '🇧🇷' }, { name: 'Canada', flag: '🇨🇦' }, { name: 'China', flag: '🇨🇳' }, { name: 'Denmark', flag: '🇩🇰' },
+        { name: 'Egypt', flag: '🇪🇬' }, { name: 'France', flag: '🇫🇷' }, { name: 'Germany', flag: '🇩🇪' }, { name: 'India', flag: '🇮🇳' }, { name: 'Indonesia', flag: '🇮🇩' },
+        { name: 'Ireland', flag: '🇮🇪' }, { name: 'Italy', flag: '🇮🇹' }, { name: 'Japan', flag: '🇯🇵' }, { name: 'Malaysia', flag: '🇲🇾' }, { name: 'Mexico', flag: '🇲🇽' },
+        { name: 'Netherlands', flag: '🇳🇱' }, { name: 'Nepal', flag: '🇳🇵' }, { name: 'New Zealand', flag: '🇳🇿' }, { name: 'Pakistan', flag: '🇵🇰' }, { name: 'Philippines', flag: '🇵🇭' },
+        { name: 'Singapore', flag: '🇸🇬' }, { name: 'South Africa', flag: '🇿🇦' }, { name: 'Spain', flag: '🇪🇸' }, { name: 'Sri Lanka', flag: '🇱🇰' }, { name: 'Sweden', flag: '🇸🇪' },
+        { name: 'United Arab Emirates', flag: '🇦🇪' }, { name: 'United Kingdom', flag: '🇬🇧' }, { name: 'United States', flag: '🇺🇸' }, { name: 'Vietnam', flag: '🇻🇳' }
       ];
-      const popularNames = new Set(popularCountries.map((country) => country.name));
-      const additionalCountries = allCountries.filter((country) => !popularNames.has(country.name)).sort((a, b) => a.name.localeCompare(b.name));
-      const countryOption = (country) => `<option value="${escapeAttr(country.name)}"${s.founder.country === country.name ? ' selected' : ''}>${country.flag} ${country.name}</option>`;
-      const team = s.team || (s.team = { openRoles: 0, members: [], responsibilities: {}, meetings: [] });
-      team.members ||= [];
-      team.meetings ||= [];
-      team.responsibilities ||= {};
-      const roleAreas = ['Product', 'Marketing', 'Sales', 'Operations', 'Finance', 'Customer Support', 'Tech'];
-      roleAreas.forEach((area) => {
-        if (!team.responsibilities[area]) team.responsibilities[area] = { r: '', a: '', c: '', i: '' };
-      });
+      const additionalCountries = allCountries.filter((country) => !popularCountries.some((popular) => popular.name === country.name));
+      const countryOption = (country) => `<option value="${escapeAttr(country.name)}" ${s.founder.country === country.name ? 'selected' : ''}>${country.flag} ${escapeHTML(country.name)}</option>`;
+
+      const team = s.team;
       const totalEquity = team.members.reduce((sum, member) => sum + (Number(member.equity) || 0), 0);
       const monthlyBurn = team.members.reduce((sum, member) => sum + (Number(member.salary) || 0), 0);
-      const recommendedHire = totalEquity > 90 ? 'Revenue Lead (limit further equity dilution)' : monthlyBurn < 8000 ? 'Growth Marketer' : 'Customer Success Manager';
+      const recommendedHire = team.members.some((m) => /sales|growth|marketing/i.test(m.role)) ? 'Customer Success / Ops Lead' : 'Growth & Sales Lead';
       const equityNote = totalEquity <= 100 ? 'Equity distribution looks balanced.' : 'Equity exceeds 100%. Rebalance cap table.';
       const burnNote = monthlyBurn > 15000 ? 'Burn rate alert: consider extending runway before scaling hires.' : 'Team burn is within a healthy early-stage range.';
       const memberOptions = team.members.map((m) => `<option value="${escapeAttr(m.id)}">${escapeHTML(m.name)}</option>`).join('');
+      const storageBytes = new Blob([localStorage.getItem(STORAGE_KEY) || JSON.stringify(state)]).size;
+      const storageLimitBytes = Math.max(1, Number(s.dataStorage.storageLimitMb || 50)) * 1024 * 1024;
+      const storagePercent = Math.min(100, Math.round((storageBytes / storageLimitBytes) * 100));
+      const storageLabel = storageBytes > 1024 * 1024 ? `${(storageBytes / 1024 / 1024).toFixed(2)} MB` : `${Math.max(1, Math.round(storageBytes / 1024))} KB`;
+      const activeCategory = s.activeCategory || 'Profile & Account';
+      const categories = [
+        'Profile & Account', 'Workspace Settings', 'Preferences', 'AI Preferences', 'Notifications', 'Security', 'Privacy', 'Billing & Subscription', 'Team & Members', 'Integrations', 'Data & Storage', 'Backup & Export', 'Appearance', 'Language & Region', 'Help & Support'
+      ];
+      const settingInput = (label, settingPath, value, type = 'text', placeholder = '') => `<label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">${escapeHTML(label)}</span><input type="${type}" data-setting="${escapeAttr(settingPath)}" value="${escapeAttr(value || '')}" placeholder="${escapeAttr(placeholder)}" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-teal-300/70 focus:ring-2 focus:ring-teal-300/20" /></label>`;
+      const selectField = (label, settingPath, options, value) => `<label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">${escapeHTML(label)}</span><select data-setting="${escapeAttr(settingPath)}" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100 outline-none transition focus:border-teal-300/70 focus:ring-2 focus:ring-teal-300/20">${options.map((option) => `<option value="${escapeAttr(option)}" ${String(value) === String(option) ? 'selected' : ''}>${escapeHTML(option)}</option>`).join('')}</select></label>`;
+      const toggleField = (label, description, settingPath, checked) => `<label class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"><span><span class="block text-sm font-semibold text-slate-100">${escapeHTML(label)}</span><span class="mt-1 block text-xs leading-5 text-slate-400">${escapeHTML(description)}</span></span><input type="checkbox" data-setting="${escapeAttr(settingPath)}" ${checked ? 'checked' : ''} class="h-5 w-5 accent-teal-300" /></label>`;
+      const shellCard = (title, subtitle, body) => `<article class="rounded-[1.75rem] border border-white/10 bg-slate-900/60 p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-xl"><div class="mb-5"><h3 class="text-xl font-semibold text-white">${escapeHTML(title)}</h3><p class="mt-1 text-sm text-slate-400">${escapeHTML(subtitle)}</p></div>${body}</article>`;
+
+      const teamMarkup = shellCard('Team & Members', 'Manage your team structure, responsibilities, meetings and operating rhythm.', `
+        <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+          <div class="rounded-2xl border border-teal-300/15 bg-teal-300/10 p-4"><p class="text-xs text-teal-100/70">Team Size</p><p class="text-2xl font-semibold text-white">${team.members.length}</p></div>
+          <div class="rounded-2xl border border-purple-300/15 bg-purple-300/10 p-4"><p class="text-xs text-purple-100/70">Estimated Monthly Burn</p><p class="text-2xl font-semibold text-white">${money(monthlyBurn)}</p></div>
+          <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/10 p-4"><p class="text-xs text-cyan-100/70">Equity Distributed</p><p class="text-2xl font-semibold text-white">${totalEquity.toFixed(2)}%</p></div>
+          <div class="rounded-2xl border border-amber-300/15 bg-amber-300/10 p-4"><p class="text-xs text-amber-100/70">Open Roles</p><p class="text-2xl font-semibold text-white">${team.openRoles ?? 0}</p></div>
+        </div>
+        <div class="overflow-auto rounded-2xl border border-white/10 mb-5">
+          <table class="w-full min-w-[860px] text-sm"><thead class="bg-white/[0.04] text-slate-300"><tr><th class="p-3 text-left">Name</th><th class="p-3 text-left">Role</th><th class="p-3 text-left">Email</th><th class="p-3 text-left">Equity</th><th class="p-3 text-left">Monthly Salary</th><th class="p-3 text-left">Actions</th></tr></thead><tbody class="divide-y divide-white/10">
+            ${team.members.length ? team.members.map((member) => `<tr class="text-slate-200"><td class="p-3 font-medium">${escapeHTML(member.name)}</td><td class="p-3">${escapeHTML(member.role)}</td><td class="p-3 text-slate-400">${escapeHTML(member.email || '—')}</td><td class="p-3">${Number(member.equity || 0).toFixed(2)}%</td><td class="p-3">${money(Number(member.salary) || 0)}</td><td class="p-3"><div class="flex gap-2"><button data-action="edit-member" data-member-id="${escapeAttr(member.id)}" class="rounded-xl border border-teal-300/30 px-3 py-1.5 text-xs font-semibold text-teal-100 hover:bg-teal-300/10">Edit</button><button data-action="remove-member" data-member-id="${escapeAttr(member.id)}" class="rounded-xl border border-rose-300/30 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-300/10">Delete</button></div></td></tr>`).join('') : `<tr><td colspan="6" class="p-5 text-center text-slate-400">No team members added yet.</td></tr>`}
+          </tbody></table>
+        </div>
+        <form id="teamMemberForm" class="grid md:grid-cols-2 xl:grid-cols-4 gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 mb-5">
+          <label class="text-sm text-slate-300">Full Name<input name="name" required class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300">Role Preset<select name="rolePreset" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100"><option>Co-Founder</option><option>CTO</option><option>COO</option><option>Marketing Lead</option><option>Sales Lead</option><option>Product Manager</option><option>Engineer</option></select></label>
+          <label class="text-sm text-slate-300">Custom Role<input name="roleCustom" placeholder="Optional" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300">Email<input name="email" type="email" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300">Equity %<input name="equity" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300">Monthly Salary<input name="salary" type="number" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300">Date Joined<input name="dateJoined" type="date" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <label class="text-sm text-slate-300 xl:col-span-3">Notes<input name="notes" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+          <button type="submit" class="self-end rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2.5 font-semibold text-white shadow-lg shadow-teal-950/30">Add Member</button>
+        </form>
+        <div class="rounded-2xl border border-white/10 p-4 mb-5">
+          <h4 class="mb-3 font-semibold text-white">RACI Responsibility Matrix</h4>
+          <div class="overflow-auto"><table class="w-full min-w-[760px] text-sm"><thead class="text-slate-300"><tr><th class="p-2 text-left">Area</th><th class="p-2">Responsible</th><th class="p-2">Accountable</th><th class="p-2">Consulted</th><th class="p-2">Informed</th></tr></thead><tbody>${Object.entries(team.responsibilities || {}).map(([area, row]) => `<tr class="border-t border-white/10"><td class="p-2 font-medium text-slate-200">${escapeHTML(area)}</td>${['r','a','c','i'].map((type) => `<td class="p-2"><select data-raci="${escapeAttr(area)}|${type}" class="w-full rounded-xl border border-white/10 bg-slate-950/45 px-2 py-2 text-slate-100"><option value="">—</option>${memberOptions.replace(`value=\"${escapeAttr(row?.[type] || '')}\"`, `value=\"${escapeAttr(row?.[type] || '')}\" selected`)}</select></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+        </div>
+        <div class="rounded-2xl border border-white/10 p-4 mb-5">
+          <h4 class="mb-3 font-semibold text-white">Meeting Tracker</h4>
+          <form id="meetingForm" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
+            <label class="text-sm text-slate-300">Meeting Title<input name="title" required class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+            <label class="text-sm text-slate-300">Date & Time<input name="datetime" type="datetime-local" required class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+            <label class="text-sm text-slate-300">Participants<input name="participants" placeholder="Names separated by comma" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+            <label class="text-sm text-slate-300 md:col-span-2">Purpose / Agenda<input name="agenda" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100" /></label>
+            <label class="text-sm text-slate-300">Recurring<select name="recurring" class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-slate-100"><option value="no">No</option><option value="yes">Yes</option></select></label>
+            <button type="submit" class="self-end rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-2.5 font-semibold text-teal-100">Add Meeting</button>
+          </form>
+          <div class="space-y-2">${team.meetings.length ? team.meetings.map((meeting) => `<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3"><div><p class="font-medium text-white">${escapeHTML(meeting.title)}</p><p class="text-xs text-slate-400">${new Date(meeting.datetime).toLocaleString()} • ${escapeHTML(meeting.participants || 'No participants')}</p><p class="text-xs text-slate-500">${escapeHTML(meeting.agenda || 'No agenda')}</p></div><div class="flex gap-2"><span class="rounded-full border border-purple-300/20 px-2 py-1 text-xs text-purple-100">${meeting.recurring ? 'Recurring' : 'One-time'}</span><button data-action="edit-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="rounded-lg border border-teal-300/30 px-2 py-1 text-xs text-teal-100">Edit</button><button data-action="remove-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="rounded-lg border border-rose-300/30 px-2 py-1 text-xs text-rose-100">Delete</button></div></div>`).join('') : '<p class="rounded-xl border border-dashed border-white/10 p-4 text-center text-sm text-slate-400">No meetings scheduled yet.</p>'}</div>
+        </div>
+        <div class="rounded-2xl border border-teal-300/20 bg-teal-300/10 p-4"><h4 class="mb-2 font-semibold text-teal-100">Team Insights</h4><ul class="list-disc space-y-1 pl-5 text-sm text-slate-300"><li>Recommended next hire: <strong>${escapeHTML(recommendedHire)}</strong>.</li><li>${escapeHTML(equityNote)}</li><li>${escapeHTML(burnNote)}</li></ul></div>
+      `);
+
+      const contentByCategory = {
+        'Profile & Account': shellCard('Profile & Account', 'Your founder identity and public-facing contact details stay private on this device.', `
+          <div class="grid gap-5 xl:grid-cols-[180px_1fr]"><div class="rounded-3xl border border-white/10 bg-white/[0.04] p-5 text-center"><div id="founderPhotoPreview" class="mx-auto grid h-[120px] w-[120px] place-items-center overflow-hidden rounded-full ring-2 ring-teal-300/30">${renderFounderAvatar({ name: s.founder.name || 'Founder', photo: s.founder.photo, size: 'h-[120px] w-[120px] text-3xl' })}</div><input id="founderPhotoInput" type="file" accept="image/png,image/jpeg,.jpg,.jpeg" class="hidden" /><button id="founderPhotoUploadBtn" type="button" class="mt-4 rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2 text-sm font-semibold text-white">${s.founder.photo ? 'Change Photo' : 'Upload Photo'}</button><button id="founderPhotoRemoveBtn" type="button" class="mt-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 ${s.founder.photo ? '' : 'hidden'}">Remove Photo</button><p class="mt-3 text-xs text-slate-500">Max 2MB · JPG, JPEG, PNG</p></div><div class="grid gap-4 md:grid-cols-2">${settingInput('Full Name','founder.name',s.founder.name,'text','Your Full Name')}${settingInput('Role','founder.role',s.founder.role,'text','Founder & CEO')}${settingInput('Email','founder.email',s.founder.email,'email','you@example.com')}<label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">Location</span><div class="grid gap-3 sm:grid-cols-2"><select data-setting="founder.country" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100"><option value="" ${!s.founder.country ? 'selected' : ''}>Select country</option><optgroup label="Popular countries">${popularCountries.map(countryOption).join('')}</optgroup><optgroup label="All countries">${additionalCountries.map(countryOption).join('')}</optgroup></select><input data-setting="founder.city" value="${escapeAttr(s.founder.city || '')}" placeholder="City" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100" /></div></label><label class="block text-sm text-slate-200/90 md:col-span-2"><span class="mb-1.5 block font-medium">Bio</span><textarea data-setting="founder.bio" rows="4" placeholder="Write a short calm founder bio..." class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100">${escapeHTML(s.founder.bio || '')}</textarea></label>${settingInput('LinkedIn','founder.linkedin',s.founder.linkedin,'url','https://linkedin.com/in/you')}${settingInput('Twitter','founder.twitter',s.founder.twitter,'url','https://x.com/you')}${settingInput('Website','founder.website',s.founder.website,'url','https://yourwebsite.com')}</div></div>`),
+        'Workspace Settings': shellCard('Workspace Settings', 'Define the operating context for your local-first business command center.', `<div class="grid gap-4 md:grid-cols-2">${settingInput('Business Name','business.name',s.business.name)}${settingInput('Stage','business.stage',s.business.stage)}${settingInput('Industry','business.industry',s.business.industry)}${settingInput('Target Audience','business.targetAudience',s.business.targetAudience)}${settingInput('Founding Year','business.foundingYear',s.business.foundingYear,'number')}${settingInput('Open Roles','team.openRoles',team.openRoles,'number')}</div>`),
+        'Preferences': shellCard('Preferences', 'Tune how Barya formats and opens your workspace.', `<div class="grid gap-4 md:grid-cols-2">${selectField('Default Dashboard','preferences.defaultDashboard',['Overview','Tasks','Financials','Planning','Workspace'],s.preferences.defaultDashboard)}${selectField('Time Format','preferences.timeFormat',['12-hour','24-hour'],s.preferences.timeFormat)}${selectField('Date Format','preferences.dateFormat',['MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],s.preferences.dateFormat)}${settingInput('Timezone','preferences.timezone',s.preferences.timezone,'text','UTC')}${selectField('Currency','preferences.currency',['','USD','EUR','GBP','INR','SGD','AED','CAD','AUD'],s.preferences.currency)}<label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">Default Language</span><select data-setting="preferences.language" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label></div>`),
+        'AI Preferences': shellCard('AI Preferences', 'Shape the assistant while keeping your business context private and local-first.', `<div class="space-y-3">${selectField('AI Response Style','aiPreferences.responseStyle',['Balanced','Strategic','Creative','Analytical','Direct'],s.aiPreferences.responseStyle)}${toggleField('Proactive Suggestions','Allow Barya to surface useful next steps inside your workspace.','aiPreferences.proactiveSuggestions',s.aiPreferences.proactiveSuggestions)}${toggleField('Auto Save AI Outputs','Keep generated plans and notes in local browser storage.','aiPreferences.autoSaveOutputs',s.aiPreferences.autoSaveOutputs)}${toggleField('Context Memory','Remember relevant local workspace context on this device.','aiPreferences.contextMemory',s.aiPreferences.contextMemory)}</div>`),
+        'Notifications': shellCard('Notifications', 'Set calm reminders without adding noise.', `<div class="space-y-3">${toggleField('Product reminders','Get local reminders for unfinished product work.','notifications.product',s.notifications.product)}${toggleField('Founder focus reminders','Receive gentle nudges for priorities and meetings.','notifications.reminders',s.notifications.reminders)}${toggleField('Weekly digest','Prepare a weekly summary from local workspace data.','notifications.weeklyDigest',s.notifications.weeklyDigest)}</div>`),
+        'Security': shellCard('Security', 'Protect access to your private local workspace.', `<div class="space-y-4"><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Password Management</h4><p class="mt-1 text-sm text-slate-400">Barya currently runs local-first in your browser. Use your device password, browser profile and OS encryption to protect this workspace.</p><button type="button" class="mt-3 rounded-xl border border-purple-300/30 px-4 py-2 text-sm font-semibold text-purple-100">Review device security</button></div>${toggleField('Two-Factor Authentication','Mark 2FA as enabled in your security checklist.','security.twoFactor',s.security.twoFactor)}${toggleField('Login Alerts','Show security reminders when opening sensitive areas.','security.loginAlerts',s.security.loginAlerts)}<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Active Sessions</h4><p class="mt-1 text-sm text-slate-400">${escapeHTML(s.security.activeSessionNote || 'This browser · Local workspace')}</p></div></div>`),
+        'Privacy': shellCard('Privacy', 'Barya is intentionally private: your workspace remains on your device.', `<div class="rounded-3xl border border-teal-300/20 bg-teal-300/10 p-5"><p class="text-lg font-semibold text-teal-50">100% local-first and private</p><p class="mt-2 text-sm leading-6 text-slate-300">Nothing leaves your device unless you choose to export it. Your plans, team data, business metrics and profile live in browser localStorage.</p></div>`),
+        'Billing & Subscription': shellCard('Billing & Subscription', 'Subscription controls for future Barya Pro upgrades.', `<div class="rounded-3xl border border-purple-300/20 bg-purple-300/10 p-5"><p class="text-lg font-semibold text-white">Current plan: Local Founder</p><p class="mt-2 text-sm text-slate-300">All current controls are available locally. Upgrade surfaces are placeholders and do not transmit data.</p><button type="button" class="mt-4 rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2 font-semibold text-white">Upgrade to Pro</button></div>`),
+        'Team & Members': teamMarkup,
+        'Integrations': shellCard('Integrations', 'Connectors are prepared for your workflow while keeping privacy clear.', `<div class="space-y-3">${toggleField('Calendar integration','Reserve space for future calendar sync.','integrations.calendar',s.integrations.calendar)}${toggleField('Slack integration','Reserve space for future team notifications.','integrations.slack',s.integrations.slack)}${toggleField('Notion integration','Reserve space for future document sync.','integrations.notion',s.integrations.notion)}</div>`),
+        'Data & Storage': shellCard('Data & Storage', 'Understand storage, move data manually and reset only with strong confirmation.', `<div class="space-y-5"><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div class="flex items-center justify-between text-sm"><span class="text-slate-300">Storage usage</span><span class="font-semibold text-teal-100">${storageLabel} / ${s.dataStorage.storageLimitMb} MB</span></div><div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-950"><div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-teal-300" style="width:${storagePercent}%"></div></div><p class="mt-2 text-xs text-slate-500">Stored locally in this browser via localStorage.</p></div><div class="flex flex-wrap gap-3"><button id="exportAll" class="rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2.5 font-semibold text-white">Export My Data</button><label class="rounded-xl border border-white/10 px-4 py-2.5 font-semibold text-slate-200 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label><button id="clearAll" class="rounded-xl border border-rose-300/40 px-4 py-2.5 font-semibold text-rose-100">Reset All Data</button></div></div>`),
+        'Backup & Export': shellCard('Backup & Export', 'Create an offline copy whenever you want.', `<p class="mb-4 text-sm text-slate-400">Manual exports are the safest way to back up a local-first workspace.</p><button id="exportAll" class="rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2.5 font-semibold text-white">Export All My Data</button><label class="ml-3 rounded-xl border border-white/10 px-4 py-2.5 font-semibold text-slate-200 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>`),
+        'Appearance': shellCard('Appearance', 'Keep the interface calm, dark and focused.', `<div class="grid gap-4 md:grid-cols-2">${selectField('Accent Theme','appearance.accent',['Purple + Teal','Deep Purple','Ocean Teal','Aurora'],s.appearance.accent)}${selectField('Density','appearance.density',['Comfortable','Compact','Spacious'],s.appearance.density)}<div class="flex items-center justify-between rounded-2xl border border-teal-300/20 bg-teal-300/10 px-4 py-3"><span class="text-slate-200">Theme</span><span class="text-sm font-semibold text-teal-100">Premium Dark</span></div></div>`),
+        'Language & Region': shellCard('Language & Region', 'Regional defaults for formatting and language.', `<div class="grid gap-4 md:grid-cols-2"><label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">Language</span><select data-setting="preferences.language" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>${settingInput('Timezone','preferences.timezone',s.preferences.timezone,'text','UTC')}${selectField('Currency','preferences.currency',['','USD','EUR','GBP','INR','SGD','AED','CAD','AUD'],s.preferences.currency)}${selectField('Date Format','preferences.dateFormat',['MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],s.preferences.dateFormat)}</div>`),
+        'Help & Support': shellCard('Help & Support', 'Guidance for working confidently in Barya.', `<div class="grid gap-3 md:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Local-first promise</h4><p class="mt-2 text-sm text-slate-400">Export regularly, keep your browser profile secure and use reset only when you are certain.</p></div><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Need help?</h4><p class="mt-2 text-sm text-slate-400">Use the Planning and Workspace areas to document your operating playbook.</p></div></div>`)
+      };
+
       const el = document.getElementById('section-settings');
       el.innerHTML = `
-        <section class="space-y-6 rounded-2xl border border-orange-200/60 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-4 sm:p-6 text-zinc-800">
-          <div class="grid xl:grid-cols-2 gap-4">
-            <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
-              <h3 class="font-semibold text-lg text-orange-700">Founder Profile</h3>
-              <div class="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50 via-white to-teal-50 p-4 mb-2">
-                <div class="flex flex-col items-center gap-3">
-                  <div id="founderPhotoPreview" class="h-[120px] w-[120px] rounded-full overflow-hidden grid place-items-center">
-                    ${renderFounderAvatar({ name: s.founder.name || 'Founder', photo: s.founder.photo, size: 'h-[120px] w-[120px] text-3xl' })}
-                  </div>
-                  <input id="founderPhotoInput" type="file" accept="image/png,image/jpeg,.jpg,.jpeg" class="hidden" />
-                  <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button id="founderPhotoUploadBtn" type="button" class="px-3 py-1.5 rounded-lg bg-orange-500 text-white border border-orange-500 text-sm shadow-sm hover:bg-orange-600">${s.founder.photo ? 'Change Photo' : 'Upload Photo'}</button>
-                    <button id="founderPhotoRemoveBtn" type="button" class="px-3 py-1.5 rounded-lg bg-white text-zinc-700 border border-zinc-300 text-sm hover:bg-zinc-50 ${s.founder.photo ? '' : 'hidden'}">Remove Photo</button>
-                  </div>
-                  <p class="text-xs text-zinc-500">Max 2MB · JPG, JPEG, PNG</p>
-                </div>
-              </div>
-              ${inputField('Full Name','founder.name',s.founder.name,'text','Your Full Name')}
-              ${inputField('Role / Title','founder.role',s.founder.role,'text','Your Role (e.g., Founder & CEO)')}
-              ${inputField('Email','founder.email',s.founder.email,'email','your.email@example.com')}
-              <label class="block text-sm">
-                Country
-                <div class="relative mt-1">
-                  <select data-setting="founder.country" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-10 text-zinc-800 shadow-sm transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200">
-                    <option value="" ${!s.founder.country ? 'selected' : ''}>Select your country</option>
-                    <optgroup label="Popular countries">
-                      ${popularCountries.map(countryOption).join('')}
-                    </optgroup>
-                    <option disabled>──────────</option>
-                    <optgroup label="All countries (A-Z)">
-                      ${additionalCountries.map(countryOption).join('')}
-                    </optgroup>
-                  </select>
-                  <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-zinc-400">▾</span>
-                </div>
-              </label>
-              ${inputField('City','founder.city',s.founder.city,'text','Your City')}
-              <label class="block text-sm">Bio<textarea data-setting="founder.bio" rows="4" placeholder="Write a short bio about yourself as a founder..." class="w-full mt-1 rounded-lg border border-orange-200 bg-white px-3 py-2">${escapeHTML(s.founder.bio || '')}</textarea></label>
-              ${inputField('LinkedIn Profile','founder.linkedin',s.founder.linkedin,'url','https://linkedin.com/in/your-profile')}
-              ${inputField('Twitter / X','founder.twitter',s.founder.twitter,'url','https://x.com/yourhandle')}
-              ${inputField('Website (optional)','founder.website',s.founder.website,'url','https://yourwebsite.com')}
-            </article>
-
-            <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-3 shadow-sm">
-              <h3 class="font-semibold text-lg text-orange-700">Business Profile</h3>
-              ${inputField('Business Name','business.name',s.business.name)}
-              ${inputField('Stage','business.stage',s.business.stage)}
-              ${inputField('Industry','business.industry',s.business.industry)}
-              ${inputField('Target Audience','business.targetAudience',s.business.targetAudience)}
-              ${inputField('Founding Year','business.foundingYear',s.business.foundingYear,'number')}
-            </article>
-          </div>
-
-          <article class="rounded-2xl border border-orange-200 bg-white p-5 space-y-5 shadow-sm">
-            <h3 class="font-semibold text-lg text-orange-700">Team Management</h3>
-            <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
-              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Team Size</p><p class="text-2xl font-semibold">${team.members.length}</p></div>
-              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Estimated Monthly Team Burn</p><p class="text-2xl font-semibold">${money(monthlyBurn)}</p></div>
-              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><p class="text-xs text-zinc-500">Total Equity Distributed</p><p class="text-2xl font-semibold">${totalEquity.toFixed(2)}%</p></div>
-              <div class="rounded-xl border border-orange-100 bg-orange-50 p-3"><label class="text-xs text-zinc-500 block">Open Roles</label><input type="number" min="0" data-setting="team.openRoles" value="${Number(team.openRoles) || 0}" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"/></div>
+        <section class="relative min-h-full overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.28),transparent_34%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.22),transparent_30%),linear-gradient(135deg,#050816_0%,#0f172a_48%,#111827_100%)] p-4 text-slate-100 sm:p-6">
+          <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] opacity-30"></div>
+          <div class="relative z-10 space-y-6">
+            <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div><div class="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-teal-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-100">Private Control Center</div><h2 class="text-4xl font-bold tracking-tight text-white">Settings</h2><p class="mt-2 text-slate-300">Manage your account, preferences and workspace settings.</p></div>
+              <div class="rounded-2xl border border-teal-300/20 bg-teal-300/10 px-4 py-3 text-sm text-teal-50 shadow-lg shadow-teal-950/20">Barya is <strong>100% local-first</strong>. Nothing leaves your device.</div>
+            </header>
+            <div class="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+              <aside class="rounded-[1.5rem] border border-white/10 bg-white/[0.05] p-3 shadow-2xl shadow-purple-950/20 backdrop-blur-xl"><nav class="space-y-1">${categories.map((category) => `<button type="button" data-settings-tab="${escapeAttr(category)}" class="w-full rounded-2xl px-3 py-2.5 text-left text-sm transition ${activeCategory === category ? 'bg-gradient-to-r from-purple-500/35 to-teal-400/25 text-white ring-1 ring-teal-300/30' : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-100'}">${escapeHTML(category)}</button>`).join('')}</nav></aside>
+              <main class="min-w-0">${contentByCategory[activeCategory] || contentByCategory['Profile & Account']}</main>
+              <aside class="space-y-4">
+                <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.05] p-4 shadow-2xl shadow-teal-950/20 backdrop-blur-xl"><h3 class="font-semibold text-white">Security shortcuts</h3><div class="mt-3 grid gap-2"><button data-settings-tab="Security" class="rounded-xl border border-white/10 px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/[0.06]">Review sessions</button><button data-settings-tab="Privacy" class="rounded-xl border border-white/10 px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/[0.06]">Privacy promise</button><button data-settings-tab="Data & Storage" class="rounded-xl border border-white/10 px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/[0.06]">Export backup</button></div></div>
+                <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl"><div class="flex items-center justify-between"><h3 class="font-semibold text-white">Storage overview</h3><span class="text-xs text-teal-100">${storagePercent}%</span></div><div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-950"><div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-teal-300" style="width:${storagePercent}%"></div></div><p class="mt-2 text-xs text-slate-400">${storageLabel} stored locally in this browser.</p></div>
+                <div class="rounded-[1.5rem] border border-purple-300/20 bg-purple-300/10 p-4"><p class="text-xs uppercase tracking-[0.2em] text-purple-100/70">Upgrade to Pro</p><h3 class="mt-2 text-lg font-semibold text-white">More automation, same trust.</h3><p class="mt-2 text-sm text-slate-300">Premium workflows are designed around explicit consent and private control.</p><button type="button" class="mt-4 w-full rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2 font-semibold text-white">Explore Pro</button></div>
+                <div class="rounded-[1.5rem] border border-teal-300/25 bg-teal-300/10 p-4"><span class="rounded-full bg-teal-300/20 px-2.5 py-1 text-xs font-semibold text-teal-50">Private Mode</span><p class="mt-3 text-sm leading-6 text-teal-50">Your data is 100% private and local-first. Nothing leaves your device.</p></div>
+              </aside>
             </div>
-
-            <div class="rounded-xl border border-orange-200 p-4 space-y-3">
-              <h4 class="font-semibold text-orange-700">Add Team Member</h4>
-              <form id="teamMemberForm" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
-                <label class="text-sm">Full Name<input name="name" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Role<select name="rolePreset" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option>Founder</option><option>CEO</option><option>CTO</option><option>COO</option><option>Product Manager</option><option>Engineer</option><option>Designer</option><option>Marketing Lead</option><option>Sales Lead</option><option>Other</option></select></label>
-                <label class="text-sm">Custom Role<input name="roleCustom" placeholder="Optional custom role" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Email<input name="email" type="email" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Equity %<input name="equity" type="number" min="0" max="100" step="0.01" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Monthly Salary (optional)<input name="salary" type="number" min="0" step="0.01" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Date Joined<input name="dateJoined" type="date" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm md:col-span-2 xl:col-span-2">Notes<input name="notes" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <div class="self-end"><button type="submit" class="w-full rounded-lg bg-orange-500 text-white px-4 py-2 font-medium">Add Member</button></div>
-              </form>
-            </div>
-
-            <div class="rounded-xl border border-orange-200 overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="bg-orange-50"><tr><th class="text-left p-3">Name</th><th class="text-left p-3">Role</th><th class="text-left p-3">Equity %</th><th class="text-left p-3">Salary</th><th class="text-left p-3">Status</th><th class="text-left p-3">Actions</th></tr></thead>
-                <tbody>
-                  ${team.members.length ? team.members.map((member) => `<tr class="border-t border-orange-100">
-                    <td class="p-3">${escapeHTML(member.name || '')}</td>
-                    <td class="p-3">${escapeHTML(member.role || '')}</td>
-                    <td class="p-3">${Number(member.equity || 0).toFixed(2)}%</td>
-                    <td class="p-3">${money(member.salary || 0)}</td>
-                    <td class="p-3">${escapeHTML(member.status || 'Active')}</td>
-                    <td class="p-3 flex gap-2"><button data-action="edit-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700">Edit</button><button data-action="remove-member" data-member-id="${escapeAttr(member.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600">Remove</button></td>
-                  </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center">${emptyStateMarkup('👥', 'No team members added yet.', 'Add your first teammate to structure responsibilities.', '', 'Start Here', 'section:settings')}</td></tr>`}
-                </tbody>
-              </table>
-            </div>
-
-            <div class="rounded-xl border border-orange-200 p-4 space-y-3 overflow-x-auto">
-              <h4 class="font-semibold text-orange-700">Responsibility Matrix (RACI)</h4>
-              <table class="min-w-full text-sm">
-                <thead class="bg-orange-50"><tr><th class="text-left p-2">Area</th><th class="text-left p-2">Responsible (R)</th><th class="text-left p-2">Accountable (A)</th><th class="text-left p-2">Consulted (C)</th><th class="text-left p-2">Informed (I)</th></tr></thead>
-                <tbody>
-                ${roleAreas.map((area) => {
-                  const row = team.responsibilities[area] || {};
-                  return `<tr class="border-t border-orange-100"><td class="p-2 font-medium">${area}</td>
-                    <td class="p-2"><select data-raci="${area}|r" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.r)}"`, `value="${escapeAttr(row.r)}" selected`)}</select></td>
-                    <td class="p-2"><select data-raci="${area}|a" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.a)}"`, `value="${escapeAttr(row.a)}" selected`)}</select></td>
-                    <td class="p-2"><select data-raci="${area}|c" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.c)}"`, `value="${escapeAttr(row.c)}" selected`)}</select></td>
-                    <td class="p-2"><select data-raci="${area}|i" class="w-full rounded border border-orange-200 px-2 py-1"><option value="">—</option>${memberOptions.replace(`value="${escapeAttr(row.i)}"`, `value="${escapeAttr(row.i)}" selected`)}</select></td></tr>`;
-                }).join('')}
-                </tbody>
-              </table>
-            </div>
-
-            <div class="rounded-xl border border-orange-200 p-4 space-y-3">
-              <h4 class="font-semibold text-orange-700">Meeting Tracker</h4>
-              <form id="meetingForm" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
-                <label class="text-sm">Meeting Title<input name="title" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Date & Time<input name="datetime" type="datetime-local" required class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Participants<input name="participants" placeholder="Names separated by comma" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm md:col-span-2">Purpose / Agenda<input name="agenda" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2" /></label>
-                <label class="text-sm">Recurring<select name="recurring" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option value="no">No</option><option value="yes">Yes</option></select></label>
-                <div class="self-end"><button type="submit" class="w-full rounded-lg bg-orange-500 text-white px-4 py-2 font-medium">Add Meeting</button></div>
-              </form>
-              <div class="space-y-2">
-                ${team.meetings.length ? team.meetings.map((meeting) => `<div class="rounded-lg border border-orange-100 bg-orange-50/40 p-3 flex flex-wrap gap-3 items-center justify-between">
-                  <div><p class="font-medium">${escapeHTML(meeting.title)}</p><p class="text-xs text-zinc-500">${new Date(meeting.datetime).toLocaleString()} • ${escapeHTML(meeting.participants || 'No participants')}</p><p class="text-xs text-zinc-500">${escapeHTML(meeting.agenda || 'No agenda')}</p></div>
-                  <div class="flex gap-2"><span class="text-xs px-2 py-1 rounded-full border border-orange-200">${meeting.recurring ? 'Recurring' : 'One-time'}</span><button data-action="edit-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-orange-300 text-orange-700 text-sm">Edit</button><button data-action="remove-meeting" data-meeting-id="${escapeAttr(meeting.id)}" class="px-2 py-1 rounded border border-red-300 text-red-600 text-sm">Delete</button></div>
-                </div>`).join('') : emptyStateMarkup('📅', 'No meetings scheduled yet.', 'Create your first recurring sync to stay aligned.', '', 'Start Here', 'section:settings')}
-              </div>
-            </div>
-
-            <div class="rounded-xl border border-orange-200 bg-orange-50/60 p-4">
-              <h4 class="font-semibold text-orange-700 mb-2">Team Insights</h4>
-              <ul class="text-sm space-y-1 text-zinc-700 list-disc pl-5">
-                <li>Recommended next hire: <strong>${escapeHTML(recommendedHire)}</strong>.</li>
-                <li>${escapeHTML(equityNote)}</li>
-                <li>${escapeHTML(burnNote)}</li>
-              </ul>
-            </div>
-          </article>
-
-          <div class="grid lg:grid-cols-2 gap-4">
-            <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
-              <h3 class="font-semibold text-lg text-orange-700">Preferences</h3>
-              <label class="block text-sm">
-                <span class="font-medium text-zinc-700">Currency</span>
-                <select data-setting="preferences.currency" class="w-full mt-1 rounded-xl border border-orange-200 bg-gradient-to-b from-white to-orange-50/30 px-3 py-2.5 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
-                  ${renderCurrencyOptions(s.preferences.currency)}
-                </select>
-              </label>
-              <label class="block text-sm">Language<select data-setting="preferences.language" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>
-              <label class="block text-sm">Date Format<select data-setting="preferences.dateFormat" class="w-full mt-1 rounded-lg border border-orange-200 px-3 py-2"><option ${s.preferences.dateFormat==='MM/DD/YYYY'?'selected':''}>MM/DD/YYYY</option><option ${s.preferences.dateFormat==='DD/MM/YYYY'?'selected':''}>DD/MM/YYYY</option><option ${s.preferences.dateFormat==='YYYY-MM-DD'?'selected':''}>YYYY-MM-DD</option></select></label>
-              <div class="flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50 px-3 py-2"><span>Theme</span><span class="text-sm font-semibold text-teal-700">Light</span></div>
-            </article>
-
-            <article class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm space-y-3">
-              <h3 class="font-semibold text-lg text-orange-700">Data Management</h3>
-              <p class="text-sm text-zinc-500">Export, import, or reset your entire workspace data securely.</p>
-              <div class="flex flex-wrap gap-2">
-                <button id="exportAll" class="px-3 py-2 rounded-lg bg-orange-500 text-white">Export All My Data</button>
-                <label class="px-3 py-2 rounded-lg border border-orange-300 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>
-                <button id="clearAll" class="px-3 py-2 rounded-lg border border-red-300 text-red-600">Reset All Data</button>
-              </div>
-            </article>
           </div>
         </section>
       `;
 
+      el.querySelectorAll('[data-settings-tab]').forEach((button) => {
+        button.onclick = () => {
+          state.settings.activeCategory = button.dataset.settingsTab;
+          saveStateWithoutRender();
+          renderSettings();
+        };
+      });
+
       el.querySelectorAll('[data-setting]').forEach(input => {
-        input.oninput = () => {
+        const updateSetting = () => {
           const path = input.dataset.setting.split('.');
           let ref = state.settings;
-          for (let i = 0; i < path.length - 1; i++) ref = ref[path[i]];
+          for (let i = 0; i < path.length - 1; i++) {
+            ref[path[i]] ||= {};
+            ref = ref[path[i]];
+          }
           ref[path.at(-1)] = input.type === 'checkbox' ? input.checked : input.value;
           if (input.dataset.setting === 'preferences.language') {
+            state.settings.preferences.defaultLanguage = normalizeLanguageCode(input.value);
             setLanguage(input.value);
             return;
           }
@@ -6711,6 +6635,8 @@
           applyThemePreference();
           saveStateWithoutRender();
         };
+        input.oninput = updateSetting;
+        input.onchange = updateSetting;
       });
 
       const photoInput = document.getElementById('founderPhotoInput');
@@ -6721,35 +6647,19 @@
       const updateFounderPhotoUI = () => {
         const founderName = founderNameInput?.value?.trim() || state.settings.founder.name || 'Founder';
         if (photoPreview) {
-          photoPreview.innerHTML = renderFounderAvatar({
-            name: founderName,
-            photo: state.settings.founder.photo,
-            size: 'h-[120px] w-[120px] text-3xl'
-          });
+          photoPreview.innerHTML = renderFounderAvatar({ name: founderName, photo: state.settings.founder.photo, size: 'h-[120px] w-[120px] text-3xl' });
         }
         if (photoUploadBtn) photoUploadBtn.textContent = state.settings.founder.photo ? 'Change Photo' : 'Upload Photo';
         if (photoRemoveBtn) photoRemoveBtn.classList.toggle('hidden', !state.settings.founder.photo);
         renderHeaderFounderProfile();
       };
-
-      if (photoUploadBtn && photoInput) {
-        photoUploadBtn.onclick = () => photoInput.click();
-      }
+      if (photoUploadBtn && photoInput) photoUploadBtn.onclick = () => photoInput.click();
       if (photoInput) {
         photoInput.onchange = (event) => {
           const file = event.target?.files?.[0];
           if (!file) return;
-          if (!file.type.startsWith('image/')) {
-            alert('Please upload a valid image file.');
-            photoInput.value = '';
-            return;
-          }
-          const maxBytes = 2 * 1024 * 1024;
-          if (file.size > maxBytes) {
-            alert('Image size should be 2MB or less.');
-            photoInput.value = '';
-            return;
-          }
+          if (!file.type.startsWith('image/')) { alert('Please upload a valid image file.'); photoInput.value = ''; return; }
+          if (file.size > 2 * 1024 * 1024) { alert('Image size should be 2MB or less.'); photoInput.value = ''; return; }
           const reader = new FileReader();
           reader.onload = (loadEvent) => {
             const base64Image = String(loadEvent.target?.result || '');
@@ -6759,23 +6669,13 @@
             saveStateWithoutRender();
             photoInput.value = '';
           };
-          reader.onerror = () => {
-            alert('Could not process the selected image. Please try another file.');
-            photoInput.value = '';
-          };
+          reader.onerror = () => { alert('Could not process the selected image. Please try another file.'); photoInput.value = ''; };
           reader.readAsDataURL(file);
         };
       }
-      if (photoRemoveBtn) {
-        photoRemoveBtn.onclick = () => {
-          state.settings.founder.photo = '';
-          updateFounderPhotoUI();
-          saveStateWithoutRender();
-        };
-      }
-      if (founderNameInput) {
-        founderNameInput.addEventListener('input', updateFounderPhotoUI);
-      }
+      if (photoRemoveBtn) photoRemoveBtn.onclick = () => { state.settings.founder.photo = ''; updateFounderPhotoUI(); saveStateWithoutRender(); };
+      if (founderNameInput) founderNameInput.addEventListener('input', updateFounderPhotoUI);
+
       el.querySelectorAll('[data-raci]').forEach((select) => {
         select.onchange = () => {
           const [area, type] = select.dataset.raci.split('|');
@@ -6791,26 +6691,14 @@
           const form = new FormData(memberForm);
           const rolePreset = String(form.get('rolePreset') || '').trim();
           const roleCustom = String(form.get('roleCustom') || '').trim();
-          const role = roleCustom || rolePreset;
-          state.settings.team.members.push({
-            id: createId(),
-            name: String(form.get('name') || '').trim(),
-            role,
-            email: String(form.get('email') || '').trim(),
-            equity: Number(form.get('equity')) || 0,
-            salary: Number(form.get('salary')) || 0,
-            dateJoined: String(form.get('dateJoined') || ''),
-            notes: String(form.get('notes') || '').trim(),
-            status: 'Active'
-          });
+          state.settings.team.members.push({ id: createId(), name: String(form.get('name') || '').trim(), role: roleCustom || rolePreset, email: String(form.get('email') || '').trim(), equity: Number(form.get('equity')) || 0, salary: Number(form.get('salary')) || 0, dateJoined: String(form.get('dateJoined') || ''), notes: String(form.get('notes') || '').trim(), status: 'Active' });
           saveState();
           renderSettings();
         };
       }
       el.querySelectorAll('[data-action="remove-member"]').forEach((button) => {
         button.onclick = () => {
-          const memberId = button.dataset.memberId;
-          state.settings.team.members = state.settings.team.members.filter((m) => m.id !== memberId);
+          state.settings.team.members = state.settings.team.members.filter((m) => m.id !== button.dataset.memberId);
           saveState();
           renderSettings();
         };
@@ -6836,14 +6724,7 @@
         meetingForm.onsubmit = (event) => {
           event.preventDefault();
           const form = new FormData(meetingForm);
-          state.settings.team.meetings.push({
-            id: createId(),
-            title: String(form.get('title') || '').trim(),
-            datetime: String(form.get('datetime') || ''),
-            participants: String(form.get('participants') || '').trim(),
-            agenda: String(form.get('agenda') || '').trim(),
-            recurring: String(form.get('recurring') || 'no') === 'yes'
-          });
+          state.settings.team.meetings.push({ id: createId(), title: String(form.get('title') || '').trim(), datetime: String(form.get('datetime') || ''), participants: String(form.get('participants') || '').trim(), agenda: String(form.get('agenda') || '').trim(), recurring: String(form.get('recurring') || 'no') === 'yes' });
           saveState();
           renderSettings();
         };
@@ -6867,8 +6748,10 @@
           renderSettings();
         };
       });
-      document.getElementById('exportAll').onclick = () => downloadJSON('barya-all-data.json', state);
-      document.getElementById('importAll').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+      const exportAllBtn = document.getElementById('exportAll');
+      if (exportAllBtn) exportAllBtn.onclick = () => downloadJSON('barya-all-data.json', state);
+      const importAllInput = document.getElementById('importAll');
+      if (importAllInput) importAllInput.onchange = (e) => importJSONFile(e.target.files[0], (data) => {
         state = deepMerge(structuredClone(defaultState), data);
         setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
         applyThemePreference();
@@ -6879,8 +6762,10 @@
         document.getElementById('workspaceTitle').value = state.title;
         translateDom(document.body);
       });
-      document.getElementById('clearAll').onclick = () => {
-        if (!confirm('Reset all workspace data? This action cannot be undone.')) return;
+      const clearAllBtn = document.getElementById('clearAll');
+      if (clearAllBtn) clearAllBtn.onclick = () => {
+        const confirmation = prompt('Strong confirmation required. Type RESET BARYA to permanently reset all local workspace data.');
+        if (confirmation !== 'RESET BARYA') return;
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(LANGUAGE_STORAGE_KEY);
         state = structuredClone(defaultState);
