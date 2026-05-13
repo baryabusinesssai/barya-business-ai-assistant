@@ -5240,11 +5240,11 @@
       const cash = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
       const runway = Number(state.dashboard.metrics.runway || 0);
       return [
-        { key: 'runway', match: /(runway|burn|cashflow|cash flow|cost|expense|revenue)/i, opening: `Your current runway is roughly ${runway} months, with estimated monthly net cashflow near ${money(cash)}. The smartest founder move now is not “just cutting costs,” but redesigning your operating rhythm so every dollar is tied to either customer value or near-term cash recovery.`, why: 'Runway determines the quality of every other decision. With limited cash, hiring, pricing, and product bets all carry higher consequence, so disciplined financial strategy creates freedom to learn and execute instead of reacting under pressure.', actionTracks: ['cash visibility and burn control', 'cash acceleration from current customers', 'focus discipline on one growth engine'], risks: ['Cutting too deep in customer-facing functions can reduce retention and worsen revenue.', 'Aggressive discounting can improve short-term cash but hurt long-term pricing power.'], next: 'Send me your top five expenses and current MRR trend, and I’ll turn this into a 30-day runway defense plan with exact priorities.' },
-        { key: 'churn', match: /(churn|retention|cancel|renewal|activation|onboarding)/i, opening: 'Treat churn as a strategy problem, not just a support metric. In most early-stage companies, churn means users are not consistently reaching a meaningful outcome quickly enough, or your promise and delivery are misaligned.', why: 'Retention compounds growth: lower churn reduces acquisition pressure, improves unit economics, and gives the team confidence because product effort starts translating into durable customer value.', actionTracks: ['identify churn pattern by segment and timing', 'repair onboarding around first-value speed', 'build targeted save flows for high-risk accounts'], risks: ['Adding features before fixing activation often increases complexity without improving retention.', 'Broad retention campaigns usually underperform compared to segment-specific interventions.'], next: 'Share your first 7-day activation rate and top cancellation reasons; I can design a practical two-week retention sprint.' },
-        { key: 'g2m', match: /(gtm|go to market|sales|pipeline|lead|acquisition|distribution)/i, opening: 'The best GTM plan is not “more channels”; it is one repeatable channel-model pair you can measure, learn from, and scale. Early growth improves when messaging, audience, and conversion path are tightly connected.', why: 'Founders lose months when distribution is broad but shallow. A focused GTM system improves learning speed, reduces CAC waste, and creates confidence in forecasting.', actionTracks: ['tighten ICP and message-market fit', 'improve one conversion path end-to-end', 'set weekly pipeline and conversion review discipline'], risks: ['Expanding channels before fixing conversion quality raises costs quickly.', 'Inconsistent follow-up causes avoidable pipeline leakage even with strong top-of-funnel.'], next: 'If you share your current channel mix and funnel numbers, I can recommend the highest-leverage GTM sequence for the next 21 days.' },
-        { key: 'hiring', match: /(hire|hiring|team|role|recruit|talent)/i, opening: 'Hiring should solve a bottleneck, not reduce founder discomfort. The right approach is to map which constraint is truly limiting growth and decide whether process, tooling, or a new person is the fastest fix.', why: 'Each early hire is a force multiplier or a drag multiplier. Good hiring improves velocity and decision quality; premature hiring adds burn and management overhead before clear output appears.', actionTracks: ['define bottleneck and expected role outcomes', 'evaluate alternatives before opening headcount', 'design a scorecard and 30-60-90 day success plan'], risks: ['Hiring too senior too early can create complexity your stage does not need.', 'Hiring without clear ownership and metrics causes ambiguity and rework.'], next: 'Tell me the role you’re considering and your current team structure; I’ll help you decide whether to hire now or defer.' },
-        { key: 'default', match: /.*/i, opening: 'The highest-quality founder decisions come from combining speed with structured reasoning: clarify the decision, pressure-test alternatives, and commit to a measurable execution sprint.', why: 'Startups fail less from lack of effort and more from scattered priorities. A clear framework lets you deploy limited cash and attention where outcomes matter most.', actionTracks: ['frame the decision and success metric', 'compare options with explicit trade-offs', 'execute in short cycles with fast review'], risks: ['Moving fast without a metric creates activity without learning.', 'Over-analysis delays execution and can hide weak assumptions.'], next: 'Share your exact decision in one sentence, and I’ll build a tailored action plan with milestones and fallback options.' }
+        { key: 'runway', match: /(runway|burn|cashflow|cash flow|cost|expense|revenue)/i, opening: `Your runway is roughly ${runway} months. Net monthly cashflow is near ${money(cash)}. Protect cash, but do not freeze. Move spend toward customer learning, retention, or near-term revenue.`, why: 'Runway gives you room to make calm decisions. When cash is unclear, every product, hiring, and pricing choice gets noisier.', actionTracks: ['cash visibility and burn control', 'cash acceleration from current customers', 'focus discipline on one growth engine'], risks: ['Cutting too deep in customer-facing functions can reduce retention and worsen revenue.', 'Aggressive discounting can improve short-term cash but hurt long-term pricing power.'], next: 'Send me your top five expenses and current MRR trend, and I’ll turn this into a 30-day runway defense plan with exact priorities.' },
+        { key: 'churn', match: /(churn|retention|cancel|renewal|activation|onboarding)/i, opening: 'Treat churn as a product promise problem. Users leave when they do not reach value fast enough, or when the product does not match the sales story.', why: 'Retention makes growth easier. Lower churn reduces acquisition pressure and shows that product work is turning into durable value.', actionTracks: ['identify churn pattern by segment and timing', 'repair onboarding around first-value speed', 'build targeted save flows for high-risk accounts'], risks: ['Adding features before fixing activation often increases complexity without improving retention.', 'Broad retention campaigns usually underperform compared to segment-specific interventions.'], next: 'Share your first 7-day activation rate and top cancellation reasons; I can design a practical two-week retention sprint.' },
+        { key: 'g2m', match: /(gtm|go to market|sales|pipeline|lead|acquisition|distribution)/i, opening: 'You do not need more channels yet. You need one channel, one audience, and one conversion path you can measure.', why: 'Broad distribution creates noise. Focused distribution shows what is actually working.', actionTracks: ['tighten ICP and message-market fit', 'improve one conversion path end-to-end', 'set weekly pipeline and conversion review discipline'], risks: ['Expanding channels before fixing conversion quality raises costs quickly.', 'Inconsistent follow-up causes avoidable pipeline leakage even with strong top-of-funnel.'], next: 'If you share your current channel mix and funnel numbers, I can recommend the highest-leverage GTM sequence for the next 21 days.' },
+        { key: 'hiring', match: /(hire|hiring|team|role|recruit|talent)/i, opening: 'Hire only when the constraint is clear. First decide whether the real fix is process, tooling, or a person.', why: 'Every early hire changes the company. A strong hire increases speed. A premature hire increases burn and management load.', actionTracks: ['define bottleneck and expected role outcomes', 'evaluate alternatives before opening headcount', 'design a scorecard and 30-60-90 day success plan'], risks: ['Hiring too senior too early can create complexity your stage does not need.', 'Hiring without clear ownership and metrics causes ambiguity and rework.'], next: 'Tell me the role you’re considering and your current team structure; I’ll help you decide whether to hire now or defer.' },
+        { key: 'default', match: /.*/i, opening: 'Move fast, but make the decision measurable. Define the choice, the metric, and the next review date.', why: 'Scattered priorities are expensive. A simple decision frame keeps attention on the work that can move the company.', actionTracks: ['frame the decision and success metric', 'compare options with explicit trade-offs', 'execute in short cycles with fast review'], risks: ['Moving fast without a metric creates activity without learning.', 'Over-analysis delays execution and can hide weak assumptions.'], next: 'Share your exact decision in one sentence, and I’ll build a tailored action plan with milestones and fallback options.' }
       ];
     }
 
@@ -5264,81 +5264,68 @@
       const multiParts = parseMultiPartQuestion(q);
       const isDeepThinking = state.ai.composer.deepThinking === true;
 
-      const getWords = (txt) => String(txt || '').trim().split(/\s+/).filter(Boolean).length;
-      const recentReference = context.lastUserMessage && context.lastUserMessage !== q
-        ? ` Building on your earlier question about "${context.lastUserMessage.slice(0, 70)}${context.lastUserMessage.length > 70 ? '...' : ''}", this recommendation keeps continuity so your decisions stack rather than reset.`
+      const contextLine = context.lastUserMessage && context.lastUserMessage !== q
+        ? `Context: your last question was about "${context.lastUserMessage.slice(0, 70)}${context.lastUserMessage.length > 70 ? '...' : ''}".`
         : '';
-      const keywordReference = context.topKeywords.length
-        ? ` I’m intentionally prioritizing ${context.topKeywords.join(', ')} because those themes appear repeatedly in your recent messages and likely represent your real bottlenecks.`
+      const keywordLine = context.topKeywords.length
+        ? `Pattern I see: ${context.topKeywords.slice(0, 3).join(', ')}.`
         : '';
       const multipartLead = multiParts.length > 1
-        ? `You asked ${multiParts.length} connected questions, so I’ll give one integrated answer that sequences decisions in the right order. `
+        ? `You asked ${multiParts.length} connected questions. I would sequence them, not treat them separately.`
         : '';
-      const personalizationLead = `${personalization.profileLine}, here is a tailored recommendation with ${personalization.styleLabel}.`;
-      const answer = `${personalizationLead} ${multipartLead}${base.opening}${recentReference}${keywordReference}${memoryContextLine}`.trim();
+      const answer = [base.opening, multipartLead, contextLine, keywordLine, memoryContextLine.trim()]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
 
-      const why = `${base.why} From a founder lens, this matters because execution capacity is always limited: when priorities are explicit, your team can align faster, stakeholders trust your decision logic, and you avoid burning cycles on low-leverage work.`;
+      const why = base.why;
 
       const steps = [
-        `Clarify the exact outcome for the next 14–30 days in one measurable sentence (for example, “increase weekly qualified demos by 25%” or “extend runway by 2 months”). This creates decision precision and avoids vague execution.`,
-        `Audit your current constraints honestly: available cash, team bandwidth, technical limits, and decision deadlines. Strategy only works when it respects reality.`,
-        `Choose one primary execution track: ${base.actionTracks[0]}. Define the owner, target metric, and first milestone so momentum starts immediately.`,
-        `Launch a supporting track for leverage: ${base.actionTracks[1]}. Keep scope tight and instrument outcomes so you can see signal within days, not months.`,
-        `Protect continuity through the third track: ${base.actionTracks[2]}. This prevents short-term fixes from creating long-term instability in the business.`,
-        `Review outcomes weekly with explicit trade-off discussion. Ask: what worked, what failed, and what should stop now to free capacity for higher-impact bets.`
-      ].slice(0, multiParts.length > 2 ? 7 : 6);
+        `Define the next 14–30 day outcome in one measurable sentence.`,
+        `Check the constraint: cash, team time, product quality, or distribution. Do not solve the wrong problem.`,
+        `Pick one primary track: ${base.actionTracks[0]}. Give it an owner, metric, and first milestone.`,
+        `Use one support track only: ${base.actionTracks[1]}. Keep it small enough to finish.`,
+        `Keep ${base.actionTracks[2]} as the watch item. Do not turn it into a third project unless the data forces it.`,
+        `Review once a week. Decide what to continue, stop, or simplify.`
+      ].slice(0, multiParts.length > 2 ? 6 : 5);
       if (isDeepThinking) {
         steps.push(
-          'Before committing, pressure-test your preferred option against two realistic downside scenarios and define early warning indicators that trigger a contingency plan.',
-          'Close each week with a short founder memo: decision made, evidence observed, and what changes next week. This improves strategic consistency and reduces reactive pivots.'
+          'Pressure-test the chosen move against two failure cases before committing.',
+          'Write a short founder memo each week: decision, signal, next adjustment.'
         );
       }
 
-      const tip = `Key insights & trade-offs: ${base.risks[0]} ${base.risks[1]} Favor options that generate reliable learning quickly, even if they feel less dramatic than big swings. In early-stage execution, repeatable wins usually outperform heroic moves.`;
+      const tip = `${base.risks[0]} ${base.risks[1]} Choose the move that creates useful signal fastest.`;
       const next = isDeepThinking
-        ? `${base.next} If you want, I can also produce a step-by-step decision tree with assumptions, leading indicators, and fallback moves.`
+        ? `${base.next} I can also turn this into a decision tree if you want the sharper version.`
         : base.next;
 
-      const minWords = isDeepThinking ? 230 : 180;
-      const maxWords = 350;
-      let totalWords = getWords(answer) + getWords(why) + getWords(steps.join(' ')) + getWords(tip) + getWords(next);
-      let expandedWhy = why;
-      let expandedTip = tip;
-      if (totalWords < minWords) {
-        expandedWhy += ' It also improves communication quality with co-founders, team members, and investors because priorities, assumptions, and expected outcomes become explicit rather than implied.';
-        expandedTip += ' As a rule, do not scale a tactic until you can explain why it worked and which condition made it effective.';
-        totalWords = getWords(answer) + getWords(expandedWhy) + getWords(steps.join(' ')) + getWords(expandedTip) + getWords(next);
-      }
-      if (totalWords > maxWords) {
-        expandedTip = expandedTip.split('. ').slice(0, 3).join('. ').trim();
-      }
       return {
         answer,
-        why: expandedWhy,
+        why,
         steps,
-        tip: expandedTip,
+        tip,
         next
       };
     }
 
     function aiAttachmentStructuredResponse(prompt, attachment) {
       const base = aiStructuredResponse(prompt || `Review this ${attachment?.kind || 'resource'} and guide me.`);
-      const personalization = getAIPersonalizationContext();
       const name = attachment?.name || attachment?.value || 'uploaded resource';
       const typeLabel = attachment?.kind === 'link' ? 'link' : 'document';
       const sourceLabel = attachment?.kind === 'link' ? `the link you shared (${name})` : `your file "${name}"`;
       return {
-        answer: `${personalization.profileLine}, I’ve incorporated ${sourceLabel} so this is grounded in your real operating context, not generic advice. The strongest strategic signal from this ${typeLabel} is that your next gains likely come from tighter prioritization, clearer owner accountability, and reducing decision latency. In founder terms: you probably don't need more ideas right now, you need a cleaner execution sequence with explicit trade-offs. I’ll treat this attachment as an operating input and map it to measurable actions you can validate quickly.`,
-        why: `${base.why} Reading between the lines of ${sourceLabel}, the pattern suggests the core issue is sequencing and focus quality, not lack of effort. Teams usually stall when important insights sit as static notes instead of being converted into time-bound experiments with defined owners and success thresholds.`,
+        answer: `I reviewed ${sourceLabel} as an operating input. The likely gain is not more ideas. It is a cleaner sequence: decide what matters, turn it into a short sprint, and measure the signal quickly.`,
+        why: `${base.why} Static notes do not change the business. Decisions do.`,
         steps: [
-          `Extract exactly three decisions from ${typeLabel === 'link' ? 'the linked page' : 'this file'}: one to do now, one to delay, and one to stop. This forces strategic clarity immediately.`,
-          `Convert those decisions into a 14-day sprint with named owners, measurable outcomes, and a review date. Keep each milestone binary (done / not done).`,
-          `Translate the top insight from ${sourceLabel} into one customer-facing change in messaging, onboarding, or sales narrative within 72 hours.`,
-          `Define two risk controls before execution: what signal means “continue,” and what signal means “pivot or pause.” This prevents sunk-cost drift.`,
-          `Run a weekly review loop that compares expected outcome vs actual signal, then update priorities from evidence instead of intuition.`
+          `Extract three decisions from ${typeLabel === 'link' ? 'the linked page' : 'this file'}: do now, delay, stop.`,
+          `Turn the “do now” item into a 14-day sprint with one owner, one metric, and one review date.`,
+          `Ship one customer-facing change from the top insight within 72 hours.`,
+          `Define the continue / pause signal before starting.`,
+          `Review actual signal weekly and simplify the plan from evidence.`
         ],
-        tip: `Attachment intelligence note: use ${typeLabel === 'link' ? 'that link' : 'this file'} as a live decision system, not a passive reference. The highest-performing founder teams turn context into rapid experiments, then into repeatable operating rules.`,
-        next: `If helpful, I can convert ${sourceLabel} into a one-page execution brief with priorities, owners, dependencies, and fallback options.`
+        tip: `Use ${typeLabel === 'link' ? 'that link' : 'this file'} as a decision source, not a storage place.`,
+        next: `I can convert ${sourceLabel} into a one-page execution brief with priorities, owners, dependencies, and fallback options.`
       };
     }
 
@@ -5629,13 +5616,12 @@
           const structured = item.structured || aiStructuredResponse(item.message || '');
           wrap.innerHTML = `
             <div class="max-w-5xl rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.20)]">
-              <div class="mb-4 flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-2xl bg-teal-300/15 text-lg">🤖</span><div><p class="text-sm font-black text-white">Barya AI Co-Founder</p><p class="text-xs text-slate-500">Detailed local-first strategy response</p></div></div>
+              <div class="mb-4 flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-2xl bg-teal-300/15 text-lg">🤖</span><div><p class="text-sm font-black text-white">Barya AI Co-Founder</p><p class="text-xs text-slate-500">Premium founder response</p></div></div>
               <div class="space-y-4 text-sm leading-7 text-slate-300">
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Clear Answer</p><p class="mt-1">${escapeHTML(structured.answer)}</p></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Why It Matters</p><p class="mt-1">${escapeHTML(structured.why)}</p></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Detailed Action Steps</p><ol class="mt-2 list-decimal space-y-1 pl-5">${(structured.steps || []).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Key Insights & Trade-offs</p><p class="mt-1">${escapeHTML(structured.tip)}</p></section>
-                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Next Best Step</p><p class="mt-1">${escapeHTML(structured.next)}</p></section>
+                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Direct Answer</p><p class="mt-1">${escapeHTML(structured.answer)}</p></section>
+                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Why This Matters</p><p class="mt-1">${escapeHTML(structured.why)}</p></section>
+                <section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200">Recommended Next Move</p><ol class="mt-2 list-decimal space-y-1 pl-5">${(structured.steps || []).slice(0, 2).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol><p class="mt-2">${escapeHTML(structured.next)}</p></section>
+                ${(structured.steps || []).length > 2 || structured.tip ? `<section><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Optional Deep Dive</p><ul class="mt-2 list-disc space-y-1 pl-5">${(structured.steps || []).slice(2).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ul>${structured.tip ? `<p class="mt-2">${escapeHTML(structured.tip)}</p>` : ''}</section>` : ''}
                 ${item.note ? `<p class="rounded-2xl border border-teal-300/25 bg-teal-300/10 px-3 py-2 text-xs text-teal-100">${escapeHTML(item.note)}</p>` : ''}
                 <button type="button" data-save-ai-memory="${escapeAttr(item.ts || '')}" class="rounded-2xl border border-violet-300/30 bg-violet-400/10 px-3 py-2 text-xs font-bold text-violet-100 hover:bg-violet-400/20">Save this output to Memory</button>
               </div>

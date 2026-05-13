@@ -1342,23 +1342,27 @@
 
   function buildContextSnapshot(contextSnippets) {
     if (!contextSnippets.length) return '';
-    const condensed = contextSnippets.slice(-3).map((item) => item.trim()).filter(Boolean);
+    const condensed = contextSnippets.slice(-2).map((item) => item.trim()).filter(Boolean);
     if (!condensed.length) return '';
-    return `Recent context: ${condensed.join(' → ')}.`;
+    return `Context I am using: ${condensed.join(' → ')}.`;
   }
 
   function buildStructuredReply(config, userMessage, contextSnippets, domain) {
     if (!config) return '';
     const contextLine = buildContextSnapshot(contextSnippets);
     const resources = getUsefulResourcesForDomain(domain);
-    const parts = [
-      `1. Situation\n- ${config.clearAnswer}${contextLine ? ` ${contextLine}` : ''}`,
-      `2. Insight\n- ${config.whyItMatters}`,
-      `3. Strategy\n- ${config.founderTip}`,
-      `4. Action Plan\n${config.steps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
-      `5. Tools / Workspace Usage\n${resources.map((resource) => `- Use ${resource} next`).join('\n')}`
+    const deepDiveItems = [
+      ...(config.steps || []).slice(1, 4),
+      ...(resources || []).slice(0, 2).map((resource) => `Use ${resource} if it helps you execute faster.`)
     ];
-    parts.push(`6. Next Step\n- ${config.nextMove || 'Share your stage, budget, and target audience so I can generate your exact next execution sprint.'}`);
+    const parts = [
+      `## Direct Answer\n${config.clearAnswer}${contextLine ? `\n\n${contextLine}` : ''}`,
+      `## Why This Matters\n${config.whyItMatters}`,
+      `## Recommended Next Move\n- ${(config.steps || [])[0] || config.nextMove || 'Pick one measurable outcome and commit to the next step.'}\n- ${config.nextMove || 'Send your stage, target customer, and deadline. I will turn it into a clean execution sprint.'}`
+    ];
+    if (deepDiveItems.length) {
+      parts.push(`## Optional Deep Dive\n${deepDiveItems.map((step) => `- ${step}`).join('\n')}`);
+    }
     return parts.join('\n\n');
   }
 
@@ -1371,16 +1375,16 @@
     const vagueReplyMap = [
       {
         clearAnswer: 'I can build you a practical founder plan, but I need one real business constraint first.',
-        whyItMatters: 'Specific constraints remove generic advice and make execution measurable.',
+        whyItMatters: 'Specific constraints make the next move obvious.',
         steps: ['Tell me your domain: startup, idea, marketing, growth, finance, or planning.', 'Share your current stage and one blocker.', 'Set one metric target and deadline.', 'I will return a founder-ready action plan based on that input.'],
-        founderTip: 'Clarity creates leverage. Vague inputs create vague plans.',
+        founderTip: 'Vague inputs create vague plans.',
         nextMove: 'Reply with: "Domain: __, Stage: __, Goal: __ by __."'
       },
       {
         clearAnswer: 'Give me one concrete challenge and I will turn it into a 7-day execution plan.',
-        whyItMatters: 'Execution improves when the objective, owner, and deadline are explicit.',
+        whyItMatters: 'A clear owner, metric, and deadline turns a vague problem into a decision.',
         steps: ['State your challenge in one sentence.', 'Add your current resources (time, budget, team).', 'Define what success looks like numerically.', 'I will generate the exact next 3–5 moves for you.'],
-        founderTip: 'Great founder decisions are constraint-led, not inspiration-led.',
+        founderTip: 'Good decisions start with constraints, not inspiration.',
         nextMove: 'Example: "Marketing, solo founder, $200 budget, need 10 calls in 2 weeks."'
       }
     ];
@@ -1393,14 +1397,14 @@
       startup: [
         {
           clearAnswer: 'Start by narrowing to one painful customer problem, one target segment, and one minimal paid offer.',
-          whyItMatters: 'Most early startups fail from broad scope and delayed validation, not from lack of ideas.',
+          whyItMatters: 'Broad scope delays learning. Paid signal tells you what matters.',
           steps: ['Define the customer pain in one sentence and one segment.', 'Create a minimum offer you can sell this week.', 'Run 10 interviews and capture objections word-for-word.', 'Launch a paid pilot before expanding product scope.'],
           founderTip: 'Revenue is stronger validation than positive feedback.',
           nextMove: 'Ask me for a 14-day startup validation sprint tailored to your idea.'
         },
         {
           clearAnswer: 'Treat your launch as a controlled experiment with a strict timeline and measurable outcomes.',
-          whyItMatters: 'Founders lose months polishing products before proving demand.',
+          whyItMatters: 'Polish is expensive before demand is proven.',
           steps: ['Select one audience segment with urgent pain.', 'Write one clear promise and measurable result.', 'Test through a simple page plus direct outreach.', 'Review weekly signals and cut non-performing features quickly.'],
           founderTip: 'Speed to learning beats feature completeness.',
           nextMove: 'Ask for a launch scorecard to evaluate traction each week.'
@@ -1482,9 +1486,9 @@
       general: [
         {
           clearAnswer: 'I can help you make practical business decisions across startup, idea validation, marketing, growth, finance, and planning.',
-          whyItMatters: 'Structured decisions reduce confusion and accelerate founder progress.',
+          whyItMatters: 'Precise inputs produce useful strategy. Vague inputs produce noise.',
           steps: ['State your current challenge in one sentence.', 'Add your stage and available resources.', 'Define one measurable result and timeline.', 'Pick one domain so we create a focused plan.', 'Confirm if you want a 7-day or 30-day execution plan.'],
-          founderTip: 'General questions create general answers; precise inputs create strategic outputs.',
+          founderTip: 'Ask a sharper question and the answer gets sharper.',
           nextMove: 'Ask a specific question like: "How do I acquire 20 qualified leads in 30 days?"'
         }
       ]
@@ -1700,11 +1704,10 @@
     const lowerPrompt = String(prompt || '').toLowerCase();
     const totals = calculateTotals();
     const formatAdvice = (content) => [
-      `1. Clear Advice\n${content.clearAdvice}`,
-      `2. Why This Matters\n${content.whyThisMatters}`,
-      `3. Action Steps\n${content.actionSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')}`,
-      `4. Resource Suggestions\n${content.resourceSuggestions.map((item) => `- ${item}`).join('\n')}`,
-      `5. Founder Note\n${content.founderNote}`
+      `## Direct Answer\n${content.clearAdvice}`,
+      `## Why This Matters\n${content.whyThisMatters}`,
+      `## Recommended Next Move\n- ${content.actionSteps[0]}\n- ${content.actionSteps[1] || content.founderNote}`,
+      `## Optional Deep Dive\n${content.actionSteps.slice(2).map((step) => `- ${step}`).join('\n')}\n${content.resourceSuggestions.slice(0, 2).map((item) => `- Use ${item} if it helps you move faster.`).join('\n')}`
     ].join('\n\n');
 
     const challengeAdviceMap = {
@@ -1745,8 +1748,8 @@
         founderNote: 'Momentum comes from fast learning cycles, not from perfect planning.'
       },
       growth: {
-        clearAdvice: 'Scale only what is already working and fix bottlenecks before increasing spend.',
-        whyThisMatters: 'Growth without process control increases costs and creates operational chaos.',
+        clearAdvice: 'Scale only what is already converting. Fix the leak before adding spend.',
+        whyThisMatters: 'Growth without control just makes problems more expensive.',
         actionSteps: [
           'Identify your best-performing channel by lead quality and conversion.',
           'Improve conversion at each funnel step before adding more traffic.',
@@ -1754,7 +1757,7 @@
           'Run one growth experiment weekly and document results.'
         ],
         resourceSuggestions: ['Operations Roadmap', 'Founder Workspace: Metrics', 'Template: Growth Experiment Tracker'],
-        founderNote: 'Sustainable growth is system-driven, not campaign-driven.'
+        founderNote: 'Sustainable growth comes from a system, not one lucky campaign.'
       },
       marketing: {
         clearAdvice: 'Focus on one audience, one channel, and one clear message tied to a customer outcome.',
@@ -1769,8 +1772,8 @@
         founderNote: 'Consistency with the right message beats posting everywhere.'
       },
       strategy: {
-        clearAdvice: 'Reduce confusion by making one strategic decision at a time with clear criteria.',
-        whyThisMatters: 'Unclear strategy leads to reactive actions, wasted effort, and slow progress.',
+        clearAdvice: 'Make one decision at a time. Make it measurable.',
+        whyThisMatters: 'Unclear strategy creates motion without progress.',
         actionSteps: [
           'Define your single top goal for the next 30-90 days.',
           'List 2-3 options and score them by impact, effort, and risk.',
@@ -1778,7 +1781,7 @@
           'Review results weekly and adjust only based on evidence.'
         ],
         resourceSuggestions: ['Template: Decision Matrix', 'Founder Workspace: Quarterly Plan', 'Memory: Key Learnings'],
-        founderNote: 'Clarity is built through decisions and evidence, not through overthinking.'
+        founderNote: 'Clarity comes from decisions and evidence.'
       }
     };
 
