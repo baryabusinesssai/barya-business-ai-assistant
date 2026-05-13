@@ -1415,6 +1415,32 @@
       height: auto;
     }
 
+    /* Knowledge Graph owns its own vertical scroll so long graph content stays reachable
+       while the app shell and sidebar remain fixed. */
+    #mainTaskSection > #section-knowledge-graph {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+      max-height: 100%;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      scrollbar-gutter: stable;
+    }
+
+    #mainTaskSection > #section-knowledge-graph.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #section-knowledge-graph > #kgBrainShell {
+      flex: 0 0 auto;
+      min-height: auto;
+      height: auto;
+      max-height: none;
+    }
+
 
   </style>
 </head>
@@ -6583,7 +6609,7 @@
             <div class="grid gap-4 xl:grid-cols-3">
               <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Recent Activity in Graph</h3><div class="space-y-2">${recentActivity}</div></section>
               <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">Cluster Summary</h3><div class="space-y-3">${clusterCounts.map((item, index) => `<button data-kg-cluster="${escapeAttr(item.cluster)}" class="w-full rounded-xl bg-white/[0.035] px-3 py-2 text-left hover:bg-white/[0.08]"><span class="flex items-center justify-between text-sm"><span class="text-slate-200"><span class="mr-2 inline-block h-2.5 w-2.5 rounded-full" style="background:${clusterPalette[index]}"></span>${escapeHTML(item.cluster)}</span><span class="text-slate-400">${item.count}</span></span><span class="mt-2 block h-1.5 overflow-hidden rounded-full bg-slate-800"><span class="block h-full rounded-full" style="width:${Math.min(100, item.count / Math.max(1, actualVisibleNodes.length) * 100)}%;background:${clusterPalette[index]}"></span></span></button>`).join('')}</div></section>
-              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">${activeMode === 'table' ? 'Table View' : activeMode === 'timeline' ? 'Timeline View' : 'Graph Intelligence'}</h3>${activeMode === 'table' ? `<div class="max-h-80 overflow-auto rounded-2xl border border-white/10"><table class="w-full min-w-[560px] text-sm"><thead class="bg-white/[0.05] text-slate-400"><tr><th class="p-3 text-left">Node</th><th class="p-3 text-left">Type</th><th class="p-3 text-left">Cluster</th><th class="p-3 text-left">Links</th><th class="p-3 text-left">Action</th></tr></thead><tbody>${tableRows}</tbody></table></div>` : activeMode === 'timeline' ? `<div class="space-y-4 border-l border-cyan-300/20 pl-4">${timelineRows}</div>` : `<p class="text-sm text-slate-300">Use the graph canvas to drag nodes, click to open source items, scroll to zoom, drag empty space to pan, and double-click labels for temporary renaming.</p>`}</section>
+              <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"><h3 class="mb-4 font-semibold text-white">${activeMode === 'table' ? 'Table View' : activeMode === 'timeline' ? 'Timeline View' : 'Graph Intelligence'}</h3>${activeMode === 'table' ? `<div class="max-h-80 overflow-auto rounded-2xl border border-white/10"><table class="w-full min-w-[560px] text-sm"><thead class="bg-white/[0.05] text-slate-400"><tr><th class="p-3 text-left">Node</th><th class="p-3 text-left">Type</th><th class="p-3 text-left">Cluster</th><th class="p-3 text-left">Links</th><th class="p-3 text-left">Action</th></tr></thead><tbody>${tableRows}</tbody></table></div>` : activeMode === 'timeline' ? `<div class="space-y-4 border-l border-cyan-300/20 pl-4">${timelineRows}</div>` : `<p class="text-sm text-slate-300">Use the graph canvas to drag nodes, click to open source items, Ctrl/⌘ + scroll to zoom, drag empty space to pan, and double-click labels for temporary renaming.</p>`}</section>
             </div>
           </div>
         </section>`;
@@ -6719,7 +6745,11 @@
       document.getElementById('kgZoomOut').onclick = () => { scale*=0.84; clamp(); draw(); };
       document.getElementById('kgResetView').onclick = () => { scale=1; ox=0; oy=0; draw(); };
       document.getElementById('kgFocusCore').onclick = () => { scale=1.18; ox=center.x-(coreNode?.x || center.x)*scale; oy=center.y-(coreNode?.y || center.y)*scale; draw(); };
-      canvas.onwheel = (e) => { e.preventDefault(); const prev=scale; scale*=e.deltaY<0?1.1:0.9; clamp(); const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left,my=e.clientY-r.top,k=scale/prev; ox = mx-(mx-ox)*k; oy=my-(my-oy)*k; draw(); };
+      canvas.onwheel = (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        e.preventDefault();
+        const prev=scale; scale*=e.deltaY<0?1.1:0.9; clamp(); const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left,my=e.clientY-r.top,k=scale/prev; ox = mx-(mx-ox)*k; oy=my-(my-oy)*k; draw();
+      };
       canvas.onmousedown = (e) => { drag = hitNode(e.clientX,e.clientY); pan=!drag; moved=false; last={x:e.clientX,y:e.clientY}; canvas.style.cursor = drag ? 'grabbing' : 'move'; };
       canvas.onmousemove = (e) => { const dx=e.clientX-last.x, dy=e.clientY-last.y; if (drag||pan) moved = moved || Math.abs(dx)>1 || Math.abs(dy)>1; last={x:e.clientX,y:e.clientY}; if (drag) { drag.x+=dx/scale; drag.y+=dy/scale; draw(); } else if (pan) { ox+=dx; oy+=dy; draw(); } hover = hitNode(e.clientX,e.clientY); canvas.style.cursor = hover ? 'pointer' : pan ? 'move' : 'grab'; if (hover) { const r=canvas.getBoundingClientRect(); tooltip.classList.remove('hidden'); tooltip.style.left=`${Math.min(width-320, Math.max(12, e.clientX-r.left+14))}px`; tooltip.style.top=`${Math.min(height-120, Math.max(12, e.clientY-r.top+14))}px`; tooltip.innerHTML=`<p class="font-semibold text-white">${escapeHTML(hover.label)}</p><p class="mt-1 text-[11px] text-slate-400">${escapeHTML(hover.type)} · ${hover.connected || 0} connections${hover.cluster ? ` · ${escapeHTML(hover.cluster)}` : ''}</p><p class="mt-2 text-[11px] text-cyan-200">${hover.synthetic ? 'Click to focus this cluster' : 'Click to open · Drag to reposition'}</p>`; } else tooltip.classList.add('hidden'); };
       canvas.onmouseup = (e) => { const hit=hitNode(e.clientX,e.clientY); drag=null; pan=false; canvas.style.cursor = 'grab'; if (hit && !moved) { if (hit.type === 'Cluster') { kg.search = hit.cluster; saveStateRaw(); renderKnowledgeGraph(); } else if (!hit.synthetic) openReference(hit.ref); } };
