@@ -1830,7 +1830,7 @@
 
     function taskItem(title, project, priority = 'Medium', offset = 3, category = 'Strategy') {
       const now = new Date().toISOString();
-      return { id: crypto.randomUUID(), title, description: `Starter task for ${project}.`, project, priority, status: 'To Do', dueDate: daysFromNow(offset), category, tags: [category, project].filter(Boolean), sprintId: '', linkRef: '', archived: false, createdAt: now, updatedAt: now };
+      return { id: crypto.randomUUID(), title, description: `Starter task for ${project}.`, project, priority, status: 'To Do', dueDate: daysFromNow(offset), category, tags: [category, project].filter(Boolean), sprintId: '', linkRef: '', archived: false, createdBy: 'You', assignedTo: 'You', assignee: 'You', updatedBy: 'You', createdAt: now, updatedAt: now };
     }
 
     function generateStarterTasks(profile) {
@@ -1978,7 +1978,7 @@
         databases: [],
         activeDatabaseId: null
       };
-      stateFromProfile.tasks = { items: tasks, sprints: [], leftTab: 'all', view: 'list', search: '', priorityFilter: 'All', statusFilter: 'All', sprintFilter: 'all', selectedTaskId: tasks[0]?.id || null };
+      stateFromProfile.tasks = { items: tasks, sprints: [], activeTaskTab: 'all', leftTab: 'all', view: 'list', search: '', priorityFilter: 'All', statusFilter: 'All', sprintFilter: 'all', selectedTaskId: tasks[0]?.id || null };
       stateFromProfile.resources = { search: '', activeTab: 'all', quickView: 'all', aiPrompt: '', aiResponse: '', customFormOpen: false, addMenuOpen: false, bookmarks: [], customResources: [], recentlyUsed: [], trash: [], library: resources };
       stateFromProfile.planning = { guides: plans, plans: plans.map(plan => ({ id: crypto.randomUUID(), name: plan.title, type: 'Starter Plan', progress: planningProgress, updatedAt: now, status: 'Draft' })), templates: { onePager: `One-page plan for ${profile.businessName}.`, fundraise: 'Funding notes will appear when you choose to raise funding.', ops: 'Weekly operating cadence and owner notes.' }, strategy: { mode: 'deep', idea: profile.businessDescription || '', followUp: '', loading: false, activeSessionId: null, sessions: [] }, ui: { search: '', chartRange: 'Monthly' } };
       stateFromProfile.settings = { founder: { name: profile.founderName, role: profile.role, email: '', bio: '', country: '', city: '', linkedin: '', twitter: '', website: '', photo: '' }, business: { name: profile.businessName, stage: profile.businessStage, industry: profile.industry, targetAudience: '', foundingYear: String(new Date().getFullYear()), description: profile.businessDescription, mainGoal: profile.mainGoal, longTermGoal: profile.longTermGoal, aiStyle: profile.aiStyle, revenueModel: profile.revenueModel, businessType: profile.businessType }, team: { openRoles: 0, members: [], responsibilities: {}, meetings: [] }, preferences: { currency: 'INR', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: true } };
@@ -2009,6 +2009,7 @@
       tasks: {
         items: [],
         sprints: [],
+        activeTaskTab: 'all',
         leftTab: 'all',
         view: 'list',
         search: '',
@@ -4924,7 +4925,8 @@
       if (!state.tasks || typeof state.tasks !== 'object') state.tasks = structuredClone(defaultState.tasks);
       if (!Array.isArray(state.tasks.items)) state.tasks.items = [];
       if (!Array.isArray(state.tasks.sprints)) state.tasks.sprints = [];
-      if (!state.tasks.leftTab) state.tasks.leftTab = 'all';
+      if (!state.tasks.activeTaskTab) state.tasks.activeTaskTab = state.tasks.leftTab || 'all';
+      state.tasks.leftTab = state.tasks.activeTaskTab;
       if (!state.tasks.view) state.tasks.view = 'kanban';
       if (typeof state.tasks.search !== 'string') state.tasks.search = '';
       if (!state.tasks.priorityFilter) state.tasks.priorityFilter = 'All';
@@ -4943,6 +4945,10 @@
         if (!task.updatedAt) task.updatedAt = task.createdAt;
         if (task.sprintId === undefined) task.sprintId = '';
         if (task.linkRef === undefined) task.linkRef = '';
+        const currentUser = getCurrentTaskUser();
+        if (!task.createdBy) task.createdBy = currentUser.name;
+        if (!task.assignedTo) task.assignedTo = task.assignee || currentUser.name;
+        if (!task.assignee) task.assignee = task.assignedTo;
       });
       state.tasks.sprints.forEach(s => {
         if (!s.id) s.id = crypto.randomUUID();
@@ -4994,7 +5000,52 @@
       return linked ? `${linked.icon} ${linked.title}` : 'Not linked';
     }
 
-    function taskMatchesLeftTab(task, leftTab) {
+    function getCurrentTaskUser() {
+      const founder = state.settings?.founder || {};
+      const profile = state.workspaceProfile || {};
+      const name = String(founder.name || profile.founderName || 'You').trim() || 'You';
+      const email = String(founder.email || profile.email || '').trim();
+      return { name, email };
+    }
+
+    function normalizeTaskPerson(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function taskPersonMatchesCurrentUser(value) {
+      const currentUser = getCurrentTaskUser();
+      const person = normalizeTaskPerson(value);
+      if (!person) return false;
+      return person === 'you' || person === normalizeTaskPerson(currentUser.name) || (!!currentUser.email && person === normalizeTaskPerson(currentUser.email));
+    }
+
+    function createLocalTask(partial = {}) {
+      ensureTasksState();
+      const now = new Date().toISOString();
+      const currentUser = getCurrentTaskUser();
+      const task = {
+        id: crypto.randomUUID(),
+        title: partial.title || 'New Task',
+        description: partial.description || '',
+        dueDate: partial.dueDate || '',
+        priority: partial.priority || 'Medium',
+        status: partial.status || 'To Do',
+        tags: Array.isArray(partial.tags) ? partial.tags : [],
+        sprintId: partial.sprintId || '',
+        linkRef: partial.linkRef || '',
+        archived: false,
+        createdBy: partial.createdBy || currentUser.name,
+        assignedTo: partial.assignedTo || currentUser.name,
+        assignee: partial.assignee || partial.assignedTo || currentUser.name,
+        createdAt: now,
+        updatedAt: now
+      };
+      state.tasks.items.unshift(task);
+      state.tasks.selectedTaskId = task.id;
+      return task;
+    }
+
+    function taskMatchesLeftTab(task, activeTaskTab) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayIso = today.toISOString().slice(0, 10);
@@ -5002,13 +5053,13 @@
       weekEnd.setDate(weekEnd.getDate() + 7);
       const weekEndIso = weekEnd.toISOString().slice(0, 10);
 
-      if (leftTab === 'my') return !task.archived;
-      if (leftTab === 'assigned') return !task.archived;
-      if (leftTab === 'completed') return !task.archived && task.status === 'Done';
-      if (leftTab === 'archived') return !!task.archived;
-      if (leftTab === 'today') return !task.archived && task.dueDate === todayIso;
-      if (leftTab === 'week') return !task.archived && !!task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso;
-      if (leftTab === 'sprints') return !task.archived && !!task.sprintId;
+      if (activeTaskTab === 'my') return !task.archived && taskPersonMatchesCurrentUser(task.createdBy || task.owner || task.createdByName);
+      if (activeTaskTab === 'assigned') return !task.archived && taskPersonMatchesCurrentUser(task.assignedTo || task.assignee || task.owner);
+      if (activeTaskTab === 'completed') return !task.archived && task.status === 'Done';
+      if (activeTaskTab === 'archived') return !!task.archived;
+      if (activeTaskTab === 'today') return !task.archived && task.dueDate === todayIso;
+      if (activeTaskTab === 'week') return !task.archived && !!task.dueDate && task.dueDate >= todayIso && task.dueDate <= weekEndIso;
+      if (activeTaskTab === 'sprints') return !task.archived && !!task.sprintId;
       return !task.archived;
     }
 
@@ -5045,7 +5096,7 @@
         const byPriority = t.priorityFilter === 'All' || task.priority === t.priorityFilter;
         const byStatus = t.statusFilter === 'All' || task.status === t.statusFilter;
         const bySprint = t.sprintFilter === 'all' || task.sprintId === t.sprintFilter;
-        const byLeft = taskMatchesLeftTab(task, t.leftTab);
+        const byLeft = taskMatchesLeftTab(task, t.activeTaskTab);
         return bySearch && byPriority && byStatus && bySprint && byLeft;
       });
       const sorted = [...filtered].sort((a, b) => {
@@ -5099,8 +5150,25 @@
         </article>`;
       };
 
+      const taskListRow = (task) => {
+        const sprint = sprintMap.get(task.sprintId);
+        const owner = task.createdBy || 'You';
+        const assignee = task.assignedTo || task.assignee || 'You';
+        return `<tr class="border-t border-white/10 hover:bg-white/[0.04] transition">
+          <td class="py-3 pl-3 pr-4"><input type="checkbox" data-toggle-complete="${task.id}" ${task.status === 'Done' ? 'checked' : ''} class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-teal-500" /></td>
+          <td class="py-3 pr-4"><button data-select-task="${task.id}" class="text-left"><span class="block font-semibold text-white">${escapeHTML(task.title)}</span><span class="block max-w-md truncate text-xs text-slate-500">${escapeHTML(task.description || 'No description')}</span></button></td>
+          <td class="py-3 pr-4 text-sm text-slate-300">${escapeHTML(task.status)}</td>
+          <td class="py-3 pr-4 text-sm text-slate-300">${escapeHTML(task.priority)}</td>
+          <td class="py-3 pr-4 text-sm text-slate-400">${escapeHTML(assignee)}</td>
+          <td class="py-3 pr-4 text-sm text-slate-400">${escapeHTML(owner)}</td>
+          <td class="py-3 pr-4 text-sm text-slate-400">${escapeHTML(sprint?.name || 'Backlog')}</td>
+          <td class="py-3 pr-4 text-sm text-slate-400">${escapeHTML(task.dueDate || 'No due date')}</td>
+          <td class="py-3 pr-3"><div class="flex gap-1.5"><button data-edit-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-200 hover:bg-white/10">Edit</button><button data-archive-task="${task.id}" class="text-xs px-2.5 py-1.5 rounded-lg bg-violet-500/10 border border-violet-400/20 text-violet-100 hover:bg-violet-500/20">${task.archived ? 'Unarchive' : 'Archive'}</button></div></td>
+        </tr>`;
+      };
+
       const activeTasksMarkup = t.view === 'list'
-        ? `<div class="space-y-3">${sorted.map(taskCard).join('') || `<div class="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center text-slate-400">No tasks match this view.</div>`}</div>`
+        ? `<div class="overflow-x-auto rounded-3xl border border-white/10 bg-white/[0.035]"><table class="min-w-full text-left"><thead class="text-xs uppercase tracking-[0.14em] text-slate-500"><tr><th class="py-3 pl-3 pr-4"></th><th class="py-3 pr-4">Task</th><th class="py-3 pr-4">Status</th><th class="py-3 pr-4">Priority</th><th class="py-3 pr-4">Assigned</th><th class="py-3 pr-4">Created By</th><th class="py-3 pr-4">Project</th><th class="py-3 pr-4">Due</th><th class="py-3 pr-3">Actions</th></tr></thead><tbody>${sorted.map(taskListRow).join('') || `<tr><td colspan="9" class="p-8 text-center text-slate-400">No tasks match this view.</td></tr>`}</tbody></table></div>`
         : `<div class="grid xl:grid-cols-4 md:grid-cols-2 gap-4">${boardStatuses.map(status => `<div data-drop-status="${status}" class="rounded-3xl border border-white/10 bg-white/[0.035] p-3 min-h-[420px] transition hover:border-teal-300/30"><div class="flex items-center justify-between mb-3 px-1"><h3 class="font-semibold text-white">${status}</h3><span class="text-xs text-slate-400 rounded-full bg-white/5 px-2 py-1">${sorted.filter(task => task.status === status).length}</span></div><div class="space-y-3">${sorted.filter(task => task.status === status).map(taskCard).join('') || '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-xs text-slate-500">Drop tasks here</p>'}</div></div>`).join('')}</div>`;
 
       el.innerHTML = `
@@ -5120,7 +5188,7 @@
               <details class="relative group"><summary id="newTaskBtn" class="list-none cursor-pointer rounded-2xl bg-gradient-to-r from-violet-500 to-teal-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/20">+ New Task</summary><div class="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl"><button data-new-task-type="task" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Task</button><button data-new-task-type="reminder" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Reminder</button><button data-new-task-type="goal" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">New Goal</button><button data-new-task-type="ai" class="block w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/10">AI Generated Task</button></div></details>
             </div>
 
-            <nav class="flex gap-2 overflow-x-auto pb-1">${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="shrink-0 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${t.leftTab === tab.id ? 'border-teal-300/60 bg-teal-400/10 text-teal-100' : 'border-white/10 bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.07]'}">${tab.label}</button>`).join('')}</nav>
+            <nav class="flex gap-2 overflow-x-auto pb-1">${leftTabs.map(tab => `<button data-task-tab="${tab.id}" class="shrink-0 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${t.activeTaskTab === tab.id ? 'border-violet-300/70 bg-violet-500/25 text-white shadow-lg shadow-violet-500/30 ring-1 ring-violet-300/30' : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-violet-300/35 hover:bg-violet-500/10 hover:text-white'}">${tab.label}</button>`).join('')}</nav>
 
             <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
               ${[
@@ -5158,32 +5226,31 @@
           </div>
         </section>`;
 
-      el.querySelectorAll('[data-task-tab]').forEach(btn => btn.onclick = () => { t.leftTab = btn.dataset.taskTab; saveState(); });
+      el.querySelectorAll('[data-task-tab]').forEach(btn => btn.onclick = () => { t.activeTaskTab = btn.dataset.taskTab || 'all'; t.leftTab = t.activeTaskTab; saveState(); });
       el.querySelectorAll('[data-view]').forEach(btn => btn.onclick = () => { t.view = btn.dataset.view; saveState(); });
       document.getElementById('taskSearch').oninput = (e) => { t.search = e.target.value; saveState(); };
       document.getElementById('taskPriorityFilter').onchange = (e) => { t.priorityFilter = e.target.value; saveState(); };
       document.getElementById('taskStatusFilter').onchange = (e) => { t.statusFilter = e.target.value; saveState(); };
       document.getElementById('taskSprintFilter').onchange = (e) => { t.sprintFilter = e.target.value; saveState(); };
       el.querySelectorAll('[data-new-task-type]').forEach(btn => btn.onclick = () => {
-        t.selectedTaskId = null;
-        renderTasks();
-        const titleInput = document.getElementById('taskTitle');
-        const descriptionInput = document.getElementById('taskDescription');
-        if (btn.dataset.newTaskType === 'reminder') titleInput.value = 'Reminder: ';
-        if (btn.dataset.newTaskType === 'goal') titleInput.value = 'Goal: ';
-        if (btn.dataset.newTaskType === 'ai') {
-          const idea = suggestedTasks[0] || 'AI Generated Task: Review highest-impact priority';
-          titleInput.value = idea;
-          descriptionInput.value = 'Drafted by Barya AI based on your current workspace priorities.';
-        }
-        titleInput.focus();
+        const type = btn.dataset.newTaskType || 'task';
+        const payload = type === 'reminder'
+          ? { title: 'Reminder: ', tags: ['Reminder'] }
+          : type === 'goal'
+            ? { title: 'Goal: ', tags: ['Goal'] }
+            : type === 'ai'
+              ? { title: suggestedTasks[0] || 'AI Generated Task: Review highest-impact priority', description: 'Drafted by Barya AI based on your current workspace priorities.', priority: 'High', tags: ['AI', 'Suggested'] }
+              : { title: 'New Task' };
+        createLocalTask(payload);
+        saveState();
       });
       el.querySelectorAll('[data-add-suggested]').forEach(btn => btn.onclick = () => {
         const now = new Date().toISOString();
-        t.items.unshift({ id: crypto.randomUUID(), title: btn.dataset.addSuggested, description: 'Suggested from Barya AI Task Assistant', dueDate: '', priority: 'High', status: 'To Do', tags: ['AI','Suggested'], sprintId: '', linkRef: suggestionSource ? `strategy:${suggestionSource.id}` : '', archived: false, createdAt: now, updatedAt: now });
+        const currentUser = getCurrentTaskUser();
+        t.items.unshift({ id: crypto.randomUUID(), title: btn.dataset.addSuggested, description: 'Suggested from Barya AI Task Assistant', dueDate: '', priority: 'High', status: 'To Do', tags: ['AI','Suggested'], sprintId: '', linkRef: suggestionSource ? `strategy:${suggestionSource.id}` : '', archived: false, createdBy: currentUser.name, assignedTo: currentUser.name, assignee: currentUser.name, createdAt: now, updatedAt: now });
         saveState();
       });
-      document.getElementById('newTaskBtn').onclick = () => { t.selectedTaskId = null; };
+      document.getElementById('newTaskBtn').onclick = () => { createLocalTask({ title: 'New Task' }); saveState(); };
       document.getElementById('newSprintBtn').onclick = () => document.getElementById('sprintName').focus();
       el.querySelectorAll('[data-select-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.selectTask; renderTasks(); });
       el.querySelectorAll('[data-edit-task]').forEach(btn => btn.onclick = () => { t.selectedTaskId = btn.dataset.editTask; renderTasks(); });
@@ -5197,7 +5264,7 @@
         saveState();
       });
       el.querySelectorAll('[data-jump-link]').forEach(btn => btn.onclick = () => { const task = t.items.find(item => item.id === btn.dataset.jumpLink); const linked = getLinkedItem(task); if (!linked?.target) return; linked.target(); renderNav(); saveState(); });
-      document.getElementById('taskForm').onsubmit = (e) => { e.preventDefault(); const title = document.getElementById('taskTitle').value.trim(); if (!title) return; const payload = { title, description: document.getElementById('taskDescription').value.trim(), dueDate: document.getElementById('taskDueDate').value, priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, sprintId: document.getElementById('taskSprint').value, tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean), linkRef: document.getElementById('taskLinkRef').value, archived: selectedTask?.archived || false, updatedAt: new Date().toISOString() }; if (t.selectedTaskId) { const idx = t.items.findIndex(task => task.id === t.selectedTaskId); if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload }; } else { const now = new Date().toISOString(); const newTask = { id: crypto.randomUUID(), createdAt: now, ...payload }; t.items.unshift(newTask); t.selectedTaskId = newTask.id; } saveState(); };
+      document.getElementById('taskForm').onsubmit = (e) => { e.preventDefault(); const title = document.getElementById('taskTitle').value.trim(); if (!title) return; const currentUser = getCurrentTaskUser(); const payload = { title, description: document.getElementById('taskDescription').value.trim(), dueDate: document.getElementById('taskDueDate').value, priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, sprintId: document.getElementById('taskSprint').value, tags: document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(Boolean), linkRef: document.getElementById('taskLinkRef').value, archived: selectedTask?.archived || false, assignedTo: selectedTask?.assignedTo || selectedTask?.assignee || currentUser.name, assignee: selectedTask?.assignee || selectedTask?.assignedTo || currentUser.name, createdBy: selectedTask?.createdBy || currentUser.name, updatedAt: new Date().toISOString() }; if (t.selectedTaskId) { const idx = t.items.findIndex(task => task.id === t.selectedTaskId); if (idx >= 0) t.items[idx] = { ...t.items[idx], ...payload }; } else { const newTask = createLocalTask(payload); t.selectedTaskId = newTask.id; } saveState(); };
       document.getElementById('taskFormReset').onclick = () => { t.selectedTaskId = null; renderTasks(); };
       document.getElementById('sprintForm').onsubmit = (e) => { e.preventDefault(); const name = document.getElementById('sprintName').value.trim(); if (!name) return; t.sprints.unshift({ id: crypto.randomUUID(), name, startDate: document.getElementById('sprintStart').value, endDate: document.getElementById('sprintEnd').value, createdAt: new Date().toISOString() }); document.getElementById('sprintForm').reset(); saveState(); };
       el.querySelectorAll('[data-delete-sprint]').forEach(btn => btn.onclick = () => { const sid = btn.dataset.deleteSprint; t.sprints = t.sprints.filter(s => s.id !== sid); t.items.forEach(task => { if (task.sprintId === sid) task.sprintId = ''; }); saveState(); });
