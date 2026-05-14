@@ -1999,7 +1999,7 @@
         healthScore: 5
       },
       ai: { history: [] },
-      memory: { insights: [], actions: [], search: '', activeType: 'All Memories', assistantQuestion: '', assistantAnswer: '' },
+      memory: { insights: [], actions: [], search: '', activeMemoryTab: 'all', assistantQuestion: '', assistantAnswer: '' },
       workspace: {
         pages: [],
         activePageId: null,
@@ -6057,7 +6057,8 @@
         };
       });
       if (typeof state.memory.search !== 'string') state.memory.search = '';
-      if (!state.memory.activeType) state.memory.activeType = 'All Memories';
+      if (!state.memory.activeMemoryTab) state.memory.activeMemoryTab = memoryTabFromLegacyType(state.memory.activeType || 'all');
+      delete state.memory.activeType;
       if (typeof state.memory.assistantQuestion !== 'string') state.memory.assistantQuestion = '';
       if (typeof state.memory.assistantAnswer !== 'string') state.memory.assistantAnswer = '';
       return state.memory.insights;
@@ -6081,7 +6082,7 @@
         importance: memory.importance || 'medium'
       };
       getMemoryEntries().unshift(entry);
-      state.memory.activeType = 'All Memories';
+      state.memory.activeMemoryTab = 'all';
       state.memory.activeMemoryId = entry.id;
       persistMemoryLocal();
       saveState();
@@ -6112,11 +6113,41 @@
       return getMemoryEntries().filter(memory => !q || `${memory.title} ${memory.type} ${memory.description} ${(memory.tags || []).join(' ')}`.toLowerCase().includes(q));
     }
 
-    function filterMemories(type) {
-      const normalized = String(type || 'All Memories');
-      if (normalized === 'All Memories') return searchMemories(state.memory?.search || '');
-      const singular = normalized.replace(/s$/, '');
-      return searchMemories(state.memory?.search || '').filter(memory => String(memory.type || '').toLowerCase() === singular.toLowerCase());
+    const MEMORY_TABS = [
+      { id: 'all', label: 'All Memories', type: '' },
+      { id: 'insights', label: 'Insights', type: 'insight' },
+      { id: 'preferences', label: 'Preferences', type: 'preference' },
+      { id: 'decisions', label: 'Decisions', type: 'decision' },
+      { id: 'learnings', label: 'Learnings', type: 'learning' },
+      { id: 'conversations', label: 'Conversations', type: 'conversation' },
+      { id: 'files', label: 'Files', type: 'file' },
+      { id: 'events', label: 'Events', type: 'event' }
+    ];
+
+    function normalizeMemoryType(type) {
+      return String(type || '').trim().toLowerCase();
+    }
+
+    function memoryTabFromLegacyType(type) {
+      const normalized = normalizeMemoryType(type).replace(/ memories$/, '').replace(/s$/, '');
+      const match = MEMORY_TABS.find(tab => tab.id === normalizeMemoryType(type) || tab.type === normalized || normalizeMemoryType(tab.label) === normalizeMemoryType(type));
+      return match?.id || 'all';
+    }
+
+    function getMemoryTab(tabId) {
+      return MEMORY_TABS.find(tab => tab.id === tabId) || MEMORY_TABS[0];
+    }
+
+    function displayMemoryType(type) {
+      const normalized = normalizeMemoryType(type);
+      return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : 'Insight';
+    }
+
+    function filterMemories(tabId) {
+      const tab = getMemoryTab(tabId || state.memory?.activeMemoryTab || 'all');
+      const searched = searchMemories(state.memory?.search || '');
+      if (tab.id === 'all') return searched;
+      return searched.filter(memory => normalizeMemoryType(memory.type) === tab.type);
     }
 
     function getMemoryStats() {
@@ -6127,15 +6158,15 @@
         return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
       }).length;
       const byType = entries.reduce((acc, memory) => {
-        const key = memory.type || 'Insight';
+        const key = normalizeMemoryType(memory.type) || 'insight';
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
       return {
         total: entries.length,
         thisMonth,
-        keyInsights: byType.Insight || 0,
-        preferences: byType.Preference || 0,
+        keyInsights: byType.insight || 0,
+        preferences: byType.preference || 0,
         byType
       };
     }
@@ -6166,10 +6197,10 @@
         persistMemoryLocal();
       }
       const stats = getMemoryStats();
-      const activeType = memory.activeType || 'All Memories';
-      const visible = filterMemories(activeType);
+      const activeMemoryTab = memory.activeMemoryTab || 'all';
+      const visible = filterMemories(activeMemoryTab);
       const categories = ['Goals', 'Preferences', 'Decisions', 'Insights', 'Learnings', 'Conversations', 'Files', 'Events'];
-      const tabs = ['All Memories', 'Insights', 'Preferences', 'Decisions', 'Learnings', 'Conversations', 'Files', 'Events'];
+      const tabs = MEMORY_TABS;
       const typeLabels = ['Insight', 'Goal', 'Decision', 'Preference', 'Learning', 'Conversation', 'File', 'Event'];
       const findType = (type) => entries.find(memory => String(memory.type).toLowerCase() === type.toLowerCase());
       const challenges = entries.filter(memory => String(memory.type).toLowerCase() === 'challenge').map(memory => memory.description).join(' · ');
@@ -6211,7 +6242,7 @@
             </section>
 
             <nav class="flex gap-2 overflow-x-auto pb-1">
-              ${tabs.map(tab => `<button data-memory-filter="${tab}" class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${activeType === tab ? 'border-violet-300 bg-violet-400/20 text-violet-100 shadow-[0_0_20px_rgba(168,85,247,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:border-violet-300/50 hover:text-white'}">${tab}</button>`).join('')}
+              ${tabs.map(tab => `<button data-memory-filter="${tab.id}" class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${activeMemoryTab === tab.id ? 'border-violet-200 bg-violet-500/25 text-white shadow-[0_0_28px_rgba(168,85,247,0.45)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:border-violet-300/50 hover:bg-violet-400/10 hover:text-white'}">${tab.label}</button>`).join('')}
             </nav>
 
             <div class="grid gap-5 xl:grid-cols-[1fr_360px]">
@@ -6226,7 +6257,7 @@
                 <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur">
                   <div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-xl font-black text-white">Recent Memories</h3><p class="mt-1 text-sm text-slate-400">Real saved memories from onboarding, Barya AI, files, events, and manual entries.</p></div><button id="exportMemory" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/10">Export JSON</button></div>
                   <div class="mt-4 space-y-3">
-                    ${visible.length ? visible.map(item => `<article data-memory-id="${escapeAttr(item.id)}" class="group rounded-3xl border border-white/10 bg-slate-950/60 p-4 transition hover:border-violet-300/40 hover:bg-slate-900/90"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h4 class="font-black text-white">${escapeHTML(item.title)}</h4><span class="rounded-full border border-teal-300/25 bg-teal-300/10 px-2 py-0.5 text-[11px] font-bold text-teal-100">${escapeHTML(item.type)}</span></div><p class="mt-2 text-sm leading-6 text-slate-300">${escapeHTML(item.description || 'No description yet.')}</p><p class="mt-2 text-xs text-slate-500">${new Date(item.createdAt).toLocaleString()} · ${escapeHTML(item.source || 'manual')}</p></div><div class="flex gap-2"><button data-open-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Open</button><button data-edit-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Edit</button><button data-delete-memory="${escapeAttr(item.id)}" class="rounded-lg border border-red-300/20 px-2 py-1 text-xs text-red-200">Delete</button></div></div></article>`).join('') : `<div class="rounded-3xl border border-dashed border-violet-300/25 bg-violet-400/10 p-8 text-center"><p class="text-lg font-bold text-white">No memories yet.</p><p class="mt-2 text-sm text-slate-400">Complete onboarding or add your first insight, goal, decision, preference, learning, conversation, file, or event.</p></div>`}
+                    ${visible.length ? visible.map(item => `<article data-memory-id="${escapeAttr(item.id)}" class="group rounded-3xl border border-white/10 bg-slate-950/60 p-4 transition hover:border-violet-300/40 hover:bg-slate-900/90"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h4 class="font-black text-white">${escapeHTML(item.title)}</h4><span class="rounded-full border border-teal-300/25 bg-teal-300/10 px-2 py-0.5 text-[11px] font-bold text-teal-100">${escapeHTML(displayMemoryType(item.type))}</span></div><p class="mt-2 text-sm leading-6 text-slate-300">${escapeHTML(item.description || 'No description yet.')}</p><p class="mt-2 text-xs text-slate-500">${new Date(item.createdAt).toLocaleString()} · ${escapeHTML(item.source || 'manual')}</p></div><div class="flex gap-2"><button data-open-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Open</button><button data-edit-memory="${escapeAttr(item.id)}" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300">Edit</button><button data-delete-memory="${escapeAttr(item.id)}" class="rounded-lg border border-red-300/20 px-2 py-1 text-xs text-red-200">Delete</button></div></div></article>`).join('') : `<div class="rounded-3xl border border-dashed border-violet-300/25 bg-violet-400/10 p-8 text-center"><p class="text-lg font-bold text-white">No memories yet.</p><p class="mt-2 text-sm text-slate-400">Complete onboarding or add your first insight, goal, decision, preference, learning, conversation, file, or event.</p></div>`}
                   </div>
                 </section>
               </main>
@@ -6243,7 +6274,7 @@
 
                 <section class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur">
                   <h3 class="text-lg font-black text-white">Memory Categories</h3>
-                  <div class="mt-3 space-y-2">${categories.map(cat => { const singular = cat.replace(/s$/, ''); const count = stats.byType[singular] || 0; return `<div class="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2 text-sm"><span class="text-slate-300">${cat}</span><span class="font-black text-white">${count}</span></div>`; }).join('')}</div>
+                  <div class="mt-3 space-y-2">${categories.map(cat => { const singular = cat.replace(/s$/, '').toLowerCase(); const count = stats.byType[singular] || 0; return `<div class="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2 text-sm"><span class="text-slate-300">${cat}</span><span class="font-black text-white">${count}</span></div>`; }).join('')}</div>
                 </section>
 
                 <section class="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-300/[0.07] p-5 backdrop-blur">
@@ -6265,9 +6296,9 @@
         const title = prompt(`${type} title:`);
         if (!title) return;
         const description = prompt(`${type} description:`) || '';
-        addMemory({ type, title, description, source: 'manual', tags: [type], importance: type === 'Goal' || type === 'Decision' ? 'high' : 'medium' });
+        addMemory({ type: normalizeMemoryType(type), title, description, source: 'manual', tags: [type], importance: type === 'Goal' || type === 'Decision' ? 'high' : 'medium' });
       };
-      el.querySelectorAll('[data-memory-filter]').forEach(btn => btn.onclick = () => { memory.activeType = btn.dataset.memoryFilter; saveState(); });
+      el.querySelectorAll('[data-memory-filter]').forEach(btn => btn.onclick = () => { memory.activeMemoryTab = btn.dataset.memoryFilter || 'all'; saveState(); });
       el.querySelectorAll('[data-open-memory]').forEach(btn => btn.onclick = () => {
         const item = getMemoryEntries().find(memory => memory.id === btn.dataset.openMemory);
         if (item) alert(`${item.title}\n\nType: ${item.type}\nCreated: ${new Date(item.createdAt).toLocaleString()}\n\n${item.description}`);
