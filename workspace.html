@@ -2003,8 +2003,14 @@
       workspace: {
         pages: [],
         activePageId: null,
+        activeTab: 'overview',
+        search: '',
         databases: [],
-        activeDatabaseId: null
+        activeDatabaseId: null,
+        documents: [],
+        notes: [],
+        files: [],
+        dataMetrics: { revenue: 0, activeUsers: 0, weeklyGrowth: 0, conversionRate: 0, monthlyBurn: 0, runway: 0 }
       },
       tasks: {
         items: [],
@@ -2111,6 +2117,7 @@
     let latestPersistedSnapshot = '';
     let renderQueued = false;
     let workspacePendingAnimation = { pageId: null, blockId: null };
+    let workspaceSearchTimer = null;
     let welcomeTourStep = 0;
     let guidedTourStep = 0;
     let checklistState = loadChecklistState();
@@ -4433,6 +4440,12 @@
       if (!Array.isArray(state.workspace.files)) state.workspace.files = [];
       if (!state.workspace.dataMetrics || typeof state.workspace.dataMetrics !== 'object') state.workspace.dataMetrics = { revenue: 0, activeUsers: 0, weeklyGrowth: 0, conversionRate: 0, monthlyBurn: 0, runway: 0 };
       if (!state.workspace.ui || typeof state.workspace.ui !== 'object') state.workspace.ui = { tab: 'overview', search: '', projectView: 'cards', notesView: 'grid', noteTag: 'All' };
+      const workspaceTabs = ['overview', 'projects', 'documents', 'data', 'notes', 'files'];
+      if (!workspaceTabs.includes(state.workspace.activeTab)) state.workspace.activeTab = state.workspace.ui.tab || 'overview';
+      if (!workspaceTabs.includes(state.workspace.activeTab)) state.workspace.activeTab = 'overview';
+      state.workspace.ui.tab = state.workspace.activeTab;
+      state.workspace.search = String(state.workspace.search || state.workspace.ui.search || '');
+      state.workspace.ui.search = state.workspace.search;
     }
 
     function getActiveWorkspacePage() {
@@ -4520,6 +4533,78 @@
       saveState();
     }
 
+    function createWorkspaceDocument(title = 'New Document') {
+      ensureWorkspaceState();
+      state.workspace.documents.unshift({ id: crypto.randomUUID(), title, category: 'Document', lastEdited: new Date().toISOString(), summary: 'Starter workspace document. Add notes, decisions, and next steps here.', folder: 'Workspace' });
+      state.workspace.activeTab = 'documents';
+      state.workspace.ui.tab = 'documents';
+      saveState();
+    }
+
+    function createWorkspaceNote(title = 'New Note') {
+      ensureWorkspaceState();
+      state.workspace.notes.unshift({ id: crypto.randomUUID(), title, preview: 'Capture a quick thought, meeting note, or weekly priority.', timestamp: new Date().toISOString(), tags: ['Workspace'], pinned: false });
+      state.workspace.activeTab = 'notes';
+      state.workspace.ui.tab = 'notes';
+      saveState();
+    }
+
+    function createWorkspaceFile(name = 'Uploaded File') {
+      ensureWorkspaceState();
+      state.workspace.files.unshift({ id: crypto.randomUUID(), name, size: 'Local file', uploadDate: new Date().toISOString(), category: 'Upload', section: 'Recent Files', summary: 'Local placeholder file card. No backend upload required.' });
+      state.workspace.activeTab = 'files';
+      state.workspace.ui.tab = 'files';
+      saveState();
+    }
+
+    function handleWorkspaceNewAction(kind) {
+      ensureWorkspaceState();
+      if (kind === 'project') return createWorkspacePage('New Project', [{ type: 'heading', text: 'New Project' }, { type: 'todo', text: 'Define first milestone', checked: false }], 'Project');
+      if (kind === 'document') return createWorkspaceDocument('New Document');
+      if (kind === 'note') return createWorkspaceNote('New Note');
+      if (kind === 'file') return createWorkspaceFile('Uploaded File');
+      return createWorkspacePage();
+    }
+
+    function workspaceItemMatchesSearch(item, query) {
+      if (!query) return true;
+      return Object.values(item || {}).some(value => {
+        if (Array.isArray(value)) return value.join(' ').toLowerCase().includes(query);
+        if (value && typeof value === 'object') return workspaceItemMatchesSearch(value, query);
+        return String(value || '').toLowerCase().includes(query);
+      });
+    }
+
+    function renderWorkspaceTabContent(activeTab, query, workspacePages, taskItems, workspacePanelClass) {
+      const lowerQuery = String(query || '').trim().toLowerCase();
+      const filterItems = (items) => (items || []).filter(item => workspaceItemMatchesSearch(item, lowerQuery));
+      const projects = filterItems(workspacePages.filter(page => page.objectType === 'Project'));
+      const documents = filterItems(state.workspace.documents || []);
+      const notes = filterItems(state.workspace.notes || []);
+      const files = filterItems(state.workspace.files || []);
+      const metric = state.workspace.dataMetrics || {};
+      const empty = (icon, title, body) => `<div class="rounded-2xl border border-dashed border-violet-300/30 bg-violet-500/10 p-8 text-center"><p class="mb-2 text-3xl">${icon}</p><h4 class="text-lg font-bold text-white">${title}</h4><p class="mt-2 text-sm text-slate-400">${body}</p></div>`;
+      const progressBar = (pct) => `<div class="mt-3 h-2 rounded-full bg-slate-800"><div class="h-2 rounded-full bg-gradient-to-r from-violet-500 to-teal-300" style="width:${Math.max(8, Math.min(100, Number(pct) || 20))}%"></div></div>`;
+
+      if (activeTab === 'projects') {
+        return `<section class="${workspacePanelClass} p-5 space-y-5"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">ProjectsContent</p><h3 class="text-2xl font-black text-white">Project cards</h3><p class="text-sm text-slate-400">Track progress, status, owner, and next execution step.</p></div><button data-workspace-new="project" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_24px_rgba(139,92,246,0.28)]">+ New Project</button></div><div class="grid gap-4 lg:grid-cols-3">${projects.map((project, idx) => { const meta = project.meta || {}; const pct = meta.progress || (35 + idx * 14); return `<article class="rounded-2xl border border-white/10 bg-white/[0.05] p-4 premium-hover"><div class="flex items-start justify-between gap-3"><div><h4 class="font-bold text-white">${escapeHTML(project.title || 'Untitled Project')}</h4><p class="mt-1 text-xs text-slate-500">Owner: ${escapeHTML(meta.owner || 'Founder')}</p></div><span class="rounded-full border border-teal-300/30 bg-teal-400/10 px-2 py-1 text-[11px] font-bold text-teal-100">${escapeHTML(meta.status || 'Active')}</span></div>${progressBar(pct)}<div class="mt-3 flex items-center justify-between text-xs text-slate-400"><span>${pct}% complete</span><span>${escapeHTML(meta.dueDate || 'No due date')}</span></div></article>`; }).join('') || empty('🗂️', 'No matching projects', 'Create a project or clear the search filter.')}</div></section>`;
+      }
+      if (activeTab === 'documents') {
+        return `<section class="${workspacePanelClass} p-5 space-y-5"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">DocumentsContent</p><h3 class="text-2xl font-black text-white">Document cards</h3><p class="text-sm text-slate-400">Business plans, memos, updates, and decision docs.</p></div><button data-workspace-new="document" class="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white">+ New Document</button></div><div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">${documents.map(doc => `<article class="rounded-2xl border border-white/10 bg-white/[0.05] p-4"><p class="text-xs font-bold uppercase tracking-[0.16em] text-teal-300">${escapeHTML(doc.category || 'Document')}</p><h4 class="mt-2 font-bold text-white">${escapeHTML(doc.title || 'Untitled Document')}</h4><p class="mt-2 text-sm text-slate-400">${escapeHTML(doc.summary || 'No summary yet.')}</p><p class="mt-4 text-xs text-slate-500">Folder: ${escapeHTML(doc.folder || 'Workspace')}</p></article>`).join('') || empty('📄', 'No matching documents', 'Create a document or clear the search filter.')}</div></section>`;
+      }
+      if (activeTab === 'data') {
+        const kpis = [['Revenue', `$${Number(metric.revenue || 0).toLocaleString()}`, 'from local KPI data'], ['Active Users', Number(metric.activeUsers || 0).toLocaleString(), 'tracked audience'], ['Weekly Growth', `${metric.weeklyGrowth || 0}%`, 'growth placeholder'], ['Conversion Rate', `${metric.conversionRate || 0}%`, 'funnel snapshot']];
+        return `<section class="${workspacePanelClass} p-5 space-y-5"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">DataContent</p><h3 class="text-2xl font-black text-white">KPI cards</h3><p class="text-sm text-slate-400">Revenue / growth placeholder chart and startup metrics.</p></div><div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">${kpis.map(([label, value, note]) => `<article class="rounded-2xl border border-white/10 bg-white/[0.05] p-4"><p class="text-xs uppercase tracking-[0.16em] text-slate-500">${label}</p><p class="mt-3 text-3xl font-black text-white">${value}</p><p class="mt-1 text-xs text-teal-300">${note}</p></article>`).join('')}</div><div class="rounded-2xl border border-white/10 bg-black/20 p-4"><h4 class="font-bold text-white">Revenue / growth placeholder chart</h4><div class="mt-5 flex h-64 items-end gap-3 rounded-2xl border border-white/10 bg-slate-950/50 p-4">${[38,52,46,68,74,88,79,96].map((height, idx) => `<div class="flex-1 rounded-t-xl bg-gradient-to-t from-violet-600 to-teal-300 shadow-[0_0_18px_rgba(45,212,191,0.25)]" style="height:${height}%" title="Month ${idx + 1}"></div>`).join('')}</div></div></section>`;
+      }
+      if (activeTab === 'notes') {
+        return `<section class="${workspacePanelClass} p-5 space-y-5"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">NotesContent</p><h3 class="text-2xl font-black text-white">Note cards</h3><p class="text-sm text-slate-400">Capture ideas, meetings, decisions, and weekly priorities.</p></div><button data-workspace-new="note" class="rounded-2xl bg-gradient-to-r from-violet-600 to-teal-500 px-4 py-3 text-sm font-extrabold text-white">+ New Note</button></div><div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">${notes.map(note => `<article class="rounded-2xl border border-white/10 bg-white/[0.05] p-4"><div class="flex items-center justify-between"><h4 class="font-bold text-white">${escapeHTML(note.title || 'Untitled Note')}</h4><span>${note.pinned ? '📌' : '📝'}</span></div><p class="mt-3 text-sm text-slate-400">${escapeHTML(note.preview || 'No note content yet.')}</p><div class="mt-4 flex flex-wrap gap-1">${(note.tags || []).map(tag => `<span class="rounded-full border border-violet-300/20 bg-violet-500/10 px-2 py-1 text-[11px] text-violet-100">${escapeHTML(tag)}</span>`).join('')}</div></article>`).join('') || empty('📝', 'No matching notes', 'Create a note or clear the search filter.')}</div></section>`;
+      }
+      if (activeTab === 'files') {
+        return `<section class="${workspacePanelClass} p-5 space-y-5"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">FilesContent</p><h3 class="text-2xl font-black text-white">Files</h3><p class="text-sm text-slate-400">Upload placeholders and file cards. Stored locally only.</p></div><button data-workspace-new="file" class="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white">Upload File</button></div><div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">${files.map(file => `<article class="rounded-2xl border border-white/10 bg-white/[0.05] p-4"><div class="flex items-start gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-violet-500/15 text-xl">📎</span><div class="min-w-0"><h4 class="truncate font-bold text-white">${escapeHTML(file.name || 'Untitled File')}</h4><p class="mt-1 text-xs text-slate-500">${escapeHTML(file.size || 'Unknown size')} · ${escapeHTML(file.category || 'File')}</p></div></div><p class="mt-3 text-sm text-slate-400">${escapeHTML(file.summary || 'No file summary yet.')}</p></article>`).join('') || empty('📁', 'No matching files', 'Use Upload File to add a local placeholder card.')}</div></section>`;
+      }
+      return '';
+    }
+
     function updatePageUpdatedAt(page) {
       page.updatedAt = new Date().toISOString();
     }
@@ -4568,7 +4653,33 @@
         { id: 'demo-task-4', title: 'Publish roadmap memo', status: 'Done', priority: 'Low', tags: ['Docs'] }
       ]).slice(0, 9);
       const ownerAvatars = ['A', 'S', 'N', 'B'];
-      const workspaceTopTabClass = 'rounded-full px-4 py-2 text-sm font-semibold transition border';
+      const workspaceTabs = [
+        ['overview', 'Overview'],
+        ['projects', 'Projects'],
+        ['documents', 'Documents'],
+        ['data', 'Data'],
+        ['notes', 'Notes'],
+        ['files', 'Files']
+      ];
+      const activeWorkspaceTab = state.workspace.activeTab || 'overview';
+      const workspaceSearchQuery = state.workspace.search || '';
+      const workspaceNewLabels = {
+        overview: 'New Page',
+        projects: 'New Project',
+        documents: 'New Document',
+        data: 'New KPI Note',
+        notes: 'New Note',
+        files: 'Upload File'
+      };
+      const workspaceNewKinds = { overview: 'page', projects: 'project', documents: 'document', data: 'note', notes: 'note', files: 'file' };
+      const overviewStarterItems = [
+        { title: 'Active Projects', body: `${activeProjectsCount} projects are ready to review and prioritize.`, icon: '🚀' },
+        { title: 'Recent Activity', body: `${activityItems[0][1]} · ${activityItems[0][2]}`, icon: '⚡' },
+        { title: 'Weekly Priorities', body: 'Ship one customer-facing improvement, review KPIs, and update project owners.', icon: '🎯' }
+      ].filter(item => workspaceItemMatchesSearch(item, String(state.workspace.search || '').trim().toLowerCase()));
+      const workspaceTopTabClass = 'rounded-full px-4 py-2 text-sm font-semibold transition border cursor-pointer';
+      const workspaceActiveTabClass = 'border-violet-300/60 bg-violet-500/25 text-white shadow-[0_0_24px_rgba(139,92,246,0.42)]';
+      const workspaceInactiveTabClass = 'border-white/10 bg-white/[0.04] text-slate-400 hover:border-violet-300/30 hover:bg-violet-500/10 hover:text-white';
       const workspacePanelClass = 'glass-card rounded-[1.4rem] border border-white/10 bg-slate-950/60 shadow-2xl shadow-black/25';
 
       el.innerHTML = `
@@ -4583,25 +4694,31 @@
             </div>
             <label class="flex min-h-[48px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 shadow-inner shadow-black/20 xl:max-w-2xl" aria-label="Search anything in your workspace">
               <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-400"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <input readonly placeholder="Search anything in your workspace..." class="flex-1 cursor-pointer border-0 bg-transparent text-sm outline-none placeholder:text-slate-500" />
+              <input id="workspaceTabSearch" value="${escapeAttr(workspaceSearchQuery)}" placeholder="Search visible tab content..." class="flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-slate-500" />
               <span class="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[11px] font-bold text-slate-300">⌘/Ctrl+K</span>
             </label>
             <div class="flex items-center gap-2">
-              <button id="workspaceNewPage" class="rounded-2xl border border-violet-300/30 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_28px_rgba(124,58,237,0.3)]">+ New ▾</button>
+              <details class="relative group"><summary class="list-none cursor-pointer rounded-2xl border border-violet-300/30 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_0_28px_rgba(124,58,237,0.3)]">+ ${workspaceNewLabels[activeWorkspaceTab] || 'New'} ▾</summary><div class="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-2xl"><button data-workspace-new="${workspaceNewKinds[activeWorkspaceTab] || 'page'}" class="block w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-violet-500/20">${workspaceNewLabels[activeWorkspaceTab] || 'New Page'}</button><button data-workspace-new="project" class="block w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10">New Project</button><button data-workspace-new="document" class="block w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10">New Document</button><button data-workspace-new="note" class="block w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10">New Note</button><button data-workspace-new="file" class="block w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10">Upload File</button></div></details>
               <button class="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.06]" aria-label="Notifications">🔔</button>
               <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 font-black text-white premium-avatar">${escapeHTML((state.founderProfile?.name || 'Barya').slice(0,1).toUpperCase())}</div>
             </div>
           </div>
 
           <nav class="flex gap-2 overflow-x-auto rounded-[1.3rem] border border-white/10 bg-black/20 p-2">
-            ${['Overview','Projects','Documents','Data','Notes','Files'].map((tab, index) => `<button class="${workspaceTopTabClass} ${index === 0 ? 'border-violet-300/40 bg-violet-500/20 text-violet-100 shadow-[0_0_22px_rgba(139,92,246,0.22)]' : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white'}">${tab}</button>`).join('')}
+            ${workspaceTabs.map(([tabId, tabLabel]) => `<button type="button" data-workspace-tab="${tabId}" class="${workspaceTopTabClass} ${activeWorkspaceTab === tabId ? workspaceActiveTabClass : workspaceInactiveTabClass}" aria-pressed="${activeWorkspaceTab === tabId}">${tabLabel}</button>`).join('')}
           </nav>
 
-          <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <section class="${activeWorkspaceTab === 'overview' ? 'grid' : 'hidden'} gap-3 md:grid-cols-3">
+            ${overviewStarterItems.map(item => `<article class="${workspacePanelClass} p-4"><div class="flex items-start gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-violet-500/15 text-xl">${item.icon}</span><div><h3 class="font-bold text-white">${item.title}</h3><p class="mt-1 text-sm text-slate-400">${escapeHTML(item.body)}</p></div></div></article>`).join('') || `<article class="${workspacePanelClass} p-5 text-center text-slate-400 md:col-span-3">No overview matches. Clear search to see Active Projects, Recent Activity, and Weekly Priorities.</article>`}
+          </section>
+
+          <section class="${activeWorkspaceTab === 'overview' ? 'grid' : 'hidden'} gap-3 sm:grid-cols-2 xl:grid-cols-5">
             ${statCards.map(([label, value, growth, note, gradient]) => `<article class="${workspacePanelClass} premium-hover p-4"><div class="flex items-start justify-between"><p class="text-xs uppercase tracking-[0.18em] text-slate-500">${label}</p><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r ${gradient} shadow-[0_0_16px_currentColor]"></span></div><div class="mt-4 flex items-end justify-between gap-3"><p class="text-3xl font-black text-white">${value}</p><div class="text-right"><p class="text-sm font-bold text-teal-300">${growth}</p><p class="text-[11px] text-slate-500">${note}</p></div></div></article>`).join('')}
           </section>
 
-          <div class="grid gap-5 2xl:grid-cols-[1fr_360px]">
+          ${activeWorkspaceTab !== 'overview' ? renderWorkspaceTabContent(activeWorkspaceTab, workspaceSearchQuery, workspacePages, taskItems, workspacePanelClass) : ''}
+
+          <div class="${activeWorkspaceTab === 'overview' ? 'grid' : 'hidden'} gap-5 2xl:grid-cols-[1fr_360px]">
             <main class="space-y-5 min-w-0">
               <section class="${workspacePanelClass} p-5">
                 <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs uppercase tracking-[0.18em] text-violet-300">Project progress</p><h3 class="mt-1 text-xl font-bold text-white">Execution velocity</h3></div><div class="flex rounded-full border border-white/10 bg-black/25 p-1"><button class="rounded-full bg-violet-500 px-4 py-1.5 text-xs font-bold text-white">Weekly</button><button class="rounded-full px-4 py-1.5 text-xs font-bold text-slate-400">Monthly</button></div></div>
@@ -4644,8 +4761,28 @@
         </div>
       `;
 
-      document.getElementById('workspaceHowBtn').onclick = () => document.getElementById('workspaceHowPanel').classList.toggle('hidden');
-      document.getElementById('workspaceNewPage').onclick = () => createWorkspacePage();
+      document.getElementById('workspaceHowBtn')?.addEventListener('click', () => document.getElementById('workspaceHowPanel')?.classList.toggle('hidden'));
+      document.getElementById('workspaceTabSearch')?.addEventListener('input', (event) => {
+        const value = event.target.value;
+        state.workspace.search = value;
+        if (state.workspace.ui) state.workspace.ui.search = value;
+        saveStateWithoutRender();
+        clearTimeout(workspaceSearchTimer);
+        workspaceSearchTimer = setTimeout(() => {
+          renderWorkspace();
+          const searchInput = document.getElementById('workspaceTabSearch');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.setSelectionRange(value.length, value.length);
+          }
+        }, 180);
+      });
+      el.querySelectorAll('[data-workspace-tab]').forEach(btn => btn.addEventListener('click', () => {
+        state.workspace.activeTab = btn.dataset.workspaceTab || 'overview';
+        if (state.workspace.ui) state.workspace.ui.tab = state.workspace.activeTab;
+        saveState();
+      }));
+      el.querySelectorAll('[data-workspace-new]').forEach(btn => btn.addEventListener('click', () => handleWorkspaceNewAction(btn.dataset.workspaceNew)));
 
       el.querySelectorAll('[data-open-page]').forEach(btn => btn.onclick = () => {
         state.workspace.activePageId = btn.dataset.openPage;
@@ -4676,23 +4813,23 @@
 
       if (!activePage) return;
 
-      document.getElementById('workspacePageTitle').oninput = (e) => {
+      document.getElementById('workspacePageTitle')?.addEventListener('input', (e) => {
         activePage.title = e.target.value;
         updatePageUpdatedAt(activePage);
         saveStateRaw();
-      };
-      document.getElementById('workspaceObjectType').onchange = (e) => {
+      });
+      document.getElementById('workspaceObjectType')?.addEventListener('change', (e) => {
         activePage.objectType = e.target.value;
         updatePageUpdatedAt(activePage);
         saveState();
-      };
-      document.getElementById('workspaceShowRelated').onclick = () => showRelated(`page:${activePage.id}`);
-      document.getElementById('workspaceDeletePage').onclick = () => {
+      });
+      document.getElementById('workspaceShowRelated')?.addEventListener('click', () => showRelated(`page:${activePage.id}`));
+      document.getElementById('workspaceDeletePage')?.addEventListener('click', () => {
         if (!confirm('Delete this object?')) return;
         state.workspace.pages = state.workspace.pages.filter(p => p.id !== activePage.id);
         state.workspace.activePageId = state.workspace.pages[0]?.id || null;
         saveState();
-      };
+      });
 
       el.querySelectorAll('[data-relation-add]').forEach(btn => btn.onclick = () => {
         const key = btn.dataset.relationAdd;
@@ -4704,13 +4841,13 @@
         saveState();
       });
 
-      document.getElementById('workspaceAddBlock').onclick = () => {
+      document.getElementById('workspaceAddBlock')?.addEventListener('click', () => {
         const createdBlock = createWorkspaceBlock('text');
         activePage.blocks.push(createdBlock);
         workspacePendingAnimation.blockId = createdBlock.id;
         updatePageUpdatedAt(activePage);
         saveState();
-      };
+      });
 
       document.getElementById('workspaceQuickLinkBtn')?.addEventListener('click', () => {
         const id = document.getElementById('workspaceQuickLinkSelect')?.value;
@@ -4752,19 +4889,19 @@
 
       bindWorkspaceBlockEvents(el, activePage);
 
-      document.getElementById('workspaceExport').onclick = () => downloadJSON('workspace-data.json', state.workspace);
-      document.getElementById('workspaceImport').onchange = (e) => importJSONFile(e.target.files[0], (data) => {
+      document.getElementById('workspaceExport')?.addEventListener('click', () => downloadJSON('workspace-data.json', state.workspace));
+      document.getElementById('workspaceImport')?.addEventListener('change', (e) => importJSONFile(e.target.files[0], (data) => {
         state.workspace = deepMerge(structuredClone(defaultState.workspace), data || {});
         ensureWorkspaceState();
         saveState();
-      });
-      document.getElementById('workspaceClear').onclick = () => {
+      }));
+      document.getElementById('workspaceClear')?.addEventListener('click', () => {
         if (!confirm('Clear all workspace objects?')) return;
         state.workspace = structuredClone(defaultState.workspace);
         state.workspace.pages = [];
         state.workspace.activePageId = null;
         saveState();
-      };
+      });
 
       if (workspacePendingAnimation.pageId || workspacePendingAnimation.blockId) {
         setTimeout(() => {
