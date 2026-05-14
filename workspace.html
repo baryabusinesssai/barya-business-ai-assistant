@@ -6313,14 +6313,26 @@
       if (!strategy.financialInputs || typeof strategy.financialInputs !== 'object') {
         strategy.financialInputs = { monthlyRevenue: 0, monthlyExpenses: 0, cashReserve: 0 };
       }
+      const planningTabs = [
+        { id: 'overview', label: 'Overview', type: null },
+        { id: 'business-plan', label: 'Business Plan', type: 'business-plan' },
+        { id: 'financial-plan', label: 'Financial Plan', type: 'financial-plan' },
+        { id: 'market-research', label: 'Market Research', type: 'market-research' },
+        { id: 'strategy', label: 'Strategy', type: 'strategy' },
+        { id: 'roadmap', label: 'Roadmap', type: 'roadmap' },
+        { id: 'forecast', label: 'Forecasts', type: 'forecast' },
+        { id: 'report', label: 'Reports', type: 'report' }
+      ];
       const ui = state.planning.ui;
       if (typeof ui.search !== 'string') ui.search = '';
-      if (!ui.activeTab) ui.activeTab = 'Overview';
+      if (!ui.activePlanningTab) ui.activePlanningTab = tabSlugFromLabel(ui.activeTab || 'overview');
+      if (!planningTabs.some(tab => tab.id === ui.activePlanningTab)) ui.activePlanningTab = 'overview';
+      ui.activeTab = tabLabelFromSlug(ui.activePlanningTab);
       if (!ui.chartRange) ui.chartRange = 'Monthly';
       if (typeof ui.assistantInput !== 'string') ui.assistantInput = '';
       const el = document.getElementById('section-planning');
-      const planTypes = ['Business Plan', 'Financial Plan', 'Marketing Strategy', 'Product Roadmap', 'Go-To-Market Plan', 'Forecast Report'];
-      const tabs = ['Overview', 'Business Plan', 'Financial Plan', 'Market Research', 'Strategy', 'Roadmap', 'Forecasts', 'Reports'];
+      const planTypeLabels = Object.fromEntries(planningTabs.filter(tab => tab.type).map(tab => [tab.type, tab.label.replace(/s$/, '')]));
+      const activePlanningTab = planningTabs.find(tab => tab.id === ui.activePlanningTab) || planningTabs[0];
       const guideProgress = state.planning.guides.map(g => {
         const done = (g.done || []).filter(Boolean).length;
         return Math.round((done / Math.max(1, (g.tasks || []).length)) * 100);
@@ -6332,7 +6344,7 @@
       const generatedPlans = strategy.sessions.map((session, idx) => ({
         id: `session:${session.id}`,
         name: `Research: ${session.query || 'Strategy Session'}`,
-        type: session.followUp ? 'Forecast Report' : 'Business Plan',
+        type: session.followUp ? 'forecast' : 'market-research',
         progress: Math.min(100, 64 + (idx === 0 ? 18 : 0)),
         updatedAt: session.ts,
         status: idx === 0 ? 'Active' : 'Review',
@@ -6341,7 +6353,7 @@
       const manualPlans = state.planning.plans.map(p => ({
         id: p.id,
         name: p.name,
-        type: p.type,
+        type: normalizePlanType(p.type),
         progress: Number(p.progress) || 0,
         updatedAt: p.updatedAt,
         status: p.status || 'Draft',
@@ -6349,7 +6361,10 @@
       }));
       const plans = [...manualPlans, ...generatedPlans];
       const q = ui.search.toLowerCase().trim();
-      const filteredPlans = plans.filter(plan => !q || `${plan.name} ${plan.type} ${plan.status}`.toLowerCase().includes(q));
+      const tabFilteredPlans = activePlanningTab.type ? plans.filter(plan => plan.type === activePlanningTab.type) : plans;
+      const filteredPlans = tabFilteredPlans.filter(plan => !q || `${plan.name} ${planTypeLabel(plan.type)} ${plan.status}`.toLowerCase().includes(q));
+      const planTypeCounts = planningTabs.filter(tab => tab.type).map(tab => [tab.label, plans.filter(plan => plan.type === tab.type).length]);
+      const recentActivity = plans.slice().sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).slice(0, 4);
       const monthlyProjection = buildFinancialProjection(strategy.financialInputs, ui.chartRange === 'Weekly' ? 8 : 6, ui.chartRange === 'Weekly' ? 0.018 : 0.06);
       const maxProjection = Math.max(1, ...monthlyProjection.flatMap(row => [row.revenue, row.expenses]));
       const chartPoints = monthlyProjection.map((row, idx) => {
@@ -6377,11 +6392,9 @@
         'Map ideal customer profile segments and prioritize by urgency and willingness to pay.'
       ];
       const statCards = [
-        ['Active Plans', String(plans.length), `${strategy.sessions.length} AI research session${strategy.sessions.length === 1 ? '' : 's'}`],
-        ['Plan Progress', `${overallProgress}%`, `${completedTasks}/${totalTasks} checklist items complete`],
-        ['Financial Projection', money(monthlyProjection.at(-1)?.revenue || 0), `${ui.chartRange.toLowerCase()} AI forecast`],
-        ['Target Achievement', `${targetAchievement}%`, 'Based on saved planning checklist'],
-        ['Next Milestone', nextMilestone ? nextMilestone.task : 'All milestones complete', nextMilestone ? nextMilestone.title : 'Planning system healthy']
+        ['Saved locally', 'On', `${plans.length} plan${plans.length === 1 ? '' : 's'} in localStorage`],
+        ['Total plans', String(plans.length), `${filteredPlans.length} visible in ${activePlanningTab.label}`],
+        ...planTypeCounts.map(([label, count]) => [label, String(count), `${count} saved ${count === 1 ? 'plan' : 'plans'}`])
       ];
 
       el.innerHTML = `
@@ -6408,14 +6421,11 @@
               </label>
               <div class="relative">
                 <button id="newPlanToggle" class="w-full xl:w-auto rounded-2xl bg-gradient-to-r from-violet-500 to-teal-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 hover:brightness-110">+ New Plan</button>
-                <div id="newPlanMenu" class="hidden absolute right-0 z-30 mt-2 w-64 rounded-2xl border border-white/10 bg-[#111427] p-2 shadow-2xl shadow-black/40">
-                  ${planTypes.map(type => `<button data-new-plan="${escapeAttr(type)}" class="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/10">${type}</button>`).join('')}
-                </div>
               </div>
             </div>
 
             <div class="relative flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-              ${tabs.map(tab => `<button data-planning-tab="${escapeAttr(tab)}" class="shrink-0 rounded-full border px-4 py-2 text-sm transition ${ui.activeTab === tab ? 'border-teal-300/70 bg-teal-300/15 text-teal-100' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'}">${tab}</button>`).join('')}
+              ${planningTabs.map(tab => `<button data-planning-tab="${escapeAttr(tab.id)}" class="shrink-0 rounded-full border px-4 py-2 text-sm transition ${activePlanningTab.id === tab.id ? 'border-violet-300/80 bg-violet-500/25 text-white shadow-lg shadow-violet-500/35' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:border-violet-300/40 hover:bg-violet-400/10 hover:text-white'}">${tab.label}</button>`).join('')}
             </div>
 
             <div class="relative grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
@@ -6460,11 +6470,31 @@
                   </div>
                 </article>
 
+                ${activePlanningTab.id === 'overview' ? `
+                <article class="rounded-[1.75rem] border border-violet-300/20 bg-violet-400/[0.07] p-4 sm:p-5">
+                  <div class="grid gap-4 lg:grid-cols-3">
+                    <div>
+                      <p class="text-xs uppercase tracking-wide text-violet-200">All plans summary</p>
+                      <h3 class="mt-2 text-2xl font-semibold text-white">${plans.length} total plans</h3>
+                      <p class="mt-1 text-sm text-slate-300">${filteredPlans.length} visible after search across every planning type.</p>
+                    </div>
+                    <div>
+                      <p class="text-xs uppercase tracking-wide text-violet-200">Milestones</p>
+                      <p class="mt-2 text-sm text-slate-200">${nextMilestone ? escapeHTML(nextMilestone.task) : 'All milestones complete'}</p>
+                      <p class="mt-1 text-xs text-slate-400">${nextMilestone ? escapeHTML(nextMilestone.title) : 'Planning system healthy'}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs uppercase tracking-wide text-violet-200">Recent activity</p>
+                      <div class="mt-2 space-y-1">${recentActivity.length ? recentActivity.map(plan => `<p class="truncate text-sm text-slate-200">${escapeHTML(plan.name)} <span class="text-xs text-slate-500">· ${planTypeLabel(plan.type)}</span></p>`).join('') : '<p class="text-sm text-slate-400">No plan activity yet.</p>'}</div>
+                    </div>
+                  </div>
+                </article>` : ''}
+
                 <article class="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-4 sm:p-5">
                   <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <div>
-                      <h3 class="text-lg font-semibold text-white">Your Business Plans</h3>
-                      <p class="text-xs text-slate-400">Plans, generated reports, saved templates, and research stay synced to localStorage.</p>
+                      <h3 class="text-lg font-semibold text-white">${activePlanningTab.id === 'overview' ? 'Your Business Plans' : `${activePlanningTab.label} Plans`}</h3>
+                      <p class="text-xs text-slate-400">${activePlanningTab.id === 'overview' ? 'Plans, generated reports, saved templates, and research stay synced to localStorage.' : `Showing ${activePlanningTab.label.toLowerCase()} plans only; search filters this visible list.`}</p>
                     </div>
                     <button id="planningShowRelated" class="rounded-xl border border-violet-300/30 bg-violet-300/10 px-3 py-2 text-xs text-violet-100 hover:bg-violet-300/20">Show Related</button>
                   </div>
@@ -6475,7 +6505,7 @@
                         ${filteredPlans.length ? filteredPlans.map(plan => `
                           <tr class="hover:bg-white/[0.04]">
                             <td class="px-4 py-3 font-medium text-white max-w-[260px] truncate">${escapeHTML(plan.name)}</td>
-                            <td class="px-4 py-3 text-slate-300">${escapeHTML(plan.type)}</td>
+                            <td class="px-4 py-3 text-slate-300">${escapeHTML(planTypeLabel(plan.type))}</td>
                             <td class="px-4 py-3 min-w-[150px]"><div class="h-2 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-teal-300 to-violet-400" style="width:${Math.max(0, Math.min(100, plan.progress))}%"></div></div><p class="mt-1 text-[11px] text-slate-400">${Math.round(plan.progress)}%</p></td>
                             <td class="px-4 py-3 text-slate-400">${plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString() : 'Today'}</td>
                             <td class="px-4 py-3"><span class="rounded-full border border-teal-300/20 bg-teal-300/10 px-2 py-1 text-xs text-teal-100">${escapeHTML(plan.status)}</span></td>
@@ -6608,18 +6638,43 @@
 
       function saveStrategyState() { saveStateRaw(); renderPlanning(); }
       function getSession() { return strategy.sessions.find(s => s.id === strategy.activeSessionId) || strategy.sessions[0]; }
-      function createPlan(type) {
+      function normalizePlanType(type) {
+        const value = String(type || '').trim().toLowerCase();
+        if (['business-plan', 'financial-plan', 'market-research', 'strategy', 'roadmap', 'forecast', 'report'].includes(value)) return value;
+        if (value.includes('financial')) return 'financial-plan';
+        if (value.includes('market') || value.includes('research') || value.includes('customer')) return 'market-research';
+        if (value.includes('roadmap') || value.includes('mvp') || value.includes('product')) return 'roadmap';
+        if (value.includes('forecast') || value.includes('projection')) return 'forecast';
+        if (value.includes('report') || value.includes('update')) return 'report';
+        if (value.includes('strategy') || value.includes('marketing') || value.includes('go-to-market') || value.includes('gtm')) return 'strategy';
+        return 'business-plan';
+      }
+      function tabSlugFromLabel(label) {
+        return normalizePlanType(String(label || '').replace(/s$/, '')) === 'business-plan' && String(label || '').toLowerCase() === 'overview' ? 'overview' : normalizePlanType(label);
+      }
+      function tabLabelFromSlug(slug) {
+        return planningTabs?.find(tab => tab.id === slug)?.label || 'Overview';
+      }
+      function planTypeLabel(type) {
+        return planTypeLabels[normalizePlanType(type)] || 'Business Plan';
+      }
+      function activeTabPlanType() {
+        return activePlanningTab.type || 'business-plan';
+      }
+      function createPlan(type = activeTabPlanType()) {
+        const planType = normalizePlanType(type);
+        const label = planTypeLabel(planType);
         const now = new Date().toISOString();
-        state.planning.plans.unshift({ id: crypto.randomUUID(), name: `${type} · ${new Date().toLocaleDateString()}`, type, progress: 5, updatedAt: now, status: 'Draft' });
-        ui.activeTab = type.includes('Financial') ? 'Financial Plan' : type.includes('Forecast') ? 'Forecasts' : type.includes('Roadmap') ? 'Roadmap' : type.includes('Marketing') || type.includes('Go-To-Market') ? 'Strategy' : 'Business Plan';
+        state.planning.plans.unshift({ id: crypto.randomUUID(), name: `${label} · ${new Date().toLocaleDateString()}`, type: planType, progress: 5, updatedAt: now, status: 'Draft' });
+        ui.activePlanningTab = planType;
+        ui.activeTab = tabLabelFromSlug(ui.activePlanningTab);
         saveStrategyState();
       }
 
       document.getElementById('planningSearch').oninput = (e) => { ui.search = e.target.value; saveStateRaw(); renderPlanning(); };
       document.getElementById('planningSearch').onkeydown = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') e.preventDefault(); };
-      document.getElementById('newPlanToggle').onclick = () => document.getElementById('newPlanMenu')?.classList.toggle('hidden');
-      el.querySelectorAll('[data-new-plan]').forEach(btn => btn.onclick = () => createPlan(btn.dataset.newPlan));
-      el.querySelectorAll('[data-planning-tab]').forEach(btn => btn.onclick = () => { ui.activeTab = btn.dataset.planningTab; saveStrategyState(); });
+      document.getElementById('newPlanToggle').onclick = () => createPlan(activeTabPlanType());
+      el.querySelectorAll('[data-planning-tab]').forEach(btn => btn.onclick = () => { ui.activePlanningTab = btn.dataset.planningTab; ui.activeTab = tabLabelFromSlug(ui.activePlanningTab); saveStrategyState(); });
       el.querySelectorAll('[data-chart-range]').forEach(btn => btn.onclick = () => { ui.chartRange = btn.dataset.chartRange; saveStrategyState(); });
       el.querySelectorAll('[data-guide]').forEach(cb => cb.onchange = () => { const gi = Number(cb.dataset.guide); const ti = Number(cb.dataset.task); state.planning.guides[gi].done[ti] = cb.checked; saveState(); });
       el.querySelectorAll('[data-template]').forEach(t => t.oninput = () => { state.planning.templates[t.dataset.template] = t.value; saveStateRaw(); });
