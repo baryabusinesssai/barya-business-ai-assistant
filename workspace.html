@@ -1503,6 +1503,9 @@
             <span id="globalSearchHint" class="premium-kbd">⌘ K</span>
           </label>
           <span id="localFirstBadge" class="hidden xl:inline-flex premium-pill">Local-First</span>
+          <button id="simpleModeToggle" class="simple-mode-toggle" type="button" aria-pressed="true" title="Switch between Simple Mode and Advanced Mode">
+            <span class="simple-mode-dot" aria-hidden="true"></span><span id="simpleModeToggleText">Simple Mode</span>
+          </button>
           <button id="headerQuickActionBtn" class="premium-action-btn" type="button"><span class="text-xl leading-none">＋</span><span class="hidden sm:inline">Quick Action</span></button>
           <button id="takeTourBtn" class="premium-icon-btn hidden sm:inline-grid" type="button" title="Take a Tour">?</button>
           <button id="headerNotificationsBtn" class="premium-icon-btn" type="button" title="Notifications" aria-label="Notifications">
@@ -1981,7 +1984,7 @@
       stateFromProfile.tasks = { items: tasks, sprints: [], activeTaskTab: 'all', leftTab: 'all', view: 'list', search: '', priorityFilter: 'All', statusFilter: 'All', sprintFilter: 'all', selectedTaskId: tasks[0]?.id || null };
       stateFromProfile.resources = { search: '', activeTab: 'all', quickView: 'all', aiPrompt: '', aiResponse: '', customFormOpen: false, addMenuOpen: false, bookmarks: [], customResources: [], recentlyUsed: [], trash: [], library: resources };
       stateFromProfile.planning = { guides: plans, plans: plans.map(plan => ({ id: crypto.randomUUID(), name: plan.title, type: 'Starter Plan', progress: planningProgress, updatedAt: now, status: 'Draft' })), templates: { onePager: `One-page plan for ${profile.businessName}.`, fundraise: 'Funding notes will appear when you choose to raise funding.', ops: 'Weekly operating cadence and owner notes.' }, strategy: { mode: 'deep', idea: profile.businessDescription || '', followUp: '', loading: false, activeSessionId: null, sessions: [] }, ui: { search: '', chartRange: 'Monthly' } };
-      stateFromProfile.settings = { founder: { name: profile.founderName, role: profile.role, email: '', bio: '', country: '', city: '', linkedin: '', twitter: '', website: '', photo: '' }, business: { name: profile.businessName, stage: profile.businessStage, industry: profile.industry, targetAudience: '', foundingYear: String(new Date().getFullYear()), description: profile.businessDescription, mainGoal: profile.mainGoal, longTermGoal: profile.longTermGoal, aiStyle: profile.aiStyle, revenueModel: profile.revenueModel, businessType: profile.businessType }, team: { openRoles: 0, members: [], responsibilities: {}, meetings: [] }, preferences: { currency: 'INR', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: true } };
+      stateFromProfile.settings = { founder: { name: profile.founderName, role: profile.role, email: '', bio: '', country: '', city: '', linkedin: '', twitter: '', website: '', photo: '' }, business: { name: profile.businessName, stage: profile.businessStage, industry: profile.industry, targetAudience: '', foundingYear: String(new Date().getFullYear()), description: profile.businessDescription, mainGoal: profile.mainGoal, longTermGoal: profile.longTermGoal, aiStyle: profile.aiStyle, revenueModel: profile.revenueModel, businessType: profile.businessType }, team: { openRoles: 0, members: [], responsibilities: {}, meetings: [] }, preferences: { currency: 'INR', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: true, simpleMode: true } };
       stateFromProfile.knowledgeGraph = { search: '', filter: 'all', viewMode: 'graph', focusRef: '', mentions: generateKnowledgeGraphNodes(profile) };
       return stateFromProfile;
     }
@@ -2073,7 +2076,7 @@
           foundingYear: String(new Date().getFullYear())
         },
         team: { openRoles: 0, members: [], responsibilities: {}, meetings: [] },
-        preferences: { currency: '', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: false }
+        preferences: { currency: '', language: 'en', dateFormat: 'MM/DD/YYYY', darkMode: false, simpleMode: true }
       },
       knowledgeGraph: {
         search: '',
@@ -2118,6 +2121,7 @@
       if (!state.knowledgeGraph || typeof state.knowledgeGraph !== 'object') state.knowledgeGraph = structuredClone(defaultState.knowledgeGraph);
       if (!state.globalWorkspace || typeof state.globalWorkspace !== 'object') state.globalWorkspace = structuredClone(defaultState.globalWorkspace);
       if (!state.settings.preferences || typeof state.settings.preferences !== 'object') state.settings.preferences = structuredClone(defaultState.settings.preferences);
+      if (typeof state.settings.preferences.simpleMode !== 'boolean') state.settings.preferences.simpleMode = true;
       state.settings.preferences.language = normalizeLanguageCode(state.settings.preferences.language || localStorage.getItem(LANGUAGE_STORAGE_KEY));
       if (!state.settings.business || typeof state.settings.business !== 'object') state.settings.business = structuredClone(defaultState.settings.business);
       if (!state.settings.business.name) state.settings.business.name = state.title;
@@ -2158,12 +2162,14 @@
         const profile = loadWorkspaceProfile();
         const fresh = profile?.onboardingCompleted ? generateStarterWorkspaceData(profile) : structuredClone(defaultState);
         fresh.settings.preferences.language = normalizeLanguageCode(localStorage.getItem(LANGUAGE_STORAGE_KEY) || fresh.settings.preferences.language);
+        if (typeof fresh.settings.preferences.simpleMode !== 'boolean') fresh.settings.preferences.simpleMode = true;
         return fresh;
       }
       try {
         const parsed = JSON.parse(raw);
         const merged = deepMerge(structuredClone(defaultState), parsed);
         merged.settings.preferences.language = normalizeLanguageCode(merged.settings?.preferences?.language || localStorage.getItem(LANGUAGE_STORAGE_KEY));
+        if (typeof merged.settings.preferences.simpleMode !== 'boolean') merged.settings.preferences.simpleMode = true;
         return merged;
       } catch {
         return structuredClone(defaultState);
@@ -2782,6 +2788,7 @@
       ensureKnowledgeGraphState();
       ensureResourcesState();
       setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
+      syncSimpleModeChrome();
       renderNav();
       setupBaseEvents();
       setupHeaderActions();
@@ -2936,6 +2943,124 @@
       setTimeout(() => startBtn.click(), 260);
     }
 
+
+    function isSimpleMode() {
+      return state.settings?.preferences?.simpleMode !== false;
+    }
+
+    function simpleModeLabel(text) {
+      const map = {
+        Projects: 'Big Work',
+        Documents: 'Written Plans',
+        Data: 'Numbers',
+        Notes: 'Ideas',
+        Files: 'Uploads',
+        'Active Projects': 'Active Big Work',
+        MRR: 'Monthly Revenue',
+        Runway: 'Time Left',
+        'Burn Rate': 'Monthly Spending',
+        'Net Cash Flow': 'Money Left After Costs',
+        'Knowledge Graph': 'Idea Map'
+      };
+      return isSimpleMode() ? (map[text] || text) : text;
+    }
+
+    function Tooltip(label, text) {
+      return `<span class="simple-tooltip" tabindex="0">${escapeHTML(label)}<span class="simple-tooltip-panel">${escapeHTML(text)}</span></span>`;
+    }
+
+    function BeginnerTip({ title = 'Beginner tip', text = '' } = {}) {
+      return `<aside class="beginner-tip"><strong>${escapeHTML(title)}</strong><span>${escapeHTML(text)}</span></aside>`;
+    }
+
+    function StartHereCard({ title = 'Start Here', text = '', action = '', section = '' } = {}) {
+      return `<article class="start-here-card"><div><p class="simple-eyebrow">Recommended for you</p><h3>${escapeHTML(title)}</h3><p>${escapeHTML(text)}</p></div>${section ? `<button type="button" data-section-go="${escapeAttr(section)}">${escapeHTML(action || 'Start')}</button>` : ''}</article>`;
+    }
+
+    function StepByStepGuide(steps = []) {
+      return `<ol class="step-by-step-guide">${steps.map((step, index) => `<li><span>${index + 1}</span><p>${escapeHTML(step)}</p></li>`).join('')}</ol>`;
+    }
+
+    function GlossaryPopover(term, definition) {
+      return `<span class="glossary-popover" tabindex="0">${escapeHTML(term)}<span>${escapeHTML(definition)}</span></span>`;
+    }
+
+    function syncSimpleModeChrome() {
+      const simple = isSimpleMode();
+      document.body.classList.toggle('simple-mode', simple);
+      document.body.classList.toggle('advanced-mode', !simple);
+      const toggle = document.getElementById('simpleModeToggle');
+      const text = document.getElementById('simpleModeToggleText');
+      if (toggle) {
+        toggle.setAttribute('aria-pressed', String(simple));
+        toggle.classList.toggle('is-simple', simple);
+      }
+      if (text) text.textContent = simple ? 'Simple Mode' : 'Advanced Mode';
+    }
+
+    function toggleSimpleMode() {
+      state.settings.preferences.simpleMode = !isSimpleMode();
+      syncSimpleModeChrome();
+      renderNav();
+      renderActiveSection();
+      saveStateRaw();
+    }
+
+    function simpleModeStyles() {
+      return `<style id="simpleModeStyles">
+        .simple-mode-toggle{display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(45,212,191,.32);background:rgba(20,184,166,.12);color:#ccfbf1;border-radius:999px;padding:.65rem .9rem;font-size:.78rem;font-weight:800;white-space:nowrap;box-shadow:0 12px 28px rgba(13,148,136,.14)}
+        .simple-mode-toggle .simple-mode-dot{width:.68rem;height:.68rem;border-radius:999px;background:#2dd4bf;box-shadow:0 0 0 4px rgba(45,212,191,.14)}
+        .simple-mode-toggle:not(.is-simple){border-color:rgba(168,85,247,.35);background:rgba(124,58,237,.14);color:#ede9fe}.simple-mode-toggle:not(.is-simple) .simple-mode-dot{background:#a78bfa;box-shadow:0 0 0 4px rgba(167,139,250,.14)}
+        .simple-mode #headerNotificationsBtn,.simple-mode #globalSearchHint,.simple-mode #localFirstBadge{display:none!important}.simple-mode #workspaceHeader{gap:.65rem}.simple-mode .nav-item{padding:.72rem .82rem}.simple-mode .nav-label{font-size:.94rem}
+        .simple-mode-panel{margin:0 0 1rem;border:1px solid rgba(45,212,191,.22);background:linear-gradient(135deg,rgba(240,253,250,.98),rgba(255,255,255,.95));color:#0f172a;border-radius:1.55rem;padding:1rem;box-shadow:0 18px 42px rgba(15,23,42,.16)}
+        .simple-mode-panel.dark{background:linear-gradient(135deg,rgba(13,148,136,.13),rgba(124,58,237,.12));color:#f8fafc;border-color:rgba(45,212,191,.22)}
+        .simple-eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;font-weight:900;color:#0d9488}.simple-mode-panel.dark .simple-eyebrow{color:#99f6e4}
+        .simple-grid{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.simple-card{border:1px solid rgba(20,184,166,.18);background:rgba(255,255,255,.82);border-radius:1.15rem;padding:.9rem}.simple-mode-panel.dark .simple-card{background:rgba(15,23,42,.56);border-color:rgba(255,255,255,.1)}
+        .beginner-tip{display:flex;gap:.65rem;align-items:flex-start;border:1px solid rgba(45,212,191,.24);background:rgba(20,184,166,.1);border-radius:1rem;padding:.75rem .85rem;color:inherit}.beginner-tip strong{white-space:nowrap;color:#0f766e}.simple-mode-panel.dark .beginner-tip strong{color:#99f6e4}.beginner-tip span{font-size:.9rem;line-height:1.45;color:inherit;opacity:.86}
+        .start-here-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid rgba(45,212,191,.24);border-radius:1.35rem;padding:1rem;background:linear-gradient(135deg,rgba(20,184,166,.14),rgba(124,58,237,.1))}.start-here-card h3{font-size:1.15rem;font-weight:900;margin:.15rem 0}.start-here-card p{font-size:.92rem;opacity:.82}.start-here-card button{border-radius:.95rem;background:#0f766e;color:white;font-weight:800;padding:.7rem 1rem;white-space:nowrap}
+        .step-by-step-guide{display:grid;gap:.55rem;counter-reset:step}.step-by-step-guide li{display:flex;gap:.7rem;align-items:flex-start;border:1px solid rgba(148,163,184,.18);border-radius:1rem;padding:.7rem;background:rgba(255,255,255,.72)}.simple-mode-panel.dark .step-by-step-guide li{background:rgba(15,23,42,.48);border-color:rgba(255,255,255,.1)}.step-by-step-guide span{display:grid;place-items:center;min-width:1.7rem;height:1.7rem;border-radius:999px;background:#14b8a6;color:white;font-weight:900}.step-by-step-guide p{font-size:.92rem;line-height:1.4;margin:0}
+        .simple-tooltip,.glossary-popover{position:relative;display:inline-flex;align-items:center;gap:.25rem;border-bottom:1px dashed currentColor;cursor:help}.simple-tooltip-panel,.glossary-popover span{display:none;position:absolute;left:0;top:calc(100% + .45rem);z-index:50;width:min(280px,80vw);border:1px solid rgba(15,23,42,.12);border-radius:.9rem;background:#fff;color:#0f172a;padding:.75rem;font-size:.82rem;line-height:1.35;box-shadow:0 16px 38px rgba(15,23,42,.18)}.simple-tooltip:hover .simple-tooltip-panel,.simple-tooltip:focus .simple-tooltip-panel,.glossary-popover:hover span,.glossary-popover:focus span{display:block}
+        .simple-mode .advanced-only{display:none!important}.advanced-mode .simple-only{display:none!important}.simple-mode .simple-soft-hide{display:none!important}
+      </style>`;
+    }
+
+    function mountSimpleModeEnhancements(panel) {
+      if (!document.getElementById('simpleModeStyles')) document.head.insertAdjacentHTML('beforeend', simpleModeStyles());
+      syncSimpleModeChrome();
+      if (!isSimpleMode() || !panel || panel.querySelector('[data-simple-enhanced="true"]')) return;
+      const section = state.activeSection;
+      const business = state.settings?.business || {};
+      const businessName = business.name || state.workspaceProfile?.businessName || 'your business';
+      const nextStep = 'Pick one thing to finish today, then ask Barya AI for help.';
+      const wrappers = {
+        dashboard: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><div class="simple-grid"><div class="simple-card"><p class="simple-eyebrow">Today’s Focus</p><h2 class="text-2xl font-black mt-1">Make one clear move today</h2><p class="mt-2 text-sm opacity-80">Do not worry about every chart. Start with one task that helps ${escapeHTML(businessName)} move forward.</p></div><div class="simple-card"><p class="simple-eyebrow">Next Best Step</p><h3 class="text-xl font-black mt-1">Ask for a 7-day plan</h3><p class="mt-2 text-sm opacity-80">Recommended for you: ${escapeHTML(nextStep)}</p></div><div class="simple-card"><p class="simple-eyebrow">Simple business summary</p><p class="mt-1 text-sm leading-6">Money in: ${money(state.dashboard.metrics.income, { includeCode: false })}. Money out: ${money(state.dashboard.metrics.expenses, { includeCode: false })}. ${GlossaryPopover('Runway', 'How long your business can keep going with the money you have.')}: ${Number(state.dashboard.metrics.runway || 0).toFixed(1)} months.</p></div></div><div class="mt-3">${BeginnerTip({ text: 'You can switch to Advanced Mode anytime to see every metric and tool.' })}</div></div>`,
+        workspace: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only">${StartHereCard({ title: 'Your workspace in plain words', text: 'Big Work = projects, Written Plans = documents, Numbers = data, Ideas = notes, Uploads = files.', action: 'Create Big Work', section: 'workspace' })}<div class="mt-3">${BeginnerTip({ text: 'Use this area like a calm notebook for your business. Add only what helps your next decision.' })}</div></div>`,
+        tasks: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><p class="simple-eyebrow">Simple task view</p><div class="simple-grid mt-2"><div class="simple-card"><h3 class="font-black">Today</h3><p class="text-sm opacity-80">Finish one small important task.</p></div><div class="simple-card"><h3 class="font-black">This Week</h3><p class="text-sm opacity-80">Plan 2–3 tasks that move the business forward.</p></div><div class="simple-card"><h3 class="font-black">Done</h3><p class="text-sm opacity-80">Celebrate completed work.</p></div></div><div class="mt-3">${BeginnerTip({ title: 'Priority levels', text: 'High = do first, Medium = do this week, Low = do later if you have time.' })}</div><div class="mt-3">${StepByStepGuide(['Example: Talk to 3 possible customers.', 'Example: Write your one-sentence offer.', 'Example: Make a simple price list.'])}</div></div>`,
+        resources: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only">${StartHereCard({ title: 'Start Here', text: 'Begin with starter templates before browsing advanced resources.', action: 'Open Planning', section: 'planning' })}<div class="mt-3">${StepByStepGuide(['Use a one-page business plan template.', 'Use a customer interview checklist.', 'Save your favorite resource for later.'])}</div></div>`,
+        ai: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only">${StartHereCard({ title: 'Ask in normal words', text: 'Barya will answer simply, avoid jargon, explain business terms, and give step-by-step actions.', action: 'Ask now', section: 'ai' })}${BeginnerTip({ text: 'Try: “I am new. Help me choose the first 3 steps for my business idea.”' })}</div>`,
+        memory: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><p class="simple-eyebrow">Memory</p><h2 class="text-2xl font-black mt-1">Things Barya remembers about your business.</h2><p class="mt-2 text-sm opacity-80">Save facts, lessons, customer notes, and decisions so Barya can give better help later.</p>${BeginnerTip({ text: 'Example memory: “My customers are college students who need affordable meal plans.”' })}</div>`,
+        planning: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><p class="simple-eyebrow">Guided plan builder</p><h2 class="text-2xl font-black mt-1">Build your plan one answer at a time</h2>${StepByStepGuide(['What are you building?', 'Who is it for?', 'What problem does it solve?', 'How will you make money?', 'What is your first small test?'])}<form id="simplePlanBuilder" class="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]"><input id="simplePlanAnswer" class="rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-white" placeholder="Example: I help students find cheap healthy meals"/><button class="rounded-xl bg-teal-500 px-4 py-2 font-bold text-white">Generate simple plan</button></form><div id="simplePlanOutput" class="mt-3 text-sm opacity-90"></div></div>`,
+        settings: `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><p class="simple-eyebrow">Settings made simple</p><h2 class="text-2xl font-black mt-1">Basic settings are shown first.</h2><p class="mt-2 text-sm opacity-80">Advanced settings like integrations, data storage, privacy, and billing are still available under Advanced sections.</p></div>`,
+        'knowledge-graph': `<div data-simple-enhanced="true" class="simple-mode-panel dark simple-only"><p class="simple-eyebrow">Idea Map</p><h2 class="text-2xl font-black mt-1">This shows how your business ideas connect.</h2><p class="mt-2 text-sm opacity-80">Use it to see links between customers, tasks, plans, notes, and decisions.</p></div>`
+      };
+      const html = wrappers[section];
+      if (html) panel.insertAdjacentHTML('afterbegin', html);
+      panel.querySelectorAll('[data-section-go]').forEach((button) => { button.onclick = () => switchSection(button.dataset.sectionGo); });
+      const planForm = panel.querySelector('#simplePlanBuilder');
+      if (planForm) {
+        planForm.onsubmit = (event) => {
+          event.preventDefault();
+          const answer = panel.querySelector('#simplePlanAnswer')?.value?.trim() || 'your business idea';
+          panel.querySelector('#simplePlanOutput').innerHTML = `<div class="simple-card"><strong>Simple plan draft:</strong><br>1. Idea: ${escapeHTML(answer)}.<br>2. Customer: choose one beginner-friendly audience.<br>3. First test: ask 5 people if they would use or pay for it.<br>4. Next action: create one task for that test today.</div>`;
+        };
+      }
+      if (section === 'workspace') {
+        panel.querySelectorAll('button,span,h2,h3,p,th').forEach((node) => {
+          if (!node.childElementCount) node.textContent = simpleModeLabel(node.textContent.trim());
+        });
+      }
+    }
+
     function renderNav() {
       const nav = document.getElementById('mainNav');
       nav.innerHTML = navItems.map(item => {
@@ -2946,7 +3071,7 @@
           aria-current="${isActive ? 'page' : 'false'}"
           class="nav-item ${isActive ? 'active-nav' : ''}">
           <span class="nav-icon" aria-hidden="true">${item.icon}</span>
-          <span class="nav-label ${isActive ? 'font-semibold' : 'font-medium'}">${translateText(item.key)}</span>
+          <span class="nav-label ${isActive ? 'font-semibold' : 'font-medium'}">${translateText(simpleModeLabel(item.key))}</span>
         </button>
       `;
       }).join('');
@@ -3007,6 +3132,7 @@
         console.error('Barya section render failed:', error);
         activePanel.innerHTML = `<div class="m-4 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-5 text-rose-100"><h2 class="text-lg font-bold">This section could not render.</h2><p class="mt-2 text-sm">Your local data is safe. Try switching sections or resetting imported data in Settings.</p><pre class="mt-3 overflow-auto rounded-xl bg-black/30 p-3 text-xs">${escapeHTML(error?.message || String(error))}</pre></div>`;
       }
+      mountSimpleModeEnhancements(activePanel);
       activePanel.scrollTop = 0;
       if (!prefersReducedMotion()) {
         activePanel.classList.remove('section-enter-active');
@@ -3123,6 +3249,7 @@
         search.addEventListener('focus', triggerSearch);
         search.addEventListener('click', triggerSearch);
       }
+      document.getElementById('simpleModeToggle')?.addEventListener('click', toggleSimpleMode);
       document.getElementById('headerQuickActionBtn')?.addEventListener('click', () => switchSection('planning'));
       document.getElementById('headerNotificationsBtn')?.addEventListener('click', () => {
         showSavedToast();
@@ -5952,6 +6079,21 @@
         ? `${base.next} I can also turn this into a decision tree if you want the sharper version.`
         : base.next;
 
+      if (isSimpleMode()) {
+        return {
+          answer: `${answer} In simple words: focus on one clear problem, one customer, and one next action.`,
+          why: `${why} This matters because beginners make faster progress when the next step is obvious.`,
+          steps: steps.slice(0, 4).map((step) => step
+            .replace(/KPI/gi, 'simple success number')
+            .replace(/MRR/gi, 'monthly revenue')
+            .replace(/CAC/gi, 'customer cost')
+            .replace(/runway/gi, 'time your money can support the business')
+            .replace(/constraint/gi, 'main limit')),
+          tip: `What does this mean? ${tip.replace(/signal/gi, 'real feedback').replace(/retention/gi, 'keeping customers')}`,
+          next: `${next} If you want, ask me to explain any word in plain English.`
+        };
+      }
+
       return {
         answer,
         why,
@@ -6054,7 +6196,9 @@
         'Help me improve onboarding',
         'Analyze my growth opportunities'
       ];
-      const placeholder = placeholderOptions[Math.floor(Date.now() / 5000) % placeholderOptions.length];
+      const placeholder = isSimpleMode()
+        ? 'Ask in simple words, like: What should I do first?'
+        : placeholderOptions[Math.floor(Date.now() / 5000) % placeholderOptions.length];
       const memoryEntries = typeof getMemoryEntries === 'function' ? getMemoryEntries().slice(0, 4) : [];
       const memoryOn = state.ai.composer.memoryEnabled !== false;
       const quickActions = [
@@ -7503,6 +7647,7 @@
       s.preferences.defaultLanguage ||= normalizeLanguageCode(s.preferences.language || 'en');
       s.preferences.currency ||= '';
       s.preferences.dateFormat ||= 'MM/DD/YYYY';
+      if (typeof s.preferences.simpleMode !== 'boolean') s.preferences.simpleMode = true;
 
       const popularCountries = [
         { name: 'India', flag: '🇮🇳' },
@@ -7606,7 +7751,7 @@
         'Data & Storage': shellCard('Data & Storage', 'Understand storage, move data manually and reset only with strong confirmation.', `<div class="space-y-5"><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div class="flex items-center justify-between text-sm"><span class="text-slate-300">Storage usage</span><span class="font-semibold text-teal-100">${storageLabel} / ${s.dataStorage.storageLimitMb} MB</span></div><div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-950"><div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-teal-300" style="width:${storagePercent}%"></div></div><p class="mt-2 text-xs text-slate-500">Stored locally in this browser via localStorage.</p></div><div class="rounded-2xl border border-violet-300/20 bg-violet-400/10 p-4"><h4 class="font-semibold text-white">Workspace profile</h4><p class="mt-2 text-sm text-slate-300">${escapeHTML((state.workspaceProfile || loadWorkspaceProfile() || {}).founderName || 'Founder')} · ${escapeHTML((state.workspaceProfile || loadWorkspaceProfile() || {}).workspaceName || state.title)} · AI style: ${escapeHTML((state.workspaceProfile || loadWorkspaceProfile() || {}).aiStyle || state.settings?.business?.aiStyle || 'Not set')}</p></div><div class="flex flex-wrap gap-3"><button id="exportAll" class="rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2.5 font-semibold text-white">Export My Data</button><button id="exportWorkspaceProfile" class="rounded-xl border border-cyan-300/40 px-4 py-2.5 font-semibold text-cyan-100">Export Workspace Profile</button><label class="rounded-xl border border-white/10 px-4 py-2.5 font-semibold text-slate-200 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>${ResetWorkspaceButton()}<button id="clearAll" class="rounded-xl border border-rose-300/40 px-4 py-2.5 font-semibold text-rose-100">Clear Workspace Data</button></div></div>`),
         'Backup & Export': shellCard('Backup & Export', 'Create an offline copy whenever you want.', `<p class="mb-4 text-sm text-slate-400">Manual exports are the safest way to back up a local-first workspace.</p><button id="exportAll" class="rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 px-4 py-2.5 font-semibold text-white">Export All My Data</button><label class="ml-3 rounded-xl border border-white/10 px-4 py-2.5 font-semibold text-slate-200 cursor-pointer">Import Data<input id="importAll" type="file" accept="application/json" class="hidden"></label>`),
         'Appearance': shellCard('Appearance', 'Keep the interface calm, dark and focused.', `<div class="grid gap-4 md:grid-cols-2">${selectField('Accent Theme','appearance.accent',['Purple + Teal','Deep Purple','Ocean Teal','Aurora'],s.appearance.accent)}${selectField('Density','appearance.density',['Comfortable','Compact','Spacious'],s.appearance.density)}<div class="flex items-center justify-between rounded-2xl border border-teal-300/20 bg-teal-300/10 px-4 py-3"><span class="text-slate-200">Theme</span><span class="text-sm font-semibold text-teal-100">Premium Dark</span></div></div>`),
-        'Language & Region': shellCard('Language & Region', 'Regional defaults for formatting and language.', `<div class="grid gap-4 md:grid-cols-2"><label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">Language</span><select data-setting="preferences.language" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>${settingInput('Timezone','preferences.timezone',s.preferences.timezone,'text','UTC')}${selectField('Currency','preferences.currency',['','USD','EUR','GBP','INR','SGD','AED','CAD','AUD'],s.preferences.currency)}${selectField('Date Format','preferences.dateFormat',['MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],s.preferences.dateFormat)}</div>`),
+        'Language & Region': shellCard('Language & Region', 'Regional defaults for formatting and language.', `<div class="grid gap-4 md:grid-cols-2"><label class="block text-sm text-slate-200/90"><span class="mb-1.5 block font-medium">Language</span><select data-setting="preferences.language" class="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-slate-100">${SUPPORTED_LANGUAGES.map((lang) => `<option value="${lang}" ${normalizeLanguageCode(s.preferences.language)===lang?'selected':''}>${LANGUAGE_NAMES[lang]}</option>`).join('')}</select></label>${settingInput('Timezone','preferences.timezone',s.preferences.timezone,'text','UTC')}${selectField('Currency','preferences.currency',['','USD','EUR','GBP','INR','SGD','AED','CAD','AUD'],s.preferences.currency)}${selectField('Date Format','preferences.dateFormat',['MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],s.preferences.dateFormat)}${toggleField('Simple Mode', 'Use simple language, fewer options, examples, and step-by-step guidance for beginners.', 'preferences.simpleMode', s.preferences.simpleMode !== false)}</div>`),
         'Help & Support': shellCard('Help & Support', 'Guidance for working confidently in Barya.', `<div class="grid gap-3 md:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Local-first promise</h4><p class="mt-2 text-sm text-slate-400">Export regularly, keep your browser profile secure and use reset only when you are certain.</p></div><div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><h4 class="font-semibold text-white">Need help?</h4><p class="mt-2 text-sm text-slate-400">Use the Planning and Workspace areas to document your operating playbook.</p></div></div>`)
       };
 
