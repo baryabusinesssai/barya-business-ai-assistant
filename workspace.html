@@ -2081,6 +2081,24 @@
         viewMode: 'graph',
         focusRef: '',
         mentions: []
+      },
+      globalWorkspace: {
+        userProfile: {},
+        projects: [],
+        tasks: [],
+        documents: [],
+        notes: [],
+        files: [],
+        memories: [],
+        plans: [],
+        insights: [],
+        conversations: [],
+        graphNodes: [],
+        graphConnections: [],
+        resources: [],
+        recentActivity: [],
+        searchQuery: '',
+        aiContextUpdatedAt: ''
       }
     };
 
@@ -2098,6 +2116,7 @@
       if (!state.planning || typeof state.planning !== 'object') state.planning = structuredClone(defaultState.planning);
       if (!state.settings || typeof state.settings !== 'object') state.settings = structuredClone(defaultState.settings);
       if (!state.knowledgeGraph || typeof state.knowledgeGraph !== 'object') state.knowledgeGraph = structuredClone(defaultState.knowledgeGraph);
+      if (!state.globalWorkspace || typeof state.globalWorkspace !== 'object') state.globalWorkspace = structuredClone(defaultState.globalWorkspace);
       if (!state.settings.preferences || typeof state.settings.preferences !== 'object') state.settings.preferences = structuredClone(defaultState.settings.preferences);
       state.settings.preferences.language = normalizeLanguageCode(state.settings.preferences.language || localStorage.getItem(LANGUAGE_STORAGE_KEY));
       if (!state.settings.business || typeof state.settings.business !== 'object') state.settings.business = structuredClone(defaultState.settings.business);
@@ -2108,6 +2127,7 @@
       ensureResourcesState();
       ensureKnowledgeGraphState();
       normalizeDashboardState();
+      syncGlobalWorkspaceState('normalize');
     }
 
     let state = loadState();
@@ -2294,7 +2314,308 @@
       return target;
     }
 
+
+    const GLOBAL_STORE_STORAGE_KEY = 'baryaGlobalWorkspaceStateV1';
+    const GLOBAL_COLLECTION_KEYS = ['projects', 'tasks', 'documents', 'notes', 'files', 'memories', 'plans', 'insights', 'conversations', 'graphNodes', 'graphConnections', 'resources', 'recentActivity'];
+
+    function makeGlobalId(prefix = 'item') {
+      if (window.crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`;
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    }
+
+    function arrayFrom(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function upsertById(collection, item) {
+      if (!item?.id) return collection;
+      const index = collection.findIndex((existing) => existing.id === item.id);
+      if (index >= 0) collection[index] = { ...collection[index], ...item };
+      else collection.unshift(item);
+      return collection;
+    }
+
+    function uniqueGlobalItems(items) {
+      const seen = new Set();
+      return arrayFrom(items).filter((item) => {
+        const key = item?.id || `${item?.type || ''}:${item?.title || item?.name || ''}`.toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function normalizeGlobalWorkspace() {
+      if (!state.globalWorkspace || typeof state.globalWorkspace !== 'object') state.globalWorkspace = structuredClone(defaultState.globalWorkspace);
+      state.globalWorkspace.userProfile = state.globalWorkspace.userProfile && typeof state.globalWorkspace.userProfile === 'object' ? state.globalWorkspace.userProfile : {};
+      GLOBAL_COLLECTION_KEYS.forEach((key) => {
+        state.globalWorkspace[key] = uniqueGlobalItems(state.globalWorkspace[key]);
+      });
+    }
+
+    function buildGlobalGraphFromCollections(globalState) {
+      const nodes = [];
+      const connections = [];
+      const nodeRefs = new Set();
+      const addNode = (id, label, type, section, sourceId = '') => {
+        if (!id || nodeRefs.has(id)) return;
+        nodeRefs.add(id);
+        nodes.push({ id, ref: id, label: label || 'Untitled', title: label || 'Untitled', type, section, sourceId, updatedAt: new Date().toISOString() });
+      };
+      const addConnection = (from, to, relation = 'related') => {
+        if (!from || !to || from === to || !nodeRefs.has(from) || !nodeRefs.has(to)) return;
+        const id = `${from}::${relation}::${to}`;
+        if (connections.some((edge) => edge.id === id)) return;
+        connections.push({ id, from, to, relation, updatedAt: new Date().toISOString() });
+      };
+
+      addNode('user:profile', globalState.userProfile?.name || 'Founder Profile', 'User Profile', 'settings', 'profile');
+      if (globalState.userProfile?.goal) addNode('goal:business', globalState.userProfile.goal, 'Goal', 'settings', 'business-goal');
+
+      globalState.projects.forEach((project) => addNode(`project:${project.id}`, project.title || project.name, 'Project', 'workspace', project.id));
+      globalState.tasks.forEach((task) => addNode(`task:${task.id}`, task.title || task.label, 'Task', 'tasks', task.id));
+      globalState.documents.forEach((doc) => addNode(`document:${doc.id}`, doc.title || doc.name, 'Document', 'workspace', doc.id));
+      globalState.notes.forEach((note) => addNode(`note:${note.id}`, note.title || note.name, 'Note', 'workspace', note.id));
+      globalState.files.forEach((file) => addNode(`file:${file.id}`, file.name || file.title, 'File', 'resources', file.id));
+      globalState.memories.forEach((memory) => addNode(`memory:${memory.id}`, memory.title || memory.type || 'Memory', 'Memory', 'memory', memory.id));
+      globalState.plans.forEach((plan) => addNode(`plan:${plan.id}`, plan.title || plan.name, 'Plan', 'planning', plan.id));
+      globalState.insights.forEach((insight) => addNode(`insight:${insight.id}`, insight.title || insight.summary || 'AI Insight', 'Insight', 'ai', insight.id));
+      globalState.resources.forEach((resource) => addNode(`resource:${resource.id}`, resource.title || resource.name, 'Resource', 'resources', resource.id));
+
+      if (globalState.userProfile?.goal) {
+        addConnection('user:profile', 'goal:business', 'has-goal');
+        globalState.plans.forEach((plan) => addConnection('goal:business', `plan:${plan.id}`, 'drives-plan'));
+      }
+      globalState.projects.forEach((project) => {
+        addConnection('user:profile', `project:${project.id}`, 'owns-project');
+        globalState.tasks.filter((task) => task.projectId === project.id || task.linkRef === `page:${project.id}` || task.project === project.title).forEach((task) => addConnection(`project:${project.id}`, `task:${task.id}`, 'has-task'));
+      });
+      globalState.documents.forEach((doc) => {
+        addConnection(`document:${doc.id}`, 'user:profile', 'informs-context');
+        globalState.resources.filter((resource) => resource.sourceId === doc.id).forEach((resource) => addConnection(`document:${doc.id}`, `resource:${resource.id}`, 'mirrored-resource'));
+      });
+      globalState.files.forEach((file) => {
+        addConnection(`file:${file.id}`, 'user:profile', 'available-to-ai');
+        globalState.resources.filter((resource) => resource.sourceId === file.id).forEach((resource) => addConnection(`file:${file.id}`, `resource:${resource.id}`, 'mirrored-resource'));
+      });
+      globalState.memories.forEach((memory) => {
+        addConnection(`memory:${memory.id}`, 'user:profile', 'ai-memory');
+        globalState.insights.filter((insight) => insight.memoryId === memory.id).forEach((insight) => addConnection(`insight:${insight.id}`, `memory:${memory.id}`, 'saved-to-memory'));
+      });
+      globalState.plans.forEach((plan) => {
+        globalState.tasks.filter((task) => task.planId === plan.id || task.sourcePlanId === plan.id).forEach((task) => addConnection(`plan:${plan.id}`, `task:${task.id}`, 'generates-task'));
+      });
+      return { nodes, connections };
+    }
+
+    function syncGlobalWorkspaceState(reason = 'sync') {
+      normalizeGlobalWorkspace();
+      const global = state.globalWorkspace;
+      const now = new Date().toISOString();
+      const business = state.settings?.business || {};
+      const founder = state.settings?.founder || {};
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
+      global.userProfile = {
+        id: 'user-profile',
+        name: founder.name || profile.founderName || '',
+        role: founder.role || profile.role || '',
+        businessName: business.name || profile.businessName || state.title || '',
+        businessType: business.businessType || profile.businessType || '',
+        stage: business.stage || profile.businessStage || '',
+        industry: business.industry || profile.industry || '',
+        targetAudience: business.targetAudience || '',
+        goal: business.mainGoal || profile.mainGoal || '',
+        longTermGoal: business.longTermGoal || profile.longTermGoal || '',
+        aiStyle: business.aiStyle || profile.aiStyle || '',
+        updatedAt: now
+      };
+
+      const pageProjects = arrayFrom(state.workspace?.pages).map((page) => ({
+        id: page.id,
+        title: page.title || 'Untitled Project',
+        status: page.status || page.stage || 'Active',
+        description: [page.summary, ...(arrayFrom(page.blocks).map((block) => block.text || block.content).filter(Boolean))].filter(Boolean).join(' ').slice(0, 500),
+        source: 'workspace',
+        updatedAt: page.updatedAt || page.ts || now
+      }));
+      const businessProject = global.userProfile.businessName ? [{ id: 'business-main-project', title: global.userProfile.businessName, status: global.userProfile.stage || 'Active', description: business.description || profile.businessDescription || '', source: 'settings', updatedAt: now }] : [];
+      global.projects = uniqueGlobalItems([...businessProject, ...pageProjects, ...global.projects]);
+
+      global.tasks = uniqueGlobalItems([...arrayFrom(state.tasks?.items).map((task) => ({ ...task, source: 'tasks', updatedAt: task.updatedAt || now })), ...global.tasks]);
+      global.documents = uniqueGlobalItems([
+        ...arrayFrom(state.workspace?.documents).map((doc) => ({ ...doc, source: 'workspace', updatedAt: doc.updatedAt || now })),
+        ...arrayFrom(state.workspace?.pages).filter((page) => /doc|plan|memo|brief/i.test(`${page.objectType || ''} ${page.title || ''}`)).map((page) => ({ id: page.id, title: page.title, content: arrayFrom(page.blocks).map((block) => block.text || block.content).filter(Boolean).join('\n'), source: 'workspace-page', updatedAt: page.updatedAt || now })),
+        ...global.documents
+      ]);
+      global.notes = uniqueGlobalItems([...arrayFrom(state.workspace?.notes).map((note) => ({ ...note, source: 'workspace', updatedAt: note.updatedAt || now })), ...global.notes]);
+      global.files = uniqueGlobalItems([...arrayFrom(state.workspace?.files).map((file) => ({ ...file, source: 'workspace', updatedAt: file.updatedAt || now })), ...global.files]);
+      global.memories = uniqueGlobalItems([...arrayFrom(state.memory?.insights).map((memory) => ({ ...memory, type: memory.type || 'Memory', source: 'memory', updatedAt: memory.updatedAt || memory.ts || now })), ...global.memories]);
+      global.plans = uniqueGlobalItems([
+        ...arrayFrom(state.planning?.plans).map((plan) => ({ ...plan, source: 'planning', updatedAt: plan.updatedAt || now })),
+        ...arrayFrom(state.planning?.guides).map((guide, index) => ({ id: guide.id || `guide-${index}`, title: guide.title, tasks: guide.tasks || [], progress: arrayFrom(guide.done).filter(Boolean).length, source: 'planning-guide', updatedAt: now })),
+        ...arrayFrom(state.planning?.strategy?.sessions).map((session) => ({ id: session.id, title: session.query || 'AI Strategy Session', summary: session.deep?.summary || session.followUp || '', source: 'ai-strategy', updatedAt: session.ts || now })),
+        ...global.plans
+      ]);
+      const recommendationInsights = arrayFrom(state.dashboard?.recommendations).map((text, index) => ({ id: `dashboard-recommendation-${index}`, title: 'Dashboard Recommendation', summary: String(text), source: 'dashboard', updatedAt: now }));
+      const aiInsights = arrayFrom(state.ai?.history).filter((msg) => msg.role === 'assistant').slice(-20).map((msg, index) => ({ id: msg.id || `ai-insight-${msg.ts || index}`, title: 'Saved AI Insight', summary: msg.structured?.answer || msg.message || '', source: 'ai', updatedAt: msg.ts || now }));
+      global.insights = uniqueGlobalItems([...recommendationInsights, ...aiInsights, ...global.insights]);
+      global.conversations = uniqueGlobalItems(arrayFrom(state.ai?.history).map((message, index) => ({ id: message.id || `conversation-${message.ts || index}`, role: message.role, message: message.message, attachment: message.attachment, source: 'ai', updatedAt: message.ts || now })));
+      global.resources = uniqueGlobalItems([
+        ...arrayFrom(state.resources?.library).map((resource) => ({ ...resource, source: 'resources-library', updatedAt: resource.updatedAt || now })),
+        ...arrayFrom(state.resources?.customResources).map((resource) => ({ ...resource, source: 'resources-custom', updatedAt: resource.updatedAt || resource.ts || now })),
+        ...global.documents.map((doc) => ({ id: `resource-document-${doc.id}`, title: doc.title || doc.name || 'Document', type: 'Document', category: 'Documents', sourceId: doc.id, source: 'documents', updatedAt: doc.updatedAt || now })),
+        ...global.files.map((file) => ({ id: `resource-file-${file.id}`, title: file.name || file.title || 'File', type: 'File', category: 'Files', sourceId: file.id, source: 'files', updatedAt: file.updatedAt || now })),
+        ...global.resources
+      ]);
+      global.recentActivity = uniqueGlobalItems([
+        { id: `activity-${Date.now()}`, title: reason, type: 'System Sync', updatedAt: now },
+        ...global.recentActivity
+      ]).slice(0, 80);
+      const graph = buildGlobalGraphFromCollections(global);
+      global.graphNodes = graph.nodes;
+      global.graphConnections = graph.connections;
+      global.aiContextUpdatedAt = now;
+      try { localStorage.setItem(GLOBAL_STORE_STORAGE_KEY, JSON.stringify(global)); } catch {}
+      window.dispatchEvent(new CustomEvent('barya:global-state-updated', { detail: { reason, state: global } }));
+      return global;
+    }
+
+    function getAIContextSnapshot() {
+      syncGlobalWorkspaceState('ai-context');
+      const global = state.globalWorkspace;
+      const openTasks = global.tasks.filter((task) => task.status !== 'Done' && !task.archived).slice(0, 5).map((task) => task.title).filter(Boolean);
+      const recentMemories = global.memories.slice(0, 4).map((memory) => memory.title || memory.content || memory.summary).filter(Boolean);
+      const recentPlans = global.plans.slice(0, 3).map((plan) => plan.title || plan.name).filter(Boolean);
+      return {
+        profile: global.userProfile,
+        projects: global.projects.slice(0, 5),
+        tasks: openTasks,
+        memories: recentMemories,
+        plans: recentPlans,
+        notes: global.notes.slice(0, 4),
+        files: global.files.slice(0, 4),
+        goals: [global.userProfile.goal, global.userProfile.longTermGoal].filter(Boolean),
+        recentActivity: global.recentActivity.slice(0, 5)
+      };
+    }
+
+    function collectConnectedSearchResults(queryText) {
+      syncGlobalWorkspaceState('global-search');
+      const term = String(queryText || '').trim().toLowerCase();
+      if (!term) return [];
+      const searchableCollections = [
+        ['Project', 'workspace', state.globalWorkspace.projects],
+        ['Task', 'tasks', state.globalWorkspace.tasks],
+        ['Document', 'workspace', state.globalWorkspace.documents],
+        ['Note', 'workspace', state.globalWorkspace.notes],
+        ['File', 'resources', state.globalWorkspace.files],
+        ['Memory', 'memory', state.globalWorkspace.memories],
+        ['Plan', 'planning', state.globalWorkspace.plans],
+        ['Resource', 'resources', state.globalWorkspace.resources]
+      ];
+      return searchableCollections.flatMap(([type, section, collection]) => collection.map((item) => ({
+        type,
+        section,
+        id: item.id,
+        title: item.title || item.name || item.label || item.type || 'Untitled',
+        description: item.description || item.summary || item.content || item.message || item.category || '',
+        item
+      }))).filter((result) => `${result.type} ${result.title} ${result.description}`.toLowerCase().includes(term)).slice(0, 12);
+    }
+
+    function openConnectedSearchResult(result) {
+      if (!result) return;
+      state.activeSection = result.section || 'dashboard';
+      if (result.section === 'tasks') state.tasks.selectedTaskId = result.id;
+      if (result.section === 'workspace') state.workspace.activePageId = result.id;
+      if (result.section === 'memory') state.memory.activeMemoryTab = 'all';
+      renderNav();
+      saveState();
+    }
+
+    const GlobalWorkspaceStore = {
+      getState: () => state.globalWorkspace,
+      selectors: {
+        aiContext: getAIContextSnapshot,
+        search: collectConnectedSearchResults,
+        graph: () => ({ nodes: state.globalWorkspace.graphNodes || [], connections: state.globalWorkspace.graphConnections || [] }),
+        completionRate: () => {
+          const tasks = arrayFrom(state.globalWorkspace.tasks).filter((task) => !task.archived);
+          return tasks.length ? Math.round((tasks.filter((task) => task.status === 'Done').length / tasks.length) * 100) : 0;
+        }
+      },
+      actions: {
+        createProject(project = {}) {
+          const id = project.id || makeGlobalId('project');
+          const page = { id, title: project.title || project.name || 'Untitled Project', icon: project.icon || '🚀', objectType: 'Project', status: project.status || 'Active', blocks: project.blocks || [], relations: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+          state.workspace.pages ||= [];
+          upsertById(state.workspace.pages, page);
+          state.workspace.activePageId = id;
+          upsertById(state.globalWorkspace.projects, { ...project, id, title: page.title, source: 'workspace', updatedAt: page.updatedAt });
+          saveState();
+          return id;
+        },
+        updateTask(id, updates = {}) {
+          state.tasks.items ||= [];
+          const task = state.tasks.items.find((item) => item.id === id);
+          if (task) Object.assign(task, updates, { updatedAt: new Date().toISOString() });
+          else state.tasks.items.unshift({ id: id || makeGlobalId('task'), title: updates.title || 'Untitled Task', status: updates.status || 'To Do', priority: updates.priority || 'Medium', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...updates });
+          saveState();
+        },
+        addMemory(memory = {}) {
+          const id = memory.id || makeGlobalId('memory');
+          state.memory.insights ||= [];
+          upsertById(state.memory.insights, { id, title: memory.title || memory.type || 'Memory', content: memory.content || memory.note || memory.summary || '', type: memory.type || 'Memory', tags: memory.tags || [], ts: new Date().toISOString(), updatedAt: new Date().toISOString() });
+          saveState();
+          return id;
+        },
+        saveInsight(insight = {}) {
+          const id = insight.id || makeGlobalId('insight');
+          const memoryId = this.addMemory({ id: `memory-${id}`, title: insight.title || 'AI Insight', content: insight.summary || insight.content || insight.message || '', type: 'AI Insight' });
+          upsertById(state.globalWorkspace.insights, { ...insight, id, memoryId, source: 'ai', updatedAt: new Date().toISOString() });
+          saveState();
+          return id;
+        },
+        createPlan(plan = {}) {
+          const id = plan.id || makeGlobalId('plan');
+          state.planning.plans ||= [];
+          upsertById(state.planning.plans, { id, name: plan.name || plan.title || 'New Business Plan', type: plan.type || 'Operating Plan', progress: plan.progress || 0, updatedAt: new Date().toISOString(), status: plan.status || 'Draft' });
+          const generatedTasks = arrayFrom(plan.tasks).length ? plan.tasks : ['Define success metric', 'Create first milestone', 'Review roadmap weekly'];
+          state.tasks.items ||= [];
+          generatedTasks.forEach((title) => state.tasks.items.unshift({ id: makeGlobalId('task'), title, description: `Auto-generated from ${plan.name || plan.title || 'business plan'}.`, status: 'To Do', priority: 'Medium', planId: id, sourcePlanId: id, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+          saveState();
+          return id;
+        },
+        uploadFile(file = {}) {
+          const id = file.id || makeGlobalId('file');
+          state.workspace.files ||= [];
+          upsertById(state.workspace.files, { id, name: file.name || file.title || 'Uploaded File', type: file.type || 'File', size: file.size || '', source: 'upload', updatedAt: new Date().toISOString() });
+          saveState();
+          return id;
+        },
+        setUserProfile(updates = {}) {
+          state.settings.founder ||= structuredClone(defaultState.settings.founder);
+          state.settings.business ||= structuredClone(defaultState.settings.business);
+          if ('name' in updates) state.settings.founder.name = updates.name;
+          if ('role' in updates) state.settings.founder.role = updates.role;
+          if ('businessName' in updates) state.settings.business.name = updates.businessName;
+          if ('goal' in updates) state.settings.business.mainGoal = updates.goal;
+          if ('longTermGoal' in updates) state.settings.business.longTermGoal = updates.longTermGoal;
+          saveState();
+        }
+      },
+      sync: syncGlobalWorkspaceState,
+      subscribe(listener) {
+        const handler = (event) => listener(event.detail.state, event.detail.reason);
+        window.addEventListener('barya:global-state-updated', handler);
+        return () => window.removeEventListener('barya:global-state-updated', handler);
+      }
+    };
+
+    window.BaryaGlobalStore = GlobalWorkspaceStore;
+
     function persistStateNow() {
+      syncGlobalWorkspaceState('persist');
       const snapshot = JSON.stringify(state);
       if (snapshot === latestPersistedSnapshot) return;
       latestPersistedSnapshot = snapshot;
@@ -2335,12 +2656,14 @@
 
     function saveState() {
       updateRecommendations();
+      syncGlobalWorkspaceState('saveState');
       schedulePersist(0);
       queueRenderActiveSection();
     }
 
     function saveStateWithoutRender() {
       updateRecommendations();
+      syncGlobalWorkspaceState('saveStateWithoutRender');
       schedulePersist(0);
     }
 
@@ -2636,7 +2959,7 @@
       });
     }
 
-    function saveStateRaw(){ schedulePersist(80); }
+    function saveStateRaw(){ syncGlobalWorkspaceState('saveStateRaw'); schedulePersist(80); }
 
     function switchSection(nextSection) {
       const validSections = new Set(navItems.map(item => item.id));
@@ -2795,7 +3118,7 @@
       if (search) {
         const triggerSearch = () => {
           search.blur();
-          focusSectionSearch();
+          openGlobalWorkspaceSearch();
         };
         search.addEventListener('focus', triggerSearch);
         search.addEventListener('click', triggerSearch);
@@ -2810,7 +3133,7 @@
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          focusSectionSearch();
+          openGlobalWorkspaceSearch();
           return;
         }
         if (e.key === 'Escape') {
@@ -2819,6 +3142,62 @@
           if (modal?.open) modal.close();
           closeHowItWorksModal();
         }
+      });
+    }
+
+
+    function openGlobalWorkspaceSearch() {
+      let modal = document.getElementById('globalConnectedSearchModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'globalConnectedSearchModal';
+        modal.className = 'fixed inset-0 z-[120] hidden items-start justify-center bg-black/70 px-4 pt-20 backdrop-blur-sm';
+        modal.innerHTML = `
+          <div class="w-full max-w-2xl rounded-[1.5rem] border border-white/10 bg-slate-950/95 p-4 shadow-2xl shadow-purple-950/40">
+            <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
+              <span class="text-slate-400">⌕</span>
+              <input id="globalConnectedSearchInput" placeholder="Search projects, tasks, files, notes, documents, plans, memories..." class="flex-1 bg-transparent text-sm text-white outline-none" />
+              <button id="globalConnectedSearchClose" class="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300" type="button">Esc</button>
+            </div>
+            <div id="globalConnectedSearchResults" class="mt-3 max-h-[55vh] overflow-y-auto"></div>
+          </div>`;
+        document.body.appendChild(modal);
+        document.getElementById('globalConnectedSearchClose').onclick = () => modal.classList.add('hidden');
+        modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); });
+        const input = document.getElementById('globalConnectedSearchInput');
+        input.addEventListener('input', () => renderConnectedSearchResults(input.value));
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      const input = document.getElementById('globalConnectedSearchInput');
+      input.value = '';
+      renderConnectedSearchResults('');
+      requestAnimationFrame(() => input.focus());
+    }
+
+    function renderConnectedSearchResults(query) {
+      const container = document.getElementById('globalConnectedSearchResults');
+      if (!container) return;
+      const results = collectConnectedSearchResults(query);
+      if (!String(query || '').trim()) {
+        const global = syncGlobalWorkspaceState('global-search-preview');
+        container.innerHTML = `<div class="grid gap-2 text-sm text-slate-300">
+          <p class="px-2 text-xs uppercase tracking-[0.24em] text-slate-500">Connected workspace</p>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            ${['projects','tasks','documents','memories','plans','resources','files','notes'].map(key => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><p class="text-lg font-black text-white">${(global[key] || []).length}</p><p class="text-xs capitalize text-slate-400">${key}</p></div>`).join('')}
+          </div>
+          <p class="px-2 pt-2 text-xs text-slate-500">Start typing to search across every shared collection.</p>
+        </div>`;
+        return;
+      }
+      container.innerHTML = results.length
+        ? results.map((result, index) => `<button type="button" data-global-result="${index}" class="mb-2 block w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left hover:bg-white/[0.08]"><span class="text-[11px] uppercase tracking-[0.22em] text-teal-200">${escapeHTML(result.type)}</span><span class="mt-1 block font-semibold text-white">${escapeHTML(result.title)}</span>${result.description ? `<span class="mt-1 block text-xs text-slate-400">${escapeHTML(String(result.description).slice(0, 150))}</span>` : ''}</button>`).join('')
+        : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-400">No connected workspace results found.</p>';
+      container.querySelectorAll('[data-global-result]').forEach((button) => {
+        button.onclick = () => {
+          openConnectedSearchResult(results[Number(button.dataset.globalResult)]);
+          document.getElementById('globalConnectedSearchModal')?.classList.add('hidden');
+        };
       });
     }
 
@@ -3601,6 +3980,8 @@
       (state.tasks?.items || []).forEach(t => addNode(`task:${t.id}`, t.title, 'Task', 'tasks'));
       (state.planning?.strategy?.sessions || []).forEach(s => addNode(`research:${s.id}`, `Research: ${s.query.slice(0, 50)}`, 'Research', 'planning'));
       (state.knowledgeGraph?.mentions || []).forEach(m => addNode(`mention:${m.id}`, m.title, 'Mention', 'ai'));
+      (state.globalWorkspace?.graphNodes || []).forEach(node => addNode(node.ref || node.id, node.label || node.title, node.type || 'Connected Item', node.section || 'workspace'));
+      (state.globalWorkspace?.graphConnections || []).forEach(edge => addEdge(edge.from, edge.to, edge.relation || 'global'));
 
       (state.workspace?.pages || []).forEach(p => {
         const from = `page:${p.id}`;
@@ -5522,6 +5903,13 @@
       const memoryMatches = typeof searchMemories === 'function'
         ? searchMemories(q).slice(0, 4)
         : [];
+      const globalAIContext = getAIContextSnapshot();
+      const connectedContextLine = [
+        globalAIContext.profile?.goal ? `Goal: ${globalAIContext.profile.goal}` : '',
+        globalAIContext.projects?.length ? `Projects: ${globalAIContext.projects.map(project => project.title || project.name).filter(Boolean).slice(0, 3).join(', ')}` : '',
+        globalAIContext.tasks?.length ? `Open tasks: ${globalAIContext.tasks.slice(0, 3).join(', ')}` : '',
+        globalAIContext.plans?.length ? `Plans: ${globalAIContext.plans.slice(0, 2).join(', ')}` : ''
+      ].filter(Boolean).join(' | ');
       const memoryContextLine = memoryMatches.length
         ? ` Saved memory context I am using: ${memoryMatches.map(memory => `${memory.type}: ${memory.title} — ${memory.description}`).join(' | ')}.`
         : '';
@@ -5537,7 +5925,7 @@
       const multipartLead = multiParts.length > 1
         ? `You asked ${multiParts.length} connected questions. I would sequence them, not treat them separately.`
         : '';
-      const answer = [base.opening, multipartLead, contextLine, keywordLine, memoryContextLine.trim()]
+      const answer = [base.opening, multipartLead, contextLine, keywordLine, connectedContextLine ? `Connected workspace context: ${connectedContextLine}.` : '', memoryContextLine.trim()]
         .filter(Boolean)
         .join(' ')
         .trim();
