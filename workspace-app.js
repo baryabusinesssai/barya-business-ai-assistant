@@ -1366,12 +1366,122 @@
     return parts.join('\n\n');
   }
 
+
+  function getRequestedOutputProfile(message) {
+    const text = String(message || '').toLowerCase();
+    const hasCreationVerb = /\b(create|build|generate|write|make|design|give me|draft|produce)\b/.test(text);
+    const typeRules = [
+      ['business plan', 'business_plan'], ['marketing plan', 'marketing_plan'], ['launch plan', 'launch_plan'], ['financial plan', 'financial_plan'], ['structured plan', 'plan'], ['plan', 'plan'],
+      ['roadmap', 'roadmap'], ['strategy', 'strategy'], ['checklist', 'checklist'], ['template', 'template'], ['pitch deck', 'pitch_deck'], ['financial model', 'financial_model'],
+      ['swot analysis', 'swot'], ['swot', 'swot'], ['marketing campaign', 'marketing_campaign'], ['campaign', 'marketing_campaign'], ['business model', 'business_model']
+    ];
+    const matchedType = typeRules.find(([label]) => text.includes(label));
+    const exactSteps = text.match(/\b(?:give me|create|write|generate|make)?\s*(\d+)\s+(?:step|steps)\b/);
+    return {
+      requested: Boolean(matchedType || exactSteps || (hasCreationVerb && /\b(plan|roadmap|strategy|checklist|template|deck|model|analysis|campaign|steps?)\b/.test(text))),
+      outputType: matchedType ? matchedType[1] : (exactSteps ? 'steps' : 'output'),
+      exactStepCount: exactSteps ? Number(exactSteps[1]) : null,
+      wantsTable: /\b(table|tabular)\b/.test(text),
+      wantsBullets: /\b(bullet|bullets|bullet points)\b/.test(text),
+      concise: /\b(one page|concise|short|brief)\b/.test(text),
+      detailed: /\b(detailed|comprehensive|in depth|in-depth)\b/.test(text),
+      topic: String(message || '').replace(/\b(create|build|generate|write|make|design|give me|draft|produce)\b/ig, '').trim()
+    };
+  }
+
+  function buildRequestedOutput(message) {
+    const profile = getRequestedOutputProfile(message);
+    if (!profile.requested) return '';
+    const topic = profile.topic || 'the business';
+    const stepCount = profile.exactStepCount;
+    if (stepCount) {
+      return Array.from({ length: stepCount }, (_, index) => `${index + 1}. ${[
+        'Define the target outcome and success metric.',
+        'Identify the exact audience or customer segment.',
+        'Clarify the offer, promise, and core value.',
+        'Choose the highest-leverage channel or execution path.',
+        'Assign owners, deadlines, and required resources.',
+        'Launch the first measurable action quickly.',
+        'Review results and improve the next cycle.',
+        'Document learnings and remove low-impact work.',
+        'Scale only the activity that shows proof.',
+        'Set the next milestone and repeat the review rhythm.'
+      ][index] || `Execute priority ${index + 1} with a clear owner, deadline, and metric.`}`).join('\n');
+    }
+    if (profile.wantsTable) {
+      return `| Area | Output | Owner | Timing | Success Metric |\n|---|---|---|---|---|\n| Goal | Define the business result for ${topic}. | Founder | Day 1 | One measurable target |\n| Customer | Identify the primary customer segment. | Founder | Days 1-2 | Clear ICP documented |\n| Offer | Package the offer, price, and promise. | Founder | Days 3-5 | Offer ready to test |\n| Channel | Pick one acquisition channel. | Marketing | Week 2 | First leads generated |\n| Review | Measure, learn, and adjust. | Founder | Weekly | Decisions based on data |`;
+    }
+    if (profile.outputType === 'checklist') {
+      return ['☐ Define the goal and deadline.', '☐ Identify the target customer.', '☐ Write the offer or value promise.', '☐ Choose one execution channel.', '☐ Set the budget and required resources.', '☐ Assign owner and due date.', '☐ Launch the first action.', '☐ Track the success metric.', '☐ Review results and improve.'].join('\n');
+    }
+    if (profile.outputType === 'template') {
+      return `# Template
+
+## Title
+- [Name of the business, plan, campaign, or project]
+
+## Goal
+- [Specific outcome you want to achieve]
+
+## Audience
+- [Who this is for]
+
+## Problem
+- [Customer pain or business challenge]
+
+## Solution
+- [Offer, action, or system you will use]
+
+## Action Steps
+- [Step 1]
+- [Step 2]
+- [Step 3]
+
+## Timeline
+- [Start date]
+- [Milestone dates]
+- [Review date]
+
+## Metrics
+- [Primary success metric]
+- [Supporting metrics]
+
+## Risks
+- [Risk 1]
+- [Risk 2]
+
+## Next Steps
+- [Immediate action]`;
+    }
+    if (profile.outputType === 'roadmap') {
+      return `Phase 1\n- Define the target customer, core problem, offer, and success metric.\n\nPhase 2\n- Build the minimum version of the offer and prepare launch assets.\n\nPhase 3\n- Launch to one focused channel, collect feedback, and track conversion.\n\nPhase 4\n- Improve what works, remove weak activities, and prepare the next growth cycle.\n\nDeliverables\n- Customer profile\n- Offer statement\n- Launch assets\n- Weekly KPI dashboard\n- Improvement backlog\n\nMilestones\n- Week 1: strategy locked\n- Week 2: offer ready\n- Week 3: first launch test live\n- Week 4: results reviewed and next cycle planned`;
+    }
+    if (profile.outputType === 'business_model') {
+      return `# Business Model\n\n## Customer Segments\n- Primary customers with urgent need and ability to pay.\n\n## Value Proposition\n- A clear outcome that saves time, increases revenue, reduces risk, or improves convenience.\n\n## Revenue Streams\n- Core offer sales, recurring packages, premium services, and add-ons.\n\n## Channels\n- One primary acquisition channel, supported by referrals and content.\n\n## Customer Relationships\n- Guided onboarding, consistent follow-up, and retention touchpoints.\n\n## Key Activities\n- Customer discovery, offer delivery, marketing, sales, and weekly performance review.\n\n## Key Resources\n- Founder time, operating tools, customer insight, brand assets, and delivery process.\n\n## Key Partners\n- Suppliers, distribution partners, service providers, and referral sources.\n\n## Cost Structure\n- Product/service delivery, marketing, software, operations, and support.\n\n## Success Metrics\n- Revenue, conversion rate, retention, customer acquisition cost, and profit margin.`;
+    }
+    if (profile.outputType === 'swot') {
+      return `# SWOT Analysis\n\n## Strengths\n- Clear founder focus\n- Fast decision-making\n- Ability to test quickly\n\n## Weaknesses\n- Limited brand awareness\n- Limited operating data\n- Possible resource constraints\n\n## Opportunities\n- Underserved customer segment\n- Low-cost digital acquisition\n- Partnerships and referrals\n\n## Threats\n- Strong competitors\n- Rising acquisition costs\n- Slow customer trust-building\n\n## Priority Actions\n- Use strengths to launch faster.\n- Fix the highest-risk weakness first.\n- Test the best opportunity within 30 days.\n- Monitor threats weekly.`;
+    }
+    if (profile.outputType === 'pitch_deck') {
+      return `# Pitch Deck\n\n1. Title\n- Company name, tagline, founder, and contact.\n\n2. Problem\n- The urgent customer pain and why it matters now.\n\n3. Solution\n- The product or service and the outcome it creates.\n\n4. Market\n- Target customer, market size, and segment focus.\n\n5. Product\n- Core features, workflow, or service delivery model.\n\n6. Business Model\n- Pricing, revenue streams, and margin logic.\n\n7. Go-To-Market\n- Acquisition channel, sales motion, and launch plan.\n\n8. Traction\n- Users, revenue, pilots, waitlist, testimonials, or early proof.\n\n9. Competition\n- Alternatives and differentiation.\n\n10. Financials\n- Revenue forecast, costs, runway, and funding needs.\n\n11. Team\n- Founder advantage and key hiring gaps.\n\n12. Ask\n- Funding or support requested and how it will be used.`;
+    }
+    if (profile.outputType === 'financial_model') {
+      return `# Financial Model\n\n## Revenue Assumptions\n- Customers per month: ___\n- Average order/subscription value: ___\n- Conversion rate: ___\n- Monthly recurring revenue target: ___\n\n## Cost Assumptions\n- Fixed costs: rent, software, salaries, tools\n- Variable costs: delivery, payment fees, support, commissions\n- Marketing budget: ___\n\n## Monthly Forecast\n| Month | Customers | Revenue | Costs | Profit/Loss | Cash Balance |\n|---|---:|---:|---:|---:|---:|\n| 1 | ___ | ___ | ___ | ___ | ___ |\n| 2 | ___ | ___ | ___ | ___ | ___ |\n| 3 | ___ | ___ | ___ | ___ | ___ |\n\n## Break-Even\n- Break-even point = fixed costs ÷ gross margin per customer.\n\n## Key Metrics\n- Gross margin\n- CAC\n- Payback period\n- Runway\n- Net profit margin`;
+    }
+    if (profile.outputType === 'strategy' || profile.outputType === 'marketing_campaign') {
+      return `# Strategy\n\n## Objective\n- Create one measurable business outcome for ${topic}.\n\n## Target Audience\n- Define the customer segment, pain, buying trigger, and decision maker.\n\n## Positioning\n- State why this offer is the simplest or strongest option for the customer.\n\n## Core Message\n- One clear promise backed by proof.\n\n## Channels\n- Primary channel: choose one.\n- Support channel: use only if it reinforces the primary channel.\n\n## Execution Plan\n- Week 1: research and message setup\n- Week 2: launch first campaign/action\n- Week 3: optimize based on response\n- Week 4: scale the best-performing action\n\n## Metrics\n- Leads, conversion rate, cost per lead, revenue, retention, and profit.`;
+    }
+    return `# Goal\nCreate a practical, execution-ready plan for ${topic}.\n\n# Current Situation\nThe business needs a clear structure, focused priorities, and actions that produce measurable progress instead of generic advice.\n\n# Key Priorities\n- Define the target customer and urgent problem.\n- Clarify the offer, pricing, and value promise.\n- Choose one primary growth channel.\n- Set operational responsibilities and weekly metrics.\n\n# Action Plan\n- Validate the customer problem through direct conversations.\n- Package the offer into a simple, testable version.\n- Launch one focused marketing or sales motion.\n- Track response, conversion, cost, and customer feedback.\n- Improve the offer and process based on evidence.\n\n# Timeline\n- Days 1-7: customer, offer, and metric setup.\n- Days 8-14: first launch or outreach test.\n- Days 15-21: review results and fix weak points.\n- Days 22-30: double down on what works and plan the next cycle.\n\n# Risks\n- Target customer is too broad.\n- Offer promise is unclear.\n- Too many channels are tested at once.\n- Metrics are not reviewed weekly.\n\n# Success Metrics\n- Qualified leads generated.\n- Conversion rate.\n- Revenue or pre-orders.\n- Customer feedback quality.\n- Profit margin or runway impact.\n\n# Next Steps\n- Pick one customer segment.\n- Write one measurable goal.\n- Launch the first test within 7 days.\n- Review results and adjust the plan.`;
+  }
+
   function generateResponse(message) {
     const userMessage = String(message || '').trim();
     const recentContext = getRecentUserContext(3);
     const totals = calculateTotals();
     const { domain } = detectIntentAndDomain(userMessage);
     const tooVague = userMessage.split(/\s+/).filter(Boolean).length < 3;
+    const requestedOutput = buildRequestedOutput(userMessage);
+    if (requestedOutput) return requestedOutput;
     const vagueReplyMap = [
       {
         clearAnswer: 'I can build you a practical founder plan, but I need one real business constraint first.',
