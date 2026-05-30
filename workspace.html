@@ -4396,6 +4396,12 @@
         if (dueDate === tomorrow) return 'Tomorrow';
         return new Date(`${dueDate}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       };
+      const operatingContext = getFounderOperatingContext();
+      const timeGreeting = getTimeAwareFounderGreeting();
+      const dailyTaskBank = makeContextualTaskBank(operatingContext);
+      const smartFocus = `Move ${projectActionNoun(operatingContext)} toward ${operatingContext.businessGoal}`;
+      const mostImportantTask = dailyTaskBank[0] || 'Choose one measurable founder action';
+      const recommendedNextMove = pendingTasks ? `Finish or update: ${mostImportantTask}` : 'Generate a startup action plan and create your first execution task';
       const metricCards = [
         { key: 'runway', label: 'Runway', value: `${Number(d.metrics.runway || 0).toFixed(1)} months`, delta: `${Number(d.metrics.runway || 0) >= 6 ? '↑' : '↓'} 1.2 mo vs last month`, tone: 'emerald', icon: '<path d="M7 11h10v7H7z"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/><path d="M9 15h6"/>' },
         { key: 'expenses', label: 'Burn Rate', value: `${compactMoney(burnRate)}/mo`, delta: `${burnRate <= Number(d.metrics.income || 0) ? '↓' : '↑'} 8% vs last month`, tone: 'teal', icon: '<path d="M8 7h8M8 12h8M8 17h5"/><path d="M5 4h14v16H5z"/>' },
@@ -4437,8 +4443,8 @@
           <div class="dash-shell space-y-4">
             <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
               <div>
-                <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white">Good morning, <span class="text-violet-400">${escapeHTML(founderName)}</span>! 👋</h1>
-                <p class="mt-2 text-sm sm:text-base text-slate-300">Here’s what’s happening inside Barya Business AI today.</p>
+                <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white">${escapeHTML(timeGreeting.greeting)}</h1>
+                <p class="mt-2 text-sm sm:text-base text-slate-300">Your AI Founder Operating Partner is using live workspace context, tasks, goals, memories, and recent conversations.</p>
                 <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-200">
                   <span class="rounded-full border border-violet-300/25 bg-violet-400/10 px-3 py-1">${escapeHTML(workspaceName)}</span>
                   <span class="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1">${escapeHTML(businessName)}</span>
@@ -4451,6 +4457,22 @@
                 <button data-section-go="dashboard" class="subtle-button rounded-2xl p-3 text-slate-200" aria-label="Analytics"><svg class="dash-svg" viewBox="0 0 24 24"><path d="M5 19V9"/><path d="M12 19V5"/><path d="M19 19v-8"/><path d="M3 19h18"/></svg></button>
               </div>
             </div>
+
+            <section class="glass-card p-5">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[.18em] text-cyan-200">Smart Daily Dashboard</p>
+                  <h2 class="mt-2 text-2xl font-semibold text-white">Today's Focus</h2>
+                  <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">${escapeHTML(smartFocus)}</p>
+                </div>
+                <button data-quick-dashboard-plan="daily" class="gradient-button rounded-2xl px-5 py-3 text-sm font-semibold text-white">Create Daily Plan</button>
+              </div>
+              <div class="mt-4 grid gap-3 md:grid-cols-3">
+                <div class="rounded-2xl border border-white/10 bg-black/25 p-4"><p class="text-xs text-slate-400">Most Important Task</p><p class="mt-2 font-semibold text-white">${escapeHTML(mostImportantTask)}</p></div>
+                <div class="rounded-2xl border border-white/10 bg-black/25 p-4"><p class="text-xs text-slate-400">Current Project</p><p class="mt-2 font-semibold text-white">${escapeHTML(operatingContext.activeProject)}</p></div>
+                <div class="rounded-2xl border border-white/10 bg-black/25 p-4"><p class="text-xs text-slate-400">Recommended Next Move</p><p class="mt-2 font-semibold text-white">${escapeHTML(recommendedNextMove)}</p></div>
+              </div>
+            </section>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-3">
               ${[
@@ -4656,6 +4678,13 @@
         normalizeDashboardState();
         state.dashboard.metrics.netSavings = state.dashboard.metrics.income - state.dashboard.metrics.expenses;
         saveState();
+      });
+      el.querySelectorAll('[data-quick-dashboard-plan]').forEach((button) => {
+        button.onclick = () => {
+          ensureAIState();
+          state.ai.composer.text = 'Create my daily plan using my workspace context.';
+          switchSection('ai');
+        };
       });
       el.querySelectorAll('[data-section-go]').forEach((button) => {
         button.onclick = () => {
@@ -6000,6 +6029,319 @@
       };
     }
 
+
+    function getFounderDisplayName() {
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
+      const founder = state.settings?.founder || {};
+      const name = String(founder.name || profile.founderName || '').trim();
+      return (name.split(/\s+/)[0] || 'Shruti').trim();
+    }
+
+    function getTimeAwareFounderGreeting(date = new Date()) {
+      const hour = date.getHours();
+      const name = getFounderDisplayName();
+      if (hour >= 5 && hour < 12) return { period: 'morning', greeting: `Good morning, ${name} ☀️`, examples: ["Today's focus", 'Morning priorities', 'Start your day checklist'] };
+      if (hour >= 12 && hour < 17) return { period: 'afternoon', greeting: `Good afternoon, ${name} 🚀`, examples: ['Midday progress review', 'Priority check', 'What needs attention today'] };
+      if (hour >= 17 && hour < 22) return { period: 'evening', greeting: `Good evening, ${name} 🌙`, examples: ['Wrap-up tasks', 'Progress review', 'Tomorrow planning'] };
+      return { period: 'night', greeting: 'Still building? 🌌', examples: ['Reflection', 'Brain dump', 'Planning session'] };
+    }
+
+    function getFounderOperatingContext() {
+      syncGlobalWorkspaceState('founder-operating-context');
+      ensureTasksState();
+      ensureWorkspaceState();
+      const profile = state.workspaceProfile || loadWorkspaceProfile() || {};
+      const business = state.settings?.business || {};
+      const global = state.globalWorkspace || {};
+      const tasks = (state.tasks?.items || []).filter(task => !task.archived);
+      const unfinishedTasks = tasks.filter(task => task.status !== 'Done');
+      const workspaceProjects = (state.workspace?.pages || [])
+        .filter(page => page.objectType === 'Project' || /project|roadmap|launch|mvp|plan|marketing/i.test(page.title || ''))
+        .map(page => ({ title: page.title, status: page.status || 'Active', updatedAt: page.updatedAt }));
+      const projects = uniqueGlobalItems([...(global.projects || []), ...workspaceProjects])
+        .filter(project => !project.archived)
+        .slice(0, 6);
+      const documents = [...(state.workspace?.documents || []), ...(global.documents || [])].slice(0, 6);
+      const notes = [...(state.workspace?.notes || []), ...(global.notes || [])].slice(0, 6);
+      const memories = typeof getMemoryEntries === 'function' ? getMemoryEntries().slice(0, 6) : (global.memories || []).slice(0, 6);
+      const plans = [...(state.planning?.plans || []), ...(state.planning?.guides || []), ...(global.plans || [])].slice(0, 6);
+      const conversations = (state.ai?.history || []).filter(item => item.role === 'user').slice(-5);
+      const activeProject = projects[0]?.title || unfinishedTasks[0]?.project || profile.businessName || business.name || state.title || 'Founder OS';
+      const businessStage = profile.businessStage || business.stage || 'Not set yet';
+      const businessGoal = profile.mainGoal || business.mainGoal || profile.longTermGoal || 'Choose one measurable founder goal';
+      const challenge = (profile.challenges || [])[0] || business.targetAudience || 'Execution clarity';
+      return {
+        profile,
+        business,
+        businessStage,
+        businessGoal,
+        challenge,
+        activeProject,
+        projects,
+        tasks,
+        unfinishedTasks,
+        documents,
+        notes,
+        memories,
+        plans,
+        conversations,
+        metrics: state.dashboard?.metrics || {},
+        goals: [businessGoal, profile.longTermGoal, business.targetAudience].filter(Boolean)
+      };
+    }
+
+    function projectActionNoun(context) {
+      const project = String(context.activeProject || '').toLowerCase();
+      if (project.includes('mvp')) return 'MVP';
+      if (project.includes('marketing')) return 'marketing system';
+      if (project.includes('financial') || project.includes('finance')) return 'financial model';
+      if (project.includes('customer') || project.includes('validation')) return 'customer validation sprint';
+      if (project.includes('launch')) return 'launch plan';
+      return context.activeProject || 'current operating plan';
+    }
+
+    function makeContextualTaskBank(context) {
+      const focus = projectActionNoun(context);
+      const stage = String(context.businessStage || '').toLowerCase();
+      const goal = context.businessGoal || 'your main goal';
+      const existing = context.unfinishedTasks.map(task => task.title).filter(Boolean).slice(0, 5);
+      const bank = existing.length ? existing : [
+        `Define the next measurable outcome for ${focus}`,
+        `Ship or update one ${focus} deliverable tied to ${goal}`,
+        `Review workspace notes and capture one decision`,
+        `Create one customer-facing action that tests demand`,
+        `Update the task board with owner, status, and deadline`
+      ];
+      if (stage.includes('idea')) bank.push('Run customer discovery before adding features');
+      if (stage.includes('mvp')) bank.push('Prioritize one MVP flow, one bug, and one user feedback loop');
+      if (stage.includes('launch')) bank.push('Review revenue, onboarding, and customer follow-up today');
+      return bank.slice(0, 9);
+    }
+
+    function buildProactiveLine(context) {
+      const count = context.unfinishedTasks.length;
+      if (count > 0) return `You still have ${count} unfinished ${projectActionNoun(context)} task${count === 1 ? '' : 's'}.`;
+      return 'No open tasks are blocking you. Would you like me to generate a startup action plan?';
+    }
+
+    function buildDailyFounderPlan() {
+      const context = getFounderOperatingContext();
+      const time = getTimeAwareFounderGreeting();
+      const tasks = makeContextualTaskBank(context);
+      const focus = projectActionNoun(context);
+      const priorityOne = tasks[0] || `Move ${focus} forward`;
+      const priorityTwo = tasks[1] || `Turn ${context.businessGoal} into one concrete deliverable`;
+      const priorityThree = tasks[2] || 'Close one loose loop in the workspace';
+      const morningTasks = [priorityOne, 'Review recent AI conversation context and pick the highest-risk assumption'];
+      const afternoonTasks = [priorityTwo, tasks[3] || `Create customer-facing progress for ${focus}`];
+      const eveningTasks = [priorityThree, "Log progress, decisions, and tomorrow\'s first move in Memory"];
+      return {
+        answer: `${time.greeting}
+
+# Today's Main Goal
+Move ${focus} forward by completing one visible deliverable tied to: ${context.businessGoal}.
+
+# Top 3 Priorities
+1. ${priorityOne}
+2. ${priorityTwo}
+3. ${priorityThree}
+
+# Time Block Plan
+
+Morning
+Tasks
+- ${morningTasks.join('\n- ')}
+
+Afternoon
+Tasks
+- ${afternoonTasks.join('\n- ')}
+
+Evening
+Tasks
+- ${eveningTasks.join('\n- ')}
+
+# Quick Wins
+- Update the status of ${Math.min(context.unfinishedTasks.length, 3) || 1} open task${context.unfinishedTasks.length === 1 ? '' : 's'}.
+- Save one new note or decision from today\'s work.
+- Ask Barya AI for a sharper version of the riskiest task before executing it.
+
+# Things To Avoid
+- Starting a new project before closing a current ${focus} loop.
+- Generic research that does not change a decision today.
+- Working without a success check.
+
+# Success Check
+By the end of today, you should have one completed task, one saved learning, and one clear next move for ${context.activeProject}.
+
+${buildProactiveLine(context)}`,
+        why: `This plan is personalized from business stage (${context.businessStage}), active project (${context.activeProject}), goals, workspace tasks, saved memories, notes, plans, and recent Barya AI conversations.`,
+        steps: [priorityOne, priorityTwo, priorityThree, 'Save the result as a memory or note so tomorrow starts with context.'],
+        tip: 'Founder operating rule: protect focus by letting the workspace, not mood, choose the next action.',
+        next: 'If you want, say “create these tasks” and I will add the plan into your workspace task board.',
+        outputMode: 'generated'
+      };
+    }
+
+    function buildWeeklyFounderPlan() {
+      const context = getFounderOperatingContext();
+      const tasks = makeContextualTaskBank(context);
+      const focus = projectActionNoun(context);
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const defaults = [
+        `Clarify the week\'s main ${focus} outcome and success metric`,
+        tasks[0] || `Complete the first ${focus} execution task`,
+        tasks[1] || 'Create or update the customer-facing deliverable',
+        tasks[2] || 'Review workspace notes, risks, and decisions',
+        tasks[3] || 'Ship, publish, or share the week\'s most important output',
+        'Review metrics, unfinished tasks, and customer feedback',
+        'Plan next week and archive low-value work'
+      ];
+      return {
+        answer: `# Weekly Roadmap for ${context.activeProject}
+
+${days.map((day, index) => `${day}
+- ${defaults[index]}`).join('\n\n')}
+
+Workspace note: ${buildProactiveLine(context)}`,
+        why: `Sequenced from your ${context.businessStage} stage, ${context.businessGoal} goal, current project, unfinished tasks, plans, notes, memories, and recent AI context.`,
+        steps: defaults.slice(0, 5),
+        tip: 'Do not make every day equal. Monday decides, Tuesday–Friday executes, weekend reviews and resets.',
+        next: 'Ask “create weekly tasks” if you want these added directly to Tasks.',
+        outputMode: 'generated'
+      };
+    }
+
+    function buildMonthlyFounderPlan() {
+      const context = getFounderOperatingContext();
+      const focus = projectActionNoun(context);
+      return {
+        answer: `# Monthly Operating Plan
+
+Week 1
+Goals
+- Lock the measurable outcome for ${focus}.
+Milestones
+- Define scope, owner, deadline, and risk.
+Deliverables
+- One-page execution brief and updated task board.
+
+Week 2
+Goals
+- Build or improve the highest-leverage ${focus} asset.
+Milestones
+- Complete the top implementation tasks and document decisions.
+Deliverables
+- Working MVP/asset/process update ready for feedback.
+
+Week 3
+Goals
+- Test with real users, customers, or market signal.
+Milestones
+- Collect feedback, objections, conversion signals, and cost/time data.
+Deliverables
+- Feedback summary, refined offer/product decisions, and next build list.
+
+Week 4
+Goals
+- Review, simplify, and commit to the next cycle.
+Milestones
+- Close unfinished tasks, archive distractions, and select next month\'s main bet.
+Deliverables
+- Monthly founder memo, updated plan, and next-month roadmap.
+
+Primary Goal: ${context.businessGoal}
+Current Project: ${context.activeProject}
+${buildProactiveLine(context)}`,
+        why: `Built from current goals, workspace projects, active tasks, planning docs, notes, memories, financial metrics, and recent conversations.`,
+        steps: ['Week 1: decide and scope', 'Week 2: build', 'Week 3: test', 'Week 4: review and reset'],
+        tip: 'A monthly plan should create deliverables, not just intentions.',
+        next: 'Ask “save this as a plan” to create a workspace plan and starter tasks.',
+        outputMode: 'generated'
+      };
+    }
+
+    function buildDailyFounderBrief() {
+      const context = getFounderOperatingContext();
+      const time = getTimeAwareFounderGreeting();
+      const focus = projectActionNoun(context);
+      const risk = context.unfinishedTasks.length > 3 ? `Execution drag: ${context.unfinishedTasks.length} unfinished tasks can dilute focus.` : `The main risk is unclear signal on ${focus}.`;
+      return {
+        answer: `${time.greeting}
+
+# Daily Founder Brief
+
+Today's Focus
+- Advance ${focus} toward ${context.businessGoal}.
+
+Biggest Risk
+- ${risk}
+
+Best Opportunity
+- Use your current workspace context (${context.activeProject}, ${context.businessStage}, saved notes/memories) to finish one high-signal action instead of opening a new loop.
+
+One Important Action
+- ${makeContextualTaskBank(context)[0] || `Complete one ${focus} task and save the learning.`}`,
+        why: 'This is a co-founder-style operating update generated from your live workspace data.',
+        steps: [makeContextualTaskBank(context)[0] || 'Complete the most important open task', 'Record the result in Memory', "Set tomorrow\'s first action"],
+        tip: buildProactiveLine(context),
+        next: 'Ask for “daily plan” if you want this expanded into time blocks.',
+        outputMode: 'generated'
+      };
+    }
+
+    function getPlanningIntent(input) {
+      const text = String(input || '').toLowerCase();
+      if (/\b(daily founder brief|founder brief|co-founder update|daily brief)\b/.test(text)) return 'brief';
+      if (/\b(what should i do today|create my daily plan|daily roadmap|today'?s priorities|what should i focus on|daily plan|today plan|morning priorities|start your day checklist)\b/.test(text)) return 'daily';
+      if (/\b(weekly plan|weekly roadmap|what should i do this week|week plan|weekly priorities)\b/.test(text)) return 'weekly';
+      if (/\b(monthly plan|monthly planning|month roadmap|what should i do this month|monthly roadmap)\b/.test(text)) return 'monthly';
+      return '';
+    }
+
+    function buildFounderOperatingPartnerResponse(input) {
+      const intent = getPlanningIntent(input);
+      if (intent === 'daily') return buildDailyFounderPlan();
+      if (intent === 'weekly') return buildWeeklyFounderPlan();
+      if (intent === 'monthly') return buildMonthlyFounderPlan();
+      if (intent === 'brief') return buildDailyFounderBrief();
+      return null;
+    }
+
+    function createWorkspaceItemFromAI(input, structured = null) {
+      const text = String(input || '').toLowerCase();
+      const titleSource = String(input || '').replace(/\b(create|add|save|make|task|project|note|plan|memory|this|these|a|an)\b/ig, ' ').replace(/\s+/g, ' ').trim();
+      const title = titleSource || structured?.answer?.split('\n').find(Boolean)?.replace(/^#+\s*/, '').slice(0, 80) || 'Barya AI Item';
+      const now = new Date().toISOString();
+      if (/\b(task|tasks)\b/.test(text)) {
+        ensureTasksState();
+        const context = getFounderOperatingContext();
+        const wantsGeneratedSet = /\b(these|this plan|above|daily|weekly|monthly|roadmap|priorities)\b/.test(text);
+        const tasks = !wantsGeneratedSet && titleSource.length > 3
+          ? [title]
+          : (structured?.steps?.length ? structured.steps : makeContextualTaskBank(context).slice(0, 3));
+        tasks.slice(0, 5).forEach(taskTitle => state.tasks.items.unshift({ id: crypto.randomUUID(), title: String(taskTitle).replace(/^[-•\d.\s]+/, '').slice(0, 120), description: `Created by Barya AI from: ${input}`, dueDate: '', priority: 'High', status: 'To Do', tags: ['Barya AI', 'Operating Partner'], sprintId: '', linkRef: '', createdAt: now, updatedAt: now }));
+        return `Created ${Math.min(tasks.length, 5)} task${Math.min(tasks.length, 5) === 1 ? '' : 's'} in your workspace.`;
+      }
+      if (/\b(project)\b/.test(text)) {
+        GlobalWorkspaceStore.actions.createProject({ title, status: 'Active', blocks: [{ type: 'heading', text: title }, { type: 'text', text: structured?.answer || 'Created by Barya AI as an active founder project.' }] });
+        return `Created project: ${title}.`;
+      }
+      if (/\b(note)\b/.test(text)) {
+        ensureWorkspaceState();
+        state.workspace.notes.unshift({ id: crypto.randomUUID(), title, preview: structured?.answer || 'Created by Barya AI.', timestamp: now, tags: ['Barya AI'], pinned: true });
+        return `Created note: ${title}.`;
+      }
+      if (/\b(plan)\b/.test(text)) {
+        GlobalWorkspaceStore.actions.createPlan({ title, name: title, type: 'Founder Operating Plan', progress: 0, tasks: structured?.steps || [] });
+        return `Created plan: ${title}.`;
+      }
+      if (/\b(memory|remember)\b/.test(text)) {
+        addMemory({ type: 'Insight', title, description: structured?.answer || input, source: 'barya-ai', tags: ['Barya AI', 'Memory'], importance: 'high' });
+        return `Saved memory: ${title}.`;
+      }
+      return '';
+    }
+
     function parseMultiPartQuestion(input) {
       return input
         .split(/\n|(?:\s+\d+[\).\-\:]\s+)|(?:\s+\-\s+)|(?:\s+\?\s+)/g)
@@ -6138,6 +6480,8 @@
 
     function aiStructuredResponse(q) {
       ensureAIState();
+      const operatingPartnerResponse = buildFounderOperatingPartnerResponse(q);
+      if (operatingPartnerResponse) return operatingPartnerResponse;
       const instructionFirstResponse = buildInstructionFirstAIResponse(q);
       if (instructionFirstResponse) return instructionFirstResponse;
       const lower = q.toLowerCase();
@@ -6302,8 +6646,8 @@
       const topProject = activeTasks[0]?.project || business.name || profile.businessName || state.title || 'Founder OS';
       const founderName = String(founder.name || profile.founderName || 'Founder').trim();
       const displayName = founderName.split(' ')[0] || 'Founder';
-      const currentHour = new Date().getHours();
-      const greeting = currentHour < 12 ? 'Good morning' : (currentHour < 18 ? 'Good afternoon' : 'Good evening');
+      const timeGreeting = getTimeAwareFounderGreeting();
+      const greeting = timeGreeting.greeting;
       const currentGoal = business.mainGoal || profile.mainGoal || personalization.goal || 'Build a calmer, sharper company operating rhythm';
       const activePriority = runway && runway < 6 ? 'Protect runway and convert revenue signal' : (monthlyRevenue > monthlyBurn ? 'Scale the strongest growth loop' : 'Find one repeatable revenue motion');
       const currentSprint = profile.stage || business.stage || personalization.stage || 'Founder focus sprint';
@@ -6327,6 +6671,8 @@
         { label: 'Pitch Deck', prompt: 'Create a premium pitch deck narrative with slide structure, proof points, and investor-level positioning.' },
         { label: 'Marketing Ideas', prompt: 'Generate founder-led marketing ideas that feel premium, specific, and realistic for my current business.' },
         { label: 'Product Feedback', prompt: 'Give me product feedback from the perspective of a sharp AI co-founder focused on retention and clarity.' },
+        { label: 'Daily Plan', prompt: 'Create my daily plan using my workspace context.' },
+        { label: 'Founder Brief', prompt: 'Generate my Daily Founder Brief.' },
         { label: 'Weekly Priorities', prompt: 'Turn my current business context into the three priorities I should execute this week.' }
       ];
       const navSections = [
@@ -6603,7 +6949,14 @@
         chatBox.appendChild(typing);
         chatBox.scrollTop = chatBox.scrollHeight;
         const structured = attachment ? aiAttachmentStructuredResponse(q, attachment) : aiStructuredResponse(q);
-        const note = attachment ? 'Analyzing uploaded context locally.' : '';
+        const actionResult = /\b(create|add|save|make)\b/i.test(q) && /\b(task|tasks|project|note|plan|memory|remember)\b/i.test(q)
+          ? createWorkspaceItemFromAI(q, structured)
+          : '';
+        if (actionResult) {
+          structured.answer = `${structured.answer || 'Done.'}\n\nWorkspace action: ${actionResult}`;
+          structured.next = actionResult;
+        }
+        const note = attachment ? 'Analyzing uploaded context locally.' : (actionResult || '');
         const aiMsg = { role: 'assistant', message: structured.answer, structured, note, ts: nowISO };
         registerMentionsFromText(`${structured.answer} ${(structured.steps || []).join(' ')}`, 'ai-assistant');
         setTimeout(() => {
