@@ -1521,6 +1521,7 @@
 
       <main id="mainTaskSection" class="flex-1 min-h-0 block visible z-10 text-[#1e293b]">
         <section id="section-dashboard" class="section-panel active flex-1 min-h-0 w-full"></section>
+        <section id="section-today" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-workspace" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-tasks" class="section-panel flex-1 min-h-0 w-full"></section>
         <section id="section-resources" class="section-panel flex-1 min-h-0 w-full"></section>
@@ -1733,6 +1734,7 @@
     };
     const navItems = [
       { id: 'dashboard', key: 'Dashboard', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg>' },
+      { id: 'today', key: 'Today', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3 2"></path><path d="M4 4l3 3M20 4l-3 3"></path></svg>' },
       { id: 'workspace', key: 'Workspace', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>' },
       { id: 'tasks', key: 'Tasks', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12.2 2.1 2.1 4.9-5"></path></svg>' },
       { id: 'ai', key: 'Barya AI', icon: '<svg viewBox="0 0 24 24"><path d="M12 3.5v3M7 8h10a3 3 0 0 1 3 3v4.5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V11a3 3 0 0 1 3-3Z"></path><path d="M9 13h.01M15 13h.01M9.5 16c1.5 1 3.5 1 5 0"></path></svg>' },
@@ -2002,6 +2004,7 @@
         healthScore: 5
       },
       ai: { history: [] },
+      today: { generatedAt: '', planSeed: 0, briefSeed: 0, weeklySeed: 0, weeklyGoals: [], focus: { currentTaskId: '', elapsedSeconds: 0, startedAt: '', running: false, completedSessions: 0 } },
       memory: { insights: [], actions: [], search: '', activeMemoryTab: 'all', assistantQuestion: '', assistantAnswer: '' },
       workspace: {
         pages: [],
@@ -2112,6 +2115,9 @@
       state.title = String(state.title || state.settings?.business?.name || 'New Workspace');
       if (!state.dashboard || typeof state.dashboard !== 'object') state.dashboard = structuredClone(defaultState.dashboard);
       if (!state.ai || typeof state.ai !== 'object') state.ai = structuredClone(defaultState.ai);
+      if (!state.today || typeof state.today !== 'object') state.today = structuredClone(defaultState.today);
+      state.today.focus ||= structuredClone(defaultState.today.focus);
+      state.today.weeklyGoals ||= [];
       if (!state.memory || typeof state.memory !== 'object') state.memory = structuredClone(defaultState.memory);
       if (!state.workspace || typeof state.workspace !== 'object') state.workspace = structuredClone(defaultState.workspace);
       if (!state.tasks || typeof state.tasks !== 'object') state.tasks = structuredClone(defaultState.tasks);
@@ -2785,6 +2791,8 @@
         return;
       }
       normalizeWorkspaceState();
+      const routedSection = sectionFromRoute();
+      if (routedSection) state.activeSection = routedSection;
       ensureKnowledgeGraphState();
       ensureResourcesState();
       setLanguage(state.settings?.preferences?.language || 'en', { skipRender: true });
@@ -2803,6 +2811,12 @@
       setupGuidedTour();
       translateDom(document.body);
       maybeOpenGuidedTour();
+      window.addEventListener('popstate', () => {
+        const routedSection = sectionFromRoute();
+        state.activeSection = routedSection || 'dashboard';
+        renderNav();
+        renderActiveSection();
+      });
       window.addEventListener('storage', (event) => {
         if (event.key !== STORAGE_KEY || !event.newValue) return;
         try {
@@ -3061,6 +3075,16 @@
       }
     }
 
+    function sectionRoute(sectionId) {
+      return sectionId === 'today' ? '/today' : '/workspace.html';
+    }
+
+    function sectionFromRoute() {
+      const path = window.location.pathname.replace(/\/$/, '');
+      if (path === '/today') return 'today';
+      return '';
+    }
+
     function renderNav() {
       const nav = document.getElementById('mainNav');
       nav.innerHTML = navItems.map(item => {
@@ -3096,6 +3120,8 @@
       const currentPanel = document.getElementById(`section-${state.activeSection}`);
       const completeSwitch = () => {
         state.activeSection = nextSection;
+        const nextPath = sectionRoute(nextSection);
+        if (window.location.pathname !== nextPath) history.pushState({ section: nextSection }, '', nextPath);
         renderNav();
         renderActiveSection();
         saveStateRaw();
@@ -3120,6 +3146,7 @@
       activePanel.classList.add('active');
       try {
         if (state.activeSection === 'dashboard') renderDashboard();
+        if (state.activeSection === 'today') renderToday();
         if (state.activeSection === 'workspace') renderWorkspace();
         if (state.activeSection === 'tasks') renderTasks();
         if (state.activeSection === 'resources') renderResources();
@@ -5145,6 +5172,164 @@
 
     function updatePageUpdatedAt(page) {
       page.updatedAt = new Date().toISOString();
+    }
+
+    function todayContext() {
+      syncGlobalWorkspaceState('today');
+      const global = state.globalWorkspace || {};
+      const openTasks = arrayFrom(state.tasks?.items).filter(task => !task.archived && task.status !== 'Done' && !task.completed);
+      const activeProjects = arrayFrom(global.projects).filter(project => !/done|complete|archived/i.test(project.status || '')).slice(0, 6);
+      const activePlans = [...arrayFrom(state.planning?.plans), ...arrayFrom(state.planning?.guides)].slice(0, 8);
+      const memories = arrayFrom(state.memory?.insights).slice(-6);
+      const recentActivity = arrayFrom(global.recentActivity).slice(0, 6);
+      const profile = global.userProfile || {};
+      const mainGoal = profile.goal || state.settings?.business?.mainGoal || state.workspaceProfile?.mainGoal || activePlans[0]?.name || activePlans[0]?.title || openTasks[0]?.title || 'Create measurable business momentum today';
+      return { global, openTasks, activeProjects, activePlans, memories, recentActivity, profile, mainGoal };
+    }
+
+    function hasTodayData(ctx = todayContext()) {
+      return Boolean(ctx.openTasks.length || ctx.activeProjects.length || ctx.memories.length || ctx.profile?.goal || ctx.profile?.businessName);
+    }
+
+    function generateDailyPlan(ctx = todayContext()) {
+      const priorities = [...ctx.openTasks].sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority)).slice(0, 3);
+      const project = ctx.activeProjects[0]?.title || ctx.profile.businessName || state.title || 'the business';
+      const goal = ctx.mainGoal;
+      const fallback = ['Clarify today’s revenue-driving outcome', 'Ship one visible improvement', 'Review learnings and decide the next move'];
+      const priorityTitles = (priorities.length ? priorities.map(t => t.title) : fallback).slice(0, 3);
+      return {
+        mainGoal: `${goal} — with one visible win for ${project}.`,
+        topPriorities: priorityTitles,
+        morning: [priorityTitles[0] || fallback[0], `Review ${ctx.activeProjects[0]?.title || 'active project'} blockers`, 'Send one high-signal customer or partner message'],
+        afternoon: [priorityTitles[1] || fallback[1], 'Move one project artifact from draft to usable', 'Update task status so the workspace stays truthful'],
+        evening: [priorityTitles[2] || fallback[2], 'Capture one insight in Memory', 'Choose tomorrow’s first task before logging off'],
+        quickWins: ['Close a 10-minute admin task', 'Archive stale work', 'Ask Barya AI for a sharper next move'],
+        check: ['What moved the main goal?', 'What stayed unfinished?', 'What should be protected tomorrow?']
+      };
+    }
+
+    function generateFounderBrief(ctx = todayContext()) {
+      const high = ctx.openTasks.find(task => /high/i.test(task.priority || '')) || ctx.openTasks[0];
+      const project = ctx.activeProjects[0]?.title || ctx.profile.businessName || 'your core business system';
+      return {
+        focus: high?.title || ctx.mainGoal,
+        opportunity: ctx.activeProjects.length ? `Turn ${project} into a concrete customer-facing asset today.` : 'Use the quiet workspace to define one clean offer, one audience, and one next step.',
+        risk: ctx.openTasks.length > 4 ? `${ctx.openTasks.length} open tasks may fragment attention. Protect a single priority block.` : 'The biggest risk is ending the day with motion but no measurable decision.',
+        move: high ? `Start with “${high.title}” and update its status before switching context.` : 'Generate a daily plan, then convert the first priority into a task.',
+        insight: 'Calm execution compounds faster than scattered urgency.'
+      };
+    }
+
+    function priorityRank(priority = '') {
+      return ({ high: 3, medium: 2, low: 1 })[String(priority).toLowerCase()] || 2;
+    }
+
+    function todayPriorityRows(ctx = todayContext()) {
+      const fromTasks = ctx.openTasks.map(task => ({ id: task.id, title: task.title, priority: task.priority || 'Medium', owner: task.owner || state.settings?.founder?.name || 'Founder', deadline: task.dueDate || task.deadline || 'Today', status: task.status || 'To Do', source: 'Tasks' }));
+      const fromPlans = ctx.activePlans.flatMap(plan => arrayFrom(plan.tasks).map((taskTitle, index) => ({ id: `${plan.id || plan.title || plan.name}-${index}`, title: taskTitle, priority: index === 0 ? 'High' : 'Medium', owner: 'Founder', deadline: 'This week', status: arrayFrom(plan.done)[index] ? 'Done' : (plan.status || 'Planned'), source: 'Business Plans' })));
+      const fromProjects = ctx.activeProjects.map(project => ({ id: `project-${project.id}`, title: `Advance ${project.title}`, priority: 'Medium', owner: 'Founder', deadline: 'This week', status: project.status || 'Active', source: 'Projects' }));
+      return [...fromTasks, ...fromPlans, ...fromProjects]
+        .filter((item, index, arr) => item.title && arr.findIndex(other => other.title === item.title) === index)
+        .sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority))
+        .slice(0, 12);
+    }
+
+    function generateWeeklyGoals(ctx = todayContext()) {
+      const planGoals = ctx.activePlans.slice(0, 3).map(plan => ({ title: plan.name || plan.title, progress: Math.round(Number(plan.progress || 0)), milestones: arrayFrom(plan.tasks).slice(0, 3), completed: false }));
+      const projectGoals = ctx.activeProjects.slice(0, 2).map(project => ({ title: `Move ${project.title} forward`, progress: 25, milestones: ['Define outcome', 'Ship next milestone', 'Review customer signal'], completed: false }));
+      const goals = [...planGoals, ...projectGoals];
+      return goals.length ? goals : [{ title: ctx.mainGoal, progress: 0, milestones: ['Define success metric', 'Complete first priority', 'Run weekly review'], completed: false }];
+    }
+
+    function renderToday() {
+      document.body.classList.toggle('today-focus-active', Boolean(state.today?.focus?.running));
+      const el = document.getElementById('section-today');
+      if (!el) return;
+      state.today ||= structuredClone(defaultState.today);
+      state.today.focus ||= structuredClone(defaultState.today.focus);
+      const ctx = todayContext();
+      const hasData = hasTodayData(ctx);
+      const plan = generateDailyPlan(ctx);
+      const brief = generateFounderBrief(ctx);
+      const priorities = todayPriorityRows(ctx);
+      if (!state.today.weeklyGoals?.length) state.today.weeklyGoals = generateWeeklyGoals(ctx);
+      const weeklyGoals = state.today.weeklyGoals;
+      const focusTask = ctx.openTasks.find(task => task.id === state.today.focus.currentTaskId) || ctx.openTasks[0];
+      if (focusTask && !state.today.focus.currentTaskId) state.today.focus.currentTaskId = focusTask.id;
+      const focusSeconds = state.today.focus.elapsedSeconds + (state.today.focus.running && state.today.focus.startedAt ? Math.floor((Date.now() - new Date(state.today.focus.startedAt).getTime()) / 1000) : 0);
+      const completedGoals = weeklyGoals.filter(goal => goal.completed);
+      const upcomingGoals = weeklyGoals.filter(goal => !goal.completed);
+      const avgProgress = weeklyGoals.length ? Math.round(weeklyGoals.reduce((sum, goal) => sum + Number(goal.completed ? 100 : goal.progress || 0), 0) / weeklyGoals.length) : 0;
+      const list = (items) => `<ul class="space-y-2">${items.map(item => `<li class="flex gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-200"><span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-300 shadow-[0_0_14px_rgba(196,181,253,.8)]"></span><span>${escapeHTML(item)}</span></li>`).join('')}</ul>`;
+      const priorityCard = (label) => {
+        const rows = priorities.filter(item => item.priority === label);
+        return `<div class="rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-4"><div class="mb-3 flex items-center justify-between"><h3 class="font-bold text-white">${label} Priority</h3><span class="rounded-full border border-violet-300/20 bg-violet-400/10 px-2 py-1 text-[11px] text-violet-100">${rows.length}</span></div>${rows.length ? rows.map(row => `<div class="mb-2 rounded-2xl border border-white/10 bg-black/20 p-3"><p class="font-semibold text-white">${escapeHTML(row.title)}</p><div class="mt-2 grid gap-1 text-[11px] text-slate-400 sm:grid-cols-4"><span>Owner: ${escapeHTML(row.owner)}</span><span>Deadline: ${escapeHTML(row.deadline)}</span><span>Status: ${escapeHTML(row.status)}</span><span>Source: ${escapeHTML(row.source)}</span></div><button data-convert-priority="${escapeAttr(row.title)}" class="mt-3 rounded-xl border border-teal-300/25 bg-teal-400/10 px-3 py-2 text-xs font-bold text-teal-100">Convert To Task</button></div>`).join('') : `<p class="text-sm text-slate-400">No ${label.toLowerCase()} priority items yet.</p>`}</div>`;
+      };
+      el.innerHTML = `
+        <section class="today-shell min-h-full overflow-y-auto bg-[#060713] p-4 text-slate-100 sm:p-6">
+          <style>
+            #section-today .today-hero,#section-today .today-card{border:1px solid rgba(168,85,247,.18);background:linear-gradient(145deg,rgba(17,24,39,.72),rgba(9,9,24,.82));box-shadow:0 24px 80px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(18px)}
+            #section-today .today-shell{background:radial-gradient(circle at 12% 0%,rgba(168,85,247,.28),transparent 28%),radial-gradient(circle at 86% 18%,rgba(79,70,229,.2),transparent 30%),#060713;color:#f8fafc}
+            #section-today .today-tab{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:999px;padding:.48rem .78rem;font-size:.75rem;color:#ddd6fe}
+            #section-today .today-button{border-radius:1rem;background:linear-gradient(135deg,#7c3aed,#a855f7);padding:.72rem 1rem;font-weight:800;color:#fff;box-shadow:0 14px 34px rgba(124,58,237,.32)}
+            body.today-focus-active #workspaceHeader,body.today-focus-active #sidebar .barya-ai-card,body.today-focus-active #sidebar #howItWorksBtn{opacity:.28;filter:blur(.2px)}
+          </style>
+          <div class="mx-auto max-w-7xl space-y-5">
+            <div class="today-hero rounded-[2rem] p-5 sm:p-7">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div><p class="text-xs font-bold uppercase tracking-[.28em] text-violet-200">The founder's daily operating system</p><h1 class="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">Today</h1><p class="mt-2 text-lg text-slate-300">Your daily founder command center.</p></div>
+                <div class="flex flex-wrap gap-2">${['Daily Plan','Founder Brief','Priorities','Focus Mode','Weekly Goals'].map(label => `<span class="today-tab">${label}</span>`).join('')}</div>
+              </div>
+              <div class="mt-5 grid gap-3 md:grid-cols-3">${[['Active projects', ctx.activeProjects.length], ['Open tasks', ctx.openTasks.length], ['Weekly progress', `${avgProgress}%`]].map(([label,value]) => `<div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><p class="text-2xl font-black text-white">${value}</p><p class="text-xs uppercase tracking-[.18em] text-slate-400">${label}</p></div>`).join('')}</div>
+            </div>
+
+            ${!hasData ? `<div class="today-card rounded-[1.75rem] p-6 text-center"><h2 class="text-2xl font-black text-white">Welcome to Today</h2><p class="mt-2 text-slate-300">Let's create your first action plan.</p><div class="mt-5 flex flex-wrap justify-center gap-3"><button id="todayEmptyGenerate" class="today-button">Generate Daily Plan</button><button id="todayCreateGoal" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 font-bold text-white">Create First Goal</button><button data-section-go="planning" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 font-bold text-white">Start Planning</button></div></div>` : ''}
+
+            <div class="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+              <article class="today-card rounded-[1.75rem] p-5" id="today-daily-plan"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-black text-white">Daily Plan</h2><p class="text-sm text-slate-400">Personalized from projects, tasks, business goals, memory, activity, and unfinished work.</p></div><button id="regenerateTodayPlan" class="today-button">Regenerate Plan</button></div><div class="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-4"><p class="text-xs uppercase tracking-[.22em] text-violet-200">Today's Main Goal</p><p class="mt-2 text-lg font-bold text-white">${escapeHTML(plan.mainGoal)}</p></div><div class="mt-4 grid gap-4 lg:grid-cols-2"><div class="space-y-4"><section><h3 class="mb-2 font-bold text-white">Top 3 Priorities</h3>${list(plan.topPriorities)}</section><section><h3 class="mb-2 font-bold text-white">Morning Tasks</h3>${list(plan.morning)}</section><section><h3 class="mb-2 font-bold text-white">Afternoon Tasks</h3>${list(plan.afternoon)}</section></div><div class="space-y-4"><section><h3 class="mb-2 font-bold text-white">Evening Tasks</h3>${list(plan.evening)}</section><section><h3 class="mb-2 font-bold text-white">Quick Wins</h3>${list(plan.quickWins)}</section><section><h3 class="mb-2 font-bold text-white">End of Day Check</h3>${list(plan.check)}</section></div></div></article>
+              <article class="today-card rounded-[1.75rem] p-5" id="today-founder-brief"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-black text-white">Founder Brief</h2><p class="text-sm text-slate-400">A concise co-founder update for the day.</p></div><button id="generateFounderBrief" class="today-button">Generate New Brief</button></div><div class="space-y-3">${[['Today\'s Focus', brief.focus], ['Biggest Opportunity', brief.opportunity], ['Biggest Risk', brief.risk], ['Recommended Next Move', brief.move], ['Motivational Insight', brief.insight]].map(([label,value]) => `<div class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"><p class="text-xs uppercase tracking-[.2em] text-violet-200">${label}</p><p class="mt-2 text-sm font-semibold leading-6 text-white">${escapeHTML(value)}</p></div>`).join('')}</div></article>
+            </div>
+
+            <article class="today-card rounded-[1.75rem] p-5" id="today-priorities"><div class="mb-4"><h2 class="text-2xl font-black text-white">Priorities</h2><p class="text-sm text-slate-400">Automatically pulled from Tasks, Projects, and Business Plans.</p></div><div class="grid gap-4 lg:grid-cols-3">${['High','Medium','Low'].map(priorityCard).join('')}</div></article>
+
+            <div class="grid gap-5 xl:grid-cols-[.85fr_1.15fr]">
+              <article class="today-card rounded-[1.75rem] p-5 ${state.today.focus.running ? 'ring-2 ring-violet-400/40' : ''}" id="today-focus-mode"><div class="mb-4"><h2 class="text-2xl font-black text-white">Focus Mode</h2><p class="text-sm text-slate-400">Work without distraction. ${state.today.focus.running ? 'Unnecessary UI is visually muted while this session is active.' : 'Start a session when you are ready.'}</p></div><div class="rounded-3xl border border-violet-300/20 bg-black/25 p-5 text-center"><p class="text-xs uppercase tracking-[.22em] text-slate-400">Current Focus Task</p><p class="mt-2 text-xl font-black text-white">${escapeHTML(focusTask?.title || 'No active task selected')}</p><p id="todayFocusTimer" class="mt-5 text-5xl font-black text-violet-100">${formatDuration(focusSeconds)}</p><div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div id="todayFocusProgress" class="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400" style="width:${Math.min(100, Math.round((focusSeconds / 1500) * 100))}%"></div></div><div class="mt-4 grid grid-cols-3 gap-2 text-xs"><span>Time Spent<br><b class="text-white">${formatDuration(focusSeconds)}</b></span><span>Session Progress<br><b class="text-white">${Math.min(100, Math.round((focusSeconds / 1500) * 100))}%</b></span><span>Completed<br><b class="text-white">${state.today.focus.completedSessions || 0}</b></span></div><div class="mt-5 flex flex-wrap justify-center gap-2"><button id="startFocusSession" class="today-button">Start Focus Session</button><button id="pauseFocusSession" class="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 font-bold text-white">Pause</button><button id="completeFocusTask" class="rounded-2xl border border-teal-300/30 bg-teal-400/10 px-4 py-3 font-bold text-teal-100">Complete Task</button></div></div></article>
+              <article class="today-card rounded-[1.75rem] p-5" id="today-weekly-goals"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-black text-white">Weekly Goals</h2><p class="text-sm text-slate-400">Generated from business plans, roadmaps, and active projects.</p></div><div class="flex gap-2"><button id="addTodayGoal" class="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-bold text-white">Add Goal</button><button id="generateWeeklyGoals" class="today-button">Generate Weekly Goals</button></div></div><div class="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4"><p class="text-xs uppercase tracking-[.2em] text-slate-400">This Week's Goals</p><p class="mt-2 text-3xl font-black text-white">${avgProgress}% progress</p></div><div class="grid gap-3">${weeklyGoals.map((goal, index) => `<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="font-bold text-white">${escapeHTML(goal.title)}</p><p class="mt-1 text-xs text-slate-400">Milestones: ${escapeHTML(arrayFrom(goal.milestones).join(' • ') || 'Define next milestone')}</p></div><button data-mark-goal-complete="${index}" class="rounded-xl border border-teal-300/25 bg-teal-400/10 px-3 py-2 text-xs font-bold text-teal-100">Mark Complete</button></div><div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-violet-400" style="width:${goal.completed ? 100 : Number(goal.progress || 0)}%"></div></div></div>`).join('')}</div><div class="mt-4 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h3 class="font-bold text-white">Completed Goals</h3><p class="mt-2 text-sm text-slate-400">${completedGoals.map(g => escapeHTML(g.title)).join('<br>') || 'No completed goals yet.'}</p></div><div class="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h3 class="font-bold text-white">Upcoming Goals</h3><p class="mt-2 text-sm text-slate-400">${upcomingGoals.map(g => escapeHTML(g.title)).join('<br>') || 'All weekly goals are complete.'}</p></div></div></article>
+            </div>
+          </div>
+        </section>`;
+
+      el.querySelectorAll('[data-section-go]').forEach(button => button.onclick = () => switchSection(button.dataset.sectionGo));
+      document.getElementById('todayEmptyGenerate')?.addEventListener('click', () => { state.today.planSeed += 1; saveState(); });
+      document.getElementById('regenerateTodayPlan')?.addEventListener('click', () => { state.today.planSeed += 1; state.today.generatedAt = new Date().toISOString(); saveState(); });
+      document.getElementById('generateFounderBrief')?.addEventListener('click', () => { state.today.briefSeed += 1; saveState(); });
+      document.getElementById('generateWeeklyGoals')?.addEventListener('click', () => { state.today.weeklySeed += 1; state.today.weeklyGoals = generateWeeklyGoals(ctx); saveState(); });
+      document.getElementById('todayCreateGoal')?.addEventListener('click', () => { switchSection('planning'); });
+      document.getElementById('addTodayGoal')?.addEventListener('click', () => { const title = prompt('Weekly goal title'); if (!title) return; state.today.weeklyGoals.unshift({ title: title.trim(), progress: 0, milestones: ['Define milestone', 'Execute', 'Review'], completed: false }); saveState(); });
+      el.querySelectorAll('[data-mark-goal-complete]').forEach(button => button.onclick = () => { const goal = state.today.weeklyGoals[Number(button.dataset.markGoalComplete)]; if (goal) { goal.completed = true; goal.progress = 100; saveState(); } });
+      el.querySelectorAll('[data-convert-priority]').forEach(button => button.onclick = () => { GlobalWorkspaceStore.actions.updateTask(makeGlobalId('task'), { title: button.dataset.convertPriority, priority: 'High', status: 'To Do', dueDate: new Date().toISOString().slice(0,10), tags: ['Today'] }); });
+      document.getElementById('startFocusSession')?.addEventListener('click', () => { state.today.focus.running = true; state.today.focus.startedAt = new Date().toISOString(); state.today.focus.currentTaskId = focusTask?.id || ''; document.body.classList.add('today-focus-active'); saveState(); });
+      document.getElementById('pauseFocusSession')?.addEventListener('click', () => { if (state.today.focus.running && state.today.focus.startedAt) state.today.focus.elapsedSeconds += Math.floor((Date.now() - new Date(state.today.focus.startedAt).getTime()) / 1000); state.today.focus.running = false; state.today.focus.startedAt = ''; document.body.classList.remove('today-focus-active'); saveState(); });
+      document.getElementById('completeFocusTask')?.addEventListener('click', () => { if (focusTask?.id) GlobalWorkspaceStore.actions.updateTask(focusTask.id, { status: 'Done', completed: true }); state.today.focus.completedSessions = (state.today.focus.completedSessions || 0) + 1; state.today.focus.running = false; state.today.focus.elapsedSeconds = 0; state.today.focus.startedAt = ''; document.body.classList.remove('today-focus-active'); saveState(); });
+      if (state.today.focus.running) {
+        clearInterval(window.__baryaTodayTimer);
+        window.__baryaTodayTimer = setInterval(() => {
+          const base = state.today.focus.elapsedSeconds || 0;
+          const live = state.today.focus.startedAt ? Math.floor((Date.now() - new Date(state.today.focus.startedAt).getTime()) / 1000) : 0;
+          const total = base + live;
+          const timer = document.getElementById('todayFocusTimer');
+          const progress = document.getElementById('todayFocusProgress');
+          if (timer) timer.textContent = formatDuration(total);
+          if (progress) progress.style.width = `${Math.min(100, Math.round((total / 1500) * 100))}%`;
+        }, 1000);
+      }
+    }
+
+    function formatDuration(seconds = 0) {
+      const total = Math.max(0, Number(seconds) || 0);
+      const mins = Math.floor(total / 60);
+      const secs = total % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
     function renderWorkspace() {
