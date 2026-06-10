@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barya Today</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #060713; color: #f8fafc; font-family: Inter, system-ui, sans-serif; }
+    a { color: #c4b5fd; }
+  </style>
+</head>
+<body>
+  <p>Opening Barya Today… <a href="../workspace.html">Open workspace</a></p>
+  <script>
+    fetch('../workspace.html')
+      .then((response) => response.text())
+      .then((html) => {
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch(() => { window.location.href = '../workspace.html'; });
+  </script>
+</body>
+</html>
